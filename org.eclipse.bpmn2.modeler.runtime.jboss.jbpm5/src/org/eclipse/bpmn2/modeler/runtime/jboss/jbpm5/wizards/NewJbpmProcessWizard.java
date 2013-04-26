@@ -176,10 +176,14 @@ public class NewJbpmProcessWizard extends Wizard implements INewWizard {
 			"             expressionLanguage=\"http://www.mvel.org/2.0\"\n"+
 			"             xmlns=\"http://www.omg.org/spec/BPMN/20100524/MODEL\"\n"+
 			"             xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"+
-			"             xsi:schemaLocation=\"http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd\"\n"+
+			"             xsi:schemaLocation=\"http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd"+
+			" http://www.jboss.org/drools drools.xsd"+
+			" http://www.bpsim.org/schemas/1.0 bpsim.xsd\"\n"+
 			"             xmlns:bpmndi=\"http://www.omg.org/spec/BPMN/20100524/DI\"\n"+
 			"             xmlns:dc=\"http://www.omg.org/spec/DD/20100524/DC\"\n"+
 			"             xmlns:di=\"http://www.omg.org/spec/DD/20100524/DI\"\n"+
+			"             xmlns:drools=\"http://www.jboss.org/drools\">\n"+
+			"             xmlns:bpsim=\"http://www.bpsim.org/schemas/1.0\">\n"+
 			"             xmlns:tns=\"http://www.jboss.org/drools\">\n"+
 			"\n"+
 			"  <process processType=\"Private\" isExecutable=\"true\""+

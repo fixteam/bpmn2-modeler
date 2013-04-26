@@ -22,6 +22,7 @@ import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultPropertySection;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.BpsimPackage;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.DroolsPackage;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.preferences.JbpmPreferencePage;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Composite;
@@ -37,8 +38,8 @@ public class SimulationPropertySection extends DefaultPropertySection {
 	public boolean appliesTo(IWorkbenchPart part, ISelection selection) {
 		super.appliesTo(part,selection); // this sets the DiagramEditor as a side-effect
 		
-		// Only enable Simulation tab if "Scenario" extension element is enabled.
-		if (!isModelObjectEnabled(DroolsPackage.eINSTANCE.getBPSimDataType()))
+		// Only enable Simulation tab if enabled in User Preferences.
+		if (!JbpmPreferencePage.isEnableSimulation())
 			return false;
 		
 		// and all this other stuff...

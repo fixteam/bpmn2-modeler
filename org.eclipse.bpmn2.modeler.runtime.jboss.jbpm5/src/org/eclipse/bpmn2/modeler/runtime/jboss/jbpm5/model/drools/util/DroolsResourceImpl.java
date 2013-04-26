@@ -37,6 +37,8 @@ import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerResourceImpl;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.DroolsPackage;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.GlobalType;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.preferences.JbpmPreferencePage;
+import org.eclipse.bpmn2.util.Bpmn2ResourceImpl;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EAttribute;
@@ -75,6 +77,10 @@ public class DroolsResourceImpl extends Bpmn2ModelerResourceImpl {
 		super(uri);
 	}
 
+    @Override
+    protected XMLHelper createXMLHelper() {
+    	return new DroolsXmlHelper(this);
+    }
 
     /**
      * Override this method to hook in our own XmlHandler
@@ -84,7 +90,7 @@ public class DroolsResourceImpl extends Bpmn2ModelerResourceImpl {
         return new XMLLoadImpl(createXMLHelper()) {
             @Override
             protected DefaultHandler makeDefaultHandler() {
-                return new ModelXmlHandler(resource, helper, options);
+                return new DroolsXmlHandler(resource, helper, options);
             }
         };
     }
@@ -100,9 +106,13 @@ public class DroolsResourceImpl extends Bpmn2ModelerResourceImpl {
 				if (Bpmn2Package.eINSTANCE.getDocumentation_Text().equals(f))
 					return false;
 				// don't save the "name" feature of Property objects.
-				// see ModelXmlHandler.processElement() for details...
+				// see DroolsXmlHandler.processElement() for details...
 				if (o instanceof Property) {
 					if (f.getName().equals("name"))
+						return false;
+				}
+				if (f== Bpmn2Package.eINSTANCE.getDefinitions_Relationships()) {
+					if (!JbpmPreferencePage.isEnableSimulation())
 						return false;
 				}
 				return super.shouldSaveFeature(o, f);
@@ -117,7 +127,9 @@ public class DroolsResourceImpl extends Bpmn2ModelerResourceImpl {
 		        		if ("targetNamespace".equals(name))
 		        			needTargetNamespace = false;
 		        		else if (XSI_SCHEMA_LOCATION.equals(name)) {
-		        			value = "http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd";
+		        			value = "http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd" +
+		        					" http://www.jboss.org/drools drools.xsd"+
+		        					" http://www.bpsim.org/schemas/1.0 bpsim.xsd";
 		        		}
 		        		super.addAttribute(name, value);
 		        	}
@@ -133,14 +145,24 @@ public class DroolsResourceImpl extends Bpmn2ModelerResourceImpl {
 		};
 	}
 
+    protected static class DroolsXmlHelper extends Bpmn2ModelerXmlHelper {
+
+		public DroolsXmlHelper(Bpmn2ResourceImpl resource) {
+			super(resource);
+			qnameMap.remove(Bpmn2Package.eINSTANCE.getItemAwareElement_ItemSubjectRef());
+			qnameMap.remove(Bpmn2Package.eINSTANCE.getInterface_ImplementationRef());
+			qnameMap.remove(Bpmn2Package.eINSTANCE.getOperation_ImplementationRef());
+		}
+    }
+    
 	/**
      * We need extend the standard SAXXMLHandler to hook into the handling of attribute references
      * which may be either simple ID Strings or QNames. We'll search through all of the objects'
      * IDs first to find the one we're looking for. If not, we'll try a QName search.
      */
-    protected static class ModelXmlHandler extends Bpmn2ModelerXmlHandler {
+    protected static class DroolsXmlHandler extends Bpmn2ModelerXmlHandler {
 
-        public ModelXmlHandler(XMLResource xmiResource, XMLHelper helper, Map<?, ?> options) {
+        public DroolsXmlHandler(XMLResource xmiResource, XMLHelper helper, Map<?, ?> options) {
             super(xmiResource, helper, options);
         }
 

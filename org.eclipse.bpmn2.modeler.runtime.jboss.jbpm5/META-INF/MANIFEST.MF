@@ -5,6 +5,7 @@ Bundle-SymbolicName: org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5;singleton:=tr
 Bundle-Version: 0.2.5.qualifier
 Bundle-Activator: org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.Activator
 Bundle-Vendor: Eclipse.org
+Bundle-Localization: plugin
 Require-Bundle: org.eclipse.ui.ide,
  org.eclipse.graphiti;bundle-version="[0.8.2,0.10.0]",
  org.eclipse.graphiti.ui;bundle-version="[0.8.2,0.10.0]",

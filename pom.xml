@@ -114,7 +114,7 @@
 
 		<repository>
 			<id>eclipse-bpmn2</id>
-			<url>http://download.eclipse.org/modeling/mdt/bpmn2/updates/milestones/S20111111/</url>
+			<url>http://download.eclipse.org/modeling/mdt/bpmn2/updates/milestones/S20130423/</url>
 			<layout>p2</layout>
 			<snapshots>
 				<enabled>true</enabled>

@@ -367,6 +367,7 @@ public class JbpmModelUtil {
 			definitions.getRelationships().add(rel);
 			rel.getSources().add(definitions);
 			rel.getTargets().add(definitions);
+			rel.setType("Simulation");
 		}
 		else {
 			rel = relationships.get(0);

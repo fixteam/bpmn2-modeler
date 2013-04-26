@@ -8,8 +8,8 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 
 public class JbpmPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 	
-	public final static String PREF_SHOW_SIMULATION_TAB = "show.simulation.tab";
-	public final static String PREF_SHOW_SIMULATION_TAB_LABEL = "Show \"Simulation\" Property Tab";
+	public final static String PREF_ENABLE_SIMULATION_PARAMS = "enable.simulation.params";
+	public final static String PREF_ENABLE_SIMULATION_PARAMS_LABEL = "Enable Simulation Parameters";
 
 	public JbpmPreferencePage() {
 		super(GRID);
@@ -25,10 +25,13 @@ public class JbpmPreferencePage extends FieldEditorPreferencePage implements IWo
 	protected void createFieldEditors() {
 
 		BooleanFieldEditor showAdvancedPropsTab = new BooleanFieldEditor(
-				PREF_SHOW_SIMULATION_TAB,
-				PREF_SHOW_SIMULATION_TAB_LABEL,
+				PREF_ENABLE_SIMULATION_PARAMS,
+				PREF_ENABLE_SIMULATION_PARAMS_LABEL,
 				getFieldEditorParent());
 		addField(showAdvancedPropsTab);
 	}
 
+	public static boolean isEnableSimulation() {
+		return Activator.getDefault().getPreferenceStore().getBoolean(PREF_ENABLE_SIMULATION_PARAMS);
+	}
 }

@@ -70,6 +70,7 @@ import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.transaction.RecordingCommand;
 import org.eclipse.emf.transaction.TransactionalEditingDomain;
+import org.eclipse.graphiti.datatypes.IDimension;
 import org.eclipse.graphiti.datatypes.ILocation;
 import org.eclipse.graphiti.features.IAddFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
@@ -822,12 +823,39 @@ public class DIImport {
 			}
 			else {
 				waypoint = bpmnEdge.getWaypoint().get(bpmnEdge.getWaypoint().size()-1);
-				
 			}
 			
 			int x = (int)waypoint.getX();
 			int y = (int)waypoint.getY();
 			org.eclipse.graphiti.mm.algorithms.styles.Point anchorPoint = gaService.createPoint(x,y);
+			
+			// Some tools generate Edges that have their origin or destination waypoint at the center
+			// of the source/target shape. Adjust these locations so that they are at the edge of
+			// the shape.
+			//
+			// TODO: Figure out a way to maintain the original waypoint locations and still
+			// support the connection line routers. This will require a major rewrite of the
+			// whole anchor management ("anger management"?) scheme.
+			if (GraphicsUtil.contains((Shape)pictogramElement, anchorPoint)) {
+				// Only do this if the waypoint is "near" the center; "near" was arbitrarily chosen
+				// to mean within 3/4 of the shape's smallest dimension
+				IDimension size = GraphicsUtil.calculateSize((Shape)pictogramElement);
+				double d = 0.75 * Math.min(size.getWidth(), size.getHeight());
+				org.eclipse.graphiti.mm.algorithms.styles.Point c =
+						GraphicsUtil.getShapeCenter((Shape)pictogramElement);
+				double dd = GraphicsUtil.getLength(anchorPoint, c);
+				if (dd < d) {
+					if (isSource) {
+						waypoint = bpmnEdge.getWaypoint().get(1);
+					}
+					else {
+						waypoint = bpmnEdge.getWaypoint().get(bpmnEdge.getWaypoint().size()-2);
+					}
+					x = (int)waypoint.getX();
+					y = (int)waypoint.getY();
+					anchorPoint = gaService.createPoint(x,y);
+				}
+			}
 			
 			if (AnchorUtil.useAdHocAnchors(baseElement, flowElement)) {
 				ILocation loc = Graphiti.getPeLayoutService().getLocationRelativeToDiagram((Shape)pictogramElement);

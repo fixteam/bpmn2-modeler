@@ -1267,15 +1267,13 @@
       </wizard>
    </extension>
    
-   <!-- TODO: Nothing to put here yet...
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
             category="org.eclipse.bpmn2.modeler.ui.preferences.Bpmn2HomePreferencePage"
             class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.preferences.JbpmPreferencePage"
             id="org.jboss.runtime.jbpm5.preferences"
-            name="jBPM Runtime"/>
+            name="%PREFERENCE_PAGE_JBPM"/>
    </extension>
-	-->
 	
 </plugin>
