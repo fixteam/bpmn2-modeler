@@ -92,7 +92,11 @@ public class Bpmn2ModelerFactory extends Bpmn2FactoryImpl {
 	protected static boolean enableModelExtensions = true;
 
 	public static Bpmn2ModelerFactory getInstance() {
-		return (Bpmn2ModelerFactory) Bpmn2ModelerFactory.eINSTANCE;
+		if(Bpmn2ModelerFactory.eINSTANCE instanceof Bpmn2ModelerFactory){
+			return (Bpmn2ModelerFactory) Bpmn2ModelerFactory.eINSTANCE;
+		}else{
+			return null;
+		}
 	}
 	
 	@Override

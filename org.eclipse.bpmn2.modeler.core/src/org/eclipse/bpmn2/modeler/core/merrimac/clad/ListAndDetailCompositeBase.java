@@ -58,7 +58,7 @@ public class ListAndDetailCompositeBase extends Composite implements ResourceSet
 	public final static Bpmn2ModelerFactory FACTORY = Bpmn2ModelerFactory.getInstance();
 	protected AbstractBpmn2PropertySection propertySection;
 	protected FormToolkit toolkit;
-	protected IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
+	protected IPreferenceStore preferenceStore =  Activator.getDefault() != null ? Activator.getDefault() .getPreferenceStore(): null;
 	protected EObject businessObject;
 	protected int style;
 	protected DiagramEditor diagramEditor;
