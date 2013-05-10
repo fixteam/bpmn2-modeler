@@ -852,7 +852,7 @@
 	</extension> 
 	
 	<!-- menu -->
-	<extension 
+	<!--<extension 
 	  id="org.eclipse.bpmn2.modeler.diagram.menu.extension"
 	  point="org.eclipse.ui.menus">
 	 <menuContribution
@@ -889,4 +889,5 @@
 	    </command>
 	</menuContribution>
 </extension>
+-->
 </plugin>
