@@ -49,7 +49,7 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 
 	// extension point ID for Target Runtimes
 	public static final String RUNTIME_EXTENSION_ID = "org.eclipse.bpmn2.modeler.runtime";
-	public static final String DEFAULT_RUNTIME_ID = "org.eclipse.bpmn2.modeler.runtime.none";
+	public static final String DEFAULT_RUNTIME_ID = "com.founder.fix.fixflow.designer.fixflow";
 	
 	// our cached registry of target runtimes contributed by other plugins
 	protected static TargetRuntime targetRuntimes[];
