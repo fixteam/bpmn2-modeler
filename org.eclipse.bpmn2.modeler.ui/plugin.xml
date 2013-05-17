@@ -144,21 +144,14 @@
 		<!-- ============  Property Tabs ============ -->
 		<!-- ======================================== -->
 
-		<!--
-
 		<propertyTab
 			id="org.eclipse.bpmn2.modeler.description.tab"
 			class="org.eclipse.bpmn2.modeler.ui.property.DescriptionPropertySection"
 			popup="false"
 			label="Description">
 		</propertyTab>
-		
-		-->
 
 		<!-- ============  Diagrams ============ -->
-		
-		<!--
-		
 		<propertyTab
 			id="org.eclipse.bpmn2.modeler.process.diagram.tab"
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
@@ -174,13 +167,8 @@
 			type="org.eclipse.bpmn2.di.BPMNDiagram"
 			label="Definitions">
 		</propertyTab>
-		
-		-->
 
 		<!-- ============  Connections ============ -->
-		
-		<!--
-		
 		<propertyTab
 			id="org.eclipse.bpmn2.modeler.assocation.tab"
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
@@ -206,12 +194,7 @@
 			label="Message Flow">
 		</propertyTab>
 		
-		-->
-		
 		<!-- ============  Activities ============ -->
-		
-		<!--
-		
 		<propertyTab
 			id="org.eclipse.bpmn2.modeler.callActivity.tab"
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
@@ -245,13 +228,8 @@
 			type="org.eclipse.bpmn2.Transaction"
 			label="Transaction">
 		</propertyTab>
-		
-		-->
 
 		<!-- ============  Tasks ============ -->
-		
-		<!--
-		
 		<propertyTab
 			id="org.eclipse.bpmn2.modeler.task.tab"
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
@@ -327,13 +305,8 @@
 			type="org.eclipse.bpmn2.UserTask"
 			label="User Task">
 		</propertyTab>
-		
-		-->
 
 		<!-- ============  Choreography Activities ============ -->
-		
-		<!--
-		
 		<propertyTab
 			id="org.eclipse.bpmn2.modeler.callChoreography.tab"
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
@@ -368,13 +341,8 @@
 			type="org.eclipse.bpmn2.Conversation"
 			label="Conversation">
 		</propertyTab>
-		
-		-->
 
 		<!-- ============  Gateways ============ -->
-		
-		<!--
-		
 		<propertyTab
 			id="org.eclipse.bpmn2.modeler.gateway.tab"
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
@@ -382,13 +350,8 @@
 			type="org.eclipse.bpmn2.Gateway"
 			label="Gateway">
 		</propertyTab>
-		
-		-->
 
 		<!-- ============  Events ============ -->
-		
-		<!--
-		
 		<propertyTab
 			id="org.eclipse.bpmn2.modeler.commonEvent.tab"
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
@@ -397,11 +360,7 @@
 			label="Event">
 		</propertyTab>
 
-		-->
-
 		<!-- ============  Artifacts ============ -->
-
-		<!--
 
 		<propertyTab
 			id="org.eclipse.bpmn2.modeler.group.tab"
@@ -419,13 +378,8 @@
 			type="org.eclipse.bpmn2.TextAnnotation"
 			label="Text Annotation">
 		</propertyTab>
-		
-		-->
 
 		<!-- ============  Root Elements ============ -->
-		
-		<!--
-		
 		<propertyTab
 			id="org.eclipse.bpmn2.modeler.error.tab"
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
@@ -505,13 +459,8 @@
 			type="org.eclipse.bpmn2.Signal"
 			label="Signal">
 		</propertyTab>
-		
-		-->
 
 		<!-- ============  Item Aware Elements ============ -->
-		
-		<!--
-		
 		<propertyTab
 			id="org.eclipse.bpmn2.modeler.dataitems.tab"
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
@@ -582,8 +531,6 @@
 			popup="false"
 			label="Advanced">
 		</propertyTab>
-		
-		-->
 
 		<!-- ======================================== -->
 		<!-- ===  Model Enablements and Profiles ==== -->
