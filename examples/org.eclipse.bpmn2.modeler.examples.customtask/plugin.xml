@@ -75,6 +75,7 @@
             runtimeId="org.eclipse.bpmn2.modeler.examples.customtask.runtime">
       </propertyTab>
       <modelEnablement
+            profile="name"
             runtimeId="org.eclipse.bpmn2.modeler.examples.customtask.runtime"
             type="Process">
 			<disable object="all"/>
