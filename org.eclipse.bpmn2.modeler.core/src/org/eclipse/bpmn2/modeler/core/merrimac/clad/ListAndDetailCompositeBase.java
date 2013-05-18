@@ -73,7 +73,7 @@ public class ListAndDetailCompositeBase extends Composite implements ResourceSet
 	public ListAndDetailCompositeBase(AbstractBpmn2PropertySection section, int style) {
 		super(section.getParent(), style);
 		propertySection = section;
-		toolkit = propertySection.getWidgetFactory();
+		toolkit = new FormToolkit(Display.getCurrent());
 		initialize();
 	}
 	
