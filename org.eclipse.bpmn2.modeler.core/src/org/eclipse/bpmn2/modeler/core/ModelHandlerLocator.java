@@ -64,7 +64,7 @@ public class ModelHandlerLocator {
 	}
 
 	private static ModelHandler createNewModelHandler(URI path, final Bpmn2ResourceImpl resource) {
-		ModelHandler handler = new ModelHandler();
+		ModelHandler handler = new FixModelHandler();
 		path = path.trimFragment();
 		map.put(path, handler);
 		handler.resource = resource;
