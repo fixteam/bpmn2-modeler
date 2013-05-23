@@ -27,7 +27,9 @@ public class FormalExpressionConstraint extends
 
 	@Override
 	public IStatus validate(IValidationContext ctx) {
-
+		
+		//kenshin 修改    去掉了不需要的验证
+		/*
 		EObject eObj = ctx.getTarget();
 		EMFEventType eType = ctx.getEventType();
 		// In the case of batch mode.
@@ -46,7 +48,7 @@ public class FormalExpressionConstraint extends
 				if (error)
 					return ctx.createFailureStatus(new Object[] {eObj.eClass().getName()});		
 			}
-		} 
+		} */
 		return ctx.createSuccessStatus();
 	}
 

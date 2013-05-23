@@ -23,6 +23,9 @@ public class ValidIdConstraint extends AbstractModelConstraint {
 	
 	@Override
 	public IStatus validate(IValidationContext ctx) {
+		
+		//kenshin 修改    去掉了不需要的验证
+		/*
 		EObject eObj = ctx.getTarget();
 		EMFEventType eType = ctx.getEventType();
 		
@@ -44,7 +47,7 @@ public class ValidIdConstraint extends AbstractModelConstraint {
 				return ctx.createFailureStatus(new Object[] {eObj.eClass().getName()});
 			}
 		}
-		
+		*/
 		return ctx.createSuccessStatus();
 	}
 
