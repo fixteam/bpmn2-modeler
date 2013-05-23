@@ -86,7 +86,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	public final static String PREF_SHOW_DESCRIPTIONS = "show.descriptions";
 	public final static String PREF_SHOW_DESCRIPTIONS_LABEL = "Show &descriptions in Properties Tab for BPMN2 Elements";
 	public final static String PREF_OVERRIDE_MODEL_ENABLEMENTS = "override.model.enablements";
-	public final static String PREF_DEFAULT_MODEL_ENABLEMENT_PROFILE = "default.model.enablement.profile";
+	public final static String PREF_DEFAULT_MODEL_ENABLEMENT_PROFILE = "飞鸿";
 	public final static String PREF_IS_HORIZONTAL = "is.horizontal";
 	public final static String PREF_IS_HORIZONTAL_LABEL = "&Horizontal layout of Pools, Lanes and diagram elements [isHorizontal]";
 	
