@@ -42,7 +42,8 @@ public class FixFlowSaveImageAction extends SaveImageAction {
 
 		// get viewer and start save-image-dialog
 		GraphicalViewer viewer = (GraphicalViewer) graphicsEditor.getAdapter(GraphicalViewer.class);
-		GraphitiUiInternal.getUiService().startSaveAsImageDialog(viewer);
+		FixFlowUiService fixFlowUiService = new FixFlowUiService();
+		fixFlowUiService.startSaveAsImageDialog(viewer);
 
 		saveImageFeature.postSave(context);
 	}
