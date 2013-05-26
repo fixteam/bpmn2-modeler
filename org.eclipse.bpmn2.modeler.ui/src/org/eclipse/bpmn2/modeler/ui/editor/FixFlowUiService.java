@@ -1,5 +1,6 @@
 package org.eclipse.bpmn2.modeler.ui.editor;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +18,6 @@ import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.LayerConstants;
 import org.eclipse.gef.editparts.LayerManager;
 import org.eclipse.graphiti.internal.util.T;
-import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.ui.internal.editor.GFFigureCanvas;
 import org.eclipse.graphiti.ui.internal.services.GraphitiUiInternal;
 import org.eclipse.graphiti.ui.internal.services.impl.UiService;
@@ -74,6 +74,9 @@ public class FixFlowUiService extends UiService {
 	private IRunnableWithProgress getSaveToFileOp(final Shell shell, final String filename, final byte contents[]) throws Exception {
 		IRunnableWithProgress operation = new IRunnableWithProgress() {
 			public void run(IProgressMonitor monitor) {
+
+				
+				
 				FileOutputStream outputStream = null;
 				try {
 					outputStream = new FileOutputStream(filename);
@@ -124,8 +127,10 @@ public class FixFlowUiService extends UiService {
 			}
 		}
 	}
+	
 
-	public void startSaveAsImageDialog(GraphicalViewer graphicalViewer, String shortfilename) {
+
+	public void startSaveAsImageDialog(GraphicalViewer graphicalViewer, String language , String processKey,String shortfilename) {
 		final String METHOD = "startSaveAsImageDialog(graphicalViewer)"; //$NON-NLS-1$
 
 		// check extension point for exporters
@@ -157,8 +162,19 @@ public class FixFlowUiService extends UiService {
 		
 		initImageAll(10000.0d, graphicalViewer);
 
-		String filename = ResourcesPlugin.getWorkspace().getRoot().getProject("fixflow-expand").getLocation().toString() + "/template/" + shortfilename + ".png";
+		String filePath = ResourcesPlugin.getWorkspace().getRoot().getProject("fixflow-expand").getLocation().toString() + "/fixflowdiagram/"+language+"/"+processKey+"/";
+		
+		
+		String filename = filePath + shortfilename + ".png";
 	
+		
+		
+		File file = new File(filePath);
+		
+		if(!file.exists())
+			file.mkdirs();
+		
+		
 		if (filename != null) {
 			try {
 				// add extension to filename (if none exists)
@@ -166,7 +182,7 @@ public class FixFlowUiService extends UiService {
 				if (path.getFileExtension() == null)
 					filename = filename + "." + "PNG"; //$NON-NLS-1$
 
-				final String file = filename;
+		
 				final Image im = _imageAll;
 				String imageExtension = saveAsImageDialog.getFileExtension();
 				IRunnableWithProgress operation;
@@ -180,7 +196,7 @@ public class FixFlowUiService extends UiService {
 
 				int imageFormat = saveAsImageDialog.getImageFormat();
 				byte image[] = createImage(im, imageFormat);
-				operation = getSaveToFileOp(shell, file, image);
+				operation = getSaveToFileOp(shell, filename, image);
 				
 				new ProgressMonitorDialog(shell).run(false, false, operation);
 			} catch (Exception e) {
