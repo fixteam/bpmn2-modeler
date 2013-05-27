@@ -325,15 +325,16 @@ public class BPMN2BatchValidationConstraint extends AbstractModelConstraint {
 
 			if (!warnings) {
 				if (sf.getSourceRef() == null) {
-					return ctx.createFailureStatus("Sequence Flow is not connected to a source");
+					return ctx.createFailureStatus("序列流未连接到源");
 				}
 				if (sf.getTargetRef() == null) {
-					return ctx.createFailureStatus("Sequence Flow is not connected to a target");
+					return ctx.createFailureStatus("序列流未连接到一个目标");
 				}
 			}
 		}
 		else if (fe instanceof Gateway) {
-			Gateway gw = (Gateway) fe;
+			//kenshin注释了不需要的验证
+			/*Gateway gw = (Gateway) fe;
 
 			if (!warnings) {
 				if (gw.getGatewayDirection() == null
@@ -375,7 +376,7 @@ public class BPMN2BatchValidationConstraint extends AbstractModelConstraint {
 								"Invalid Gateway direction for Complex Gateway. It should be 'Converging' or 'Diverging'");
 					}
 				}
-			}
+			}*/
 		}
 		else if (fe instanceof CallActivity) {
 			CallActivity ca = (CallActivity) fe;
@@ -416,12 +417,12 @@ public class BPMN2BatchValidationConstraint extends AbstractModelConstraint {
 			
 			if (needOutgoing) {
 				if ((fn.getOutgoing() == null || fn.getOutgoing().size() < 1)) {
-					return ctx.createFailureStatus("Node has no outgoing connections");
+					return ctx.createFailureStatus("节点没有输出连接");
 				}
 			}
 			if (needIncoming) {
 				if ((fn.getIncoming() == null || fn.getIncoming().size() < 1)) {
-					return ctx.createFailureStatus("Node has no incoming connections");
+					return ctx.createFailureStatus("节点没有进入连接");
 				}
 			}
 		}
