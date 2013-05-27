@@ -79,14 +79,14 @@ import org.osgi.service.prefs.Preferences;
 @SuppressWarnings("restriction")
 public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyChangeListener, IResourceChangeListener {
 	public final static String PROJECT_PREFERENCES_ID = "org.eclipse.bpmn2.modeler";
-	public final static String PREF_TARGET_RUNTIME = "com.founder.fix.fixflow.designer.fixflow";
+	public final static String PREF_TARGET_RUNTIME = "target.runtime";
 	public final static String PREF_TARGET_RUNTIME_LABEL = "Target &Runtime";
 	public final static String PREF_SHOW_ADVANCED_PROPERTIES = "show.advanced.properties";
 	public final static String PREF_SHOW_ADVANCED_PROPERTIES_LABEL = "Show the &Advanced Properties Tab for BPMN2 Elements";
 	public final static String PREF_SHOW_DESCRIPTIONS = "show.descriptions";
 	public final static String PREF_SHOW_DESCRIPTIONS_LABEL = "Show &descriptions in Properties Tab for BPMN2 Elements";
 	public final static String PREF_OVERRIDE_MODEL_ENABLEMENTS = "override.model.enablements";
-	public final static String PREF_DEFAULT_MODEL_ENABLEMENT_PROFILE = "飞鸿";
+	public final static String PREF_DEFAULT_MODEL_ENABLEMENT_PROFILE = "default.model.enablement.profile";
 	public final static String PREF_IS_HORIZONTAL = "is.horizontal";
 	public final static String PREF_IS_HORIZONTAL_LABEL = "&Horizontal layout of Pools, Lanes and diagram elements [isHorizontal]";
 	
@@ -387,8 +387,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 			
 			if (projectPreferences!=null) {
 				overrideModelEnablementProfile = projectPreferences.getBoolean(PREF_OVERRIDE_MODEL_ENABLEMENTS, false);
-				//默认改成飞鸿的palette
-				defaultModelEnablementProfile = "飞鸿";
+				defaultModelEnablementProfile = projectPreferences.get(PREF_DEFAULT_MODEL_ENABLEMENT_PROFILE, "飞鸿");
 			}
 
 			String id = getString(PREF_TARGET_RUNTIME,TargetRuntime.getFirstNonDefaultId());
