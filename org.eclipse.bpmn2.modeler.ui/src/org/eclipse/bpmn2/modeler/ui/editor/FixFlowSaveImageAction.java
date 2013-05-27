@@ -25,8 +25,8 @@ public class FixFlowSaveImageAction extends SaveImageAction {
 		this.saveImageFeature = saveImageFeature;
 		this.context = context;
 		this.graphicsEditor = graphicsEditor;
-		setText("导出图像...");
-		setToolTipText("导出图像...");
+		setText("\u5BFC\u51FA\u56FE\u50CF...");
+		setToolTipText("\u5BFC\u51FA\u56FE\u50CF...");
 		setId(ACTION_ID);
 		setActionDefinitionId(ACTION_DEFINITION_ID);
 	}
