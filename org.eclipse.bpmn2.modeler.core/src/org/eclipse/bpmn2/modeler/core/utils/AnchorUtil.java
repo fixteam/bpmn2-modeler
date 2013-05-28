@@ -224,10 +224,15 @@ public class AnchorUtil {
 		FixPointAnchor newEndAnchor;
 		Point p1;
 		Point p2;
+		
+		EList<Point> bendpoints = ((FreeFormConnection) connection).getBendpoints();
 
 		if (connection==null) {
-			p1 = GraphicsUtil.getShapeCenter(source);
-			p2 = GraphicsUtil.getShapeCenter(target);
+		//choose the correct anchor   --20130528 wy
+		/*	p1 = GraphicsUtil.getShapeCenter(source);
+			p2 = GraphicsUtil.getShapeCenter(target);*/
+			p1 = bendpoints.get(bendpoints.size()-1);
+			p2 = bendpoints.get(0);
 			newStartAnchor = findNearestAnchor(source, p2);
 			newEndAnchor = findNearestAnchor(target,p1);
 			return new Tuple<FixPointAnchor, FixPointAnchor>(newStartAnchor,newEndAnchor);
@@ -257,7 +262,8 @@ public class AnchorUtil {
 			p2.setY(p2.getY() + loc.getY());
 		}
 		else {
-			p2 = GraphicsUtil.getShapeCenter(target);
+			p2 = bendpoints.get(0);
+//			p2 = GraphicsUtil.getShapeCenter(target);
 		}
 		newStartAnchor = findNearestBoundaryAnchor(source, p2).anchor;
 		
@@ -268,7 +274,8 @@ public class AnchorUtil {
 			p1.setY(p1.getY() + loc.getY());
 		}
 		else {
-			p1 = GraphicsUtil.getShapeCenter(source);
+			p1 = bendpoints.get(bendpoints.size()-1);
+//			p1 = GraphicsUtil.getShapeCenter(source);
 		}
 		newEndAnchor = findNearestBoundaryAnchor(target, p1).anchor;
 		
