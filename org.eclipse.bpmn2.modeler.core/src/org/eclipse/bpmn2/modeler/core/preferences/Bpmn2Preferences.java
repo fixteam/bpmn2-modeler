@@ -387,7 +387,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 			
 			if (projectPreferences!=null) {
 				overrideModelEnablementProfile = projectPreferences.getBoolean(PREF_OVERRIDE_MODEL_ENABLEMENTS, false);
-				defaultModelEnablementProfile = projectPreferences.get(PREF_DEFAULT_MODEL_ENABLEMENT_PROFILE, "飞鸿");
+				defaultModelEnablementProfile = projectPreferences.get(PREF_DEFAULT_MODEL_ENABLEMENT_PROFILE, "");
 			}
 
 			String id = getString(PREF_TARGET_RUNTIME,TargetRuntime.getFirstNonDefaultId());
