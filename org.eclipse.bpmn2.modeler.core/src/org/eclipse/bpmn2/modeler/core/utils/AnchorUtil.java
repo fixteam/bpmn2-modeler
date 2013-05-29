@@ -262,8 +262,11 @@ public class AnchorUtil {
 			p2.setY(p2.getY() + loc.getY());
 		}
 		else {
-			p2 = bendpoints.get(0);
-//			p2 = GraphicsUtil.getShapeCenter(target);
+			if(bendpoints.size()>0) {
+				p2 = bendpoints.get(0);
+			} else {
+				p2 = GraphicsUtil.getShapeCenter(target);
+			}
 		}
 		newStartAnchor = findNearestBoundaryAnchor(source, p2).anchor;
 		
@@ -274,8 +277,11 @@ public class AnchorUtil {
 			p1.setY(p1.getY() + loc.getY());
 		}
 		else {
-			p1 = bendpoints.get(bendpoints.size()-1);
-//			p1 = GraphicsUtil.getShapeCenter(source);
+			if(bendpoints.size()>0) {
+				p1 = bendpoints.get(bendpoints.size()-1);
+			} else {
+				p1 = GraphicsUtil.getShapeCenter(source);
+			}
 		}
 		newEndAnchor = findNearestBoundaryAnchor(target, p1).anchor;
 		
