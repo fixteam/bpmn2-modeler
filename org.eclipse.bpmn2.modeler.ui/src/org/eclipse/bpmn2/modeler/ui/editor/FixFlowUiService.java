@@ -1,9 +1,12 @@
 package org.eclipse.bpmn2.modeler.ui.editor;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.imageio.ImageIO;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
@@ -165,7 +168,7 @@ public class FixFlowUiService extends UiService {
 		String filePath = ResourcesPlugin.getWorkspace().getRoot().getProject("fixflow-expand").getLocation().toString() + "/fixflowdiagram/"+language+"/"+processKey+"/";
 		
 		
-		String filename = filePath + shortfilename + ".png";
+		String filename = filePath + shortfilename + ".PNG";
 	
 		
 		
@@ -199,6 +202,22 @@ public class FixFlowUiService extends UiService {
 				operation = getSaveToFileOp(shell, filename, image);
 				
 				new ProgressMonitorDialog(shell).run(false, false, operation);
+				
+				
+				try  
+		        {   
+		            File f = new File(filename);   
+		            f.canRead();   
+		            f.canWrite();   
+		            BufferedImage src = ImageIO.read(f);   
+		            ImageIO.write(src, "PNG", new File(filename));   
+		        }   
+		        catch (Exception e)   
+		        {   
+		            // TODO Auto-generated catch block   
+		            e.printStackTrace();   
+		        }   
+				
 			} catch (Exception e) {
 				String message = "Cannot save image: "; //$NON-NLS-1$
 				MessageDialog.openError(shell, "Cannot save image", message + e.getMessage()); //$NON-NLS-1$
