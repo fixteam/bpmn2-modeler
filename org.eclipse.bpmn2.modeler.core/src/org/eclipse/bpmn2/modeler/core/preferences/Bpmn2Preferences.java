@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 import org.eclipse.bpmn2.Activity;
 import org.eclipse.bpmn2.AdHocSubProcess;
 import org.eclipse.bpmn2.BaseElement;
+import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.CallActivity;
 import org.eclipse.bpmn2.CallChoreography;
 import org.eclipse.bpmn2.CancelEventDefinition;
@@ -58,6 +59,7 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -75,6 +77,9 @@ import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.eclipse.ui.views.navigator.ResourceNavigator;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
+
+import com.founder.fix.bpmn2extensions.style.Style;
+import com.founder.fix.designer.base.util.StyleConfigUtil;
 
 @SuppressWarnings("restriction")
 public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyChangeListener, IResourceChangeListener {
@@ -484,7 +489,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 		}
 	}
 	
-	public ShapeStyle getShapeStyle(Class clazz) {
+/*	public ShapeStyle getShapeStyle(Class clazz) {
 		ShapeStyle ss = shapeStyles.get(clazz);
 		if (ss==null) {
 			String key = getShapeStyleId(clazz);
@@ -515,6 +520,32 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 			shapeStyles.put(clazz, ss);
 		}
 		return ss;
+	}*/
+	
+	/**
+	 * 获取对应的shapeStyle
+	 * 
+	 * @param clazz
+	 * @return
+	 */
+	public ShapeStyle getShapeStyle(Class clazz) {
+		ShapeStyle ss = loadShapeStyles().get(clazz);
+		return ss;
+	}
+	
+	/**
+	 * 返回该主题下所有的shapeStyle
+	 * 
+	 * @return
+	 */
+	public HashMap<Class, ShapeStyle> loadShapeStyles() {
+		Map<Class, ShapeStyle> map = new HashMap<Class, ShapeStyle>();
+		for (Style style : StyleConfigUtil.getCurrentStyle().getStyle()) {
+			EClass eclass = (EClass) Bpmn2Package.eINSTANCE.getEClassifier(style.getObject());
+			ShapeStyle ss = new ShapeStyle(style.getForeground(), style.getBackground(), style.getTextColor(), style.getFont());
+			map.put(eclass.getInstanceClass(), ss);
+		}
+		return (HashMap<Class, ShapeStyle>) map;
 	}
 	
 	public void setShapeStyle(Class clazz, ShapeStyle style) {
