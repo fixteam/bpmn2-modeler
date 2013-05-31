@@ -3,10 +3,12 @@ package org.eclipse.bpmn2.modeler.ui.editor;
 import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.graphiti.features.ISaveImageFeature;
 import org.eclipse.graphiti.features.context.ISaveImageContext;
+import org.eclipse.graphiti.platform.IDiagramBehavior;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.graphiti.ui.internal.Messages;
 import org.eclipse.graphiti.ui.internal.action.SaveImageAction;
 import org.eclipse.graphiti.ui.internal.services.GraphitiUiInternal;
+import org.eclipse.graphiti.ui.platform.IConfigurationProvider;
 
 public class FixFlowSaveImageAction extends SaveImageAction {
 
@@ -19,9 +21,9 @@ public class FixFlowSaveImageAction extends SaveImageAction {
 	public static final String ACTION_ID = "export_diagram_action"; //$NON-NLS-1$
 	
 	public static final String ACTION_DEFINITION_ID = "org.eclipse.graphiti.ui.internal.action.SaveImageAction"; //$NON-NLS-1$
-
-	public FixFlowSaveImageAction(ISaveImageFeature saveImageFeature, ISaveImageContext context, DiagramEditor graphicsEditor) {
-		super(saveImageFeature, context, graphicsEditor);
+	
+	public FixFlowSaveImageAction(IDiagramBehavior diagramBehavior, IConfigurationProvider configurationProvider) {
+		super(diagramBehavior, configurationProvider);
 		this.saveImageFeature = saveImageFeature;
 		this.context = context;
 		this.graphicsEditor = graphicsEditor;
