@@ -13,8 +13,11 @@
 
 package org.eclipse.bpmn2.modeler.ui.adapters.properties;
 
+import java.util.Hashtable;
+
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.ServiceTask;
+import org.eclipse.bpmn2.modeler.core.adapters.FeatureDescriptor;
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
@@ -37,6 +40,24 @@ public class ServiceTaskPropertiesAdapter extends TaskPropertiesAdapter<ServiceT
 		setProperty(feature, UI_IS_MULTI_CHOICE, Boolean.TRUE);
 
 		setFeatureDescriptor(feature, new OperationRefFeatureDescriptor<ServiceTask>(adapterFactory,object,feature));
+
+    	feature = Bpmn2Package.eINSTANCE.getServiceTask_Implementation();
+    	setProperty(feature, UI_IS_MULTI_CHOICE, Boolean.TRUE);
+    	
+    	setFeatureDescriptor(feature,
+			new FeatureDescriptor<ServiceTask>(adapterFactory,object,feature) {
+
+				@Override
+				public Hashtable<String, Object> getChoiceOfValues(Object context) {
+					if (choiceOfValues==null) {
+						choiceOfValues = new Hashtable<String,Object>();
+						choiceOfValues.put("Unspecified", "##unspecified");
+						choiceOfValues.put("Web Service", "##WebService");
+					}
+					return choiceOfValues;
+				}
+			}
+    	);
 	}
 
 }

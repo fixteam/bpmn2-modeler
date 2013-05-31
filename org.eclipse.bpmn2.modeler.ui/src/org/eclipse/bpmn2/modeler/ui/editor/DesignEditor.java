@@ -179,9 +179,11 @@ public class DesignEditor extends BPMN2Editor {
 	}
 	
 	public void selectBpmnDiagram(BPMNDiagram bpmnDiagram) {
-		Diagram diagram = DIUtils.findDiagram(DesignEditor.this, bpmnDiagram);
-		if (diagram != null)
+		Diagram diagram = DIUtils.findDiagram(DesignEditor.this.getDiagramBehavior(), bpmnDiagram);
+		if (diagram != null) {
 			selectPictogramElements(new PictogramElement[] {(PictogramElement)diagram});
+			getDiagramBehavior().refreshContent();
+		}
 	}
 
 	public void showDesignPage(final BPMNDiagram bpmnDiagram) {
@@ -420,7 +422,7 @@ public class DesignEditor extends BPMN2Editor {
 							protected void doExecute() {
 								BPMNPlane plane = bpmnDiagram.getPlane();
 								BaseElement process = plane.getBpmnElement();
-								DIUtils.deleteDiagram(DesignEditor.this, bpmnDiagram);
+								DIUtils.deleteDiagram(DesignEditor.this.getDiagramBehavior(), bpmnDiagram);
 								EcoreUtil.delete(process);
 							}
 						});
@@ -429,28 +431,6 @@ public class DesignEditor extends BPMN2Editor {
 			}
 		};
 		registry.registerAction(action);
-	}
-
-	@Override
-	protected ContextMenuProvider createContextMenuProvider() {
-		return new DiagramEditorContextMenuProvider(getGraphicalViewer(), getActionRegistry(), getDiagramTypeProvider()) {
-			@Override
-			public void buildContextMenu(IMenuManager manager) {
-				super.buildContextMenu(manager);
-				IAction action = getActionRegistry().getAction("show.or.hide.source.view");
-				action.setText(action.getText());
-				manager.add(action);
-
-				int pageIndex = multipageEditor.getActivePage();
-				int lastPage = multipageEditor.getDesignPageCount();
-				if (pageIndex > 0 && pageIndex < lastPage) {
-					action = getActionRegistry().getAction("delete.page");
-					action.setText(action.getText());
-					action.setEnabled(action.isEnabled());
-					manager.add(action);
-				}
-			}
-		};
 	}
 
 	public class AddRemoveDiagramListener implements ResourceSetListener {

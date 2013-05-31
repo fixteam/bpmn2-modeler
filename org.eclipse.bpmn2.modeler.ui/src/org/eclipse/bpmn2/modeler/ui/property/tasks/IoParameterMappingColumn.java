@@ -43,6 +43,9 @@ public class IoParameterMappingColumn extends TableColumn {
 
 	@Override
 	public String getHeaderText() {
+		if (headerText!=null)
+			return headerText;
+		
 		return ModelUtil.getLabel(
 				Bpmn2Package.eINSTANCE.getDataAssociation(),
 				feature.getName().startsWith("dataInput") ?

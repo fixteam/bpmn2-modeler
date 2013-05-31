@@ -79,7 +79,7 @@ import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.emf.transaction.util.TransactionUtil;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
-import org.eclipse.graphiti.platform.IDiagramEditor;
+import org.eclipse.graphiti.platform.IDiagramContainer;
 import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -900,7 +900,7 @@ public class ModelUtil {
 		return wrapper instanceof DynamicEObjectImpl;
 	}
 	
-	public static boolean isElementSelected(IDiagramEditor editor, PictogramElement element) {
+	public static boolean isElementSelected(IDiagramContainer editor, PictogramElement element) {
 		for (PictogramElement search : editor.getSelectedPictogramElements()) {
 			if (search.equals(element)) {
 				return true;

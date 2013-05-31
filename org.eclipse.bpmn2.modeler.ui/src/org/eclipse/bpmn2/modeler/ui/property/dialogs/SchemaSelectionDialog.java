@@ -133,7 +133,8 @@ public class SchemaSelectionDialog extends SelectionStatusDialog {
 						domain.getCommandStack().execute(new RecordingCommand(domain) {
 							@Override
 							protected void doExecute() {
-								Import imp = ImportUtil.addImport(bpmn2Editor.getModelHandler().getResource(), result[0]);
+								ImportUtil importer = new ImportUtil();
+								Import imp = importer.addImport(bpmn2Editor.getModelHandler().getResource(), result[0]);
 								if (imp!=null) {
 									int index = importList.getItemCount();
 									importList.add(imp.getLocation());

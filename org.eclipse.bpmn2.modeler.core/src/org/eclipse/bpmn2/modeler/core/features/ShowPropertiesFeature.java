@@ -20,6 +20,7 @@ import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.ICustomContext;
 import org.eclipse.graphiti.features.custom.AbstractCustomFeature;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
+import org.eclipse.graphiti.platform.IDiagramContainer;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 
 public class ShowPropertiesFeature extends AbstractCustomFeature {
@@ -56,12 +57,12 @@ public class ShowPropertiesFeature extends AbstractCustomFeature {
 	@Override
 	public void execute(ICustomContext context) {
 		PictogramElement[] pes = context.getPictogramElements();
-		DiagramEditor ed = (DiagramEditor)getDiagramEditor();
-		ed.setPictogramElementForSelection(pes[0]);
-		ed.refresh();
+		DiagramEditor editor = (DiagramEditor)getDiagramBehavior().getDiagramContainer();
+		editor.setPictogramElementForSelection(pes[0]);
+		getDiagramBehavior().refresh();
 		EObject businessObject = BusinessObjectUtil.getBusinessObjectForPictogramElement(pes[0]);
 		ObjectEditingDialog dialog =
-				new ObjectEditingDialog(ed, businessObject);
+				new ObjectEditingDialog(editor, businessObject);
 		dialog.open();
 	}
 

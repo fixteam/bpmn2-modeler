@@ -52,16 +52,13 @@ public class JbpmDefinitionsPropertyComposite extends DefinitionsPropertyComposi
 			propertiesProvider = new AbstractPropertiesProvider(object) {
 				String[] properties = new String[] {
 						"name",
-						"targetNamespace",
-						"typeLanguage",
-						"expressionLanguage",
-						"rootElements#ItemDefinition",
 						"imports",
+						"rootElements#ItemDefinition",
 						"rootElements#Resource",
 						"rootElements#Message",
 						"rootElements#Error",
-						"rootElements#Escalation",
 						"rootElements#Signal",
+						"rootElements#Escalation",
 				};
 				
 				@Override

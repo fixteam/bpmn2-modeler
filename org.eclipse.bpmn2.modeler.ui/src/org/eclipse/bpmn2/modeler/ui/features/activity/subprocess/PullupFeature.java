@@ -139,11 +139,11 @@ public class PullupFeature extends AbstractCustomFeature {
 		// for the DI elements in the existing BPMNDiagram.
 		BPMNDiagram newBpmnDiagram = DIUtils.getBPMNDiagram(bpmnShape);
 		BPMNPlane newPlane = newBpmnDiagram.getPlane();
-		Diagram newDiagram = DIUtils.findDiagram(getDiagramEditor(), newBpmnDiagram);
+		Diagram newDiagram = DIUtils.findDiagram(getDiagramBehavior(), newBpmnDiagram);
 		
 		BPMNDiagram oldBpmnDiagram = DIUtils.findBPMNDiagram(container);
 		BPMNPlane oldPlane = oldBpmnDiagram.getPlane();
-		Diagram oldDiagram = DIUtils.findDiagram(getDiagramEditor(), oldBpmnDiagram);
+		Diagram oldDiagram = DIUtils.findDiagram(getDiagramBehavior(), oldBpmnDiagram);
 		
 		// copy the elements into the same plane as the sub process
 		while (oldPlane.getPlaneElement().size()>0) {
@@ -172,7 +172,7 @@ public class PullupFeature extends AbstractCustomFeature {
 		newDiagram.getStyles().addAll(oldDiagram.getStyles());
 		
 		// get rid of the old BPMNDiagram
-		DIUtils.deleteDiagram(getDiagramEditor(), oldBpmnDiagram);
+		DIUtils.deleteDiagram(getDiagramBehavior(), oldBpmnDiagram);
 		
 		// expand the sub process
 		if (AbstractExpandableActivityFeatureContainer.isExpandableElement(container)) {

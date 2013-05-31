@@ -43,14 +43,14 @@ public class JbpmIoParametersDetailComposite extends IoParametersDetailComposite
 			if (isModelObjectEnabled(ioSpecification.eClass(),dataInputsFeature)) {
 				dataInputsTable = new JbpmIoParametersListComposite(this, be, ioSpecification, dataInputsFeature);
 				dataInputsTable.bindList(ioSpecification, dataInputsFeature);
-				dataInputsTable.setTitle("Input Parameters");
+				dataInputsTable.setTitle("Input Parameter Mapping");
 			}
 			
 			EStructuralFeature dataOutputsFeature = getFeature(ioSpecification, "dataOutputs");
 			if (isModelObjectEnabled(ioSpecification.eClass(),dataOutputsFeature)) {
 				dataOutputsTable = new JbpmIoParametersListComposite(this, be, ioSpecification, dataOutputsFeature);
 				dataOutputsTable.bindList(ioSpecification, dataOutputsFeature);
-				dataOutputsTable.setTitle("Output Parameters");
+				dataOutputsTable.setTitle("Output Parameter Mapping");
 			}
 		}
 	}	

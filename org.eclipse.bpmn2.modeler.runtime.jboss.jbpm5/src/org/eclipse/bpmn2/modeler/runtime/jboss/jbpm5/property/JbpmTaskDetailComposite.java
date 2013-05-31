@@ -241,7 +241,7 @@ public class JbpmTaskDetailComposite extends JbpmActivityDetailComposite {
 	public class ActorsListComposite extends DefaultListComposite {
 
 		public ActorsListComposite(Composite parent) {
-			super(parent, AbstractListComposite.COMPACT_STYLE);
+			super(parent, AbstractListComposite.DEFAULT_STYLE);
 		}
 		
 		public EClass getListItemClass(EObject object, EStructuralFeature feature) {

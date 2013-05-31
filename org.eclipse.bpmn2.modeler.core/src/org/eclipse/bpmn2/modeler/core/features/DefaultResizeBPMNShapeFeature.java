@@ -41,12 +41,6 @@ public class DefaultResizeBPMNShapeFeature extends DefaultResizeShapeFeature {
 		
 		if (shape!=null) {
 			AnchorUtil.relocateFixPointAnchors(shape, context.getWidth(), context.getHeight());
-			Object[] node = getAllBusinessObjectsForPictogramElement(context.getShape());
-			for (Object object : node) {
-				if (object instanceof BPMNShape || object instanceof BPMNEdge) {
-					AnchorUtil.reConnect((DiagramElement)object, getDiagram());
-				}
-			}
 		}
 		DIUtils.updateDIShape(context.getPictogramElement());
 		

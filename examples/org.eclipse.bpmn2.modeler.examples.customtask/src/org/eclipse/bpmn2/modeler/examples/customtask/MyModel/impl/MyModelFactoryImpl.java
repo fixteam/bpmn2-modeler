@@ -27,7 +27,7 @@ public class MyModelFactoryImpl extends EFactoryImpl implements MyModelFactory {
 	 */
 	public static MyModelFactory init() {
 		try {
-			MyModelFactory theMyModelFactory = (MyModelFactory)EPackage.Registry.INSTANCE.getEFactory("http://org.eclipse.bpmn2.modeler.examples.customtask"); 
+			MyModelFactory theMyModelFactory = (MyModelFactory)EPackage.Registry.INSTANCE.getEFactory(MyModelPackage.eNS_URI);
 			if (theMyModelFactory != null) {
 				return theMyModelFactory;
 			}

@@ -63,12 +63,6 @@ public class AddBendpointFeature extends DefaultAddBendpointFeature {
 			BPMNEdge edge = DIUtils.findBPMNEdge(element);
 			int index = context.getBendpointIndex() + 1;
 			edge.getWaypoint().add(index, p);
-			if (index == 1) {
-				AnchorUtil.reConnect((DiagramElement) edge.getSourceElement(), getDiagram());
-			} else if (index == connection.getBendpoints().size()) {
-				AnchorUtil.reConnect((DiagramElement) edge.getTargetElement(), getDiagram());
-			}
-		
 			BendpointConnectionRouter.setAddedBendpoint(connection, context.getBendpointIndex());
 			ConnectionFeatureContainer.updateConnection(getFeatureProvider(), connection);
 			

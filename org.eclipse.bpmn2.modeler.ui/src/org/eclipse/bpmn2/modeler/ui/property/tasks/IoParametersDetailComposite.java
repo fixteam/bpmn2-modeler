@@ -86,7 +86,7 @@ public class IoParametersDetailComposite extends AbstractDetailComposite {
 			if (isModelObjectEnabled(ioSpecification.eClass(),dataInputsFeature)) {
 				dataInputsTable = new IoParametersListComposite(this, be, ioSpecification, dataInputsFeature);
 				dataInputsTable.bindList(ioSpecification, dataInputsFeature);
-				dataInputsTable.setTitle("Input Parameters");
+				dataInputsTable.setTitle("Input Parameter Mapping");
 			}
 
 			EStructuralFeature outputSetsFeature = getFeature(ioSpecification, "outputSets");
@@ -100,7 +100,7 @@ public class IoParametersDetailComposite extends AbstractDetailComposite {
 			if (isModelObjectEnabled(ioSpecification.eClass(),dataOutputsFeature)) {
 				dataOutputsTable = new IoParametersListComposite(this, be, ioSpecification, dataOutputsFeature);
 				dataOutputsTable.bindList(ioSpecification, dataOutputsFeature);
-				dataOutputsTable.setTitle("Output Parameters");
+				dataOutputsTable.setTitle("Output Parameter Mapping");
 			}
 		}
 		else {

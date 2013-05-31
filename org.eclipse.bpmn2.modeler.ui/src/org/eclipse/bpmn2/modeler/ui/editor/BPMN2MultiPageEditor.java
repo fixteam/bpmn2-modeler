@@ -199,29 +199,29 @@ public class BPMN2MultiPageEditor extends MultiPageEditorPart implements IGotoMa
 	
 	protected void addDesignPage(final BPMNDiagram bpmnDiagram) {
 		createDesignEditor();
-			Display.getDefault().asyncExec(new Runnable() {
-				public void run() {
-					try {
-			
-						int pageIndex = tabFolder.getItemCount();
-						if (sourceViewer!=null)
-							--pageIndex;
-						Bpmn2DiagramEditorInput input = (Bpmn2DiagramEditorInput)designEditor.getEditorInput();
-						input.setBpmnDiagram(bpmnDiagram);
-						addPage(pageIndex, designEditor, input);
-						CTabItem oldItem = tabFolder.getItem(pageIndex-1);
-						CTabItem newItem = tabFolder.getItem(pageIndex);
-						newItem.setControl( oldItem.getControl() );
-						setPageText(pageIndex,bpmnDiagram.getName());
-			
-						setActivePage(pageIndex);
-						updateTabs();
-					}
-					catch (Exception e) {
-						e.printStackTrace();
-					}
+		Display.getDefault().asyncExec(new Runnable() {
+			public void run() {
+				try {
+		
+					int pageIndex = tabFolder.getItemCount();
+					if (sourceViewer!=null)
+						--pageIndex;
+					Bpmn2DiagramEditorInput input = (Bpmn2DiagramEditorInput)designEditor.getEditorInput();
+					input.setBpmnDiagram(bpmnDiagram);
+					addPage(pageIndex, designEditor, input);
+					CTabItem oldItem = tabFolder.getItem(pageIndex-1);
+					CTabItem newItem = tabFolder.getItem(pageIndex);
+					newItem.setControl( oldItem.getControl() );
+					setPageText(pageIndex,bpmnDiagram.getName());
+		
+					setActivePage(pageIndex);
+					updateTabs();
 				}
-			});
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
 	}
 	
 	public void showDesignPage(final BPMNDiagram bpmnDiagram) {
@@ -397,7 +397,9 @@ public class BPMN2MultiPageEditor extends MultiPageEditorPart implements IGotoMa
 		 * It helps to see whether a particular editor allows 'save as' feature 
 		 */
 		IEditorPart activeEditor = getActiveEditor();
-		return activeEditor.isSaveAsAllowed();
+		if (activeEditor!=null)
+			return activeEditor.isSaveAsAllowed();
+		return false;
 	}
 
 	@Override

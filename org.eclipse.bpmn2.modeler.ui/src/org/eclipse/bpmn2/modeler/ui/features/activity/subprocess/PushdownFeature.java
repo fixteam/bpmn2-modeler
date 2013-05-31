@@ -138,13 +138,13 @@ public class PushdownFeature extends AbstractCustomFeature {
 		Definitions definitions = ModelUtil.getDefinitions(container);
 		
 		BPMNDiagram oldBpmnDiagram = DIUtils.getBPMNDiagram(bpmnShape);
-		Diagram oldDiagram = DIUtils.findDiagram(getDiagramEditor(), oldBpmnDiagram);
+		Diagram oldDiagram = DIUtils.findDiagram(getDiagramBehavior(), oldBpmnDiagram);
 		
 		// the contents of this expandable element is in the flowElements list 
         BPMNDiagram newBpmnDiagram = DIUtils.createBPMNDiagram(definitions, container);
 		BPMNPlane newPlane = newBpmnDiagram.getPlane();
 
-		Diagram newDiagram = DIUtils.getOrCreateDiagram(getDiagramEditor(), newBpmnDiagram);
+		Diagram newDiagram = DIUtils.getOrCreateDiagram(getDiagramBehavior(), newBpmnDiagram);
 		ILocation loc = Graphiti.getLayoutService().getLocationRelativeToDiagram(shape);
 		
 		for (FlowElement fe : container.getFlowElements()) {

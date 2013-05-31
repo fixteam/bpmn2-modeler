@@ -245,8 +245,7 @@ public class BPMN2BatchValidationConstraint extends AbstractModelConstraint {
 							return ctx.createFailureStatus("Signal Event has no signal definition");
 						}
 					} else if (ed instanceof ErrorEventDefinition) {
-						if (((ErrorEventDefinition) ed).getErrorRef() == null
-								|| ((ErrorEventDefinition) ed).getErrorRef().getErrorCode() == null) {
+						if (((ErrorEventDefinition) ed).getErrorRef() == null) {
 							return ctx.createFailureStatus("Error Event has no error definition");
 						}
 					} else if (ed instanceof ConditionalEventDefinition) {
@@ -294,8 +293,7 @@ public class BPMN2BatchValidationConstraint extends AbstractModelConstraint {
 							return ctx.createFailureStatus("Signal Event has no signal definition");
 						}
 					} else if (ed instanceof ErrorEventDefinition) {
-						if (((ErrorEventDefinition) ed).getErrorRef() == null
-								|| ((ErrorEventDefinition) ed).getErrorRef().getErrorCode() == null) {
+						if (((ErrorEventDefinition) ed).getErrorRef() == null) {
 							return ctx.createFailureStatus("Error Event has no error definition");
 						}
 					} else if (ed instanceof ConditionalEventDefinition) {

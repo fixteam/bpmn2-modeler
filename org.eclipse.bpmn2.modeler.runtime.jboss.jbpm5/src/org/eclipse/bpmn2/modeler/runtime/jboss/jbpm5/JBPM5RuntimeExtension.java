@@ -28,6 +28,7 @@ import org.eclipse.bpmn2.DataObject;
 import org.eclipse.bpmn2.DataOutput;
 import org.eclipse.bpmn2.Event;
 import org.eclipse.bpmn2.Gateway;
+import org.eclipse.bpmn2.Interface;
 import org.eclipse.bpmn2.ItemDefinition;
 import org.eclipse.bpmn2.ManualTask;
 import org.eclipse.bpmn2.Message;
@@ -57,6 +58,8 @@ import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmDefinitionsPro
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmDefinitionsPropertySection.JbpmMessageListComposite;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmGatewayDetailComposite;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmImportTypeDetailComposite;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmInterfaceDetailComposite;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmItemDefinitionDetailComposite;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmItemDefinitionListComposite;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmManualTaskDetailComposite;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmMultiInstanceDetailComposite;
@@ -69,6 +72,8 @@ import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WIDException;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WIDHandler;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WorkItemDefinition;
 import org.eclipse.bpmn2.modeler.ui.DefaultBpmn2RuntimeExtension.RootElementParser;
+import org.eclipse.bpmn2.modeler.ui.property.data.InterfaceDetailComposite;
+import org.eclipse.bpmn2.modeler.ui.property.diagrams.ItemDefinitionDetailComposite;
 import org.eclipse.bpmn2.modeler.ui.wizards.FileService;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -179,6 +184,8 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 	        PropertiesCompositeFactory.register(SendTask.class, JbpmSendTaskDetailComposite.class);
 	        PropertiesCompositeFactory.register(SequenceFlow.class, JbpmSequenceFlowDetailComposite.class);
 	        PropertiesCompositeFactory.register(Task.class, JbpmTaskDetailComposite.class);
+			PropertiesCompositeFactory.register(ItemDefinition.class, JbpmItemDefinitionDetailComposite.class);
+			PropertiesCompositeFactory.register(Interface.class, JbpmInterfaceDetailComposite.class);
 	        initialized = true;
 		}
 		

@@ -10,6 +10,7 @@ import org.eclipse.graphiti.mm.algorithms.Image;
 import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.ui.internal.GraphitiUIPlugin;
 import org.eclipse.graphiti.ui.platform.AbstractImageProvider;
+import org.eclipse.graphiti.ui.services.GraphitiUi;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 
@@ -26,6 +27,7 @@ import org.eclipse.jface.resource.ImageRegistry;
 public class CustomTaskImageProvider {
 	
 	public final static String ICONS_FOLDER = "icons/";
+	public final static String providerId = GraphitiUi.getExtensionManager().getDiagramTypeProviderId("BPMN2");
 
 	// Sneaky tip: The values of this enum correspond to the subfolder names in "icons"
 	public enum IconSize {
@@ -101,7 +103,7 @@ public class CustomTaskImageProvider {
 				String filename = ctd.getImagePath(icon,size);
 				URL url = ctd.getFeatureContainer().getClass().getClassLoader().getResource(filename);
 				ImageDescriptor descriptor =  ImageDescriptor.createFromURL(url);
-				imageRegistry.put(imageId, descriptor);
+				imageRegistry.put(providerId + "||" + imageId, descriptor);
 			}
 		}
 	}
@@ -142,7 +144,7 @@ public class CustomTaskImageProvider {
 				String filename = getImagePath(rt,icon,size);
 				URL url = rt.getRuntimeExtension().getClass().getClassLoader().getResource(filename);
 				ImageDescriptor descriptor =  ImageDescriptor.createFromURL(url);
-				imageRegistry.put(imageId, descriptor);
+				imageRegistry.put(providerId + "||" + imageId, descriptor);
 			}
 		}
 	}

@@ -47,6 +47,7 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.ToolBar;
@@ -87,7 +88,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 	protected EStructuralFeature feature;
 	
 	// widgets
-	SashForm sashForm;
+	protected SashForm sashForm;
 	protected Section tableSection;
 	protected ToolBarManager tableToolBarManager;
 	protected Section detailSection;
@@ -499,7 +500,14 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 			if (editAction!=null)
 				editAction.setChecked(enable);
 
-			sashForm.setWeights(new int[] { 50, 50 });
+			sashForm.setWeights(new int[] { 40, 60 });
+			Control parent = getParent();
+			while (parent!=null) {
+				if (parent instanceof AbstractListComposite) {
+					((AbstractListComposite)parent).sashForm.setWeights(new int[] { 30, 70 });
+				}
+				parent = parent.getParent();
+			}
 
 			final EList<EObject> list = (EList<EObject>)businessObject.eGet(feature);
 			tableViewer.setInput(list);
@@ -600,7 +608,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 						@Override
 						protected void doExecute() {
                             final EList<EObject> list = (EList<EObject>)businessObject.eGet(feature);
-							int i = list.indexOf(((IStructuredSelection)tableViewer.getSelection()).getFirstElement());
+                            int i = tableViewer.getTable().getSelectionIndex();
 							Object item;
 							if (removeIsDelete)
 								item = deleteListItem(businessObject,feature,i);
@@ -639,7 +647,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 						@Override
 						protected void doExecute() {
                             final EList<EObject> list = (EList<EObject>)businessObject.eGet(feature);
-                            int i = list.indexOf(((IStructuredSelection)tableViewer.getSelection()).getFirstElement());
+                            int i = tableViewer.getTable().getSelectionIndex();
 							Object item = moveListItemUp(businessObject,feature,i);
 							tableViewer.setInput(list);
 							tableViewer.setSelection(new StructuredSelection(item));
@@ -659,7 +667,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 						@Override
 						protected void doExecute() {
                             final EList<EObject> list = (EList<EObject>)businessObject.eGet(feature);
-                            int i = list.indexOf(((IStructuredSelection)tableViewer.getSelection()).getFirstElement());
+                            int i = tableViewer.getTable().getSelectionIndex();
 							Object item = moveListItemDown(businessObject,feature,i);
 							tableViewer.setInput(list);
 							tableViewer.setSelection(new StructuredSelection(item));

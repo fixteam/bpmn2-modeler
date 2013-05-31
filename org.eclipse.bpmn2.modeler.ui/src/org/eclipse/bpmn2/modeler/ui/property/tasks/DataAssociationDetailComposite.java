@@ -53,6 +53,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.forms.widgets.Section;
 
 /**
@@ -94,6 +95,9 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 	protected DataAssociation association;
 	protected boolean isInput;
 	protected boolean updatingWidgets;
+	
+	protected Group fromGroup;
+	protected Group toGroup;
 	protected Button mapPropertyButton;
 	protected Button mapExpressionButton;
 	protected Button mapTransformationButton;
@@ -170,7 +174,19 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 			return;
 		}
 		parameter = (ItemAwareElement)be;
-		
+
+		fromGroup = new Group(this, SWT.NONE);
+		fromGroup.setText("From");
+		fromGroup.setLayout(new GridLayout(3,false));
+		fromGroup.setLayoutData(new GridData(SWT.FILL,SWT.TOP,true,false,3,1));
+
+		toGroup = new Group(this, SWT.NONE);
+		toGroup.setText("To");
+		toGroup.setLayout(new GridLayout(3,false));
+		toGroup.setLayoutData(new GridData(SWT.FILL,SWT.TOP,true,false,3,1));
+
+		final Group group = isInput ? toGroup : fromGroup;
+
 		Activity activity = null;
 		List<? extends DataAssociation> associations = null;
 		EObject container = ModelUtil.getContainer(be);
@@ -187,7 +203,7 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 				super.createBindings(be);
 				return;
 			}
-			DataInputOutputDetailComposite details = createDataInputOutputDetailComposite(be, this,SWT.NONE);
+			DataInputOutputDetailComposite details = createDataInputOutputDetailComposite(be, group,SWT.NONE);
 			details.setBusinessObject(be);
 			sectionTitle = (isInput ? "Input" : "Output") +
 				" Parameter Mapping Details";
@@ -200,7 +216,7 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 				association.setTargetRef((ItemAwareElement) be);
 				InsertionAdapter.add(throwEvent, PACKAGE.getThrowEvent_DataInputAssociation(), association);
 			}
-			DataInputOutputDetailComposite details = createDataInputOutputDetailComposite(be, this,SWT.NONE);
+			DataInputOutputDetailComposite details = createDataInputOutputDetailComposite(be, group,SWT.NONE);
 			details.setBusinessObject(be);
 			sectionTitle = "Data Input Mapping Details";
 		}
@@ -212,7 +228,7 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 				association.getSourceRef().add((ItemAwareElement) be);
 				InsertionAdapter.add(catchEvent, PACKAGE.getCatchEvent_DataOutputAssociation(), association);
 			}
-			DataInputOutputDetailComposite details = createDataInputOutputDetailComposite(be, this,SWT.NONE);
+			DataInputOutputDetailComposite details = createDataInputOutputDetailComposite(be, group,SWT.NONE);
 			details.setBusinessObject(be);
 			sectionTitle = "Data Output Mapping Details";
 		}
@@ -425,8 +441,9 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 			}
 		}
 
+		Group group = !isInput ? toGroup : fromGroup;
 		if (mapPropertyButton==null) {
-			mapPropertyButton = toolkit.createButton(this, "Map to a Variable", SWT.RADIO);
+			mapPropertyButton = toolkit.createButton(group, "Variable", SWT.RADIO);
 			mapPropertyButton.setLayoutData(new GridData(SWT.LEFT,SWT.TOP,true,false,3,1));
 
 			mapPropertyButton.addSelectionListener(new SelectionAdapter() {
@@ -445,7 +462,7 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 		}
 		
 		if (mapTransformationButton==null) {
-			mapTransformationButton = toolkit.createButton(this, "Map a Transformation", SWT.RADIO);
+			mapTransformationButton = toolkit.createButton(group, "Transformation", SWT.RADIO);
 			mapTransformationButton.setLayoutData(new GridData(SWT.LEFT,SWT.TOP,true,false,3,1));
 			
 			mapTransformationButton.addSelectionListener(new SelectionAdapter() {
@@ -464,7 +481,7 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 		}
 		
 		if (mapExpressionButton==null) {
-			mapExpressionButton = toolkit.createButton(this, "Map an Expression", SWT.RADIO);
+			mapExpressionButton = toolkit.createButton(group, "Expression", SWT.RADIO);
 			mapExpressionButton.setLayoutData(new GridData(SWT.LEFT,SWT.TOP,true,false,3,1));
 			
 			mapExpressionButton.addSelectionListener(new SelectionAdapter() {
@@ -483,7 +500,7 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 		}
 
 		if (advancedMappingButton==null) {
-			advancedMappingButton = toolkit.createButton(this, "Advanced Mapping", SWT.RADIO);
+			advancedMappingButton = toolkit.createButton(group, "Advanced Mapping", SWT.RADIO);
 			advancedMappingButton.setLayoutData(new GridData(SWT.LEFT,SWT.TOP,true,false,3,1));
 			
 			advancedMappingButton.addSelectionListener(new SelectionAdapter() {
@@ -506,10 +523,11 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 	}
 	
 	private void showPropertyWidgets(boolean show) {
+		final Group group = !isInput ? toGroup : fromGroup;
 		if (show != propertyWidgetsShowing) {
 			if (show) {
 				if (propertyComposite==null) {
-					propertyComposite = toolkit.createComposite(this, SWT.NONE);
+					propertyComposite = toolkit.createComposite(group, SWT.NONE);
 					GridLayout layout = new GridLayout(3,false);
 					layout.verticalSpacing = 0;
 					layout.marginHeight = 0;
@@ -597,10 +615,11 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 	}
 
 	private void showTransformationWidgets(boolean show) {
+		Group group = !isInput ? toGroup : fromGroup;
 		if (show != transformationWidgetsShowing) {
 			if (show) {
 				if (transformationComposite==null) {
-					transformationComposite = toolkit.createComposite(this, SWT.NONE);
+					transformationComposite = toolkit.createComposite(group, SWT.NONE);
 					transformationComposite.setLayout(new GridLayout(1,false));
 					transformationComposite.setLayoutData(new GridData(SWT.FILL,SWT.TOP,true,true,3,1));
 				}
@@ -644,10 +663,11 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 	}
 
 	private void showExpressionWidgets(boolean show) {
+		Group group = !isInput ? toGroup : fromGroup;
 		if (show != expressionWidgetsShowing) {
 			if (show) {
 				if (expressionComposite==null) {
-					expressionComposite = toolkit.createComposite(this, SWT.NONE);
+					expressionComposite = toolkit.createComposite(group, SWT.NONE);
 					expressionComposite.setLayout(new GridLayout(1,false));
 					expressionComposite.setLayoutData(new GridData(SWT.FILL,SWT.TOP,true,true,3,1));
 				}
@@ -714,10 +734,11 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 	}
 
 	private void showAdvancedMappingWidgets(boolean show) {
+		Group group = !isInput ? toGroup : fromGroup;
 		if (show != advancedMappingWidgetsShowing) {
 			if (show) {
 				if (transformationComposite==null) {
-					transformationComposite = toolkit.createComposite(this, SWT.NONE);
+					transformationComposite = toolkit.createComposite(group, SWT.NONE);
 					transformationComposite.setLayout(new GridLayout(1,false));
 					transformationComposite.setLayoutData(new GridData(SWT.FILL,SWT.TOP,true,true,3,1));
 				}

@@ -21,6 +21,7 @@ import org.eclipse.graphiti.features.context.impl.DeleteContext;
 import org.eclipse.graphiti.features.impl.AbstractAddShapeFeature;
 import org.eclipse.graphiti.mm.algorithms.Polyline;
 import org.eclipse.graphiti.mm.algorithms.RoundedRectangle;
+import org.eclipse.graphiti.mm.algorithms.styles.Point;
 import org.eclipse.graphiti.mm.pictograms.Anchor;
 import org.eclipse.graphiti.mm.pictograms.Connection;
 import org.eclipse.graphiti.mm.pictograms.ConnectionDecorator;
@@ -145,15 +146,104 @@ public class RoutingNet extends ArrayList<RoutingLane> {
 			@Override
 			public int compare(List<RoutingLane> arg0, List<RoutingLane> arg1) {
 				int i;
+				double m0 = merit(arg0);
+				double m1 = merit(arg1);
+				if (m0<m1)
+					i = 1;
+				else if (m0>m1)
+					i = -1;
+				else
+					i = 0;
+				if (true)
+					return i;
+				
 				i = getManhattanDistance(arg0) - getManhattanDistance(arg1);
-				if (i==0)
-					i = arg0.size() - arg1.size();
+				if (i==0) {
+					// find the lane with the easiest passage
+					int arg0min = Integer.MAX_VALUE;
+					int arg1min = Integer.MAX_VALUE;
+					if (isRotated) {
+						for (RoutingLane a : arg0) {
+							int d = a.getHeight();
+							if (d<arg0min)
+								arg0min = d;
+						}
+						for (RoutingLane a : arg1) {
+							int d = a.getHeight();
+							if (d<arg1min)
+								arg1min = d;
+						}
+					}
+					else {
+						for (RoutingLane a : arg0) {
+							int d = a.getWidth();
+							if (d<arg0min)
+								arg0min = d;
+						}
+						for (RoutingLane a : arg1) {
+							int d = a.getWidth();
+							if (d<arg1min)
+								arg1min = d;
+						}
+					}
+					i = arg1min - arg0min;
+				}
 				return i;
 			}
 		});
 		return allSolutions;
 	}
 	
+	public double merit(List<RoutingLane> list) {
+		ILocation sourceLoc = Graphiti.getPeService().getLocationRelativeToDiagram(source);
+		IDimension sourceSize = GraphicsUtil.calculateSize(source);
+		ILocation targetLoc = Graphiti.getPeService().getLocationRelativeToDiagram(target);
+		IDimension targetSize = GraphicsUtil.calculateSize(target);
+		Point p1 = GraphicsUtil.getShapeCenter(source);
+		Point p2 = GraphicsUtil.getShapeCenter(target);
+		if (isRotated) {
+			if (sourceLoc.getY() + sourceSize.getHeight() < targetLoc.getY()) {
+				p1.setY(sourceLoc.getY() + sourceSize.getHeight());
+				p2.setY(targetLoc.getY() );
+			}
+			else if (targetLoc.getY() + targetSize.getHeight() < sourceLoc.getY()) {
+				p1.setY(sourceLoc.getY());
+				p2.setY(targetLoc.getY() + targetSize.getHeight());
+			}
+		}
+		else {
+			if (sourceLoc.getX() + sourceSize.getWidth() < targetLoc.getX()) {
+				p1.setX(sourceLoc.getX() + sourceSize.getWidth());
+				p2.setX(targetLoc.getX() );
+			}
+			else if (targetLoc.getX() + targetSize.getWidth() < sourceLoc.getX()) {
+				p1.setX(sourceLoc.getX());
+				p2.setX(targetLoc.getX() + targetSize.getWidth());
+			}
+		}
+		int i = 0;
+		double length = GraphicsUtil.getLength(p1, p2);
+		for (RoutingLane rl : list) {
+			if ( GraphicsUtil.RectangleIntersectsLine.intersectsLine(
+					p1.getX(), p1.getY(), p2.getX(), p2.getY(),
+					rl.rect.x, rl.rect.y, rl.rect.width, rl.rect.height)) {
+				i += length;
+			}
+			else 
+			{
+				Point c = GraphicsUtil.createPoint(rl.rect.getCenter().x, rl.rect.getCenter().y);
+				double d = pointToLineDistance(p1, p2, c);
+				i += length / d;
+			}
+		}
+		return (double) i / (double)(length * list.size());
+	}
+
+	public double pointToLineDistance(Point p1, Point p2, Point p) {
+		double normalLength = Math.sqrt((p2.getX() - p1.getX()) * (p2.getX() - p1.getX()) + (p2.getY() - p1.getY()) * (p2.getY() - p1.getY()));
+		return Math.abs((p.getX() - p1.getX()) * (p2.getY() - p1.getY()) - (p.getY() - p1.getY()) * (p2.getX() - p1.getX())) / normalLength;
+	}
+
 	public void pop() {
 		solutionStack.pop();
 	}
@@ -221,6 +311,7 @@ public class RoutingNet extends ArrayList<RoutingLane> {
 		else {
 			if (dx>a0.getWidth())
 				dist += a0.getWidth();
+			double dd = (double) a0.getWidth() / (double) a0.getHeight();
 			dist += dy;
 			for (int i=1; i<lanes.size(); ++i) {
 				a1 = lanes.get(i);
@@ -261,13 +352,13 @@ public class RoutingNet extends ArrayList<RoutingLane> {
 	public boolean solutionFound() {
 		
 		if (!allSolutions.contains(solutionStack)) {
-			int d = getManhattanDistance(solutionStack);
-			if (d - 0.5 * minDist < minDist) {
-				if (d < minDist)
-					minDist = d;
+//			int d = getManhattanDistance(solutionStack);
+//			if (d - 0.5 * minDist < minDist) {
+//				if (d < minDist)
+//					minDist = d;
 				List<RoutingLane> solution = new ArrayList<RoutingLane>(solutionStack);
 				allSolutions.add(solution);
-			}
+//			}
 		}
 		return true;
 	}
@@ -358,8 +449,12 @@ public class RoutingNet extends ArrayList<RoutingLane> {
 			
 			Rectangle bounds = getBounds(source);
 			if (lane==null) {
-				background = new ColorConstant(0,255,255);
-				transparency = 0.0;
+				Object bg = context.getProperty("background");
+				if (bg instanceof ColorConstant)
+					background = (ColorConstant)bg;
+				else
+					background = new ColorConstant(0,255,255);
+				transparency = .50;
 			}
 			else {
 				boolean sourceAdjacent = false;
@@ -517,16 +612,16 @@ public class RoutingNet extends ArrayList<RoutingLane> {
 		}
 	}
 
-	public void drawSolution(List<RoutingLane> net) {
+	public void drawSolution(List<RoutingLane> net, int i) {
 		if (fp!=null) {
 			Diagram diagram = fp.getDiagramTypeProvider().getDiagram();
 			for (RoutingLane a : net) {
 				AddContext context = new AddContext();
 				context.setTargetContainer(diagram);
 				context.setNewObject( null );
-				context.setX(a.getX());
-				context.setY(a.getY());
+				context.setLocation(a.getX(), a.getY());
 				context.setSize(a.getWidth(), a.getHeight());
+				context.putProperty("background", new ColorConstant(32+i*(i%3),32+i*(i%6),32+i*(i%9)));
 				AddRoutingLaneFeature feature = new AddRoutingLaneFeature(fp);
 				a.setShape(feature.add(context));
 			}

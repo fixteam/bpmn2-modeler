@@ -25,9 +25,12 @@ import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.emf.transaction.impl.TransactionalEditingDomainImpl;
 import org.eclipse.emf.workspace.IWorkspaceCommandStack;
 import org.eclipse.emf.workspace.WorkspaceEditingDomainFactory;
+import org.eclipse.graphiti.platform.IDiagramContainer;
 import org.eclipse.graphiti.ui.editor.DefaultUpdateBehavior;
+import org.eclipse.graphiti.ui.editor.DiagramBehavior;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.graphiti.ui.editor.IDiagramEditorInput;
+import org.eclipse.graphiti.ui.internal.editor.DomainModelWorkspaceSynchronizerDelegate;
 import org.eclipse.graphiti.ui.internal.editor.GFWorkspaceCommandStackImpl;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.emf.workspace.util.WorkspaceSynchronizer;
@@ -44,13 +47,12 @@ import org.eclipse.emf.workspace.util.WorkspaceSynchronizer;
 public class BPMN2EditorUpdateBehavior extends DefaultUpdateBehavior {
 
 	private TransactionalEditingDomain editingDomain;
-	private WorkspaceSynchronizer workspaceSynchronizer;
 
 	/**
 	 * @param diagramEditor
 	 */
-	public BPMN2EditorUpdateBehavior(DiagramEditor diagramEditor) {
-		super(diagramEditor);
+	public BPMN2EditorUpdateBehavior(DiagramBehavior diagramBehavior) {
+		super(diagramBehavior);
 	}
 
 	public TransactionalEditingDomain getEditingDomain() {
@@ -83,16 +85,8 @@ public class BPMN2EditorUpdateBehavior extends DefaultUpdateBehavior {
 		return editingDomain;
 	}
 	
-	protected void initializeEditingDomain(TransactionalEditingDomain domain) {
-		// we want first crack at these notifications!
-		workspaceSynchronizer = new WorkspaceSynchronizer(getEditingDomain(),
-				new BPMN2EditorWorkspaceSynchronizerDelegate(diagramEditor));
-		super.initializeEditingDomain(domain);
-	}
-	
-	public void dispose() {
-		super.dispose();
-		workspaceSynchronizer.dispose();
+	protected WorkspaceSynchronizer.Delegate createWorkspaceSynchronizerDelegate() {
+		return new BPMN2EditorWorkspaceSynchronizerDelegate(diagramBehavior.getDiagramContainer());
 	}
 	
 	public class BPMN2EditorWorkspaceSynchronizerDelegate implements WorkspaceSynchronizer.Delegate {
@@ -103,7 +97,7 @@ public class BPMN2EditorUpdateBehavior extends DefaultUpdateBehavior {
 		 * The DiagramEditorBehavior reacts on a setResourceChanged(true) if he gets
 		 * activated.
 		 */
-		public BPMN2EditorWorkspaceSynchronizerDelegate(DiagramEditor diagramEditor) {
+		public BPMN2EditorWorkspaceSynchronizerDelegate(IDiagramContainer diagramEditor) {
 			this.bpmnEditor = (BPMN2Editor)diagramEditor;
 		}
 

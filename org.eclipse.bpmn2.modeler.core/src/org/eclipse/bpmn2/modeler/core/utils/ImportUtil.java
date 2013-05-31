@@ -137,9 +137,9 @@ public class ImportUtil {
 	 *    Java Class object
 	 * @return the newly constructed Import
 	 */
-	public static Import addImport(EObject modelObject, Object importObject) {
+	public Import addImport(EObject modelObject, Object importObject) {
 		Resource resource = modelObject.eResource();
-		return ImportUtil.addImport(resource,importObject);
+		return addImport(resource,importObject);
 	}
 
 	/**
@@ -156,7 +156,7 @@ public class ImportUtil {
 	 *    Java Class object
 	 * @return the newly constructed Import
 	 */
-	public static Import addImport(Resource resource, final Object importObject) {
+	public Import addImport(Resource resource, final Object importObject) {
 		Import imp = null;
 		if (resource instanceof Bpmn2Resource) {
 			final Definitions definitions = (Definitions) resource.getContents().get(0).eContents().get(0);
@@ -360,7 +360,7 @@ public class ImportUtil {
 	 * @param portType - the WSDL Port Type that corresponds to this Interface
 	 * @return the newly created object, or an existing Interface with the same name and implementation reference
 	 */
-	public static Interface createInterface(Definitions definitions, Import imp, PortType portType) {
+	public Interface createInterface(Definitions definitions, Import imp, PortType portType) {
 		Interface intf = Bpmn2ModelerFactory.create(Interface.class);
 		intf.setName(portType.getQName().getLocalPart());
 		intf.setImplementationRef(portType);
@@ -384,7 +384,7 @@ public class ImportUtil {
      * @param type - the Java type that corresponds to this Interface
      * @return the newly created object, or an existing Interface with the same name and implementation reference
      */
-    public static Interface createInterface(Definitions definitions, Import imp, IType type) {
+    public Interface createInterface(Definitions definitions, Import imp, IType type) {
         Interface intf = Bpmn2ModelerFactory.create(Interface.class);
         intf.setName(type.getElementName());
         intf.setImplementationRef(ModelUtil.createStringWrapper(type.getFullyQualifiedName('.')));
@@ -440,7 +440,7 @@ public class ImportUtil {
 	 * @param intf - the Interface to which this Operation will be added
 	 * @param portType - the WSDL Port Type that corresponds to this Interface
 	 */
-	public static void createOperations(Definitions definitions, Import imp, Interface intf, PortType portType) {
+	public void createOperations(Definitions definitions, Import imp, Interface intf, PortType portType) {
 		for (Operation wsdlop : (List<Operation>)portType.getEOperations()) {
 			org.eclipse.bpmn2.Operation bpmn2op = Bpmn2ModelerFactory.create(org.eclipse.bpmn2.Operation.class);
 			bpmn2op.setImplementationRef(wsdlop);
@@ -478,7 +478,7 @@ public class ImportUtil {
      * @param intf - the Interface to which this Operation will be added
      * @param type - the Java type that corresponds to this Interface
      */
-    public static void createOperations(Definitions definitions, Import imp, Interface intf, IType type) {
+    public void createOperations(Definitions definitions, Import imp, Interface intf, IType type) {
         try {
             for (IMethod method : type.getMethods()) {
                 org.eclipse.bpmn2.Operation bpmn2op = Bpmn2ModelerFactory.create(org.eclipse.bpmn2.Operation.class);
@@ -514,15 +514,19 @@ public class ImportUtil {
 
                 try {
                     IType returnType = resolveType(type, method.getReturnType());
-                    org.eclipse.bpmn2.Message bpmn2msg = createMessage(definitions, imp, returnType, baseName
-                            + "Result");
-                    if (returnType == null) {
+                    org.eclipse.bpmn2.Message bpmn2msg = null;
+                    if (returnType != null) {
+                    	bpmn2msg = createMessage(definitions, imp, returnType, baseName + "Result");
+                    }
+                    else {
                         String boxedType = getBoxedType(Signature.toString(method.getReturnType()));
                         if (boxedType != null && boxedType.length() > 0) {
+                        	bpmn2msg = createMessage(definitions, imp, returnType, baseName + "Result");
                             bpmn2msg.setItemRef(createItemDefinition(definitions, null, boxedType, ItemKind.PHYSICAL));
                         }
                     }
-                    bpmn2op.setOutMessageRef(bpmn2msg);
+                    if (bpmn2msg!=null)
+                    	bpmn2op.setOutMessageRef(bpmn2msg);
                 } catch (JavaModelException e) {
                     Activator.logStatus(e.getStatus());
                 } catch (Exception e) {
@@ -644,7 +648,7 @@ public class ImportUtil {
 	 * @param wsdlmsg - a WSDL Message object used to create the BPMN2 Message
 	 * @return the newly created object, or an existing Message that is identical to the given WSDL Message
 	 */
-	public static org.eclipse.bpmn2.Message createMessage(Definitions definitions, Import imp, Message wsdlmsg) {
+	public org.eclipse.bpmn2.Message createMessage(Definitions definitions, Import imp, Message wsdlmsg) {
 		org.eclipse.bpmn2.Message bpmn2msg = Bpmn2ModelerFactory.create(org.eclipse.bpmn2.Message.class);
 		ItemDefinition itemDef = createItemDefinition(definitions, imp, wsdlmsg);
 		bpmn2msg.setItemRef(itemDef);
@@ -671,7 +675,7 @@ public class ImportUtil {
      * @param paramName - the name of the parameter
      * @return the newly created object, or an existing Message that is identical to the given WSDL Message
      */
-    public static org.eclipse.bpmn2.Message createMessage(Definitions definitions, Import imp, IType param, String paramName) {
+    public org.eclipse.bpmn2.Message createMessage(Definitions definitions, Import imp, IType param, String paramName) {
         org.eclipse.bpmn2.Message bpmn2msg = Bpmn2ModelerFactory.create(org.eclipse.bpmn2.Message.class);
         if (param != null) {
             ItemDefinition itemDef = createItemDefinition(definitions, imp, param);
@@ -732,7 +736,7 @@ public class ImportUtil {
 	 * @param fault - a WSDL Fault object used to create the new BPMN2 Error
 	 * @return the newly created object, or an existing Error that is identical to the given WSDL Fault
 	 */
-	public static org.eclipse.bpmn2.Error createError(Definitions definitions, Import imp, Fault fault) {
+	public org.eclipse.bpmn2.Error createError(Definitions definitions, Import imp, Fault fault) {
 		org.eclipse.bpmn2.Error error = Bpmn2ModelerFactory.create(org.eclipse.bpmn2.Error.class);
 		ItemDefinition itemDef = createItemDefinition(definitions, imp, fault, ItemKind.INFORMATION);
 		error.setName(fault.getName());
@@ -758,7 +762,7 @@ public class ImportUtil {
      * @param exceptionType - Java type of exception thrown by operation
      * @return the newly created object, or an existing Error that is identical to the given WSDL Fault
      */
-    public static org.eclipse.bpmn2.Error createError(Definitions definitions, Import imp, IType exceptionType) {
+    public org.eclipse.bpmn2.Error createError(Definitions definitions, Import imp, IType exceptionType) {
         org.eclipse.bpmn2.Error error = Bpmn2ModelerFactory.create(org.eclipse.bpmn2.Error.class);
         ItemDefinition itemDef = createItemDefinition(definitions, imp, exceptionType);
         error.setName(exceptionType.getElementName());
@@ -801,7 +805,7 @@ public class ImportUtil {
 	 * @param wsdlmsg - a WSDL Message object that defines the structure of the ItemDefinition
 	 * @return the newly created object, or an existing ItemDefinition that is identical to the given WSDL Message
 	 */
-	public static ItemDefinition createItemDefinition(Definitions definitions, Import imp, Message wsdlmsg) {
+	public ItemDefinition createItemDefinition(Definitions definitions, Import imp, Message wsdlmsg) {
 		return createItemDefinition(definitions, imp, wsdlmsg, ItemKind.INFORMATION);
 	}
 
@@ -815,7 +819,7 @@ public class ImportUtil {
 	 * @param clazz - the Java Class object that defines the structure of the ItemDefinition
 	 * @return the newly created object, or an existing ItemDefinition that is identical to the given Java type
 	 */
-	public static ItemDefinition createItemDefinition(Definitions definitions, Import imp, IType clazz) {
+	public ItemDefinition createItemDefinition(Definitions definitions, Import imp, IType clazz) {
 		try {
             for (IType c : clazz.getTypes()) {
                 if (Flags.isPublic(c.getFlags())) {
@@ -837,7 +841,7 @@ public class ImportUtil {
 	 * @param kind - the ItemKind, either PHYSICAL or INFORMATION
 	 * @return the newly created object, or an existing ItemDefinition that is identical to the given String type
 	 */
-	public static ItemDefinition createItemDefinition(Definitions definitions, Import imp, String structName, ItemKind kind) {
+	public ItemDefinition createItemDefinition(Definitions definitions, Import imp, String structName, ItemKind kind) {
 		EObject structureRef = ModelUtil.createStringWrapper(structName);
 		return createItemDefinition(definitions, imp, structureRef, kind);
 	}
@@ -853,7 +857,7 @@ public class ImportUtil {
 	 * @param kind - the ItemKind, either PHYSICAL or INFORMATION
 	 * @return the newly created object, or an existing ItemDefinition that is identical to the given String type
 	 */
-	public static ItemDefinition createItemDefinition(Definitions definitions, Import imp, EObject structureRef, ItemKind kind) {
+	public ItemDefinition createItemDefinition(Definitions definitions, Import imp, EObject structureRef, ItemKind kind) {
 		ItemDefinition itemDef = Bpmn2ModelerFactory.create(ItemDefinition.class);
 		itemDef.setImport(imp);
 		itemDef.setItemKind(kind);
@@ -903,7 +907,12 @@ public class ImportUtil {
 		}
 		return null;
 	}
-
+	
+	public static ItemDefinition findItemDefinition(Definitions definitions, Import imp, IType clazz) {
+		EObject structureRef = ModelUtil.createStringWrapper(clazz.getFullyQualifiedName('.'));
+		return findItemDefinition(definitions, imp, structureRef, ItemKind.PHYSICAL);
+	}
+	
 	/**
 	 * Remove an ItemDefinition for the given Java type. This also removes the ItemDefinitions for
 	 * all inner classes and interfaces.

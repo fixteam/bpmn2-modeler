@@ -78,8 +78,8 @@ public class MoveBoundaryEventFeature extends MoveFlowNodeFeature {
 		BoundaryEvent event = (BoundaryEvent) context.getShape().getLink().getBusinessObjects().get(0);
 		List<PictogramElement> activityPictogramElements = Graphiti.getLinkService().getPictogramElements(getDiagram(), event.getAttachedToRef());
 		for (PictogramElement activityElement : activityPictogramElements) {
-			if (!singleSelection && ModelUtil.isElementSelected(getDiagramEditor(), activityElement)){
-				if (!ModelUtil.isElementSelected(getDiagramEditor(), context.getPictogramElement())) {
+			if (!singleSelection && ModelUtil.isElementSelected(getDiagramBehavior().getDiagramContainer(), activityElement)){
+				if (!ModelUtil.isElementSelected(getDiagramBehavior().getDiagramContainer(), context.getPictogramElement())) {
 					context.putProperty(MoveActivityFeature.SELECTION_MOVE_PROPERTY, false);
 					context.putProperty(MoveActivityFeature.ACTIVITY_MOVE_PROPERTY, true);
 				} else {

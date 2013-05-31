@@ -65,6 +65,9 @@ import org.eclipse.graphiti.ui.internal.editor.GFWorkspaceCommandStackImpl;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IStorageEditorInput;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.editors.text.TextFileDocumentProvider;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 
 public class FileService {
@@ -226,6 +229,13 @@ public class FileService {
 				return ((FileEditorInput) input).getFile().getContents();
 			} else if (input instanceof IStorageEditorInput) {
 				return ((IStorageEditorInput) input).getStorage().getContents();
+			} else if (input instanceof FileStoreEditorInput) {
+				URI uri = getInputUri(input);
+				File file = new File(uri.toFileString());
+
+				if (file.exists()) {
+					return new FileInputStream(file);
+				}
 			}
 		} catch (Exception e) {
 			Activator.logError(e);
@@ -241,6 +251,9 @@ public class FileService {
 		} else if (input instanceof FileEditorInput) {
 			IPath path =  ((FileEditorInput) input).getFile().getFullPath();
 			return URI.createPlatformResourceURI(path.toString(), true);
+		} else if (input instanceof FileStoreEditorInput) {
+			java.net.URI juri = ((FileStoreEditorInput) input).getURI();
+			return URI.createFileURI(juri.getPath());
 		} else if (input instanceof IStorageEditorInput) {
 			IStorageEditorInput sei = (IStorageEditorInput) input;
 

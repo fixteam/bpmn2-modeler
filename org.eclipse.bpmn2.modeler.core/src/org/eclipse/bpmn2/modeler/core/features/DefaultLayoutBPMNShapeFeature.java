@@ -40,27 +40,27 @@ public class DefaultLayoutBPMNShapeFeature extends AbstractLayoutFeature {
 	}
 	
 	public void layoutConnections(PictogramElement shape) {
-		Diagram diagram = getDiagram();
-		if (diagram!=null) {
-			if (shape.getLink()!=null) {
-				for (Object object : shape.getLink().getBusinessObjects()) {
-					if (object instanceof BPMNShape || object instanceof BPMNEdge) {
-						AnchorUtil.reConnect((DiagramElement) object, diagram);
-					}
-				}
-			}
-			
-			if (shape instanceof ContainerShape) {
-				for (PictogramElement pe : FeatureSupport.getContainerChildren((ContainerShape)shape)) {
-					if (pe.getLink()!=null) {
-						for (Object object : pe.getLink().getBusinessObjects()) {
-							if (object instanceof BPMNShape || object instanceof BPMNEdge) {
-								AnchorUtil.reConnect((DiagramElement) object, diagram);
-							}
-						}
-					}
-				}
-			}
-		}
+//		Diagram diagram = getDiagram();
+//		if (diagram!=null) {
+//			if (shape.getLink()!=null) {
+//				for (Object object : shape.getLink().getBusinessObjects()) {
+//					if (object instanceof BPMNShape || object instanceof BPMNEdge) {
+//						AnchorUtil.reConnect((DiagramElement) object, diagram);
+//					}
+//				}
+//			}
+//			
+//			if (shape instanceof ContainerShape) {
+//				for (PictogramElement pe : FeatureSupport.getContainerChildren((ContainerShape)shape)) {
+//					if (pe.getLink()!=null) {
+//						for (Object object : pe.getLink().getBusinessObjects()) {
+//							if (object instanceof BPMNShape || object instanceof BPMNEdge) {
+//								AnchorUtil.reConnect((DiagramElement) object, diagram);
+//							}
+//						}
+//					}
+//				}
+//			}
+//		}
 	}
 }

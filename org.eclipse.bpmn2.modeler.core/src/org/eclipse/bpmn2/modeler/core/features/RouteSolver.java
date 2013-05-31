@@ -47,23 +47,28 @@ public class RouteSolver {
 	public boolean solve(ContainerShape source, ContainerShape target) {
 		this.source = source;
 		this.target = target;
-		List< List<RoutingLane> > solutions;
+		List< List<RoutingLane> > verticalSolutions;
+		List< List<RoutingLane> > horizontalSolutions;
 		
 		verticalNet.eraseLanes();
 		horizontalNet.eraseLanes();
 		
-		solutions = verticalNet.findSolutions(source, target);
-		verticalNet.drawLanes();
+		verticalSolutions = verticalNet.findSolutions(source, target);
+//		verticalNet.drawLanes();
 //		verticalNet.drawConnections();
-		if (solutions.size()>0) {
-			verticalNet.drawSolution(solutions.get(0));
+		if (verticalSolutions.size()>0) {
+			for (int i=0; i<verticalSolutions.size(); ++i) {
+				verticalNet.drawSolution(verticalSolutions.get(i), i);
+				if (i>16)
+					break;
+			}
 		}
 		
-		solutions = horizontalNet.findSolutions(source, target);
+//		horizontalSolutions = horizontalNet.findSolutions(source, target);
 //		horizontalNet.drawLanes();
 //		horizontalNet.drawConnections();
-//		if (solutions.size()>0) {
-//			horizontalNet.drawSolution(solutions.get(1));
+//		if (horizontalSolutions.size()>0) {
+//			horizontalNet.drawSolution(horizontalSolutions.get(0));
 //		}
 		return true;
 	}

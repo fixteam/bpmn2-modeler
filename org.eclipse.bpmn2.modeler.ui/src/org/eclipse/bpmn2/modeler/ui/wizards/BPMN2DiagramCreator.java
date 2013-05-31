@@ -49,7 +49,7 @@ public class BPMN2DiagramCreator {
 		return createDiagram(uri, diagramType, targetNamespace, null);
 	}
 
-	public static Bpmn2DiagramEditorInput createDiagram(URI modelUri, Bpmn2DiagramType diagramType, String targetNamespace, BPMN2Editor diagramEditor) throws CoreException {
+	public static Bpmn2DiagramEditorInput createDiagram(URI modelUri, Bpmn2DiagramType diagramType, String targetNamespace, BPMN2Editor diagramEditor) {
 
 		String modelName = modelUri.trimFragment().trimFileExtension().lastSegment();
 		final Diagram diagram = Graphiti.getPeCreateService().createDiagram("BPMN2", modelName, true);

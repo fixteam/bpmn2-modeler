@@ -67,10 +67,10 @@
 			name="Risk Task"
 			runtimeId="org.eclipse.bpmn2.modeler.runtime.example"
 			type="TextAnnotation">
-			<property name="icon" value="risk.png"/>
-			<property name="sampleCustomTaskId" value="org.eclipse.bpmn2.modeler.runtime.example.risk"/>
-			<property name="name" value="Risk Task"/>
-			<property name="text" value="Risk Task"/>
+			<property name="icon" value="risk.png" type="EString"/>
+			<property name="sampleCustomTaskId" value="org.eclipse.bpmn2.modeler.runtime.example.risk" type="EString"/>
+			<property name="name" value="Risk Task" type="EString"/>
+			<property name="text" value="Risk Task" type="EString"/>
 			<property name="evaluate" value="true" type="EBoolean"/>
 			<property name="cost" value="0" type="EInt"/>
 		</customTask>
@@ -82,10 +82,10 @@
 			name="Mitigation Task"
 			runtimeId="org.eclipse.bpmn2.modeler.runtime.example"
 			type="TextAnnotation">
-			<property name="icon" value="mitigation.png"/>
-			<property name="sampleCustomTaskId" value="org.eclipse.bpmn2.modeler.runtime.example.mitigation"/>
-			<property name="text" value="Mitigation Task"/>
-			<property name="name" value="Mitigation Task"/>
+			<property name="icon" value="mitigation.png" type="EString"/>
+			<property name="sampleCustomTaskId" value="org.eclipse.bpmn2.modeler.runtime.example.mitigation" type="EString"/>
+			<property name="text" value="Mitigation Task" type="EString"/>
+			<property name="name" value="Mitigation Task" type="EString"/>
 			<property name="evaluate" value="true" type="EBoolean"/>
 			<property name="benefit" value="0" type="EInt"/>
 		</customTask>

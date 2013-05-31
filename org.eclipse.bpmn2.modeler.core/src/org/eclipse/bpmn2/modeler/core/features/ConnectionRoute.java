@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
+import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil.AnchorLocation;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
@@ -58,6 +59,7 @@ public class ConnectionRoute implements Comparable<ConnectionRoute>, Comparator<
 		Shape source;
 		Shape target;
 		boolean valid = true;
+		int rank = 0;
 		
 		public ConnectionRoute(DefaultConnectionRouter router, int id, Shape source, Shape target) {
 			this.router = router;
@@ -190,15 +192,22 @@ public class ConnectionRoute implements Comparable<ConnectionRoute>, Comparator<
 		public int compare(ConnectionRoute o1, ConnectionRoute o2) {
 			if (o1.isValid()) {
 				if (o2.isValid()) {
-					int i = o1.collisions.size() - o2.collisions.size();
+					int i = o1.rank - o2.rank;
 					if (i==0) {
-						i = o1.crossings.size() - o2.crossings.size();
+						i = o1.collisions.size() - o2.collisions.size();
 						if (i==0) {
-							i = o1.getLength() - o2.getLength();
+//							i = o1.crossings.size() - o2.crossings.size();
 							if (i==0) {
-								i = o1.points.size() - o2.points.size();
-								if (i==0)
-									i = o1.id - o2.id;
+								i = o1.getLength() - o2.getLength();
+								if (Math.abs(i)<=10) {
+									i = o1.points.size() - o2.points.size();
+//									if (i==0) {
+//										BoundaryAnchor ba1 = AnchorUtil.findNearestBoundaryAnchor(source, o1.get(0));
+//										BoundaryAnchor ba2 = AnchorUtil.findNearestBoundaryAnchor(source, o2.get(0));
+//
+//										i = AnchorLocation.valueOf(ba1.locationType) - (int)ba2.locationType;
+//									}
+								}
 							}
 						}
 					}
@@ -280,6 +289,34 @@ public class ConnectionRoute implements Comparable<ConnectionRoute>, Comparator<
 								--i;
 								changed = true;
 							}
+						}
+					}
+				}
+				p1 = p2;
+			}
+			
+			// remove "T" shapes
+			p1 = points.get(0);
+			for (int i=1; i<points.size()-1; ++i) {
+				Point p2 = points.get(i);
+				if (i+1 < points.size()) {
+					Point p3 = points.get(i+1);
+					if (p1.getX() == p2.getX() && p2.getX() == p3.getX()) {
+						if (	(p2.getY() < p1.getY() && p2.getY() < p3.getY()) ||
+								(p2.getY() > p1.getY() && p2.getY() > p3.getY())
+						) {
+							points.remove(p2);
+							--i;
+							changed = true;
+						}
+					}
+					else if (p1.getY() == p2.getY() && p2.getY() == p3.getY()) {
+						if (	(p2.getX() < p1.getX() && p2.getX() < p3.getX()) ||
+								(p2.getX() > p1.getX() && p2.getX() > p3.getX())
+						) {
+							points.remove(p2);
+							--i;
+							changed = true;
 						}
 					}
 				}

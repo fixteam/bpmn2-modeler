@@ -56,17 +56,23 @@ public class IoParametersListComposite extends DefaultListComposite {
 			setListItemClass(listItemClass);
 			
 			EStructuralFeature f;
-			f = (EAttribute)listItemClass.getEStructuralFeature("name");
-			columnProvider.add(new IoParameterNameColumn(activity,f));
 			if (isInput) {
-				columnProvider.add(new TableColumn(activity,PACKAGE.getDataInput_IsCollection()));
 				f = PACKAGE.getActivity_DataInputAssociations();
-				columnProvider.add(new IoParameterMappingColumn(activity,f));
+				columnProvider.add(new IoParameterMappingColumn(activity,f)).setHeaderText("From");
+
+				f = (EAttribute)listItemClass.getEStructuralFeature("name");
+				columnProvider.add(new IoParameterNameColumn(activity,f)).setHeaderText("To");
+
+				columnProvider.add(new TableColumn(activity,PACKAGE.getDataInput_IsCollection()));
 			}
 			else {
-				columnProvider.add(new TableColumn(activity,PACKAGE.getDataOutput_IsCollection()));
+				f = (EAttribute)listItemClass.getEStructuralFeature("name");
+				columnProvider.add(new IoParameterNameColumn(activity,f)).setHeaderText("From");
+
 				f = PACKAGE.getActivity_DataOutputAssociations();
-				columnProvider.add(new IoParameterMappingColumn(activity,f));
+				columnProvider.add(new IoParameterMappingColumn(activity,f)).setHeaderText("To");
+
+				columnProvider.add(new TableColumn(activity,PACKAGE.getDataOutput_IsCollection()));
 			}
 		}
 		else if (container instanceof CallableElement) {

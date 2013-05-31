@@ -13,10 +13,7 @@
 
 package org.eclipse.bpmn2.modeler.ui.adapters;
 
-import java.util.Hashtable;
-
 import org.eclipse.bpmn2.Activity;
-import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.CallActivity;
 import org.eclipse.bpmn2.CallChoreography;
 import org.eclipse.bpmn2.CallConversation;
@@ -123,9 +120,6 @@ import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.common.notify.Notifier;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 
 /**
  * This class adds a name-value map to the Bpmn2ItemProviderAdapterFactory.

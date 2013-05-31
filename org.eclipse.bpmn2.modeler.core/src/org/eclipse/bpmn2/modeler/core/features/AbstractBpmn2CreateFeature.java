@@ -13,11 +13,10 @@
 
 package org.eclipse.bpmn2.modeler.core.features;
 
-import java.util.List;
-
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.modeler.core.adapters.AdapterUtil;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
+import org.eclipse.bpmn2.modeler.core.di.DIImport;
 import org.eclipse.bpmn2.modeler.core.features.activity.task.ICustomTaskFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ObjectEditingDialog;
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
@@ -30,10 +29,8 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.graphiti.IExecutionInfo;
-import org.eclipse.graphiti.features.IFeature;
 import org.eclipse.graphiti.features.IFeatureAndContext;
 import org.eclipse.graphiti.features.IFeatureProvider;
-import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.features.context.IAreaContext;
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.ICreateContext;
@@ -41,7 +38,6 @@ import org.eclipse.graphiti.features.context.impl.AddContext;
 import org.eclipse.graphiti.features.impl.AbstractCreateFeature;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
-import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 
 /**
@@ -123,8 +119,13 @@ public abstract class AbstractBpmn2CreateFeature<T extends BaseElement>
 	@Override
 	protected PictogramElement addGraphicalRepresentation(IAreaContext context, Object newObject) {
 		AddContext newContext = new AddContext(context, newObject);
+		// copy properties into the new context
 		Object value = context.getProperty(ICustomTaskFeatureContainer.CUSTOM_TASK_ID);
 		newContext.putProperty(ICustomTaskFeatureContainer.CUSTOM_TASK_ID, value);
+		value = context.getProperty(DIImport.IMPORT_PROPERTY);
+		newContext.putProperty(DIImport.IMPORT_PROPERTY, value);
+		value = context.getProperty(ContextConstants.BUSINESS_OBJECT);
+		newContext.putProperty(ContextConstants.BUSINESS_OBJECT, value);
 		return getFeatureProvider().addIfPossible(newContext);
 	}
 	

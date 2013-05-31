@@ -18,7 +18,7 @@ import java.util.List;
 
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.features.CompoundCreateFeature;
-import org.eclipse.bpmn2.modeler.core.features.CompoundCreateFeature.CreateFeatureNode;
+import org.eclipse.bpmn2.modeler.core.features.CompoundCreateFeaturePart;
 import org.eclipse.bpmn2.modeler.core.features.IBpmn2AddFeature;
 import org.eclipse.bpmn2.modeler.core.features.IBpmn2CreateFeature;
 import org.eclipse.bpmn2.modeler.core.features.ShowPropertiesFeature;
@@ -45,6 +45,7 @@ import org.eclipse.bpmn2.modeler.ui.features.activity.task.CustomTaskFeatureCont
 import org.eclipse.bpmn2.modeler.ui.features.choreography.ChoreographySelectionBehavior;
 import org.eclipse.bpmn2.modeler.ui.features.choreography.ChoreographyUtil;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -78,11 +79,13 @@ import org.eclipse.graphiti.features.custom.ICustomFeature;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.Polyline;
 import org.eclipse.graphiti.mm.algorithms.Text;
+import org.eclipse.graphiti.mm.algorithms.styles.Point;
 import org.eclipse.graphiti.mm.pictograms.Anchor;
 import org.eclipse.graphiti.mm.pictograms.AnchorContainer;
 import org.eclipse.graphiti.mm.pictograms.Connection;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
+import org.eclipse.graphiti.mm.pictograms.FreeFormConnection;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.palette.IPaletteCompartmentEntry;
@@ -98,11 +101,15 @@ import org.eclipse.graphiti.tb.IContextButtonPadData;
 import org.eclipse.graphiti.tb.IDecorator;
 import org.eclipse.graphiti.tb.IImageDecorator;
 import org.eclipse.graphiti.tb.ImageDecorator;
+import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.widgets.Display;
 
 public class BpmnToolBehaviourFeature extends DefaultToolBehaviorProvider implements IFeatureCheckerHolder {
 
+	public final static String DEFAULT_PALETTE_ID = "org.bpmn2.modeler.toolpalette.default.categories";
+	
 	BPMNFeatureProvider featureProvider;
 	ModelEnablementDescriptor modelEnablements;
 	ModelDescriptor modelDescriptor;
@@ -138,7 +145,8 @@ public class BpmnToolBehaviourFeature extends DefaultToolBehaviorProvider implem
 
 		@Override
 		public ImageDescriptor getSmallIcon() {
-			if (getLabel().equals(editor.getModelEnablementProfile()))
+			String profile = editor.getModelEnablementProfile();
+			if (getLabel().equals(profile))
 				return Activator.getDefault().getImageDescriptor(IConstants.ICON_CHECKBOX_CHECKED_16);
 			return Activator.getDefault().getImageDescriptor(IConstants.ICON_CHECKBOX_UNCHECKED_16);
 		}
@@ -189,9 +197,15 @@ public class BpmnToolBehaviourFeature extends DefaultToolBehaviorProvider implem
 			ToolPaletteDescriptor toolPaletteDescriptor = rt.getToolPalette(diagramType, profile);
 			if (toolPaletteDescriptor!=null) {
 				for (CategoryDescriptor category : toolPaletteDescriptor.getCategories()) {
+					if (DEFAULT_PALETTE_ID.equals(category.getId())) {
+						createDefaultpalette();
+						continue;
+					}
+					
+					category = getRealCategory(rt, category);
 					compartmentEntry = categories.get(category.getName());
 					for (ToolDescriptor tool : category.getTools()) {
-						
+						tool = getRealTool(rt, tool);
 						IFeature feature = getCreateFeature(tool);
 						if (feature!=null) {
 							if (compartmentEntry==null) {
@@ -223,18 +237,66 @@ public class BpmnToolBehaviourFeature extends DefaultToolBehaviorProvider implem
 			else
 			{
 				// create a default toolpalette
-				createConnectors(palette);
-				createTasksCompartments(palette);
-				createGatewaysCompartments(palette);
-				createEventsCompartments(palette);
-				createEventDefinitionsCompartments(palette);
-				createDataCompartments(palette);
-				createOtherCompartments(palette);
-				createCustomTasks(palette);
+				createDefaultpalette();
 			}
 		}
 		
 		return palette.toArray(new IPaletteCompartmentEntry[palette.size()]);
+	}
+	
+	private CategoryDescriptor getRealCategory(TargetRuntime rt, CategoryDescriptor category) {
+		String fromPalette = category.getFromPalette();
+		String id = category.getId();
+		if (fromPalette!=null && id!=null) {
+			for (TargetRuntime otherRt : TargetRuntime.getAllRuntimes()) {
+				if (otherRt!=rt) {
+					for (ToolPaletteDescriptor tp : otherRt.getToolPalettes()) {
+						if ( fromPalette.equals(tp.getId())) {
+							for (CategoryDescriptor c : tp.getCategories()) {
+								if (id.equals(c.getId())) {
+									return c;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return category;
+	}
+	
+	private ToolDescriptor getRealTool(TargetRuntime rt, ToolDescriptor tool) {
+		String fromPalette = tool.getFromPalette();
+		String id = tool.getId();
+		if (fromPalette!=null && id!=null) {
+			for (TargetRuntime otherRt : TargetRuntime.getAllRuntimes()) {
+				if (otherRt!=rt) {
+					for (ToolPaletteDescriptor tp : otherRt.getToolPalettes()) {
+						if ( fromPalette.equals(tp.getId())) {
+							for (CategoryDescriptor c : tp.getCategories()) {
+								for (ToolDescriptor t : c.getTools()) {
+									if (id.equals(t.getId())) {
+										return t;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return tool;
+	}
+	
+	private void createDefaultpalette() {
+		createConnectors(palette);
+		createTasksCompartments(palette);
+		createGatewaysCompartments(palette);
+		createEventsCompartments(palette);
+		createEventDefinitionsCompartments(palette);
+		createDataCompartments(palette);
+		createOtherCompartments(palette);
+		createCustomTasks(palette);
 	}
 	
 	public List<IToolEntry> getTools() {
@@ -277,7 +339,7 @@ public class BpmnToolBehaviourFeature extends DefaultToolBehaviorProvider implem
 		}
 	}
 	
-	private IFeature getCreateFeature(ToolDescriptor tool, CompoundCreateFeature root, CreateFeatureNode node, ToolPart toolPart) {
+	private IFeature getCreateFeature(ToolDescriptor tool, CompoundCreateFeature root, CompoundCreateFeaturePart node, ToolPart toolPart) {
 		IFeature parentFeature = null;
 		String name = toolPart.getName();
 		EClassifier eClass = modelDescriptor.getClassifier(name);
@@ -286,7 +348,7 @@ public class BpmnToolBehaviourFeature extends DefaultToolBehaviorProvider implem
 		}
 		if (root!=null) {
 			if (node!=null) {
-				CreateFeatureNode n = node.addChild(parentFeature);
+				CompoundCreateFeaturePart n = node.addChild(parentFeature);
 				if (toolPart.hasProperties()) {
 					n.setProperties(toolPart.getProperties());
 				}
@@ -412,11 +474,11 @@ public class BpmnToolBehaviourFeature extends DefaultToolBehaviorProvider implem
 	}
 	
 	private void createEntry(IFeature feature, PaletteCompartmentEntry compartmentEntry) {
-		if (modelEnablements.isEnabled(feature)) {
+		if (modelEnablements.isEnabled(feature) || feature instanceof CompoundCreateFeature) {
 			IFeature targetFeature = feature;
 			if (feature instanceof CompoundCreateFeature) {
 				CompoundCreateFeature cf = (CompoundCreateFeature)feature;
-				targetFeature = ((CreateFeatureNode)cf.getChildren().get(0)).getFeature();
+				targetFeature = ((CompoundCreateFeaturePart)cf.getChildren().get(0)).getFeature();
 			}
 			if (targetFeature instanceof ICreateFeature) {
 				ICreateFeature cf = (ICreateFeature)feature;
@@ -679,6 +741,22 @@ public class BpmnToolBehaviourFeature extends DefaultToolBehaviorProvider implem
 			if (iCustomFeature instanceof ShowPropertiesFeature &&
 					iCustomFeature.canExecute(context)) {
 				return iCustomFeature;
+			}
+		}
+		// temp debugging stuff to dump connection routing info
+		for (PictogramElement pe : context.getPictogramElements()) {
+			String id = Graphiti.getPeService().getPropertyValue(pe, "ROUTING_NET_CONNECTION");
+			System.out.println("id="+id);
+			if (pe instanceof FreeFormConnection) {
+				FreeFormConnection c = (FreeFormConnection)pe;
+				int i=0;
+				ILocation loc = Graphiti.getPeService().getLocationRelativeToDiagram(c.getStart());
+				System.out.println("0: "+loc.getX()+","+loc.getY());
+				for (Point p : c.getBendpoints()) {
+					System.out.println(++i+": "+p.getX()+","+p.getY());
+				}
+				loc = Graphiti.getPeService().getLocationRelativeToDiagram(c.getEnd());
+				System.out.println(++i+": "+loc.getX()+","+loc.getY());
 			}
 		}
 		return null;

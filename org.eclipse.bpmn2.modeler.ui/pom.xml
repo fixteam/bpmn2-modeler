@@ -4,12 +4,12 @@
   <parent>
     <artifactId>org.eclipse.bpmn2.modeler.parent</artifactId>
     <groupId>org.eclipse.bpmn2.modeler</groupId>
-    <version>0.2.5-SNAPSHOT</version>
+    <version>0.2.6-SNAPSHOT</version>
   </parent>
 
   <groupId>org.eclipse.bpmn2.modeler</groupId>
   <artifactId>org.eclipse.bpmn2.modeler.ui</artifactId>
-  <version>0.2.5-SNAPSHOT</version>
+  <version>0.2.6-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
   <name>BPMN2 Modeler UI</name>
   <description>Main UI for BPMN2 Modeler</description>

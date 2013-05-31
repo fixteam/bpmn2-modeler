@@ -355,7 +355,7 @@ public class ShapeLayoutManager {
 		Diagram diagram = null;
 		BPMNDiagram bpmnDiagram = DIUtils.findBPMNDiagram(be, true);
 		if (bpmnDiagram != null) {
-			diagram = DIUtils.findDiagram(editor, bpmnDiagram);
+			diagram = DIUtils.findDiagram(editor.getDiagramBehavior(), bpmnDiagram);
 			if (diagram==null) {
 				System.out.println("Diagram is null");
 			}

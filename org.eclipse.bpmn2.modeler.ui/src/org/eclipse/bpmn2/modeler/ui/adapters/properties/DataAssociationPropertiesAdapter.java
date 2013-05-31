@@ -21,6 +21,7 @@ import org.eclipse.bpmn2.Activity;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.CallableElement;
 import org.eclipse.bpmn2.DataAssociation;
+import org.eclipse.bpmn2.DataInputAssociation;
 import org.eclipse.bpmn2.DataStore;
 import org.eclipse.bpmn2.DocumentRoot;
 import org.eclipse.bpmn2.Event;
@@ -84,7 +85,10 @@ public class DataAssociationPropertiesAdapter extends ExtendedPropertiesAdapter<
 		
 		@Override
 		public String getLabel(Object context) {
-			return "Mapped To";
+			Object object = this.adopt(context);
+			if (object instanceof DataInputAssociation)
+				return "Source";
+			return "Target";
 		}
 
 		@Override

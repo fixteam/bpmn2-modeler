@@ -15,6 +15,7 @@ package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.bpmn2.Activity;
 import org.eclipse.bpmn2.Bpmn2Package;
@@ -43,8 +44,10 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.impl.EAttributeImpl;
 import org.eclipse.emf.ecore.util.BasicFeatureMap;
@@ -79,6 +82,8 @@ public class DroolsResourceImpl extends Bpmn2ModelerResourceImpl {
 
     @Override
     protected XMLHelper createXMLHelper() {
+    	if (xmlHelper!=null)
+    		return xmlHelper;
     	return new DroolsXmlHelper(this);
     }
 
@@ -131,9 +136,11 @@ public class DroolsResourceImpl extends Bpmn2ModelerResourceImpl {
 		        					" http://www.jboss.org/drools drools.xsd"+
 		        					" http://www.bpsim.org/schemas/1.0 bpsim.xsd";
 		        		}
+		        			
 		        		super.addAttribute(name, value);
 		        	}
 		        };
+		        ((DroolsXmlHelper)helper).setDefaultNamespace();
 			}
 			  
 			@Override
@@ -142,6 +149,7 @@ public class DroolsResourceImpl extends Bpmn2ModelerResourceImpl {
 					doc.addAttribute("targetNamespace", DroolsPackage.eNS_URI);
 				super.addNamespaceDeclarations();
 			}
+			
 		};
 	}
 
@@ -149,10 +157,99 @@ public class DroolsResourceImpl extends Bpmn2ModelerResourceImpl {
 
 		public DroolsXmlHelper(Bpmn2ResourceImpl resource) {
 			super(resource);
-			qnameMap.remove(Bpmn2Package.eINSTANCE.getItemAwareElement_ItemSubjectRef());
-			qnameMap.remove(Bpmn2Package.eINSTANCE.getInterface_ImplementationRef());
-			qnameMap.remove(Bpmn2Package.eINSTANCE.getOperation_ImplementationRef());
+//			qnameMap.clear();
+//			qnameMap.remove(Bpmn2Package.eINSTANCE.getItemAwareElement_ItemSubjectRef());
+//			qnameMap.remove(Bpmn2Package.eINSTANCE.getInterface_ImplementationRef());
+//			qnameMap.remove(Bpmn2Package.eINSTANCE.getOperation_ImplementationRef());
 		}
+		
+		public void setDefaultNamespace() {
+			EPackage ePackage = Bpmn2Package.eINSTANCE;
+			String nsURI = xmlSchemaTypePackage == ePackage ? XMLResource.XML_SCHEMA_URI
+					: extendedMetaData == null ? ePackage.getNsURI()
+							: extendedMetaData.getNamespace(ePackage);
+
+			String bpmn2Prefix = "bpmn2";
+			int suffix = 1;
+			for (;;) {
+				String ns = prefixesToURIs.get(bpmn2Prefix);
+				if (ns!=null && !ns.equals(nsURI)) {
+					bpmn2Prefix = "bpmn2" + "_" + suffix++;
+				}
+				else
+					break;
+			}
+
+			boolean found = false;
+			List<String> prefixes = urisToPrefixes.get(nsURI);
+			for (int i = 0; i < prefixes.size(); ++i) {
+				String prefix = prefixes.get(i);
+				if ("".equals(prefix)) {
+					prefixes.set(i, bpmn2Prefix);
+					found = true;
+					break;
+				}
+				else if (bpmn2Prefix.equals(prefix)) {
+					found = true;
+				}
+					
+			}
+			if (!found)
+				prefixes.add(0, bpmn2Prefix);
+			
+			nsURI = DroolsPackage.eNS_URI;
+			prefixes = urisToPrefixes.get(nsURI);
+			if (prefixes!=null)
+				prefixes.add("");
+
+			for (int i=0; i<allPrefixToURI.size(); ++i) {
+				String prefix = allPrefixToURI.get(i);
+				if ("".equals(prefix)) {
+					allPrefixToURI.remove(i);
+					if (i+1<allPrefixToURI.size())
+						allPrefixToURI.remove(i+1);
+					break;
+				}
+			}
+			allPrefixToURI.add("");
+			allPrefixToURI.add(nsURI);
+			prefixesToURIs.remove("");
+			
+			// change default namespace for existing packages
+			for (Entry<EPackage, String> e : packages.entrySet()) {
+				if ("".equals(e.getValue())) {
+					ePackage = e.getKey();
+					if (e.getKey() != DroolsPackage.eINSTANCE) {
+						packages.remove(e.getKey());
+						packages.put(ePackage, ePackage.getNsPrefix());
+						urisToPrefixes.remove(ePackage.getNsURI());
+						break;
+					}
+				}
+			}
+
+			mustHavePrefix = true;
+		}
+	    
+	    public List<String> getPrefixes(EPackage ePackage) {
+	    	List<String> result = super.getPrefixes(ePackage);
+	    	boolean found = false;
+	    	for (int i=0; i<result.size(); ++i) {
+	    		if ("".equals(result.get(i))) {
+	    			if (ePackage == DroolsPackage.eINSTANCE) {
+	    				found = true;
+	    				break; // ok
+	    			}
+	    			else {
+	    				result.remove(i--);
+	    			}
+	    		}
+	    	}
+			if (ePackage == DroolsPackage.eINSTANCE && !found) {
+				result.add("");
+			}
+			return result;
+	    }
     }
     
 	/**

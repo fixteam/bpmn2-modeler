@@ -158,7 +158,7 @@ public class GatewayDetailComposite extends DefaultDetailComposite {
 						Diagram diagram = getDiagramEditor().getDiagramTypeProvider().getDiagram();
 						List<PictogramElement> pes = Graphiti.getLinkService().getPictogramElements(diagram, object);
 						getDiagramEditor().setPictogramElementForSelection(pes.get(0));
-						getDiagramEditor().refresh();
+						getDiagramEditor().getDiagramBehavior().getRefreshBehavior().refresh();
 					}
 				});
 			}

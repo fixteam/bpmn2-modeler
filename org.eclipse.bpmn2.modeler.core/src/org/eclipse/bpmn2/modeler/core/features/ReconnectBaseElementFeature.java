@@ -60,7 +60,9 @@ public class ReconnectBaseElementFeature extends DefaultReconnectionFeature {
 			Tuple<FixPointAnchor, FixPointAnchor> anchors = null;
 			if (context.getReconnectType().equals(ReconnectionContext.RECONNECT_TARGET)) {
 				target = (AnchorContainer) context.getTargetPictogramElement();
-				if (AnchorUtil.useAdHocAnchors(target, connection)) {
+//				if (AnchorUtil.useAdHocAnchors(target, connection))
+				if (true)
+				{
 					ILocation targetLoc = context.getTargetLocation();
 					ILocation shapeLoc = peService.getLocationRelativeToDiagram((Shape)target);
 					Point p = gaService.createPoint(targetLoc.getX() - shapeLoc.getX(), targetLoc.getY() - shapeLoc.getY());
@@ -78,7 +80,9 @@ public class ReconnectBaseElementFeature extends DefaultReconnectionFeature {
 			}
 			else {
 				source = (AnchorContainer) context.getTargetPictogramElement();
-				if (AnchorUtil.useAdHocAnchors(source, connection)) {
+//				if (AnchorUtil.useAdHocAnchors(source, connection))
+				if (true)
+				{
 					ILocation sourceLoc = context.getTargetLocation();
 					ILocation shapeLoc = peService.getLocationRelativeToDiagram((Shape)source);
 					Point p = gaService.createPoint(sourceLoc.getX() - shapeLoc.getX(), sourceLoc.getY() - shapeLoc.getY());

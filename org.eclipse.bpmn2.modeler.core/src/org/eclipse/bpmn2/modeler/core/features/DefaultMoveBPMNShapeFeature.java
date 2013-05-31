@@ -93,12 +93,6 @@ public class DefaultMoveBPMNShapeFeature extends DefaultMoveShapeFeature {
 			}
 		}
 
-		Object[] node = getAllBusinessObjectsForPictogramElement(shape);
-		for (Object object : node) {
-			if (object instanceof BPMNShape || object instanceof BPMNEdge) {
-				AnchorUtil.reConnect((DiagramElement) object, getDiagram());
-			}
-		}
 		ConnectionFeatureContainer.updateConnections(getFeatureProvider(), shape);
 		
 		for (Connection connection : getDiagram().getConnections()) {

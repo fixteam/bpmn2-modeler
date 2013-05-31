@@ -80,6 +80,9 @@ public class Bpmn2ModelerFactory extends Bpmn2FactoryImpl {
 	                    };
 	                }
 	            };
+	            // To remove the "bpmn2:" namespace prefix from all elements, just add this
+	            // as the default namespace to the <definitions> namespace prefix map
+	            // xMLNSPrefixMap.map().put("", Bpmn2Package.eNS_URI);
 	        }
 	        return xMLNSPrefixMap.map();
 

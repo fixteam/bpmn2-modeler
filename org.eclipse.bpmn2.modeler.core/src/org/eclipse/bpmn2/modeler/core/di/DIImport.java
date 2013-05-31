@@ -159,11 +159,11 @@ public class DIImport {
 				// do the import
 				// do the import
 				for (BPMNDiagram d : bpmnDiagrams) {
-					diagram = DIUtils.getOrCreateDiagram(editor,d);
+					diagram = DIUtils.getOrCreateDiagram(editor.getDiagramBehavior(),d);
 				}
 				for (BPMNDiagram d : bpmnDiagrams) {
 					
-					diagram = DIUtils.findDiagram(editor,d);
+					diagram = DIUtils.findDiagram(editor.getDiagramBehavior(),d);
 					editor.getDiagramTypeProvider().init(diagram, editor);
 
 					BPMNPlane plane = d.getPlane();
@@ -439,7 +439,7 @@ public class DIImport {
 	private Diagram getDiagram(EObject object) {
 		while (object!=null && !(object instanceof BPMNDiagram))
 			object = object.eContainer();
-		return DIUtils.getOrCreateDiagram(editor, (BPMNDiagram)object);
+		return DIUtils.getOrCreateDiagram(editor.getDiagramBehavior(), (BPMNDiagram)object);
 	
 	}
 	
@@ -619,7 +619,7 @@ public class DIImport {
 			if (targetContainer == null) {
 				BPMNDiagram childDiagram = DIUtils.findBPMNDiagram(element, true);
 				if (childDiagram!=null) {
-					targetContainer = DIUtils.findDiagram(editor, childDiagram);
+					targetContainer = DIUtils.findDiagram(editor.getDiagramBehavior(), childDiagram);
 				}
 			}
 			if (!(targetContainer instanceof Diagram)) {

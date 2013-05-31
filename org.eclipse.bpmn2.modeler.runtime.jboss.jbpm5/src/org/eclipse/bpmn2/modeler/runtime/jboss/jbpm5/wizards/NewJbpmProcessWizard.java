@@ -170,29 +170,27 @@ public class NewJbpmProcessWizard extends Wizard implements INewWizard {
 	private InputStream openContentStream() {
 		String contents =
 			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+ 
-			"<definitions id=\"Definition\"\n"+
-			"             targetNamespace=\"http://www.jboss.org/drools\"\n"+
-			"             typeLanguage=\"http://www.java.com/javaTypes\"\n"+
-			"             expressionLanguage=\"http://www.mvel.org/2.0\"\n"+
-			"             xmlns=\"http://www.omg.org/spec/BPMN/20100524/MODEL\"\n"+
-			"             xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"+
-			"             xsi:schemaLocation=\"http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd"+
-			" http://www.jboss.org/drools drools.xsd"+
-			" http://www.bpsim.org/schemas/1.0 bpsim.xsd\"\n"+
-			"             xmlns:bpmndi=\"http://www.omg.org/spec/BPMN/20100524/DI\"\n"+
-			"             xmlns:dc=\"http://www.omg.org/spec/DD/20100524/DC\"\n"+
-			"             xmlns:di=\"http://www.omg.org/spec/DD/20100524/DI\"\n"+
-			"             xmlns:drools=\"http://www.jboss.org/drools\">\n"+
-			"             xmlns:bpsim=\"http://www.bpsim.org/schemas/1.0\">\n"+
-			"             xmlns:tns=\"http://www.jboss.org/drools\">\n"+
+			"<bpmn2:definitions\n"+
+			"	xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"+
+			"	xmlns:bpmn2=\"http://www.omg.org/spec/BPMN/20100524/MODEL\"\n"+
+			"	xmlns:bpmndi=\"http://www.omg.org/spec/BPMN/20100524/DI\"\n"+
+			"	xmlns:dc=\"http://www.omg.org/spec/DD/20100524/DC\"\n"+
+			"	xmlns:di=\"http://www.omg.org/spec/DD/20100524/DI\"\n"+
+			"	xmlns:tns=\"http://www.jboss.org/drools\"\n"+
+			"	xmlns=\"http://www.jboss.org/drools\"\n"+
+			"	xsi:schemaLocation=\"http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd http://www.jboss.org/drools drools.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd\"\n"+
+			"	id=\"Definition\"\n"+
+			"	expressionLanguage=\"http://www.mvel.org/2.0\"\n"+
+			"	targetNamespace=\"http://www.jboss.org/drools\"\n"+
+			"	typeLanguage=\"http://www.java.com/javaTypes\">\n"+
 			"\n"+
-			"  <process processType=\"Private\" isExecutable=\"true\""+
+			"  <bpmn2:process processType=\"Private\" isExecutable=\"true\""+
 			" id=\""+processId+"\""+
 			" name=\""+processName+"\""+
 			" tns:packageName=\""+packageName+"\""+
 			" >\n"+
-			"    <startEvent id=\"StartEvent_1\" name=\"StartProcess\" />\n"+
-			"  </process>\n"+
+			"    <bpmn2:startEvent id=\"StartEvent_1\" name=\"StartProcess\"/>\n"+
+			"  </bpmn2:process>\n"+
 			"\n"+
 			"  <bpmndi:BPMNDiagram>\n"+
 			"    <bpmndi:BPMNPlane bpmnElement=\""+processId+"\" >\n"+
@@ -202,7 +200,7 @@ public class NewJbpmProcessWizard extends Wizard implements INewWizard {
 			"      </bpmndi:BPMNPlane>\n"+
 			"  </bpmndi:BPMNDiagram>\n"+
 			"\n"+
-			"</definitions>\n";
+			"</bpmn2:definitions>\n";
 		
 		return new ByteArrayInputStream(contents.getBytes());
 	}
