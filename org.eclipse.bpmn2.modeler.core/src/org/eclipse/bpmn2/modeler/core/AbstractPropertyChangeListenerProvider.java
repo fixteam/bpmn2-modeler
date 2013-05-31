@@ -19,10 +19,6 @@ import java.util.ArrayList;
 public abstract class AbstractPropertyChangeListenerProvider {
 
 	ArrayList<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
-	
-	public void jiangnan(){
-		
-	}
 
 	public void removePropertyChangeListener(PropertyChangeListener pcl) {
 		listeners.remove(pcl);
