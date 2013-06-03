@@ -119,18 +119,18 @@ public class BPMN2BatchValidationConstraint extends AbstractModelConstraint {
 					}
 					if (!foundStartEvent) {
 						ctx.addResult(root);
-						return ctx.createFailureStatus("Process has no Start Event");
+						return ctx.createFailureStatus("流程定义中没有 Start Event");
 					}
 					if (!foundEndEvent) {
 						ctx.addResult(root);
-						return ctx.createFailureStatus("Process has no End Event");
+						return ctx.createFailureStatus("流程定义中没有 End Event");
 					}
 				}
 				else {
 					// report errors only
 					if (isEmpty(process.getName())) {
 						ctx.addResult(root);
-						return ctx.createFailureStatus("Process has no name");
+						return ctx.createFailureStatus("流程定义中没有名称");
 					}
 				}
 			}
@@ -185,7 +185,7 @@ public class BPMN2BatchValidationConstraint extends AbstractModelConstraint {
 			
 			if (!warnings) {
 				if (se.getOutgoing() == null || se.getOutgoing().size() < 1) {
-					return ctx.createFailureStatus("Start Event has no outgoing connections");
+					return ctx.createFailureStatus("Start Event 没有对外的连接");
 				}
 			}
 		}
@@ -194,7 +194,7 @@ public class BPMN2BatchValidationConstraint extends AbstractModelConstraint {
 			
 			if (!warnings) {
 				if (ee.getIncoming() == null || ee.getIncoming().size() < 1) {
-					return ctx.createFailureStatus("End Event has no incoming connections");
+					return ctx.createFailureStatus("End Event 没有传入的连接");
 				}
 			}
 		}
@@ -203,16 +203,16 @@ public class BPMN2BatchValidationConstraint extends AbstractModelConstraint {
 			
 			if (warnings) {
 				if (isEmpty(st.getScript())) {
-					return ctx.createFailureStatus("Script Task has no script");
+					return ctx.createFailureStatus("Script Task 中没有脚本");
 				}
 				if (isEmpty(st.getScriptFormat())) {
-					return ctx.createFailureStatus("Script Task has no script format");
+					return ctx.createFailureStatus("Script Task 没有设置脚本格式");
 				}
 			}
 		}
 		else if (fe instanceof SendTask) {
-			SendTask st = (SendTask) fe;
-
+			//SendTask st = (SendTask) fe;
+			/*
 			if (!warnings) {
 				if (st.getOperationRef() == null) {
 					return ctx.createFailureStatus("Send Task has no operation");
@@ -220,7 +220,7 @@ public class BPMN2BatchValidationConstraint extends AbstractModelConstraint {
 				if (st.getMessageRef() == null) {
 					return ctx.createFailureStatus("Send Task has no message");
 				}
-			}
+			}*/
 		}
 		else if (fe instanceof CatchEvent) {
 			CatchEvent event = (CatchEvent) fe;
@@ -228,7 +228,7 @@ public class BPMN2BatchValidationConstraint extends AbstractModelConstraint {
 			if (!warnings) {
 				List<EventDefinition> eventdefs = event.getEventDefinitions();
 				if (eventdefs.size()==0) {
-					return ctx.createFailureStatus("Catch Event has no event definitions");
+					return ctx.createFailureStatus("Catch Event 没有事件定义");
 				}
 				
 				for (EventDefinition ed : eventdefs) {
@@ -238,15 +238,14 @@ public class BPMN2BatchValidationConstraint extends AbstractModelConstraint {
 								&& ted.getTimeDuration() == null
 								&& ted.getTimeCycle() == null
 						) {
-							return ctx.createFailureStatus("Timer Event has no timer definition");
+							return ctx.createFailureStatus("Timer Event 没有事件定义");
 						}
 					} else if (ed instanceof SignalEventDefinition) {
 						if (((SignalEventDefinition) ed).getSignalRef() == null) {
 							return ctx.createFailureStatus("Signal Event has no signal definition");
 						}
 					} else if (ed instanceof ErrorEventDefinition) {
-						if (((ErrorEventDefinition) ed).getErrorRef() == null
-								|| ((ErrorEventDefinition) ed).getErrorRef().getErrorCode() == null) {
+						if (((ErrorEventDefinition) ed).getErrorRef() == null) {
 							return ctx.createFailureStatus("Error Event has no error definition");
 						}
 					} else if (ed instanceof ConditionalEventDefinition) {
@@ -277,7 +276,7 @@ public class BPMN2BatchValidationConstraint extends AbstractModelConstraint {
 			if (!warnings) {
 				List<EventDefinition> eventdefs = event.getEventDefinitions();
 				if (eventdefs.size()==0) {
-					return ctx.createFailureStatus("Throw Event has no event definitions");
+					return ctx.createFailureStatus("Throw Event 没有事件定义");
 				}
 
 				for (EventDefinition ed : eventdefs) {
@@ -287,15 +286,14 @@ public class BPMN2BatchValidationConstraint extends AbstractModelConstraint {
 								&& ted.getTimeDuration() == null
 								&& ted.getTimeCycle() == null
 						) {
-							return ctx.createFailureStatus("Timer Event has no timer definition");
+							return ctx.createFailureStatus("Timer Event 没有时间定义");
 						}
 					} else if (ed instanceof SignalEventDefinition) {
 						if (((SignalEventDefinition) ed).getSignalRef() == null) {
 							return ctx.createFailureStatus("Signal Event has no signal definition");
 						}
 					} else if (ed instanceof ErrorEventDefinition) {
-						if (((ErrorEventDefinition) ed).getErrorRef() == null
-								|| ((ErrorEventDefinition) ed).getErrorRef().getErrorCode() == null) {
+						if (((ErrorEventDefinition) ed).getErrorRef() == null) {
 							return ctx.createFailureStatus("Error Event has no error definition");
 						}
 					} else if (ed instanceof ConditionalEventDefinition) {
@@ -379,21 +377,21 @@ public class BPMN2BatchValidationConstraint extends AbstractModelConstraint {
 			}*/
 		}
 		else if (fe instanceof CallActivity) {
-			CallActivity ca = (CallActivity) fe;
-
+			/*CallActivity ca = (CallActivity) fe;
+			
 			if (!warnings) {
 				if (ca.getCalledElementRef() == null) {
 					return ctx.createFailureStatus(
-							"Reusable Subprocess has no called element specified");
+							"CallActivity 没用设定调用流程");
 				}
-			}
+			}*/
 		}
 		else if (fe instanceof DataObject) {
 			DataObject dao = (DataObject) fe;
 
 			if (!warnings) {
 				if (dao.getName() == null || dao.getName().length() < 1) {
-					return ctx.createFailureStatus("Data Object has no name");
+					return ctx.createFailureStatus("Data Object 没有名称");
 				}
 			}
 		}
