@@ -14,7 +14,6 @@ package org.eclipse.bpmn2.modeler.ui.editor;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -163,7 +162,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.draw2d.PositionConstants;
 import org.eclipse.emf.common.command.BasicCommandStack;
 import org.eclipse.emf.common.util.BasicDiagnostic;
 import org.eclipse.emf.common.util.TreeIterator;
@@ -175,20 +173,8 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.transaction.RecordingCommand;
 import org.eclipse.emf.transaction.TransactionalEditingDomain.Lifecycle;
 import org.eclipse.emf.transaction.impl.TransactionalEditingDomainImpl;
-import org.eclipse.gef.editparts.ZoomManager;
-import org.eclipse.gef.ui.actions.ActionRegistry;
-import org.eclipse.gef.ui.actions.AlignmentAction;
-import org.eclipse.gef.ui.actions.DirectEditAction;
-import org.eclipse.gef.ui.actions.MatchHeightAction;
-import org.eclipse.gef.ui.actions.MatchWidthAction;
-import org.eclipse.gef.ui.actions.ToggleGridAction;
-import org.eclipse.gef.ui.actions.ZoomInAction;
-import org.eclipse.gef.ui.actions.ZoomOutAction;
 import org.eclipse.gef.ui.parts.SelectionSynchronizer;
 import org.eclipse.graphiti.features.IFeatureProvider;
-import org.eclipse.graphiti.features.ISaveImageFeature;
-import org.eclipse.graphiti.features.context.ISaveImageContext;
-import org.eclipse.graphiti.features.context.impl.SaveImageContext;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
@@ -197,14 +183,7 @@ import org.eclipse.graphiti.services.IPeService;
 import org.eclipse.graphiti.ui.editor.DiagramBehavior;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.graphiti.ui.editor.DiagramEditorInput;
-import org.eclipse.graphiti.ui.internal.action.CopyAction;
-import org.eclipse.graphiti.ui.internal.action.DeleteAction;
-import org.eclipse.graphiti.ui.internal.action.PasteAction;
-import org.eclipse.graphiti.ui.internal.action.RemoveAction;
-import org.eclipse.graphiti.ui.internal.action.ToggleContextButtonPadAction;
-import org.eclipse.graphiti.ui.internal.action.UpdateAction;
 import org.eclipse.graphiti.ui.internal.editor.GFPaletteRoot;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
@@ -215,7 +194,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IPartListener2;
-import org.eclipse.ui.IStorageEditorInput;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchListener;
 import org.eclipse.ui.IWorkbenchPage;
@@ -224,7 +202,6 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.SaveAsDialog;
-import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.IGotoMarker;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.FileEditorInput;
@@ -1105,67 +1082,4 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 		}
 	}
 
-	
-	/*
-	@Override
-	protected void initActionRegistry(ZoomManager zoomManager) {
-		final ActionRegistry actionRegistry = getActionRegistry();
-		@SuppressWarnings("unchecked")
-		final List<String> selectionActions = getSelectionActions();
-
-		// register predefined actions (e.g. update, remove, delete, ...)
-		IAction action = new UpdateAction(this, getConfigurationProvider());
-		actionRegistry.registerAction(action);
-		selectionActions.add(action.getId());
-
-		action = new RemoveAction(this, getConfigurationProvider());
-		actionRegistry.registerAction(action);
-		selectionActions.add(action.getId());
-
-		action = new DeleteAction(this, getConfigurationProvider());
-		actionRegistry.registerAction(action);
-		selectionActions.add(action.getId());
-
-		action = new CopyAction(this, getConfigurationProvider());
-		actionRegistry.registerAction(action);
-		selectionActions.add(action.getId());
-
-		action = new PasteAction(this, getConfigurationProvider());
-		actionRegistry.registerAction(action);
-		selectionActions.add(action.getId());
-
-		IFeatureProvider fp = getConfigurationProvider().getDiagramTypeProvider().getFeatureProvider();
-		if (fp != null) {
-			ISaveImageFeature sf = fp.getSaveImageFeature();
-
-			if (sf != null) {
-				ISaveImageContext context = new SaveImageContext();
-				action = new FixFlowSaveImageAction(sf, context, this);
-				actionRegistry.registerAction(action);
-				selectionActions.add(action.getId());
-			}
-		}
-
-		registerAction(new ZoomInAction(zoomManager));
-		registerAction(new ZoomOutAction(zoomManager));
-		registerAction(new DirectEditAction((IWorkbenchPart) this));
-
-		registerAction(new AlignmentAction((IWorkbenchPart) this, PositionConstants.LEFT));
-		registerAction(new AlignmentAction((IWorkbenchPart) this, PositionConstants.RIGHT));
-		registerAction(new AlignmentAction((IWorkbenchPart) this, PositionConstants.TOP));
-		registerAction(new AlignmentAction((IWorkbenchPart) this, PositionConstants.BOTTOM));
-		registerAction(new AlignmentAction((IWorkbenchPart) this, PositionConstants.CENTER));
-		registerAction(new AlignmentAction((IWorkbenchPart) this, PositionConstants.MIDDLE));
-		registerAction(new MatchWidthAction(this));
-		registerAction(new MatchHeightAction(this));
-		IAction showGrid = new ToggleGridAction(getGraphicalViewer());
-		getActionRegistry().registerAction(showGrid);
-
-		// Bug 323351: Add button to toggle a flag if the context pad buttons
-		// shall be shown or not
-		IAction toggleContextButtonPad = new ToggleContextButtonPadAction(this);
-		toggleContextButtonPad.setChecked(false);
-		actionRegistry.registerAction(toggleContextButtonPad);
-		// End bug 323351
-	}*/
 }
