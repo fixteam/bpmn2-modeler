@@ -936,7 +936,7 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 		super.doSave(monitor);
 
 		Resource resource = getResourceSet().getResource(modelUri, false);
-		BPMN2ProjectValidator.validateOnSave(resource, monitor);
+//		BPMN2ProjectValidator.validateOnSave(resource, monitor);
 	}
 
 	@Override
