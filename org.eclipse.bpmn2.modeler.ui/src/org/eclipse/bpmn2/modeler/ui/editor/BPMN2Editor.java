@@ -504,7 +504,8 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 			if (targetRuntime==null)
 				targetRuntime = TargetRuntime.getDefaultRuntime();
 
-			String profile = getPreferences().getDefaultModelEnablementProfile();
+			String profile = targetRuntime.getModelEnablements().get(0).getProfile();
+//			String profile = getPreferences().getDefaultModelEnablementProfile();
 			setModelEnablementProfile(profile);
 		}
 		return targetRuntime;

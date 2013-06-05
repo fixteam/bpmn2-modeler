@@ -124,11 +124,11 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 			}
 		}
 		
-		if (nonDefaultRuntimeCount == 1 && runtimeId != null){
+		/*if (nonDefaultRuntimeCount == 1 && runtimeId != null){
 			return runtimeId;
-		}else{
+		}else{*/
 			return TargetRuntime.DEFAULT_RUNTIME_ID;
-		}
+//		}
 	}
 	
 	public void setResourceSet(ResourceSet resourceSet) {
