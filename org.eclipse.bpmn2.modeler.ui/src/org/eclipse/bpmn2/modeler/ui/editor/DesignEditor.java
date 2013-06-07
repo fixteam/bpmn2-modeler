@@ -352,7 +352,8 @@ public class DesignEditor extends BPMN2Editor {
 
 			@Override
 			public String getText() {
-				return multipageEditor.getSourceViewer() == null ? "Show Source View" : "Hide Source View";
+//				return multipageEditor.getSourceViewer() == null ? "Show Source View" : "Hide Source View";
+				return multipageEditor.getSourceViewer() == null ? "显示源码" : "隐藏源码";
 			}
 
 			@Override

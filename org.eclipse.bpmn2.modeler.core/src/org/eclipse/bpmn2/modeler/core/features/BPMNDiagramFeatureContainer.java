@@ -139,8 +139,10 @@ public class BPMNDiagramFeatureContainer extends BaseElementFeatureContainer {
 		@Override
 		public String getName() {
 			if (preferences.getEnableConnectionRouting())
-				return "Disable automatic Connection Routing";
-			return "Enable automatic Connection Routing";
+//				return "Disable automatic Connection Routing";
+				return "关闭自动连线";
+//			return "Enable automatic Connection Routing";
+			return "开启自动连线";
 		}
 
 		@Override
@@ -169,12 +171,14 @@ public class BPMNDiagramFeatureContainer extends BaseElementFeatureContainer {
 		
 		@Override
 		public String getName() {
-			return "Re-route all Connections";
+//			return "Re-route all Connections";
+			return "重新连接所有线条(需开启自动连线)";
 		}
 
 		@Override
 		public String getDescription() {
-			return "Re-route all connections in the current diagram using the selected routing strategy";
+//			return "Re-route all connections in the current diagram using the selected routing strategy";
+			return "重新连接所有流程图中的线条";
 		}
 
 		@Override
