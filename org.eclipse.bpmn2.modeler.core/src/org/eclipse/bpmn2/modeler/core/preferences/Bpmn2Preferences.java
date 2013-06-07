@@ -45,6 +45,7 @@ import org.eclipse.bpmn2.TerminateEventDefinition;
 import org.eclipse.bpmn2.Transaction;
 import org.eclipse.bpmn2.di.BPMNShape;
 import org.eclipse.bpmn2.modeler.core.Activator;
+import org.eclipse.bpmn2.modeler.core.preferences.ShapeStyle.RoutingStyle;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.core.internal.resources.ProjectPreferences;
 import org.eclipse.core.resources.IFile;
@@ -543,13 +544,17 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 		for (Style style : StyleConfigUtil.getCurrentStyle().getStyle()) {
 			EClass eclass = (EClass) Bpmn2Package.eINSTANCE.getEClassifier(style.getObject());
 			ShapeStyle ss = new ShapeStyle(style.getForeground(), style.getBackground(), style.getTextColor(), style.getFont());
+			if(enableConnectionRouting) {
+				ss.setRoutingStyle(RoutingStyle.Manhattan);
+			}
+			
 			map.put(eclass.getInstanceClass(), ss);
 		}
 		return (HashMap<Class, ShapeStyle>) map;
 	}
 	
 	public void setShapeStyle(Class clazz, ShapeStyle style) {
-		if (style.isDirty()) {
+		if (style!=null && style.isDirty()) {
 			String key = getShapeStyleId(clazz);
 			String value = ShapeStyle.encode(style);
 			if (hasProjectPreference(key))
