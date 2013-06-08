@@ -162,7 +162,7 @@ public class CallActivityFeatureContainer extends AbstractActivityFeatureContain
 		// editor to display its contents.
 		
 		public CreateCallActivityFeature(IFeatureProvider fp) {
-			super(fp, "Call Activity", "Create "+"Call Activity");
+			super(fp, "外部子流程", "Create "+"Call Activity");
 		}
 
 		@Override

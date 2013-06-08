@@ -35,7 +35,7 @@ import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 public class CreateBoundaryEventFeature extends AbstractBpmn2CreateFeature<BoundaryEvent> {
 
 	public CreateBoundaryEventFeature(IFeatureProvider fp) {
-		super(fp, "Boundary Event", "Create "+"Boundary Event");
+		super(fp, "边界事件", "Create "+"Boundary Event");
 	}
 
 	@Override

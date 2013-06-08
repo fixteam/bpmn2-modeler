@@ -172,7 +172,7 @@ public class DataObjectFeatureContainer extends AbstractDataFeatureContainer {
 		};
 
 		public CreateDataObjectFeature(IFeatureProvider fp) {
-			super(fp, "Data Object", "Create "+"Data Object");
+			super(fp, "数据对象", "Create "+"Data Object");
 		}
 
 		@Override

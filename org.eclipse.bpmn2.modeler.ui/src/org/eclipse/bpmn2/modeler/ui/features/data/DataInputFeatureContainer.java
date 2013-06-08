@@ -77,7 +77,7 @@ public class DataInputFeatureContainer extends AbstractDataFeatureContainer {
 	public static class CreateDataInputFeature extends AbstractCreateDataInputOutputFeature<DataInput> {
 
 		public CreateDataInputFeature(IFeatureProvider fp) {
-			super(fp, "Data Input", "Create "+"Data Input");
+			super(fp, "输入数据", "Create "+"Data Input");
 		}
 
 		@Override

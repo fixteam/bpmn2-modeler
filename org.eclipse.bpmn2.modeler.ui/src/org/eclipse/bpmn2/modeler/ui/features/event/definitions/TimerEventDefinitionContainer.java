@@ -94,7 +94,7 @@ public class TimerEventDefinitionContainer extends AbstractEventDefinitionFeatur
 	public static class CreateTimerEventDefinition extends CreateEventDefinition<TimerEventDefinition> {
 
 		public CreateTimerEventDefinition(IFeatureProvider fp) {
-			super(fp, "Timer Event Definition", "Create "+"Timer Event Definition");
+			super(fp, "时间事件定义", "Create "+"Timer Event Definition");
 		}
 
 		@Override

@@ -143,7 +143,7 @@ public class GroupFeatureContainer extends BaseElementFeatureContainer {
 	public static class CreateGroupFeature extends AbstractCreateArtifactFeature<Group> {
 
 		public CreateGroupFeature(IFeatureProvider fp) {
-			super(fp, "Group", "Create "+"Group");
+			super(fp, "分组", "Create "+"Group");
 		}
 
 		@Override

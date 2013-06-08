@@ -83,7 +83,7 @@ public class DataOutputFeatureContainer extends AbstractDataFeatureContainer {
 	public static class CreateDataOutputFeature extends AbstractCreateDataInputOutputFeature<DataOutput> {
 
 		public CreateDataOutputFeature(IFeatureProvider fp) {
-			super(fp, "Data Output", "Create "+"Data Output");
+			super(fp, "输出数据", "Create "+"Data Output");
 		}
 
 		@Override

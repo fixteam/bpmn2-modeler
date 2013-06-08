@@ -33,7 +33,7 @@ public class CreateLaneFeature extends AbstractBpmn2CreateFeature<Lane> {
 	private static int index = 1;
 
 	public CreateLaneFeature(IFeatureProvider fp) {
-		super(fp, "Lane", "Create "+"Lane");
+		super(fp, "泳道", "Create "+"Lane");
 	}
 
 	@Override
