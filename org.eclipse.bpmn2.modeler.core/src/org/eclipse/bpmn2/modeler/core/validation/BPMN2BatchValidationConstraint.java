@@ -238,7 +238,7 @@ public class BPMN2BatchValidationConstraint extends AbstractModelConstraint {
 								&& ted.getTimeDuration() == null
 								&& ted.getTimeCycle() == null
 						) {
-							return ctx.createFailureStatus("Timer Event 没有事件定义");
+							return ctx.createFailureStatus("Timer Event 没有时间定义");
 						}
 					} else if (ed instanceof SignalEventDefinition) {
 						if (((SignalEventDefinition) ed).getSignalRef() == null) {
