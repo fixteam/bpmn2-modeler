@@ -704,6 +704,7 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 
 				@Override
 				public void partBroughtToTop(IWorkbenchPartReference partRef) {
+					getAdapter(IPropertySheetPage.class);//20130713重新构造属性页--wy
 					IWorkbenchPart part = partRef.getPart(false);
 					if (part instanceof BPMN2MultiPageEditor) {
 						BPMN2MultiPageEditor mpe = (BPMN2MultiPageEditor)part;
