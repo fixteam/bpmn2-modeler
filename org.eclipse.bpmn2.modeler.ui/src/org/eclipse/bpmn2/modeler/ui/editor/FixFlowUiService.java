@@ -133,7 +133,7 @@ public class FixFlowUiService extends UiService {
 	
 
 
-	public void startSaveAsImageDialog(GraphicalViewer graphicalViewer, String language , String processKey,String shortfilename) {
+	public byte[] startSaveAsImageDialog(GraphicalViewer graphicalViewer, String language , String processKey,String shortfilename) {
 		final String METHOD = "startSaveAsImageDialog(graphicalViewer)"; //$NON-NLS-1$
 
 		// check extension point for exporters
@@ -153,13 +153,13 @@ public class FixFlowUiService extends UiService {
 
 		EditPart rootEditPart = graphicalViewer.getRootEditPart();
 		if (!(rootEditPart instanceof GraphicalEditPart))
-			return;
+			return null;
 
 		// determine _allFigure
 		GraphicalEditPart graphicalRootEditPart = (GraphicalEditPart) rootEditPart;
 		IFigure rootFigure = ((LayerManager) graphicalRootEditPart).getLayer(LayerConstants.PRINTABLE_LAYERS);
 		if (rootFigure == null)
-			return;
+			return null;
 
 		_allFigure = rootFigure;
 		
@@ -170,7 +170,7 @@ public class FixFlowUiService extends UiService {
 		
 		String filename = filePath + shortfilename + ".PNG";
 	
-		
+		byte image[] = null;
 		
 		File file = new File(filePath);
 		
@@ -198,8 +198,8 @@ public class FixFlowUiService extends UiService {
 					new ProgressMonitorDialog(shell).run(false, false, operation);*/
 
 				int imageFormat = saveAsImageDialog.getImageFormat();
-				byte image[] = createImage(im, imageFormat);
-				operation = getSaveToFileOp(shell, filename, image);
+				image = createImage(im, imageFormat);
+				/*operation = getSaveToFileOp(shell, filename, image);
 				
 				new ProgressMonitorDialog(shell).run(false, false, operation);
 				
@@ -214,9 +214,8 @@ public class FixFlowUiService extends UiService {
 		        }   
 		        catch (Exception e)   
 		        {   
-		            // TODO Auto-generated catch block   
 		            e.printStackTrace();   
-		        }   
+		        }   */
 				
 			} catch (Exception e) {
 				String message = "Cannot save image: "; //$NON-NLS-1$
@@ -226,6 +225,7 @@ public class FixFlowUiService extends UiService {
 				e.printStackTrace();
 			}
 		}
+		return image;
 	}
 
 	@Override
