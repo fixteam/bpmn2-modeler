@@ -198,7 +198,7 @@ public class FixFlowUiService extends UiService {
 					new ProgressMonitorDialog(shell).run(false, false, operation);*/
 
 				int imageFormat = saveAsImageDialog.getImageFormat();
-				image = createImage(im, imageFormat);
+				image = createImage(im, 5);
 				/*operation = getSaveToFileOp(shell, filename, image);
 				
 				new ProgressMonitorDialog(shell).run(false, false, operation);
