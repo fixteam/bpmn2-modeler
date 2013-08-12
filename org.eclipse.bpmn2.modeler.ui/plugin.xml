@@ -2,13 +2,16 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension-point id="org.eclipse.bpmn2.modeler.ui" name="BPMN2 Modeler UI contributions" schema="schema/org.eclipse.bpmn2.modeler.ui.exsd"/>
+	<!--
 	<extension point="org.eclipse.ui.newWizards">
+	-->
 		<!-- <primaryWizard id="org.eclipse.bpmn2.modeler.ui.diagram"> </primaryWizard> -->
-		<wizard category="org.eclipse.bpmn2.wizardCategory"
+		<!--<wizard category="org.eclipse.bpmn2.wizardCategory"
 			class="org.eclipse.bpmn2.modeler.ui.wizards.BPMN2DiagramWizard" icon="icons/bpmn2_editor_16.png"
 			id="org.eclipse.bpmn2.modeler.ui.diagram" name="Generic BPMN 2.0 Diagram">
 		</wizard>
 	</extension>
+	-->
 	
 	<extension point="org.eclipse.ui.editors">
 		<!--
