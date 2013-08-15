@@ -224,7 +224,7 @@ public class ResizeLaneFeature extends DefaultResizeBPMNShapeFeature {
 							newContext.setX(currentGA.getX());
 							newContext.setY(currentGA.getY());
 							newContext.setHeight(currentGA.getHeight() + dHeight);
-							newContext.setWidth(currentGA.getHeight() + dHeight);
+							newContext.setWidth(currentGA.getWidth() + dWidth);
 
 							newContext.putProperty(LANE_RESIZE_PROPERTY, true);
 

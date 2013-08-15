@@ -15,12 +15,14 @@ package org.eclipse.bpmn2.modeler.ui.features.lane;
 
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.bpmn2.modeler.ui.features.AbstractDefaultDeleteFeature;
+import org.eclipse.dd.di.Diagram;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.IResizeShapeFeature;
 import org.eclipse.graphiti.features.context.IDeleteContext;
 import org.eclipse.graphiti.features.context.impl.ResizeShapeContext;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
+import org.eclipse.graphiti.mm.pictograms.impl.DiagramImpl;
 import org.eclipse.graphiti.services.Graphiti;
 
 /**
@@ -62,11 +64,19 @@ public class DeleteLaneFeature extends AbstractDefaultDeleteFeature {
 			}
 			newContext.setLocation(neighborGA.getX(), neighborGA.getY());
 			if (isHorizontal) {
-				newContext.setHeight(neighborGA.getHeight() + ga.getHeight());
+				if(parentContainerShape instanceof DiagramImpl) {
+					newContext.setHeight(neighborGA.getHeight());
+				}else {
+					newContext.setHeight(neighborGA.getHeight() + ga.getHeight());
+				}
 				newContext.setWidth(neighborGA.getWidth());
 			} else {
 				newContext.setHeight(neighborGA.getHeight());
-				newContext.setWidth(neighborGA.getWidth() + ga.getWidth());
+				if(parentContainerShape instanceof DiagramImpl) {
+					newContext.setWidth(neighborGA.getWidth());
+				}else {
+					newContext.setWidth(neighborGA.getWidth() + ga.getWidth());
+				}
 			}
 			
 			IResizeShapeFeature resizeFeature = getFeatureProvider().getResizeShapeFeature(newContext);
