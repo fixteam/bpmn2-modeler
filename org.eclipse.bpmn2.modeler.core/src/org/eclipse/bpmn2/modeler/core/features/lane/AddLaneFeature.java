@@ -158,8 +158,7 @@ public class AddLaneFeature extends AbstractAddBPMNShapeFeature<Lane> {
 
 		peCreateService.createChopboxAnchor(containerShape);
 		AnchorUtil.addFixedPointAnchors(containerShape, rect);
-		layoutPictogramElement(containerShape);
-		
+
 		return containerShape;
 	}
 
@@ -229,15 +228,15 @@ public class AddLaneFeature extends AbstractAddBPMNShapeFeature<Lane> {
 			if (context.getTargetContainer() instanceof Diagram) {
 				return getHeight();
 			}
-			/*int height = context.getTargetContainer().getGraphicsAlgorithm().getHeight();
+			int height = context.getTargetContainer().getGraphicsAlgorithm().getHeight();
 			
 			Bounds bounds = getPreviousBounds(context);
 			if (bounds != null) {
 				height = (int) bounds.getHeight();
 			}
-			return height;*/
+			return height;
 		}
-		return context.getHeight() > 0 ? context.getHeight() : (isHorizontal(context) ? getHeight() : getWidth()); 
+		return context.getHeight();
 	}
 	
 	@Override
@@ -246,15 +245,15 @@ public class AddLaneFeature extends AbstractAddBPMNShapeFeature<Lane> {
 			if (context.getTargetContainer() instanceof Diagram) {
 				return getWidth();
 			}
-			/*int width = context.getTargetContainer().getGraphicsAlgorithm().getWidth();
+			int width = context.getTargetContainer().getGraphicsAlgorithm().getWidth();
 			
 			Bounds bounds = getPreviousBounds(context);
 			if (bounds != null) {
 				width = (int) bounds.getWidth();
 			}
-			return width;*/
+			return width;
 		}
-		return context.getWidth() > 0 ? context.getWidth() : (isHorizontal(context) ? getWidth() : getHeight());
+		return context.getWidth();
 	}
 
 	@Override
