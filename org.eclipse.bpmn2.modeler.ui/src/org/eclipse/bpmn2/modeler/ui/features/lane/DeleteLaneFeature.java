@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2011, 2012 Red Hat, Inc.
- *  All rights reserved.
+ * All rights reserved.
  * This program is made available under the terms of the
  * Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
@@ -15,17 +15,19 @@ package org.eclipse.bpmn2.modeler.ui.features.lane;
 
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.bpmn2.modeler.ui.features.AbstractDefaultDeleteFeature;
+import org.eclipse.dd.di.Diagram;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.IResizeShapeFeature;
 import org.eclipse.graphiti.features.context.IDeleteContext;
 import org.eclipse.graphiti.features.context.impl.ResizeShapeContext;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
+import org.eclipse.graphiti.mm.pictograms.impl.DiagramImpl;
 import org.eclipse.graphiti.services.Graphiti;
 
 /**
  * @author Bob Brodt
- *
+ * 
  */
 public class DeleteLaneFeature extends AbstractDefaultDeleteFeature {
 
@@ -40,7 +42,7 @@ public class DeleteLaneFeature extends AbstractDefaultDeleteFeature {
 	public void delete(IDeleteContext context) {
 		ContainerShape laneContainerShape = (ContainerShape) context.getPictogramElement();
 		ContainerShape parentContainerShape = laneContainerShape.getContainer();
-		
+
 		if (parentContainerShape != null) {
 			boolean before = false;
 			ContainerShape neighborContainerShape = FeatureSupport.getLaneAfter(laneContainerShape);
@@ -62,13 +64,21 @@ public class DeleteLaneFeature extends AbstractDefaultDeleteFeature {
 			}
 			newContext.setLocation(neighborGA.getX(), neighborGA.getY());
 			if (isHorizontal) {
-				newContext.setHeight(neighborGA.getHeight() + ga.getHeight());
+				if (parentContainerShape instanceof DiagramImpl) {
+					newContext.setHeight(neighborGA.getHeight());
+				} else {
+					newContext.setHeight(neighborGA.getHeight() + ga.getHeight());
+				}
 				newContext.setWidth(neighborGA.getWidth());
 			} else {
 				newContext.setHeight(neighborGA.getHeight());
-				newContext.setWidth(neighborGA.getWidth() + ga.getWidth());
+				if (parentContainerShape instanceof DiagramImpl) {
+					newContext.setWidth(neighborGA.getWidth());
+				} else {
+					newContext.setWidth(neighborGA.getWidth() + ga.getWidth());
+				}
 			}
-			
+
 			IResizeShapeFeature resizeFeature = getFeatureProvider().getResizeShapeFeature(newContext);
 			if (resizeFeature.canResizeShape(newContext)) {
 				super.delete(context);
