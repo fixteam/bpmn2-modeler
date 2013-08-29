@@ -14,7 +14,6 @@
 package org.eclipse.bpmn2.modeler.ui.adapters.properties;
 
 import org.eclipse.bpmn2.BaseElement;
-import org.eclipse.bpmn2.Bpmn2Factory;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.Interface;
 import org.eclipse.bpmn2.Operation;
@@ -23,6 +22,7 @@ import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.adapters.FeatureDescriptor;
 import org.eclipse.bpmn2.modeler.core.adapters.InsertionAdapter;
 import org.eclipse.bpmn2.modeler.core.adapters.ObjectDescriptor;
+import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.NamespaceUtil;
 import org.eclipse.emf.common.notify.AdapterFactory;
@@ -54,11 +54,11 @@ public class InterfacePropertiesAdapter extends ExtendedPropertiesAdapter<Interf
 			@Override
 			public EObject createFeature(Resource resource, Object context, EClass eclass) {
 				Interface intf = adopt(context);
-				createObject(resource, context);
-				Operation operation = Bpmn2Factory.eINSTANCE.createOperation();
+				Operation operation = Bpmn2ModelerFactory.create(Operation.class);
 				ModelUtil.setID(operation, resource);
 				operation.setName( ModelUtil.toDisplayName(operation.getId()) );
-				InsertionAdapter.add(intf, Bpmn2Package.eINSTANCE.getInterface_Operations(), operation);
+//				InsertionAdapter.add(intf, Bpmn2Package.eINSTANCE.getInterface_Operations(), operation);
+				intf.getOperations().add(operation);
 				return operation;
 			}
     		

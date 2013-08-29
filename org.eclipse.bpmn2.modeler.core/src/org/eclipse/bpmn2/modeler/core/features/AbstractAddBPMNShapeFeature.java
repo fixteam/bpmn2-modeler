@@ -37,6 +37,7 @@ import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
+import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.Tuple;
 import org.eclipse.dd.dc.DcFactory;
@@ -182,82 +183,10 @@ public abstract class AbstractAddBPMNShapeFeature<T extends BaseElement>
 		((AddContext)context).setWidth(width);
 		((AddContext)context).setHeight(height);
 		
-		Connection connection = context.getTargetConnection();
-		if (connection!=null) {
-			// if the drop target is a connection line, adjust the context
-			// x or y so that the point lies on the line instead of just near it.
-			Anchor a0 = connection.getStart();
-			Anchor a1 = connection.getEnd();
-			
-			double x0 = getRelativeLocationX(a0);
-			double y0 = getRelativeLocationY(a0);
-			double x1 = getRelativeLocationX(a1);
-			double y1 = getRelativeLocationY(a1);
-			
-			if (x0 != x1) {
-				double m = (y1 - y0) / (x1 - x0);
-				double b = y0 - m * x0;
-				int y2 = (int)(m * x + b);
-				// because of roundoff errors when the slope is nearly vertical, the
-				// adjusted y may be way off; in this case, adjust the x coordinate instead
-				if (Math.abs(m) > 100) {
-					x = (int)((y - b) / m);
-				}
-				else {
-					y = y2;
-				}
-				
-				// [x,y] is now the correct location on the connection line of the Activity's
-				// center point: calculate new location of the Activity figure.
-			}
-			else {
-				// vertical line: place drop x == line's x
-				x = (int)x0;
-			}
-			
-			// TODO: do we want to keep the connection bendpoints?
-			if (connection instanceof FreeFormConnection) {
-				FreeFormConnection ffc = (FreeFormConnection)connection;
-				ffc.getBendpoints().clear();
-				DIUtils.updateDIEdge(connection);
-			}
-		}
 		y -= height/2;
 		x -= width / 2;
 		((AddContext)context).setY(y);
 		((AddContext)context).setX(x);
-	}
-	
-	private double getRelativeLocationX(Anchor anchor) {
-		double result = 0.0;
-		if (anchor instanceof FixPointAnchor) {
-			FixPointAnchor fpa = (FixPointAnchor) anchor;
-			IRectangle gaBoundsForAnchor = Graphiti.getPeService().getGaBoundsForAnchor(anchor);
-			result = gaBoundsForAnchor.getX() + fpa.getLocation().getX();
-			
-			AnchorContainer anchorContainer = anchor.getParent();
-			if (anchorContainer instanceof Shape) {
-				Shape shape = (Shape) anchorContainer;
-				result = result + shape.getGraphicsAlgorithm().getX();
-			}
-		}
-		return result;
-	}
-	
-	private double getRelativeLocationY(Anchor anchor) {
-		double result = 0.0;
-		if (anchor instanceof FixPointAnchor) {
-			FixPointAnchor fpa = (FixPointAnchor) anchor;
-			IRectangle gaBoundsForAnchor = Graphiti.getPeService().getGaBoundsForAnchor(anchor);
-			result = gaBoundsForAnchor.getY() + fpa.getLocation().getY();
-			
-			AnchorContainer anchorContainer = anchor.getParent();
-			if (anchorContainer instanceof Shape) {
-				Shape shape = (Shape) anchorContainer;
-				result = result + shape.getGraphicsAlgorithm().getY();
-			}
-		}
-		return result;
 	}
 
 	protected void splitConnection(IAddContext context, ContainerShape containerShape) {
@@ -291,17 +220,17 @@ public abstract class AbstractAddBPMNShapeFeature<T extends BaseElement>
 			ILocation targetLocation = layoutService.getLocationRelativeToDiagram(containerShape);
 			
 			ReconnectionContext rc;
-			Tuple<FixPointAnchor, FixPointAnchor> anchors;
+			FixPointAnchor anchor;
 			
-			if (newObject instanceof StartEvent || len0 < len1) {
-				anchors = AnchorUtil.getSourceAndTargetBoundaryAnchors(containerShape, oldTargetContainer, connection);
-				rc = new ReconnectionContext(connection, connection.getStart(), anchors.getFirst(), targetLocation);
+			if (newObject instanceof StartEvent || (len0 < len1 && !(newObject instanceof EndEvent))) {
+				anchor = AnchorUtil.findNearestAnchor(containerShape, GraphicsUtil.getShapeCenter(oldTargetContainer));
+				rc = new ReconnectionContext(connection, connection.getStart(), anchor, targetLocation);
 				rc.setReconnectType(ReconnectionContext.RECONNECT_SOURCE);
 				rc.setTargetPictogramElement(containerShape);
 			}
 			else {
-				anchors = AnchorUtil.getSourceAndTargetBoundaryAnchors(oldSourceContainer, containerShape, connection);
-				rc = new ReconnectionContext(connection, connection.getEnd(), anchors.getSecond(), targetLocation);
+				anchor = AnchorUtil.findNearestAnchor(oldTargetContainer, GraphicsUtil.getShapeCenter(containerShape));
+				rc = new ReconnectionContext(connection, connection.getEnd(), anchor, targetLocation);
 				rc.setReconnectType(ReconnectionContext.RECONNECT_TARGET);
 				rc.setTargetPictogramElement(containerShape);
 			}
@@ -314,16 +243,18 @@ public abstract class AbstractAddBPMNShapeFeature<T extends BaseElement>
 				if (len0 < len1) {
 					ccc.setSourcePictogramElement(oldSourceContainer);
 					ccc.setTargetPictogramElement(containerShape);
-					anchors = AnchorUtil.getSourceAndTargetBoundaryAnchors(oldSourceContainer, containerShape, connection);
-					ccc.setSourceAnchor(anchors.getFirst());
-					ccc.setTargetAnchor(anchors.getSecond());
+					anchor = AnchorUtil.findNearestAnchor(oldSourceContainer, GraphicsUtil.getShapeCenter(containerShape));
+					ccc.setSourceAnchor(anchor);
+					anchor = AnchorUtil.findNearestAnchor(containerShape, GraphicsUtil.getShapeCenter(oldTargetContainer));
+					ccc.setTargetAnchor(anchor);
 				}
 				else {
 					ccc.setSourcePictogramElement(containerShape);
 					ccc.setTargetPictogramElement(oldTargetContainer);
-					anchors = AnchorUtil.getSourceAndTargetBoundaryAnchors(containerShape, oldTargetContainer, connection);
-					ccc.setSourceAnchor(anchors.getFirst());
-					ccc.setTargetAnchor(anchors.getSecond());
+					anchor = AnchorUtil.findNearestAnchor(containerShape, GraphicsUtil.getShapeCenter(oldTargetContainer));
+					ccc.setSourceAnchor(anchor);
+					anchor = AnchorUtil.findNearestAnchor(oldTargetContainer, GraphicsUtil.getShapeCenter(containerShape));
+					ccc.setTargetAnchor(anchor);
 				}
 				
 				Connection newConnection = null;

@@ -77,7 +77,7 @@ public class DefaultDetailComposite extends AbstractDetailComposite {
 				List<Documentation> docList = (List<Documentation>)object.eGet(feature);
 				Documentation documentation;
 				if (docList.size()==0) {
-					documentation = (Documentation) FACTORY.createDocumentation();
+					documentation = createModelObject(Documentation.class);
 					InsertionAdapter.add(object, feature, documentation);
 				}
 				else {
@@ -220,7 +220,7 @@ public class DefaultDetailComposite extends AbstractDetailComposite {
 			if (reference.getEType() == PACKAGE.getExpression() || reference.getEType() == PACKAGE.getFormalExpression()) {
 				FormalExpression expression = (FormalExpression)object.eGet(reference);
 				if (expression==null) {
-					expression = FACTORY.createFormalExpression();
+					expression = createModelObject(FormalExpression.class);
 					InsertionAdapter.add(object, reference, expression);
 				}
 				AbstractDetailComposite composite = PropertiesCompositeFactory.createDetailComposite(Expression.class, getAttributesParent(), SWT.BORDER);

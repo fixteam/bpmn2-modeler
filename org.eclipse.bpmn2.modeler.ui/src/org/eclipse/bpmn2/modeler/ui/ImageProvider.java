@@ -24,6 +24,7 @@ import org.eclipse.bpmn2.ComplexGateway;
 import org.eclipse.bpmn2.ConditionalEventDefinition;
 import org.eclipse.bpmn2.Conversation;
 import org.eclipse.bpmn2.ConversationLink;
+import org.eclipse.bpmn2.DataAssociation;
 import org.eclipse.bpmn2.DataInput;
 import org.eclipse.bpmn2.DataObject;
 import org.eclipse.bpmn2.DataOutput;
@@ -80,6 +81,7 @@ public class ImageProvider extends AbstractImageProvider {
 	public static final String IMG_16_TEXT_ANNOTATION = PREFIX + TextAnnotation.class.getSimpleName().toLowerCase()
 	        + dot16;
 	public static final String IMG_16_ASSOCIATION = PREFIX + Association.class.getSimpleName().toLowerCase() + dot16;
+	public static final String IMG_16_DATA_ASSOCIATION = PREFIX + DataAssociation.class.getSimpleName().toLowerCase() + dot16;
 	public static final String IMG_16_INCLUSIVE_GATEWAY = PREFIX + InclusiveGateway.class.getSimpleName().toLowerCase()
 	        + dot16;
 	public static final String IMG_16_PARALLEL_GATEWAY = PREFIX + ParallelGateway.class.getSimpleName().toLowerCase()
@@ -158,6 +160,8 @@ public class ImageProvider extends AbstractImageProvider {
 
 	public final String IMG_16_PROPERTIES = "org.eclipse.bpmn2.modeler.icons." + "properties" + dot16; //$NON-NLS-1$
 
+	public static final String IMG_16_MORPH = PREFIX + "morph" + dot16;
+
 	@Override
 	protected void addAvailableImages() {
 		addImageFilePath(IMG_16_START_EVENT, ICONS_16 + "StartEvent.png");
@@ -169,6 +173,7 @@ public class ImageProvider extends AbstractImageProvider {
 		addImageFilePath(IMG_16_LANE, ICONS_16 + "Lane.png");
 		addImageFilePath(IMG_16_TEXT_ANNOTATION, ICONS_16 + "TextAnnotation.png");
 		addImageFilePath(IMG_16_ASSOCIATION, ICONS_16 + "Association.png");
+		addImageFilePath(IMG_16_DATA_ASSOCIATION, ICONS_16 + "DataAssociation.png");
 		addImageFilePath(IMG_16_INCLUSIVE_GATEWAY, ICONS_16 + "InclusiveGateway.png");
 		addImageFilePath(IMG_16_PARALLEL_GATEWAY, ICONS_16 + "ParallelGateway.png");
 		addImageFilePath(IMG_16_EVENT_BASED_GATEWAY, ICONS_16 + "EventBasedGateway.png");
@@ -183,22 +188,22 @@ public class ImageProvider extends AbstractImageProvider {
 		addImageFilePath(IMG_16_SERVICE_TASK, ICONS_16 + "ServiceTask.png");
 		addImageFilePath(IMG_16_SEND_TASK, ICONS_16 + "SendTask.png");
 		addImageFilePath(IMG_16_RECEIVE_TASK, ICONS_16 + "ReceiveTask.png");
-		addImageFilePath(IMG_16_CONDITION, ICONS_16 + "Condition.png");
-		addImageFilePath(IMG_16_TIMER, ICONS_16 + "Timer.png");
-		addImageFilePath(IMG_16_SIGNAL, ICONS_16 + "Signal.png");
-		addImageFilePath(IMG_16_MESSAGE, ICONS_16 + "Message.png");
-		addImageFilePath(IMG_16_ESCAlATION, ICONS_16 + "Escalation.png");
-		addImageFilePath(IMG_16_COMPENSATE, ICONS_16 + "Compensate.png");
-		addImageFilePath(IMG_16_LINK, ICONS_16 + "Link.png");
-		addImageFilePath(IMG_16_ERROR, ICONS_16 + "Error.png");
-		addImageFilePath(IMG_16_CANCEL, ICONS_16 + "Cancel.png");
+		addImageFilePath(IMG_16_CONDITION, ICONS_16 + "ConditionalEventDefinition.png");
+		addImageFilePath(IMG_16_TIMER, ICONS_16 + "TimerEventDefinition.png");
+		addImageFilePath(IMG_16_SIGNAL, ICONS_16 + "SignalEventDefinition.png");
+		addImageFilePath(IMG_16_MESSAGE, ICONS_16 + "MessageEventDefinition.png");
+		addImageFilePath(IMG_16_ESCAlATION, ICONS_16 + "EscalationEventDefinition.png");
+		addImageFilePath(IMG_16_COMPENSATE, ICONS_16 + "CompensateEventDefinition.png");
+		addImageFilePath(IMG_16_LINK, ICONS_16 + "LinkEventDefinition.png");
+		addImageFilePath(IMG_16_ERROR, ICONS_16 + "ErrorEventDefinition.png");
+		addImageFilePath(IMG_16_CANCEL, ICONS_16 + "CancelEventDefinition.png");
 		addImageFilePath(IMG_16_BOUNDARY_EVENT, ICONS_16 + "BoundaryEvent.png");
 		addImageFilePath(IMG_16_SUB_PROCESS, ICONS_16 + "SubProcess.png");
 		addImageFilePath(IMG_16_AD_HOC_SUB_PROCESS, ICONS_16 + "AdHocSubProcess.png");
 		addImageFilePath(IMG_16_TRANSACTION, ICONS_16 + "Transaction.png");
 		addImageFilePath(IMG_16_GROUP, ICONS_16 + "Group.png");
 		addImageFilePath(IMG_16_DATA_OBJECT, ICONS_16 + "DataObject.png");
-		addImageFilePath(IMG_16_TERMINATE, ICONS_16 + "Terminate.png");
+		addImageFilePath(IMG_16_TERMINATE, ICONS_16 + "TerminateEventDefinition.png");
 		addImageFilePath(IMG_16_DATA_STORE, ICONS_16 + "DataStore.png");
 		addImageFilePath(IMG_16_DATA_INPUT, ICONS_16 + "DataInput.png");
 		addImageFilePath(IMG_16_DATA_OUTPUT, ICONS_16 + "DataOutput.png");
@@ -226,6 +231,8 @@ public class ImageProvider extends AbstractImageProvider {
 		addImageFilePath(IMG_16_BLACKBOX, ICONS_16 + "blackbox.png");
 		addImageFilePath(IMG_16_PUSHDOWN, ICONS_16 + "pushdown.png");
 		addImageFilePath(IMG_16_PULLUP, ICONS_16 + "pullup.png");
+
+		addImageFilePath(IMG_16_MORPH, ICONS_16 + "morph.png");
 	}
 
 }

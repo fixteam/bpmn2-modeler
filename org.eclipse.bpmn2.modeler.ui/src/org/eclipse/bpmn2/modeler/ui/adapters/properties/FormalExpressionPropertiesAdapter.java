@@ -89,6 +89,7 @@ public class FormalExpressionPropertiesAdapter extends ExtendedPropertiesAdapter
     	
     	final EStructuralFeature language = Bpmn2Package.eINSTANCE.getFormalExpression_Language();
 		setProperty(language, UI_IS_MULTI_CHOICE, Boolean.TRUE);
+		setProperty(language, UI_CAN_SET_NULL, Boolean.TRUE);
     	setFeatureDescriptor(language,
     		new FeatureDescriptor<FormalExpression>(adapterFactory,object,language) {
 				@Override

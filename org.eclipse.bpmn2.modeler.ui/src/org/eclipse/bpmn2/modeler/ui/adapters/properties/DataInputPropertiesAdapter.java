@@ -13,18 +13,17 @@
 
 package org.eclipse.bpmn2.modeler.ui.adapters.properties;
 
-import org.eclipse.bpmn2.Activity;
+import java.util.List;
+
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.DataInput;
-import org.eclipse.bpmn2.Participant;
-import org.eclipse.bpmn2.Process;
-import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.adapters.FeatureDescriptor;
 import org.eclipse.bpmn2.modeler.core.adapters.ObjectDescriptor;
+import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.emf.common.notify.AdapterFactory;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.resource.Resource;
 
 /**
  * @author Bob Brodt
@@ -83,6 +82,30 @@ public class DataInputPropertiesAdapter extends ItemAwareElementPropertiesAdapte
 				return fd.getChoiceString(context);
 			}
 		});
+	}
+
+	public static DataInput createDataInput(Resource resource, List<DataInput> dataInputs) {
+	
+		String base = "input";
+		int suffix = 1;
+		String name = base + suffix;
+		for (;;) {
+			boolean found = false;
+			for (DataInput p : dataInputs) {
+				if (name.equals(p.getName())) {
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+				break;
+			name = base + ++suffix;
+		}
+		DataInput dataInput = Bpmn2ModelerFactory.create(resource,DataInput.class);
+		dataInput.setName(name);
+		dataInputs.add(dataInput);
+	
+		return dataInput;
 	}
 
 }

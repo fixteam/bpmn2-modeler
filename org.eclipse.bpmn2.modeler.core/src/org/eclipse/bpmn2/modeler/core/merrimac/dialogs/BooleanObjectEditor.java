@@ -15,18 +15,14 @@ package org.eclipse.bpmn2.modeler.core.merrimac.dialogs;
 
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
 import org.eclipse.bpmn2.modeler.core.utils.ErrorUtils;
-import org.eclipse.core.databinding.observable.value.IObservableValue;
-import org.eclipse.core.databinding.observable.value.IValueChangeListener;
-import org.eclipse.core.databinding.observable.value.ValueChangeEvent;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.transaction.RecordingCommand;
-import org.eclipse.emf.transaction.TransactionalEditingDomain;
-import org.eclipse.jface.databinding.swt.SWTObservables;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -57,17 +53,22 @@ public class BooleanObjectEditor extends ObjectEditor {
 		button = getToolkit().createButton(composite, "", SWT.CHECK);
 		button.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 		button.setSelection(getValue());
-		IObservableValue buttonObserver = SWTObservables.observeSelection(button);
-		buttonObserver.addValueChangeListener(new IValueChangeListener() {
-			
-			@SuppressWarnings("restriction")
+		button.addSelectionListener( new SelectionListener() {
+
 			@Override
-			public void handleValueChange(ValueChangeEvent event) {
-				setValue(new Boolean(button.getSelection()));
-				button.setSelection(getValue());
+			public void widgetSelected(SelectionEvent e) {
+				if (!isWidgetUpdating) {
+					boolean checked = button.getSelection();
+					setValue(new Boolean(checked));
+					button.setSelection(getValue());
+				}
 			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+			
 		});
-		
 		button.addFocusListener(new FocusListener() {
 
 			@Override
@@ -107,8 +108,8 @@ public class BooleanObjectEditor extends ObjectEditor {
 	@Override
 	public void notifyChanged(Notification notification) {
 		super.notifyChanged(notification);
-		if (this.object == notification.getNotifier() &&
-				this.feature == notification.getFeature()) {
+		if ( notification.getEventType() == -1 ||
+				(object == notification.getNotifier() && feature == notification.getFeature())) {
 			button.setSelection((Boolean) object.eGet(feature));
 		}
 	}

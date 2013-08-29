@@ -35,7 +35,7 @@ import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.core.runtime.Assert;
 
 public class TableColumn extends ColumnTableProvider.Column implements ILabelProvider, ICellModifier {
 
@@ -327,7 +327,7 @@ public class TableColumn extends ColumnTableProvider.Column implements ILabelPro
 		
 		public Object getChoice(Object value) {
 			// for combobox cell editors, getValue() returns an Integer
-			assert(choices!=null && value instanceof Integer);
+			Assert.isTrue(choices!=null && value instanceof Integer);
 			int index = ((Integer)value).intValue();
 			if (index>=0) {
 				// look up the real value from the list of choices created by getValue()

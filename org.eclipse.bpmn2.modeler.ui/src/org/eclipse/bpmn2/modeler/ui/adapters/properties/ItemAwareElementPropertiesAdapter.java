@@ -13,7 +13,6 @@
 
 package org.eclipse.bpmn2.modeler.ui.adapters.properties;
 
-import java.io.IOException;
 import java.util.Hashtable;
 import java.util.List;
 

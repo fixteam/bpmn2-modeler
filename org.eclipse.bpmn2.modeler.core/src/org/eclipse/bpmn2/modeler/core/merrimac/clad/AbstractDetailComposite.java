@@ -17,7 +17,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.bpmn2.ExtensionAttributeValue;
 import org.eclipse.bpmn2.modeler.core.merrimac.IConstants;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.BooleanObjectEditor;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ComboObjectEditor;
@@ -79,7 +78,8 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 	protected Composite attributesComposite = null;
 	protected Font descriptionFont = null;
 	protected AbstractPropertiesProvider propertiesProvider = null;
-
+	protected StyledText descriptionText = null;
+	
 	/**
 	 * Constructor for embedding this composite in an AbstractBpmn2PropertySection.
 	 * This is the "normal" method of creating this composite.
@@ -318,22 +318,22 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 
 	protected StyledText createDescription(Composite parent, String description) {
 		Display display = Display.getCurrent();
-		final StyledText styledText = new StyledText(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | SWT.READ_ONLY);
-		styledText.setText(description);
+		descriptionText = new StyledText(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | SWT.READ_ONLY);
+		descriptionText.setText(description);
 
-	    styledText.setFont(getDescriptionFont());
+	    descriptionText.setFont(getDescriptionFont());
 		
-		styledText.setBackground(display.getSystemColor(SWT.COLOR_INFO_BACKGROUND));
-		styledText.setForeground(display.getSystemColor(SWT.COLOR_INFO_FOREGROUND));
+		descriptionText.setBackground(display.getSystemColor(SWT.COLOR_INFO_BACKGROUND));
+		descriptionText.setForeground(display.getSystemColor(SWT.COLOR_INFO_FOREGROUND));
 		
 		GridData d = new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1);
 		d.horizontalIndent = 4;
 		d.verticalIndent = 4;
 		d.heightHint = (int)(5.5 * getDescriptionFont().getFontData()[0].getHeight());
 		d.widthHint = 100;
-		styledText.setLayoutData(d);
+		descriptionText.setLayoutData(d);
 
-		return styledText;
+		return descriptionText;
 	}
 
 	protected Section createSection(Composite parent, final String title) {
@@ -579,7 +579,9 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 				}
 				catch (Exception e) {
 				}
-				Notification n = new ENotificationImpl(null, Notification.SET, -1, 0, 0);
+				// Send a notification to all listeners about this refresh event.
+				// This will cause all children to be refreshed when a property tab switch happens.
+				Notification n = new ENotificationImpl(null, -1, -1, 0, 0);
 				getAllChildWidgets(parent, kids);
 				for (Control c : kids) {
 					INotifyChangedListener listener = (INotifyChangedListener)c.getData(

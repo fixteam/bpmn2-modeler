@@ -14,6 +14,7 @@ package org.eclipse.bpmn2.modeler.ui.property.connectors;
 
 import org.eclipse.bpmn2.Expression;
 import org.eclipse.bpmn2.FlowNode;
+import org.eclipse.bpmn2.FormalExpression;
 import org.eclipse.bpmn2.SequenceFlow;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
@@ -78,10 +79,8 @@ public class SequenceFlowDetailComposite extends ExpressionDetailComposite {
 							if (sequenceFlow.getConditionExpression()!=null)
 								sequenceFlow.setConditionExpression(null);
 							else {
-								Expression exp = FACTORY.createFormalExpression();
+								Expression exp = createModelObject(FormalExpression.class);
 								sequenceFlow.setConditionExpression(exp);
-								ModelUtil.setID(exp);
-								
 								setDefault(sequenceFlow,null);
 							}
 							setBusinessObject(be);

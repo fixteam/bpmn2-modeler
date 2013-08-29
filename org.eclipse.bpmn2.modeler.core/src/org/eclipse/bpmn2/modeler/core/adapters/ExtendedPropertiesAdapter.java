@@ -21,7 +21,9 @@ import org.eclipse.bpmn2.modeler.core.utils.JavaReflectionUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
+import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
 /**
@@ -42,7 +44,11 @@ public class ExtendedPropertiesAdapter<T extends EObject> extends AdapterImpl {
 	public final static String UI_CAN_SET_NULL = "ui.can.set.null";
 	public final static String UI_IS_MULTI_CHOICE = "ui.is.multi.choice";
 	public static final String PROPERTY_DESCRIPTOR = "property.descriptor";
+	// Line number in XML document where this object is defined
+	public static final String LINE_NUMBER = "line.number";
 	
+	protected static Hashtable<EClass,EObject> dummyObjects = new Hashtable<EClass,EObject>();
+
 	protected Hashtable<
 		EStructuralFeature, // feature ID
 		Hashtable<String,Object>> // property key and value
@@ -54,6 +60,7 @@ public class ExtendedPropertiesAdapter<T extends EObject> extends AdapterImpl {
 	
 	protected AdapterFactory adapterFactory;
 	
+	@SuppressWarnings("rawtypes")
 	public ExtendedPropertiesAdapter(AdapterFactory adapterFactory, T object) {
 		super();
 		this.adapterFactory = adapterFactory;
@@ -84,7 +91,7 @@ public class ExtendedPropertiesAdapter<T extends EObject> extends AdapterImpl {
 		// form: "UI_<BPMN2ElementName>_long_description".
 		// The Messages class must be contained somewhere in the package hierarchy
 		// that contains the adapter factory class; by default, this will be the
-		// BPMN2 modeler UI plugin hierarchy, starting with org.eclipse.bpmn2.modeler.ui.adapters
+		// BPMN2 modeler UI plug-in hierarchy, starting with org.eclipse.bpmn2.modeler.ui.adapters
     	try {
         	String fieldName = "UI_" + name + "_long_description";
         	Class messages = JavaReflectionUtil.findClass(adapterFactory, "Messages");
@@ -94,11 +101,61 @@ public class ExtendedPropertiesAdapter<T extends EObject> extends AdapterImpl {
 		} catch (Exception e) {
 		}
 	}
-    
+	
+	@SuppressWarnings("rawtypes")
+	public static ExtendedPropertiesAdapter adapt(EObject object) {
+		return adapt(object,null);
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static ExtendedPropertiesAdapter adapt(EObject object, EStructuralFeature feature) {
+		EObject eclass = getFeatureClass(object,feature);
+		ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(eclass, ExtendedPropertiesAdapter.class);
+		if (adapter!=null) {
+			if (object instanceof EClass)
+				object = getDummyObject((EClass)object);
+			adapter.setTarget(object);
+			adapter.getObjectDescriptor().setObject(object);
+			if (feature!=null)
+				adapter.getFeatureDescriptor(feature).setObject(object);
+		}
+		return adapter;
+	}
+
+	/**
+	 * Dummy objects are constructed when needed for an ExtendedPropertiesAdapter. The adapter factory
+	 * (@see org.eclipse.bpmn2.modeler.ui.adapters.Bpmn2EditorItemProviderAdapterFactory) knows how to
+	 * construct an ExtendedPropertiesAdapter from an EClass, however the adapter itself needs an EObject.
+	 * This method constructs and caches these dummy objects as they are needed.
+	 * 
+	 * @param featureEType
+	 * @return
+	 */
+	public static EObject getDummyObject(EClass eclass) {
+		EObject object = dummyObjects.get(eclass);
+		if (object==null && eclass.eContainer() instanceof EPackage) {
+	    	EPackage pkg = (EPackage)eclass.eContainer();
+	    	object = pkg.getEFactoryInstance().create(eclass);
+			dummyObjects.put(eclass, object);
+		}
+		return object;
+	}
+
 	public void setObjectDescriptor(ObjectDescriptor<T> pd) {
 		setProperty(PROPERTY_DESCRIPTOR,pd);
 	}
 
+	private static EObject getFeatureClass(EObject object, EStructuralFeature feature) {
+		EClass eclass = null;
+		if (feature!=null && feature.eContainer() instanceof EClass)
+			eclass = (EClass)feature.eContainer();
+		if (eclass==null || eclass.isAbstract()) {
+			return object;
+		}
+		return eclass;
+	}
+
+	@SuppressWarnings("unchecked")
 	public ObjectDescriptor<T> getObjectDescriptor() {
 		ObjectDescriptor<T> pd = (ObjectDescriptor<T>) getProperty(PROPERTY_DESCRIPTOR);
 		if (pd==null) {
@@ -108,6 +165,7 @@ public class ExtendedPropertiesAdapter<T extends EObject> extends AdapterImpl {
 		return pd;
 	}
 
+	@SuppressWarnings("unchecked")
 	public FeatureDescriptor<T> getFeatureDescriptor(EStructuralFeature feature) {
 		FeatureDescriptor<T> pd = (FeatureDescriptor<T>) getProperty(feature,PROPERTY_DESCRIPTOR);
 		if (pd==null) {

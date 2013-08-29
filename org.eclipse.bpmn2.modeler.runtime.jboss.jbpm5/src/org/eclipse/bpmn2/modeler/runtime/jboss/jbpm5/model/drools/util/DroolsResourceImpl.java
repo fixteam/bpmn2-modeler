@@ -15,6 +15,7 @@ package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.bpmn2.Activity;
 import org.eclipse.bpmn2.Bpmn2Package;
@@ -27,28 +28,39 @@ import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.Event;
 import org.eclipse.bpmn2.Interface;
 import org.eclipse.bpmn2.ItemAwareElement;
+import org.eclipse.bpmn2.ItemDefinition;
 import org.eclipse.bpmn2.LoopCharacteristics;
 import org.eclipse.bpmn2.Message;
 import org.eclipse.bpmn2.MultiInstanceLoopCharacteristics;
 import org.eclipse.bpmn2.Process;
 import org.eclipse.bpmn2.Property;
+import org.eclipse.bpmn2.RootElement;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerResourceImpl;
+import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerResourceImpl.Bpmn2ModelerXMLSave;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.ExternalProcess;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.DroolsFactory;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.DroolsPackage;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.GlobalType;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.preferences.JbpmPreferencePage;
 import org.eclipse.bpmn2.util.Bpmn2ResourceImpl;
+import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EAttribute;
+import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.impl.EAttributeImpl;
 import org.eclipse.emf.ecore.util.BasicFeatureMap;
+import org.eclipse.emf.ecore.util.BasicInternalEList;
 import org.eclipse.emf.ecore.util.ExtendedMetaData;
+import org.eclipse.emf.ecore.util.InternalEList;
 import org.eclipse.emf.ecore.xmi.XMLHelper;
 import org.eclipse.emf.ecore.xmi.XMLLoad;
 import org.eclipse.emf.ecore.xmi.XMLResource;
@@ -79,6 +91,8 @@ public class DroolsResourceImpl extends Bpmn2ModelerResourceImpl {
 
     @Override
     protected XMLHelper createXMLHelper() {
+    	if (xmlHelper!=null)
+    		return xmlHelper;
     	return new DroolsXmlHelper(this);
     }
 
@@ -102,7 +116,16 @@ public class DroolsResourceImpl extends Bpmn2ModelerResourceImpl {
 			private boolean needTargetNamespace = true;
 			
 			@Override
+			protected void saveElement(EObject o, EStructuralFeature f) {
+				if (o instanceof ExternalProcess) {
+					return;
+				}
+				super.saveElement(o, f);
+			}
+
+			@Override
 			protected boolean shouldSaveFeature(EObject o, EStructuralFeature f) {
+				
 				if (Bpmn2Package.eINSTANCE.getDocumentation_Text().equals(f))
 					return false;
 				// don't save the "name" feature of Property objects.
@@ -121,7 +144,61 @@ public class DroolsResourceImpl extends Bpmn2ModelerResourceImpl {
 			@Override
 			protected void init(XMLResource resource, Map<?, ?> options) {
 				super.init(resource, options);
-		        doc = new XMLString(Integer.MAX_VALUE, publicId, systemId, null) {
+
+				((DroolsXmlHelper)helper).setDefaultNamespace();
+	        
+		        featureTable = new Bpmn2ModelerXMLSave.Bpmn2Lookup(map, extendedMetaData, elementHandler) {
+		        	@Override
+		    		protected EStructuralFeature[] reorderFeatureList(EClass cls, EStructuralFeature[] featureList) {
+		        		EStructuralFeature[] newList = null;
+		    			if (cls.getName().equalsIgnoreCase("Process")) {
+		    				/*
+		    				 * Semantic.xsd sequence definition for Process:
+		    				 * 
+		    				 * <xsd:sequence>
+		    				 * <xsd:element ref="auditing" minOccurs="0" maxOccurs="1"/>
+		    				 * <xsd:element ref="monitoring" minOccurs="0" maxOccurs="1"/>
+		    				 * <xsd:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
+		    				 * <xsd:element ref="laneSet" minOccurs="0" maxOccurs="unbounded"/>
+		    				 * <xsd:element ref="flowElement" minOccurs="0" maxOccurs="unbounded"/>
+		    				 * <xsd:element ref="artifact" minOccurs="0" maxOccurs="unbounded"/>
+		    				 * <xsd:element ref="resourceRole" minOccurs="0" maxOccurs="unbounded"/>
+		    				 * <xsd:element ref="correlationSubscription" minOccurs="0" maxOccurs="unbounded"/>
+		    				 * <xsd:element name="supports" type="xsd:QName" minOccurs="0" maxOccurs="unbounded"/>
+		    				 * </xsd:sequence>
+		    				 */
+		    				String[] featureNames = {
+		    					"auditing",
+		    					"monitoring",
+		    					"properties",
+		    					"laneSets",
+		    					"flowElements",
+		    					"artifacts",
+		    					"resources",
+		    					"correlationSubscriptions",
+		    					"supports"
+		    				};
+		    				newList = reorderFeatureList(cls, featureList, featureNames);
+		    			}
+		    			else
+		    				newList = featureList;
+		    			
+		    			// for BaseElements, "documentation" always comes before "extensionValues"
+		    			if (Bpmn2Package.eINSTANCE.getBaseElement().isSuperTypeOf(cls)) {
+		    				String[] featureNames = {
+		    					"documentation",
+		    					"extensionValues"
+		    				};
+			    			newList = reorderFeatureList(cls, newList, featureNames);
+		    			}
+		    			
+		    			return newList;
+		        	}
+		        };
+			}
+			
+			protected XMLString createXMLString() {
+		        return new Bpmn2ModelerXMLString(publicId, systemId) {
 		        	@Override
 		        	public void addAttribute(String name, String value) {
 		        		if ("targetNamespace".equals(name))
@@ -131,17 +208,19 @@ public class DroolsResourceImpl extends Bpmn2ModelerResourceImpl {
 		        					" http://www.jboss.org/drools drools.xsd"+
 		        					" http://www.bpsim.org/schemas/1.0 bpsim.xsd";
 		        		}
+		        			
 		        		super.addAttribute(name, value);
 		        	}
 		        };
 			}
-			  
+			
 			@Override
 			protected void addNamespaceDeclarations() {
 				if (needTargetNamespace)
 					doc.addAttribute("targetNamespace", DroolsPackage.eNS_URI);
 				super.addNamespaceDeclarations();
 			}
+			
 		};
 	}
 
@@ -149,10 +228,131 @@ public class DroolsResourceImpl extends Bpmn2ModelerResourceImpl {
 
 		public DroolsXmlHelper(Bpmn2ResourceImpl resource) {
 			super(resource);
-			qnameMap.remove(Bpmn2Package.eINSTANCE.getItemAwareElement_ItemSubjectRef());
-			qnameMap.remove(Bpmn2Package.eINSTANCE.getInterface_ImplementationRef());
-			qnameMap.remove(Bpmn2Package.eINSTANCE.getOperation_ImplementationRef());
+//			qnameMap.clear();
+//			qnameMap.remove(Bpmn2Package.eINSTANCE.getItemAwareElement_ItemSubjectRef());
+//			qnameMap.remove(Bpmn2Package.eINSTANCE.getInterface_ImplementationRef());
+//			qnameMap.remove(Bpmn2Package.eINSTANCE.getOperation_ImplementationRef());
 		}
+		
+		public void setDefaultNamespace() {
+			EPackage ePackage = Bpmn2Package.eINSTANCE;
+			String nsURI = xmlSchemaTypePackage == ePackage ? XMLResource.XML_SCHEMA_URI
+					: extendedMetaData == null ? ePackage.getNsURI()
+							: extendedMetaData.getNamespace(ePackage);
+
+			String bpmn2Prefix = "bpmn2";
+			int suffix = 1;
+			for (;;) {
+				String ns = prefixesToURIs.get(bpmn2Prefix);
+				if (ns!=null && !ns.equals(nsURI)) {
+					bpmn2Prefix = "bpmn2" + "_" + suffix++;
+				}
+				else
+					break;
+			}
+
+			boolean found = false;
+			List<String> prefixes = urisToPrefixes.get(nsURI);
+			if (prefixes==null) {
+				prefixes = new ArrayList<String>();
+				urisToPrefixes.put(nsURI, prefixes);
+			}
+			for (int i = 0; i < prefixes.size(); ++i) {
+				String prefix = prefixes.get(i);
+				if ("".equals(prefix)) {
+					prefixes.set(i, bpmn2Prefix);
+					found = true;
+					break;
+				}
+				else if (bpmn2Prefix.equals(prefix)) {
+					found = true;
+				}
+					
+			}
+			if (!found)
+				prefixes.add(0, bpmn2Prefix);
+			
+			nsURI = DroolsPackage.eNS_URI;
+			prefixes = urisToPrefixes.get(nsURI);
+			if (prefixes!=null)
+				prefixes.add("");
+
+			for (int i=0; i<allPrefixToURI.size(); ++i) {
+				String prefix = allPrefixToURI.get(i);
+				if ("".equals(prefix)) {
+					allPrefixToURI.remove(i);
+					if (i+1<allPrefixToURI.size())
+						allPrefixToURI.remove(i+1);
+					break;
+				}
+			}
+			allPrefixToURI.add("");
+			allPrefixToURI.add(nsURI);
+			prefixesToURIs.remove("");
+			
+			// change default namespace for existing packages
+			for (Entry<EPackage, String> e : packages.entrySet()) {
+				if ("".equals(e.getValue())) {
+					ePackage = e.getKey();
+					if (e.getKey() != DroolsPackage.eINSTANCE) {
+						packages.remove(e.getKey());
+						packages.put(ePackage, ePackage.getNsPrefix());
+						urisToPrefixes.remove(ePackage.getNsURI());
+						break;
+					}
+				}
+			}
+
+			mustHavePrefix = true;
+		}
+	    
+	    public List<String> getPrefixes(EPackage ePackage) {
+	    	List<String> result = super.getPrefixes(ePackage);
+	    	boolean found = false;
+	    	for (int i=0; i<result.size(); ++i) {
+	    		if ("".equals(result.get(i))) {
+	    			if (ePackage == DroolsPackage.eINSTANCE) {
+	    				found = true;
+	    				break; // ok
+	    			}
+	    			else {
+	    				result.remove(i--);
+	    			}
+	    		}
+	    	}
+			if (ePackage == DroolsPackage.eINSTANCE && !found) {
+				result.add("");
+			}
+			return result;
+	    }
+
+	    @Override
+	    public Object getValue(EObject eObject, EStructuralFeature eStructuralFeature) {
+	    	
+	    	if (eObject instanceof Definitions && eStructuralFeature == Bpmn2Package.eINSTANCE.getDefinitions_RootElements()) {
+	    		// reorder the root elements so that ItemDefinitions are first, Process is last
+	    		// and everything else is in between
+	    		List<RootElement> oldList = ((Definitions)eObject).getRootElements();
+	    		List<RootElement> newList = new ArrayList<RootElement>();
+	    		for (RootElement re : oldList) {
+	    			if (re instanceof ItemDefinition) {
+	    				newList.add(re);
+	    			}
+	    		}
+	    		for (RootElement re : oldList) {
+	    			if (!(re instanceof ItemDefinition) && !(re instanceof Process)) {
+	    				newList.add(re);
+	    			}
+	    		}
+	    		for (RootElement re : oldList) {
+	    			if (re instanceof Process) {
+	    				newList.add(re);
+	    			}
+	    		}
+	    		return new BasicInternalEList<RootElement>(RootElement.class, newList);
+	    	}
+	    	return super.getValue(eObject, eStructuralFeature);
+	    }
     }
     
 	/**
@@ -283,8 +483,22 @@ public class DroolsResourceImpl extends Bpmn2ModelerResourceImpl {
 				// the CalledElementRef in CallActivity is just an ID. This means we need
 				// to create a CallableElement which is simply a proxy, not a real object.
 				CallActivity ca = (CallActivity)object;
-				CallableElement ce = Bpmn2ModelerFactory.create(CallableElement.class);
-				((InternalEObject)ce).eSetProxyURI(URI.createURI(ids));
+				CallableElement ce = null;
+				Definitions defs = ModelUtil.getDefinitions(helper.getResource());
+				for (RootElement re : defs.getRootElements()) {
+					if (re instanceof ExternalProcess) {
+						if (ids.equals(re.getId())) {
+							ce = (ExternalProcess) re;
+							break;
+						}
+					}
+				}
+				if (ce==null) {
+					ce = DroolsFactory.eINSTANCE.createExternalProcess();
+					ce.setName(ids);
+					ce.setId(ids);
+					defs.getRootElements().add(ce);
+				}
 				ca.setCalledElementRef(ce);
 			}
 			else if (object instanceof Interface && eReference==Bpmn2Package.eINSTANCE.getInterface_ImplementationRef()) {
@@ -321,9 +535,9 @@ public class DroolsResourceImpl extends Bpmn2ModelerResourceImpl {
 					LoopCharacteristics lc = activity.getLoopCharacteristics();
 					if (lc instanceof MultiInstanceLoopCharacteristics) {
 						MultiInstanceLoopCharacteristics mlc = (MultiInstanceLoopCharacteristics)lc;
-						if (ids.equals(mlc.getInputDataItem().getName()))
+						if (mlc.getInputDataItem()!=null && ids.equals(mlc.getInputDataItem().getName()))
 							return mlc.getInputDataItem();
-						if (ids.equals(mlc.getOutputDataItem().getName()))
+						if (mlc.getOutputDataItem()!=null && ids.equals(mlc.getOutputDataItem().getName()))
 							return mlc.getOutputDataItem();
 					}
 				}

@@ -11,7 +11,6 @@
 package org.eclipse.bpmn2.modeler.ui.features.activity.task;
 
 import org.eclipse.bpmn2.BaseElement;
-import org.eclipse.bpmn2.TextAnnotation;
 import org.eclipse.bpmn2.impl.TaskImpl;
 import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2AddFeature;
 import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2CreateFeature;
@@ -19,8 +18,8 @@ import org.eclipse.bpmn2.modeler.core.features.FeatureContainer;
 import org.eclipse.bpmn2.modeler.core.features.activity.task.ICustomTaskFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.runtime.CustomTaskDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.CustomTaskImageProvider;
-import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.core.runtime.CustomTaskImageProvider.IconSize;
+import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.ui.diagram.BPMNFeatureProvider;
 import org.eclipse.emf.ecore.EClass;
@@ -43,12 +42,12 @@ import org.eclipse.graphiti.features.context.ICreateContext;
 import org.eclipse.graphiti.features.context.IPictogramElementContext;
 import org.eclipse.graphiti.features.context.impl.AddContext;
 import org.eclipse.graphiti.features.custom.ICustomFeature;
-import org.eclipse.graphiti.mm.GraphicsAlgorithmContainer;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.Image;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.services.Graphiti;
+import org.eclipse.core.runtime.Assert;
 
 public class CustomTaskFeatureContainer extends TaskFeatureContainer implements ICustomTaskFeatureContainer {
 	
@@ -213,13 +212,13 @@ public class CustomTaskFeatureContainer extends TaskFeatureContainer implements 
 		public CreateCustomTaskFeature(IFeatureProvider fp, String name, String description) {
 			super(fp, name, description);
 			createFeatureDelegate = (AbstractBpmn2CreateFeature)getFeatureContainer(fp).getCreateFeature(fp);
-			assert createFeatureDelegate != null;
+			Assert.isNotNull(createFeatureDelegate);
 		}
 
 		public CreateCustomTaskFeature(IFeatureProvider fp) {
 			super(fp, customTaskDescriptor.getName(), customTaskDescriptor.getDescription());
 			createFeatureDelegate = (AbstractBpmn2CreateFeature)getFeatureContainer(fp).getCreateFeature(fp);
-			assert createFeatureDelegate != null;
+			Assert.isNotNull(createFeatureDelegate);
 		}
 
 		@Override
@@ -245,9 +244,10 @@ public class CustomTaskFeatureContainer extends TaskFeatureContainer implements 
 
 		@Override
 		public BaseElement createBusinessObject(ICreateContext context) {
-			EObject target = Graphiti.getLinkService().getBusinessObjectForLinkedPictogramElement(context.getTargetContainer());
-			BaseElement businessObject = (BaseElement)customTaskDescriptor.createObject(target);
-			putBusinessObject(context, businessObject);
+//			EObject target = Graphiti.getLinkService().getBusinessObjectForLinkedPictogramElement(context.getTargetContainer());
+//			BaseElement businessObject = (BaseElement)customTaskDescriptor.createObject(target);
+//			putBusinessObject(context, businessObject);
+			BaseElement businessObject = createFeatureDelegate.createBusinessObject(context);
 			customTaskDescriptor.populateObject(businessObject, false);
 			return businessObject;
 		}
@@ -262,6 +262,10 @@ public class CustomTaskFeatureContainer extends TaskFeatureContainer implements 
 
 		@Override
 		public Object[] create(ICreateContext context) {
+			// Our Custom Task ID should have already been set in canCreate()
+			// if not, we have a problem; in other words, canCreate() MUST have
+			// been called by the framework before create()
+			Assert.isNotNull(getId(context));
 			return createFeatureDelegate.create(context);
 		}
 
@@ -298,14 +302,15 @@ public class CustomTaskFeatureContainer extends TaskFeatureContainer implements 
 		public AddCustomTaskFeature(IFeatureProvider fp) {
 			super(fp);
 			addFeatureDelegate = (AbstractBpmn2AddFeature)getFeatureContainer(fp).getAddFeature(fp);
-			assert addFeatureDelegate != null;
+			Assert.isNotNull(addFeatureDelegate);
 		}
 
 		@Override
 		public PictogramElement add(IAddContext context) {
 			PictogramElement pe = addFeatureDelegate.add(context);
 			// make sure everyone knows that this PE is a custom task
-			Graphiti.getPeService().setPropertyValue(pe,CUSTOM_TASK_ID,getId());
+			if (pe!=null)
+				Graphiti.getPeService().setPropertyValue(pe,CUSTOM_TASK_ID,getId());
 			
 			// add an icon to the top-left corner if applicable, and if the implementing
 			// addFeatureDelegate hasn't already done so.
@@ -320,12 +325,17 @@ public class CustomTaskFeatureContainer extends TaskFeatureContainer implements 
 						break;
 					}
 				}
-				for (GraphicsAlgorithm g : ga.getGraphicsAlgorithmChildren()) {
-					if (g instanceof Image) {
-						addImage = false;
-						break;
+				if (ga!=null) {
+					for (GraphicsAlgorithm g : ga.getGraphicsAlgorithmChildren()) {
+						if (g instanceof Image) {
+							addImage = false;
+							break;
+						}
 					}
 				}
+				else
+					addImage = false;
+				
 				if (addImage) {
 					Image img = CustomTaskImageProvider.createImage(customTaskDescriptor, ga, icon, 24, 24);
 					Graphiti.getGaService().setLocationAndSize(img, 2, 2, 24, 24);

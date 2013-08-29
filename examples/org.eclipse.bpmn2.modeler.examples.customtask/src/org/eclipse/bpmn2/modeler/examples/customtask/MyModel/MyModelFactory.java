@@ -49,6 +49,15 @@ public interface MyModelFactory extends EFactory {
 	TaskConfig createTaskConfig();
 
 	/**
+	 * Returns a new object of class '<em>My Event Definition</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>My Event Definition</em>'.
+	 * @generated
+	 */
+	MyEventDefinition createMyEventDefinition();
+
+	/**
 	 * Returns the package supported by this factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->

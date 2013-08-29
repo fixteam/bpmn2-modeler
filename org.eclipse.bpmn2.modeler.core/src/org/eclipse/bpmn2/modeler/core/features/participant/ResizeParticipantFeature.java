@@ -19,6 +19,7 @@ import org.eclipse.bpmn2.Lane;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.graphiti.datatypes.ILocation;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.IResizeShapeFeature;
 import org.eclipse.graphiti.features.context.IResizeShapeContext;
@@ -27,6 +28,8 @@ import org.eclipse.graphiti.features.impl.DefaultResizeShapeFeature;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
+import org.eclipse.graphiti.mm.pictograms.Shape;
+import org.eclipse.graphiti.services.Graphiti;
 
 public class ResizeParticipantFeature extends DefaultResizeShapeFeature {
 
@@ -155,12 +158,33 @@ public class ResizeParticipantFeature extends DefaultResizeShapeFeature {
 	
 	@Override
 	public void resizeShape(IResizeShapeContext context) {
+		ContainerShape poolShape = (ContainerShape) context.getShape();
+		GraphicsAlgorithm poolGa = poolShape.getGraphicsAlgorithm();
+		int preX = poolGa.getX();
+		int preY = poolGa.getY();
+
 		if (BusinessObjectUtil.containsChildElementOfType(context.getPictogramElement(), Lane.class)) {
-			
 			resizeLaneHeight(context);
 			resizeLaneWidth(context);
-			
 		}
+		
 		super.resizeShape(context);
+		
+		int deltaX = preX - context.getX();
+		int deltaY = preY - context.getY();
+		
+		// Adjust location of children so that a resize up or left
+		// leaves them in the same location relative to the diagram.
+		// This allows the user to create (or remove) space between
+		// the Pool's edge and the contained activities.
+		for (Shape shape : poolShape.getChildren()) {
+			if (shape instanceof ContainerShape ) {
+				EObject bo = BusinessObjectUtil.getBusinessObjectForPictogramElement(shape);
+				GraphicsAlgorithm ga = shape.getGraphicsAlgorithm();
+				if (!(bo instanceof Lane)) {
+					Graphiti.getLayoutService().setLocation(ga, ga.getX() + deltaX, ga.getY() + deltaY);
+				}
+			}
+		}
 	}
 }

@@ -20,6 +20,7 @@ import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.ui.features.AbstractDefaultDeleteFeature;
 import org.eclipse.bpmn2.modeler.ui.features.LayoutBaseElementTextFeature;
 import org.eclipse.bpmn2.modeler.ui.features.activity.AppendActivityFeature;
+import org.eclipse.bpmn2.modeler.ui.features.activity.MorphActivityFeature;
 import org.eclipse.bpmn2.modeler.ui.features.choreography.AddChoreographyMessageFeature;
 import org.eclipse.bpmn2.modeler.ui.features.event.AppendEventFeature;
 import org.eclipse.bpmn2.modeler.ui.features.participant.RotatePoolFeature;
@@ -88,13 +89,14 @@ public abstract class AbstractGatewayFeatureContainer extends BaseElementFeature
 	@Override
 	public ICustomFeature[] getCustomFeatures(IFeatureProvider fp) {
 		ICustomFeature[] superFeatures = super.getCustomFeatures(fp);
-		ICustomFeature[] thisFeatures = new ICustomFeature[3 + superFeatures.length];
+		ICustomFeature[] thisFeatures = new ICustomFeature[4 + superFeatures.length];
 		int i;
 		for (i=0; i<superFeatures.length; ++i)
 			thisFeatures[i] = superFeatures[i];
 		thisFeatures[i++] = new AppendActivityFeature(fp);
 		thisFeatures[i++] = new AppendGatewayFeature(fp);
 		thisFeatures[i++] = new AppendEventFeature(fp);
+		thisFeatures[i++] = new MorphGatewayFeature(fp);
 		return thisFeatures;
 	}
 

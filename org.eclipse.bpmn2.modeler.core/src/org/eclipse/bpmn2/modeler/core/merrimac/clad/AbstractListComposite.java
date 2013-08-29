@@ -47,6 +47,7 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.ToolBar;
@@ -87,7 +88,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 	protected EStructuralFeature feature;
 	
 	// widgets
-	SashForm sashForm;
+	protected SashForm sashForm;
 	protected Section tableSection;
 	protected ToolBarManager tableToolBarManager;
 	protected Section detailSection;
@@ -97,12 +98,12 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 	protected TableViewer tableViewer;
 	protected AbstractDetailComposite detailComposite;
 	
-	boolean removeIsDelete = false;
-	Action addAction;
-	Action removeAction;
-	Action upAction;
-	Action downAction;
-	Action editAction;
+	protected boolean removeIsDelete = false;
+	protected Action addAction;
+	protected Action removeAction;
+	protected Action upAction;
+	protected Action downAction;
+	protected Action editAction;
 	
 	protected ListCompositeColumnProvider columnProvider;
 	protected ListCompositeContentProvider contentProvider;
@@ -376,22 +377,6 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 					}
 				});
 				
-				tableSection.addExpansionListener(new IExpansionListener() {
-	
-					@Override
-					public void expansionStateChanging(ExpansionEvent e) {
-						if (!e.getState() && detailSection!=null) {
-							detailSection.setVisible(false);
-						}
-					}
-	
-					@Override
-					public void expansionStateChanged(ExpansionEvent e) {
-						preferenceStore.setValue(prefName, e.getState());
-						redrawPage();
-					}
-				});
-			
 				sashForm.setWeights(new int[] { 50, 50 });
 			}					
 			else
@@ -400,6 +385,22 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 		else {
 			tableSection = createListSection(sashForm,label);
 		}
+		
+		tableSection.addExpansionListener(new IExpansionListener() {
+			
+			@Override
+			public void expansionStateChanging(ExpansionEvent e) {
+				if (!e.getState() && detailSection!=null) {
+					detailSection.setVisible(false);
+				}
+			}
+
+			@Override
+			public void expansionStateChanged(ExpansionEvent e) {
+				preferenceStore.setValue(prefName, e.getState());
+				redrawPage();
+			}
+		});
 		
 		////////////////////////////////////////////////////////////
 		// Create table viewer and cell editors
@@ -499,7 +500,14 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 			if (editAction!=null)
 				editAction.setChecked(enable);
 
-			sashForm.setWeights(new int[] { 50, 50 });
+			sashForm.setWeights(new int[] { 40, 60 });
+			Control parent = getParent();
+			while (parent!=null) {
+				if (parent instanceof AbstractListComposite) {
+					((AbstractListComposite)parent).sashForm.setWeights(new int[] { 30, 70 });
+				}
+				parent = parent.getParent();
+			}
 
 			final EList<EObject> list = (EList<EObject>)businessObject.eGet(feature);
 			tableViewer.setInput(list);
@@ -600,7 +608,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 						@Override
 						protected void doExecute() {
                             final EList<EObject> list = (EList<EObject>)businessObject.eGet(feature);
-							int i = list.indexOf(((IStructuredSelection)tableViewer.getSelection()).getFirstElement());
+                            int i = tableViewer.getTable().getSelectionIndex();
 							Object item;
 							if (removeIsDelete)
 								item = deleteListItem(businessObject,feature,i);
@@ -639,7 +647,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 						@Override
 						protected void doExecute() {
                             final EList<EObject> list = (EList<EObject>)businessObject.eGet(feature);
-                            int i = list.indexOf(((IStructuredSelection)tableViewer.getSelection()).getFirstElement());
+                            int i = tableViewer.getTable().getSelectionIndex();
 							Object item = moveListItemUp(businessObject,feature,i);
 							tableViewer.setInput(list);
 							tableViewer.setSelection(new StructuredSelection(item));
@@ -659,7 +667,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 						@Override
 						protected void doExecute() {
                             final EList<EObject> list = (EList<EObject>)businessObject.eGet(feature);
-                            int i = list.indexOf(((IStructuredSelection)tableViewer.getSelection()).getFirstElement());
+                            int i = tableViewer.getTable().getSelectionIndex();
 							Object item = moveListItemDown(businessObject,feature,i);
 							tableViewer.setInput(list);
 							tableViewer.setSelection(new StructuredSelection(item));
@@ -740,7 +748,9 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 	public void notifyChanged(Notification notification) {
 		EList<EObject> table = (EList<EObject>)businessObject.eGet(feature);
 		Object n = notification.getNotifier();
-		if (table.contains(n)) {
+		// if the table contains the notifier, or if this notification is coming from
+		// AbstractDetailComposite.refresh(), then set the new input into the table
+		if (table.contains(n) || notification.getEventType() == -1) {
 			tableViewer.setInput(table);
 			return; // quick exit before the exhaustive search that follows
 		}

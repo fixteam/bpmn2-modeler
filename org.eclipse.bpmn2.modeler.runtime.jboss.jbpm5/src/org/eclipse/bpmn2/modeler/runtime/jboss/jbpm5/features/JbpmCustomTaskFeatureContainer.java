@@ -48,6 +48,7 @@ import org.eclipse.graphiti.features.ICreateFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.features.context.IContext;
+import org.eclipse.graphiti.features.context.ICreateContext;
 import org.eclipse.graphiti.features.context.ICustomContext;
 import org.eclipse.graphiti.features.custom.ICustomFeature;
 import org.eclipse.graphiti.mm.GraphicsAlgorithmContainer;
@@ -72,12 +73,6 @@ public class JbpmCustomTaskFeatureContainer extends CustomTaskFeatureContainer {
 			public IAddFeature getAddFeature(IFeatureProvider fp) {
 				return new JbpmAddCustomTaskFeature(fp);
 			}
-			
-			@Override
-			public ICustomFeature[] getCustomFeatures(IFeatureProvider fp) {
-				return new ICustomFeature[] {new ConfigureWorkItemFeature(fp)};
-			}
-
 		};
 	}
 	
@@ -101,6 +96,15 @@ public class JbpmCustomTaskFeatureContainer extends CustomTaskFeatureContainer {
 			return getCreateImageId();
 		}
 		
+		@SuppressWarnings({ "unchecked", "rawtypes" })
+		public Task createBusinessObject(ICreateContext context) {
+			Task task = super.createBusinessObject(context);
+			final String name = customTaskDescriptor.getName();
+			if (name!=null && !name.isEmpty()) {
+				task.setName(name.trim());
+			}
+			return task;
+		}
 	}
 	
 	protected class JbpmAddCustomTaskFeature extends JbpmAddTaskFeature {
@@ -145,6 +149,8 @@ public class JbpmCustomTaskFeatureContainer extends CustomTaskFeatureContainer {
 		return null;
 	}
 
+	@Deprecated
+	// This class is no longer used. Custom Task parameters are now configured in the I/O Parameters property tab 
 	public class ConfigureWorkItemFeature implements ICustomFeature {
 
 		protected IFeatureProvider fp;

@@ -10,15 +10,13 @@
  *******************************************************************************/
 package org.eclipse.bpmn2.modeler.ui.views.outline;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.di.DIUtils;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
-import org.eclipse.bpmn2.modeler.ui.Activator;
-import org.eclipse.bpmn2.modeler.ui.IConstants;
+import org.eclipse.bpmn2.modeler.ui.property.PropertyLabelProvider;
 import org.eclipse.bpmn2.modeler.ui.util.PropertyUtil;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -36,6 +34,7 @@ import org.eclipse.swt.graphics.Image;
 public class AbstractGraphicsTreeEditPart extends AbstractTreeEditPart {
 
 	DiagramTreeEditPart diagramEditPart;
+	PropertyLabelProvider labelProvider = new PropertyLabelProvider();
 	
 	public AbstractGraphicsTreeEditPart(DiagramTreeEditPart dep, Object model) {
 		super(model);
@@ -45,47 +44,37 @@ public class AbstractGraphicsTreeEditPart extends AbstractTreeEditPart {
 	protected void setDiagramEditPart(DiagramTreeEditPart dep) {
 		diagramEditPart = dep;
 	}
-	
-	@Override
-	public Object getModel() {
-		EObject bpmnModel = (EObject)super.getModel();
-		if (diagramEditPart!=null) {
-			// the model is actually a BPMN element - convert this
-			// to a PictogramElement for the SelectionSynchronizer
-			for (Diagram diagram : diagramEditPart.getAllDiagrams()) {
-				if (diagram!=null) {
-					List<PictogramElement> pes = Graphiti.getLinkService().getPictogramElements(diagram, bpmnModel);
-					for (PictogramElement pe : pes) {
-						if (pe instanceof ContainerShape)
-							return pe;
-						if (pe instanceof FreeFormConnection)
-							return pe;
-					}
-				}
-			}
-		}
-		return bpmnModel;
-	}
 
-	public Object getBpmnModel() {
-		return super.getModel();
-	}
-	
 	@Override
 	public Object getAdapter(Class key) {
 		if (PictogramElement.class==key) {
-			Object model = getBpmnModel();
-			if (model instanceof BaseElement) {
-				BaseElement be = (BaseElement)model;
-				BPMNDiagram bpmnDiagram = DIUtils.findBPMNDiagram(be);
-				if (bpmnDiagram!=null)
-					return DIUtils.findDiagram(be.eResource().getResourceSet(), bpmnDiagram);
+			EObject bpmnModel = (EObject)super.getModel();
+			if (bpmnModel instanceof BPMNDiagram) {
+				BPMNDiagram bpmnDiagram = (BPMNDiagram)bpmnModel;
+				bpmnModel = bpmnDiagram.getPlane().getBpmnElement();
+			}
+			
+			if (diagramEditPart!=null) {
+				// the model is actually a BPMN element - convert this
+				// to a PictogramElement for the SelectionSynchronizer
+				for (Diagram diagram : diagramEditPart.getAllDiagrams()) {
+					if (diagram!=null) {
+						List<PictogramElement> pes = Graphiti.getLinkService().getPictogramElements(diagram, bpmnModel);
+						for (PictogramElement pe : pes) {
+							if (pe instanceof ContainerShape)
+								return pe;
+							if (pe instanceof FreeFormConnection)
+								return pe;
+						}
+					}
+				}
 			}
 		}
 		return super.getAdapter(key);
 	}
 
 	protected void refreshChildren() {
+		super.refreshChildren();
 		if (children!=null) {
 			for (Object child : children) {
 				if (child instanceof AbstractGraphicsTreeEditPart) {
@@ -93,7 +82,7 @@ public class AbstractGraphicsTreeEditPart extends AbstractTreeEditPart {
 				}
 			}
 		}
-		super.refreshChildren();
+		refreshVisuals();
 	}
 	
 	/**
@@ -107,7 +96,10 @@ public class AbstractGraphicsTreeEditPart extends AbstractTreeEditPart {
 	 */
 	@Override
 	protected Image getImage() {
-		EObject o = (EObject)getBpmnModel();
+		EObject o = (EObject)getModel();
+		Image img = labelProvider.getImage(o);
+		if (img!=null)
+			return img;
 		return PropertyUtil.getImage(o);
 	}
 
@@ -124,20 +116,24 @@ public class AbstractGraphicsTreeEditPart extends AbstractTreeEditPart {
 	protected String getText() {
 		String text = null;
 		if (getModel() instanceof EObject) {
-			EObject o = (EObject)getBpmnModel();
+			EObject o = (EObject)getModel();
 			text = getText(o);
 		}
 		return text == null ? "" : text;
 	}
 	
 	protected String getText(EObject o) {
-		if (o==null)
-			return "";
-		String text = ModelUtil.getDisplayName(o);
-		if (text==null || text.isEmpty()) {
-			EStructuralFeature f = o.eClass().getEStructuralFeature("id");
-			if (f!=null)
-				text = o.eGet(f).toString();
+		String text = "";
+		if (o!=null) {
+			text = labelProvider.getText(o);
+			if (text==null) {
+				text = ModelUtil.getDisplayName(o);
+				if (text==null || text.isEmpty()) {
+					EStructuralFeature f = o.eClass().getEStructuralFeature("id");
+					if (f!=null)
+						text = o.eGet(f).toString();
+				}
+			}
 		}
 		return text;
 	}

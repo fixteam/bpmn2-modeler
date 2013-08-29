@@ -13,10 +13,12 @@
 package org.eclipse.bpmn2.modeler.core.features.lane;
 
 import org.eclipse.bpmn2.Lane;
+import org.eclipse.bpmn2.modeler.core.di.DIUtils;
 import org.eclipse.bpmn2.modeler.core.features.DefaultResizeBPMNShapeFeature;
 import org.eclipse.bpmn2.modeler.core.features.participant.ResizeParticipantFeature;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.IResizeShapeFeature;
 import org.eclipse.graphiti.features.context.IResizeShapeContext;
@@ -213,6 +215,9 @@ public class ResizeLaneFeature extends DefaultResizeBPMNShapeFeature {
 						} else {
 							Graphiti.getGaService().setHeight(rootGA, rootGA.getHeight() + dHeight);
 						}
+						if (laneContainerShape.equals(rootContainer)) {
+							Graphiti.getGaService().setLocation(ga, context.getX(), context.getY());
+						}
 					}
 					for (PictogramElement currentChild : FeatureSupport.getChildsOfBusinessObjectType(container, Lane.class)) {
 						if (currentChild instanceof ContainerShape) {
@@ -223,8 +228,8 @@ public class ResizeLaneFeature extends DefaultResizeBPMNShapeFeature {
 
 							newContext.setX(currentGA.getX());
 							newContext.setY(currentGA.getY());
-							newContext.setHeight(currentGA.getHeight() + dHeight);
 							newContext.setWidth(currentGA.getWidth() + dWidth);
+							newContext.setHeight(currentGA.getHeight() + dHeight);
 
 							newContext.putProperty(LANE_RESIZE_PROPERTY, true);
 
@@ -238,8 +243,37 @@ public class ResizeLaneFeature extends DefaultResizeBPMNShapeFeature {
 
 	@Override
 	public void resizeShape(IResizeShapeContext context) {
+		ContainerShape laneShape = (ContainerShape) context.getShape();
+		GraphicsAlgorithm laneGa = laneShape.getGraphicsAlgorithm();
+		int preX = laneGa.getX();
+		int preY = laneGa.getY();
+
 		resizeHeight(context);
 		resizeWidth(context);
+
+		int deltaX = preX - context.getX();
+		int deltaY = preY - context.getY();
+		
+		// Adjust location of children so that a resize up or left
+		// leaves them in the same location relative to the diagram.
+		// This allows the user to create (or remove) space between
+		// the Lane's edge and the contained activities.
+		for (PictogramElement pe : laneShape.getChildren()) {
+			if (pe instanceof ContainerShape) {
+				EObject bo = BusinessObjectUtil.getBusinessObjectForPictogramElement(pe);
+				if (!(bo instanceof Lane)) {
+					ContainerShape child = (ContainerShape) pe;
+					GraphicsAlgorithm ga = child.getGraphicsAlgorithm();
+					Graphiti.getLayoutService().setLocation(ga, ga.getX() + deltaX, ga.getY() + deltaY);
+				}
+			}
+		}
+		
+		DIUtils.updateDIShape(laneShape);
+		ContainerShape rootContainer = FeatureSupport.getRootContainer(laneShape);
+		if (rootContainer!=laneShape) {
+			DIUtils.updateDIShape(rootContainer);
+		}
 	}
 
 	private ContainerShape getLowestLane(ContainerShape root, boolean fetchFirst) {

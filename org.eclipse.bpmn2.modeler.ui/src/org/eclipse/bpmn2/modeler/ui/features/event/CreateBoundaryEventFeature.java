@@ -52,8 +52,8 @@ public class CreateBoundaryEventFeature extends AbstractBpmn2CreateFeature<Bound
 	@Override
 	public Object[] create(ICreateContext context) {
 		BoundaryEvent event = createBusinessObject(context);
-		addGraphicalRepresentation(context, event);
-		return new Object[] { event };
+		PictogramElement pe = addGraphicalRepresentation(context, event);
+		return new Object[] { event, pe };
 	}
 	
 	@Override

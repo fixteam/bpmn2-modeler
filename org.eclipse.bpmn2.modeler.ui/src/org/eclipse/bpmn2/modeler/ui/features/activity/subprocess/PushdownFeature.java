@@ -149,6 +149,9 @@ public class PushdownFeature extends AbstractCustomFeature {
 		
 		for (FlowElement fe : container.getFlowElements()) {
 			DiagramElement de = DIUtils.findDiagramElement(fe);
+			if (de==null)
+				continue; // Diagram Element does not exist
+			
 			newPlane.getPlaneElement().add(de);
 			
 			List <PictogramElement> pes = Graphiti.getLinkService().getPictogramElements(oldDiagram, fe);

@@ -17,19 +17,27 @@ import java.util.List;
 
 import org.eclipse.bpmn2.Activity;
 import org.eclipse.bpmn2.Assignment;
+import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.CatchEvent;
 import org.eclipse.bpmn2.DataAssociation;
 import org.eclipse.bpmn2.DataInput;
 import org.eclipse.bpmn2.DataInputAssociation;
+import org.eclipse.bpmn2.DataObject;
+import org.eclipse.bpmn2.DataObjectReference;
 import org.eclipse.bpmn2.DataOutput;
 import org.eclipse.bpmn2.DataOutputAssociation;
+import org.eclipse.bpmn2.DataStore;
+import org.eclipse.bpmn2.DataStoreReference;
+import org.eclipse.bpmn2.Event;
 import org.eclipse.bpmn2.Expression;
 import org.eclipse.bpmn2.FormalExpression;
 import org.eclipse.bpmn2.InputOutputSpecification;
 import org.eclipse.bpmn2.ItemAwareElement;
 import org.eclipse.bpmn2.MultiInstanceLoopCharacteristics;
 import org.eclipse.bpmn2.ThrowEvent;
+import org.eclipse.bpmn2.di.BPMNShape;
 import org.eclipse.bpmn2.modeler.core.adapters.InsertionAdapter;
+import org.eclipse.bpmn2.modeler.core.features.ContextConstants;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractPropertiesProvider;
@@ -40,12 +48,34 @@ import org.eclipse.bpmn2.modeler.core.merrimac.clad.PropertiesCompositeFactory;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.TableColumn;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ComboObjectEditor;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ObjectEditor;
+import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
+import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
+import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
+import org.eclipse.bpmn2.modeler.ui.features.flow.DataAssociationFeatureContainer;
 import org.eclipse.bpmn2.modeler.ui.property.data.ItemAwareElementDetailComposite;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.transaction.RecordingCommand;
+import org.eclipse.emf.transaction.TransactionalEditingDomain;
+import org.eclipse.graphiti.features.IAddFeature;
+import org.eclipse.graphiti.features.IDeleteFeature;
+import org.eclipse.graphiti.features.IFeatureProvider;
+import org.eclipse.graphiti.features.IReconnectionFeature;
+import org.eclipse.graphiti.features.context.impl.AddConnectionContext;
+import org.eclipse.graphiti.features.context.impl.AddContext;
+import org.eclipse.graphiti.features.context.impl.DeleteContext;
+import org.eclipse.graphiti.features.context.impl.ReconnectionContext;
+import org.eclipse.graphiti.mm.algorithms.styles.Point;
+import org.eclipse.graphiti.mm.pictograms.Anchor;
+import org.eclipse.graphiti.mm.pictograms.AnchorContainer;
+import org.eclipse.graphiti.mm.pictograms.Connection;
+import org.eclipse.graphiti.mm.pictograms.Diagram;
+import org.eclipse.graphiti.mm.pictograms.PictogramElement;
+import org.eclipse.graphiti.mm.pictograms.Shape;
+import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -53,6 +83,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.forms.widgets.Section;
 
 /**
@@ -94,6 +125,9 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 	protected DataAssociation association;
 	protected boolean isInput;
 	protected boolean updatingWidgets;
+	
+	protected Group fromGroup;
+	protected Group toGroup;
 	protected Button mapPropertyButton;
 	protected Button mapExpressionButton;
 	protected Button mapTransformationButton;
@@ -170,7 +204,19 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 			return;
 		}
 		parameter = (ItemAwareElement)be;
-		
+
+		fromGroup = new Group(this, SWT.NONE);
+		fromGroup.setText("From");
+		fromGroup.setLayout(new GridLayout(3,false));
+		fromGroup.setLayoutData(new GridData(SWT.FILL,SWT.TOP,true,false,3,1));
+
+		toGroup = new Group(this, SWT.NONE);
+		toGroup.setText("To");
+		toGroup.setLayout(new GridLayout(3,false));
+		toGroup.setLayoutData(new GridData(SWT.FILL,SWT.TOP,true,false,3,1));
+
+		final Group group = isInput ? toGroup : fromGroup;
+
 		Activity activity = null;
 		List<? extends DataAssociation> associations = null;
 		EObject container = ModelUtil.getContainer(be);
@@ -187,7 +233,7 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 				super.createBindings(be);
 				return;
 			}
-			DataInputOutputDetailComposite details = createDataInputOutputDetailComposite(be, this,SWT.NONE);
+			DataInputOutputDetailComposite details = createDataInputOutputDetailComposite(be, group,SWT.NONE);
 			details.setBusinessObject(be);
 			sectionTitle = (isInput ? "Input" : "Output") +
 				" Parameter Mapping Details";
@@ -196,11 +242,11 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 			ThrowEvent throwEvent = (ThrowEvent)container;
 			associations = throwEvent.getDataInputAssociation();
 			if (associations.size()==0) {
-				association = FACTORY.createDataInputAssociation();
+				association = createModelObject(DataInputAssociation.class);
 				association.setTargetRef((ItemAwareElement) be);
 				InsertionAdapter.add(throwEvent, PACKAGE.getThrowEvent_DataInputAssociation(), association);
 			}
-			DataInputOutputDetailComposite details = createDataInputOutputDetailComposite(be, this,SWT.NONE);
+			DataInputOutputDetailComposite details = createDataInputOutputDetailComposite(be, group,SWT.NONE);
 			details.setBusinessObject(be);
 			sectionTitle = "Data Input Mapping Details";
 		}
@@ -208,11 +254,11 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 			CatchEvent catchEvent = (CatchEvent)container;
 			associations = catchEvent.getDataOutputAssociation();
 			if (associations.size()==0) {
-				association = FACTORY.createDataOutputAssociation();
+				association = createModelObject(DataOutputAssociation.class);
 				association.getSourceRef().add((ItemAwareElement) be);
 				InsertionAdapter.add(catchEvent, PACKAGE.getCatchEvent_DataOutputAssociation(), association);
 			}
-			DataInputOutputDetailComposite details = createDataInputOutputDetailComposite(be, this,SWT.NONE);
+			DataInputOutputDetailComposite details = createDataInputOutputDetailComposite(be, group,SWT.NONE);
 			details.setBusinessObject(be);
 			sectionTitle = "Data Output Mapping Details";
 		}
@@ -250,12 +296,12 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 			if (association==null && activity!=null) {
 				// create a new DataAssociation
 				if (isInput) {
-					association = FACTORY.createDataInputAssociation();
+					association = createModelObject(DataInputAssociation.class);
 					association.setTargetRef((ItemAwareElement) be);
 					InsertionAdapter.add(activity, PACKAGE.getActivity_DataInputAssociations(), association);
 				}
 				else {
-					association = FACTORY.createDataOutputAssociation();
+					association = createModelObject(DataOutputAssociation.class);
 					association.getSourceRef().add((ItemAwareElement) be);
 					InsertionAdapter.add(activity, PACKAGE.getActivity_DataOutputAssociations(), association);
 				}
@@ -425,8 +471,9 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 			}
 		}
 
+		Group group = !isInput ? toGroup : fromGroup;
 		if (mapPropertyButton==null) {
-			mapPropertyButton = toolkit.createButton(this, "Map to a Variable", SWT.RADIO);
+			mapPropertyButton = toolkit.createButton(group, "Variable", SWT.RADIO);
 			mapPropertyButton.setLayoutData(new GridData(SWT.LEFT,SWT.TOP,true,false,3,1));
 
 			mapPropertyButton.addSelectionListener(new SelectionAdapter() {
@@ -445,7 +492,7 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 		}
 		
 		if (mapTransformationButton==null) {
-			mapTransformationButton = toolkit.createButton(this, "Map a Transformation", SWT.RADIO);
+			mapTransformationButton = toolkit.createButton(group, "Transformation", SWT.RADIO);
 			mapTransformationButton.setLayoutData(new GridData(SWT.LEFT,SWT.TOP,true,false,3,1));
 			
 			mapTransformationButton.addSelectionListener(new SelectionAdapter() {
@@ -464,7 +511,7 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 		}
 		
 		if (mapExpressionButton==null) {
-			mapExpressionButton = toolkit.createButton(this, "Map an Expression", SWT.RADIO);
+			mapExpressionButton = toolkit.createButton(group, "Expression", SWT.RADIO);
 			mapExpressionButton.setLayoutData(new GridData(SWT.LEFT,SWT.TOP,true,false,3,1));
 			
 			mapExpressionButton.addSelectionListener(new SelectionAdapter() {
@@ -483,7 +530,7 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 		}
 
 		if (advancedMappingButton==null) {
-			advancedMappingButton = toolkit.createButton(this, "Advanced Mapping", SWT.RADIO);
+			advancedMappingButton = toolkit.createButton(group, "Advanced Mapping", SWT.RADIO);
 			advancedMappingButton.setLayoutData(new GridData(SWT.LEFT,SWT.TOP,true,false,3,1));
 			
 			advancedMappingButton.addSelectionListener(new SelectionAdapter() {
@@ -506,10 +553,11 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 	}
 	
 	private void showPropertyWidgets(boolean show) {
+		final Group group = !isInput ? toGroup : fromGroup;
 		if (show != propertyWidgetsShowing) {
 			if (show) {
 				if (propertyComposite==null) {
-					propertyComposite = toolkit.createComposite(this, SWT.NONE);
+					propertyComposite = toolkit.createComposite(group, SWT.NONE);
 					GridLayout layout = new GridLayout(3,false);
 					layout.verticalSpacing = 0;
 					layout.marginHeight = 0;
@@ -597,10 +645,11 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 	}
 
 	private void showTransformationWidgets(boolean show) {
+		Group group = !isInput ? toGroup : fromGroup;
 		if (show != transformationWidgetsShowing) {
 			if (show) {
 				if (transformationComposite==null) {
-					transformationComposite = toolkit.createComposite(this, SWT.NONE);
+					transformationComposite = toolkit.createComposite(group, SWT.NONE);
 					transformationComposite.setLayout(new GridLayout(1,false));
 					transformationComposite.setLayoutData(new GridData(SWT.FILL,SWT.TOP,true,true,3,1));
 				}
@@ -612,7 +661,7 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 				// create a new Transformation FormalExpression
 				FormalExpression transformation = association.getTransformation();
 				if (!updatingWidgets && transformation==null) {
-					transformation = FACTORY.createFormalExpression();
+					transformation = createModelObject(FormalExpression.class);
 					InsertionAdapter.add(association, PACKAGE.getDataAssociation_Transformation(), transformation);
 				}
 				if (transformationDetailsComposite==null) {
@@ -644,10 +693,11 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 	}
 
 	private void showExpressionWidgets(boolean show) {
+		Group group = !isInput ? toGroup : fromGroup;
 		if (show != expressionWidgetsShowing) {
 			if (show) {
 				if (expressionComposite==null) {
-					expressionComposite = toolkit.createComposite(this, SWT.NONE);
+					expressionComposite = toolkit.createComposite(group, SWT.NONE);
 					expressionComposite.setLayout(new GridLayout(1,false));
 					expressionComposite.setLayoutData(new GridData(SWT.FILL,SWT.TOP,true,true,3,1));
 				}
@@ -668,8 +718,8 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 				}
 				if (!updatingWidgets) {
 					if (assignment==null) {
-						assignment = FACTORY.createAssignment();
-						FormalExpression paramExpression = FACTORY.createFormalExpression();
+						assignment = createModelObject(Assignment.class);
+						FormalExpression paramExpression = createModelObject(FormalExpression.class);
 						paramExpression.setBody(parameter.getId());
 						if (isInput)
 							assignment.setTo(paramExpression);
@@ -678,7 +728,7 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 						InsertionAdapter.add(association, PACKAGE.getDataAssociation_Assignment(), assignment);
 					}
 					if (expression==null) {
-						expression = FACTORY.createFormalExpression();
+						expression = createModelObject(FormalExpression.class);
 						if (isInput)
 							InsertionAdapter.add(assignment, PACKAGE.getAssignment_From(), expression);
 						else
@@ -714,10 +764,11 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 	}
 
 	private void showAdvancedMappingWidgets(boolean show) {
+		Group group = !isInput ? toGroup : fromGroup;
 		if (show != advancedMappingWidgetsShowing) {
 			if (show) {
 				if (transformationComposite==null) {
-					transformationComposite = toolkit.createComposite(this, SWT.NONE);
+					transformationComposite = toolkit.createComposite(group, SWT.NONE);
 					transformationComposite.setLayout(new GridLayout(1,false));
 					transformationComposite.setLayoutData(new GridData(SWT.FILL,SWT.TOP,true,true,3,1));
 				}
@@ -729,7 +780,7 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 				// create a new Transformation FormalExpression
 				FormalExpression transformation = association.getTransformation();
 				if (!updatingWidgets && transformation==null) {
-					transformation = FACTORY.createFormalExpression();
+					transformation = createModelObject(FormalExpression.class);
 					InsertionAdapter.add(association, PACKAGE.getDataAssociation_Transformation(), transformation);
 				}
 	
@@ -772,7 +823,7 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 			advancedMappingWidgetsShowing = show;
 		}
 	}
-
+	
 	public class AssignmentListComposite extends DefaultListComposite {
 
 		public AssignmentListComposite(Composite parent) {
@@ -811,6 +862,5 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 			}
 			
 		}
-
 	}
 }

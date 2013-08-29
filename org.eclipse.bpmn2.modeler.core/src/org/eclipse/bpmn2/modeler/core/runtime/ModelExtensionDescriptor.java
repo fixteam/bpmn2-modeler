@@ -135,6 +135,10 @@ public class ModelExtensionDescriptor extends BaseRuntimeDescriptor {
 		public List<Property> getProperties(String path) {
 			return descriptor.getProperties(path);
 		}
+		
+		public ModelExtensionDescriptor getDescriptor() {
+			return descriptor;
+		}
 	}
 	
 	protected String id;

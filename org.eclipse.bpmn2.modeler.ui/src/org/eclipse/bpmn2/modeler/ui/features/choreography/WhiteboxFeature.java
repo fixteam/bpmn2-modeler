@@ -17,11 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.bpmn2.BaseElement;
-import org.eclipse.bpmn2.Bpmn2Factory;
-import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.Collaboration;
 import org.eclipse.bpmn2.Definitions;
-import org.eclipse.bpmn2.Message;
 import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.Process;
 import org.eclipse.bpmn2.RootElement;
@@ -29,12 +26,9 @@ import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.di.BPMNPlane;
 import org.eclipse.bpmn2.di.BpmnDiFactory;
 import org.eclipse.bpmn2.modeler.core.di.DIUtils;
+import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.ui.ImageProvider;
-import org.eclipse.dd.dc.DcFactory;
-import org.eclipse.dd.di.DiFactory;
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IContext;
@@ -55,8 +49,8 @@ import org.eclipse.swt.widgets.Display;
  * @author Bob Brodt
  */
 public class WhiteboxFeature extends AbstractCustomFeature {
-	
-	private boolean changesDone = false;;
+
+	protected boolean changesDone = false;
 	
 	// label provider for the popup menu that displays allowable Activity subclasses
 	private static ILabelProvider labelProvider = new ILabelProvider() {
@@ -168,6 +162,11 @@ public class WhiteboxFeature extends AbstractCustomFeature {
 		}
 	}
 	
+	@Override
+	public boolean hasDoneChanges() {
+		return changesDone;
+	}
+
 	private BPMNDiagram selectBPMNDiagram(Definitions definitions, Participant participant) {
 
 		Resource resource = definitions.eResource();
@@ -179,7 +178,7 @@ public class WhiteboxFeature extends AbstractCustomFeature {
 		BPMNPlane plane = BpmnDiFactory.eINSTANCE.createBPMNPlane();
 		ModelUtil.setID(plane, resource);
 		
-		Process process = Bpmn2Factory.eINSTANCE.createProcess();
+		Process process = Bpmn2ModelerFactory.create(Process.class);
 		plane.setBpmnElement(process);
 		newDiagram.setPlane(plane);
 
@@ -215,7 +214,8 @@ public class WhiteboxFeature extends AbstractCustomFeature {
 			}
 		}
     	participant.setProcessRef(process);
-		
+		ModelUtil.setID(process);
+
 		return result;
 	}
 }

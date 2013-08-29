@@ -55,6 +55,7 @@ import org.eclipse.bpmn2.di.BpmnDiFactory;
 import org.eclipse.bpmn2.di.BpmnDiPackage;
 import org.eclipse.bpmn2.di.ParticipantBandKind;
 import org.eclipse.bpmn2.modeler.core.di.ImportDiagnostics;
+import org.eclipse.bpmn2.modeler.core.features.participant.AddParticipantFeature;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
@@ -258,19 +259,21 @@ public class ModelHandler {
 					Collaboration collaboration = createCollaboration();
 					collaboration.setName(name+" Collaboration");
 
-//					Process initiatingProcess = createProcess();
-//					initiatingProcess.setName(name+" Initiating Process");
+					Process initiatingProcess = createProcess();
+					initiatingProcess.setName("Initiating Process");
+					initiatingProcess.setDefinitionalCollaborationRef(collaboration);
 					
 					Participant initiatingParticipant = create(Participant.class);
 					initiatingParticipant.setName("Initiating Pool");
-//					initiatingParticipant.setProcessRef(initiatingProcess);
+					initiatingParticipant.setProcessRef(initiatingProcess);
 					
-//					Process nonInitiatingProcess = createProcess();
-//					nonInitiatingProcess.setName(name+" Non-initiating Process");
+					Process nonInitiatingProcess = createProcess();
+					nonInitiatingProcess.setName("Non-initiating Process");
+					nonInitiatingProcess.setDefinitionalCollaborationRef(collaboration);
 					
 					Participant nonInitiatingParticipant = create(Participant.class);
 					nonInitiatingParticipant.setName("Non-initiating Pool");
-//					nonInitiatingParticipant.setProcessRef(nonInitiatingProcess);
+					nonInitiatingParticipant.setProcessRef(nonInitiatingProcess);
 					
 					collaboration.getParticipants().add(initiatingParticipant);
 					collaboration.getParticipants().add(nonInitiatingParticipant);
@@ -287,14 +290,14 @@ public class ModelHandler {
 					if (horz) {
 						bounds.setX(100);
 						bounds.setY(100);
-						bounds.setWidth(1000);
-						bounds.setHeight(200);
+						bounds.setWidth(AddParticipantFeature.DEFAULT_POOL_WIDTH);
+						bounds.setHeight(AddParticipantFeature.DEFAULT_POOL_HEIGHT);
 					}
 					else {
 						bounds.setX(100);
 						bounds.setY(100);
-						bounds.setWidth(200);
-						bounds.setHeight(1000);
+						bounds.setWidth(AddParticipantFeature.DEFAULT_POOL_HEIGHT);
+						bounds.setHeight(AddParticipantFeature.DEFAULT_POOL_WIDTH);
 					}
 					shape.setBounds(bounds);
 					shape.setIsHorizontal(horz);
@@ -309,15 +312,15 @@ public class ModelHandler {
 					bounds = DcFactory.eINSTANCE.createBounds();
 					if (horz) {
 						bounds.setX(100);
-						bounds.setY(400);
-						bounds.setWidth(1000);
-						bounds.setHeight(200);
+						bounds.setY(350);
+						bounds.setWidth(AddParticipantFeature.DEFAULT_POOL_WIDTH);
+						bounds.setHeight(AddParticipantFeature.DEFAULT_POOL_HEIGHT);
 					}
 					else {
-						bounds.setX(400);
+						bounds.setX(350);
 						bounds.setY(100);
-						bounds.setWidth(200);
-						bounds.setHeight(1000);
+						bounds.setWidth(AddParticipantFeature.DEFAULT_POOL_HEIGHT);
+						bounds.setHeight(AddParticipantFeature.DEFAULT_POOL_WIDTH);
 					}
 					shape.setBounds(bounds);
 					shape.setIsHorizontal(horz);

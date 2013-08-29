@@ -28,6 +28,7 @@ import org.eclipse.emf.edit.provider.ComposeableAdapterFactory;
 import org.eclipse.emf.edit.provider.IItemPropertyDescriptor;
 import org.eclipse.emf.edit.provider.ItemProviderAdapter;
 import org.eclipse.emf.transaction.TransactionalEditingDomain;
+import org.eclipse.core.runtime.Assert;
 
 /**
  * @author Bob Brodt
@@ -41,6 +42,10 @@ public class ObjectDescriptor<T extends EObject> {
 	protected AdapterFactory adapterFactory;
 	
 	public ObjectDescriptor(AdapterFactory adapterFactory, T object) {
+		this.object = object;
+	}
+	
+	public void setObject(T object) {
 		this.object = object;
 	}
 	
@@ -114,6 +119,7 @@ public class ObjectDescriptor<T extends EObject> {
 		return null;
 	}
 	
+	@SuppressWarnings("unchecked")
 	protected EObject clone(T oldObject) {
 		T newObject = null;
 		if (oldObject!=null) {
@@ -126,6 +132,7 @@ public class ObjectDescriptor<T extends EObject> {
 		return newObject;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof EObject && ((EObject) obj).eClass() == object.eClass()) {
@@ -181,9 +188,9 @@ public class ObjectDescriptor<T extends EObject> {
 	 * @param context
 	 * @return the context variable if it has the same type as this.object, or this.object if not.
 	 */
+	@SuppressWarnings("unchecked")
 	protected T adopt(Object context) {
 		T result = (this.object.getClass().isInstance(context)) ? (T)context : this.object;
-//		InsertionAdapter.executeIfNeeded(result);
 		return result;
 	}
 
@@ -212,6 +219,7 @@ public class ObjectDescriptor<T extends EObject> {
 		return createObject(null,context);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public T createObject(Resource resource, Object context) {
 	
 		EClass eClass = null;
@@ -226,7 +234,7 @@ public class ObjectDescriptor<T extends EObject> {
 		else {
 			eClass = object.eClass();
 		}
-		assert(object.eClass().isSuperTypeOf(eClass));
+		Assert.isTrue(object.eClass().isSuperTypeOf(eClass));
 
 		T newObject = (T) eClass.getEPackage().getEFactoryInstance().create(eClass);
 		

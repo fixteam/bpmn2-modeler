@@ -64,7 +64,6 @@ public class DiagramElementTreeNode {
 	}
 	
 	public DiagramElementTreeNode addChild(BaseElement element) {
-		assert( element.eContainer() == baseElement );
 		DiagramElementTreeNode child = getChild(element);
 		if (child!=null)
 			return child;

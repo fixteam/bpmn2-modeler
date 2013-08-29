@@ -42,11 +42,19 @@ public class MultiUpdateFeature extends AbstractUpdateFeature {
 
 	@Override
 	public IReason updateNeeded(IUpdateContext context) {
+		String text = null;
 		for (IUpdateFeature p : features) {
-			if (p.updateNeeded(context).toBoolean()) {
-				return Reason.createTrueReason();
+			IReason reason = p.updateNeeded(context);
+			if (reason.toBoolean()) {
+				if (text==null) {
+					text = reason.getText();
+				}
+				else
+					text += "\n" + reason.getText();
 			}
 		}
+		if (text!=null)
+			return Reason.createTrueReason(text);
 		return Reason.createFalseReason();
 	}
 

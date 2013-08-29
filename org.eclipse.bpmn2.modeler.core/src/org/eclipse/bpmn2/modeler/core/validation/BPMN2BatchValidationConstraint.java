@@ -12,13 +12,18 @@ package org.eclipse.bpmn2.modeler.core.validation;
 
 import java.util.List;
 
+import org.eclipse.bpmn2.Assignment;
+import org.eclipse.bpmn2.Association;
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.CallActivity;
 import org.eclipse.bpmn2.CatchEvent;
+import org.eclipse.bpmn2.ChoreographyActivity;
+import org.eclipse.bpmn2.ChoreographyTask;
 import org.eclipse.bpmn2.CompensateEventDefinition;
 import org.eclipse.bpmn2.ComplexGateway;
 import org.eclipse.bpmn2.ConditionalEventDefinition;
+import org.eclipse.bpmn2.DataAssociation;
 import org.eclipse.bpmn2.DataObject;
 import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.EndEvent;
@@ -34,13 +39,19 @@ import org.eclipse.bpmn2.FlowNode;
 import org.eclipse.bpmn2.FormalExpression;
 import org.eclipse.bpmn2.Gateway;
 import org.eclipse.bpmn2.GatewayDirection;
+import org.eclipse.bpmn2.Import;
 import org.eclipse.bpmn2.InclusiveGateway;
+import org.eclipse.bpmn2.InputOutputSpecification;
+import org.eclipse.bpmn2.InteractionNode;
+import org.eclipse.bpmn2.Interface;
 import org.eclipse.bpmn2.ItemDefinition;
 import org.eclipse.bpmn2.Message;
 import org.eclipse.bpmn2.MessageEventDefinition;
+import org.eclipse.bpmn2.MessageFlow;
+import org.eclipse.bpmn2.Operation;
 import org.eclipse.bpmn2.ParallelGateway;
 import org.eclipse.bpmn2.Process;
-import org.eclipse.bpmn2.RootElement;
+import org.eclipse.bpmn2.Resource;
 import org.eclipse.bpmn2.ScriptTask;
 import org.eclipse.bpmn2.SendTask;
 import org.eclipse.bpmn2.SequenceFlow;
@@ -49,9 +60,10 @@ import org.eclipse.bpmn2.SignalEventDefinition;
 import org.eclipse.bpmn2.StartEvent;
 import org.eclipse.bpmn2.ThrowEvent;
 import org.eclipse.bpmn2.TimerEventDefinition;
-import org.eclipse.bpmn2.di.BPMNDiagram;
+import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.validation.AbstractModelConstraint;
 import org.eclipse.emf.validation.EMFEventType;
 import org.eclipse.emf.validation.IValidationContext;
@@ -78,9 +90,6 @@ public class BPMN2BatchValidationConstraint extends AbstractModelConstraint {
 		
 		// In the case of batch mode.
 		if (eType == EMFEventType.NULL) {
-			if (eObj instanceof BPMNDiagram) {
-				return validateDiagram(ctx, (BPMNDiagram) eObj);
-			}
 			if (eObj instanceof Definitions) {
 				return validateDefinitions(ctx, (Definitions) eObj);
 			}
@@ -92,143 +101,171 @@ public class BPMN2BatchValidationConstraint extends AbstractModelConstraint {
 
 		return ctx.createSuccessStatus();
 	}
-
-	private IStatus validateDiagram(IValidationContext ctx, BPMNDiagram obj) {
-		Definitions defs = (Definitions) obj.eContainer();
-		return validateDefinitions(ctx, defs);
-	}
-
+	
 	private IStatus validateDefinitions(IValidationContext ctx, Definitions def) {
-		List<RootElement> rootElements = def.getRootElements();
-		for (RootElement root : rootElements) {
-			if (root instanceof Process) {
-				Process process = (Process) root;
-
-				if (warnings) {
-					// report warnings only
-					boolean foundStartEvent = false;
-					boolean foundEndEvent = false;
-					List<FlowElement> flowElements = process.getFlowElements();
-					for (FlowElement fe : flowElements) {
-						if (fe instanceof StartEvent) {
-							foundStartEvent = true;
-						}
-						if (fe instanceof EndEvent) {
-							foundEndEvent = true;
-						}
-					}
-					if (!foundStartEvent) {
-						ctx.addResult(root);
-						return ctx.createFailureStatus("流程定义中没有 Start Event");
-					}
-					if (!foundEndEvent) {
-						ctx.addResult(root);
-						return ctx.createFailureStatus("流程定义中没有 End Event");
-					}
-				}
-				else {
-					// report errors only
-					if (isEmpty(process.getName())) {
-						ctx.addResult(root);
-						return ctx.createFailureStatus("流程定义中没有名称");
-					}
-				}
+		if (def.getTargetNamespace()==null || def.getTargetNamespace().isEmpty()) {
+			if (warnings) {
 			}
-			else if (root instanceof Error) {
-				if (warnings) {
-					if (((Error)root).getStructureRef()==null) {
-						ctx.addResult(root);
-						return ctx.createFailureStatus("Error has no type definition");
-					}
-				}
-			}
-			else if (root instanceof Escalation) {
-				if (warnings) {
-					if (((Escalation)root).getStructureRef()==null) {
-						ctx.addResult(root);
-						return ctx.createFailureStatus("Escalation has no type definition");
-					}
-				}
-			}
-			else if (root instanceof Message) {
-				if (warnings) {
-					if (((Message)root).getItemRef()==null) {
-						ctx.addResult(root);
-						return ctx.createFailureStatus("Message has no type definition");
-					}
-				}
-			}
-			else if (root instanceof Signal) {
-				if (warnings) {
-					if (((Signal)root).getStructureRef()==null) {
-						ctx.addResult(root);
-						return ctx.createFailureStatus("Signal has no type definition");
-					}
-				}
-			}
-			else if (root instanceof ItemDefinition) {
-				if (!warnings) {
-					if (((ItemDefinition)root).getStructureRef()==null) {
-						ctx.addResult(root);
-						return ctx.createFailureStatus("Item Definition has no structure");
-					}
-				}
-			}
+			else {
+				ctx.addResult(def);
+				return ctx.createFailureStatus("No targetNamespace defined");
+			}			
 		}
+		
 		return ctx.createSuccessStatus();
 	}
 
-	private IStatus validateBaseElement(IValidationContext ctx, BaseElement fe) {
+	public IStatus createFailureStatus(IValidationContext ctx, EObject object, Object... messageArgs) {
+		IStatus status = ctx.createFailureStatus(messageArgs);
+		ctx.addResult(object);
+		return status;
+	}
 
-		if (fe instanceof StartEvent) {
-			StartEvent se = (StartEvent) fe;
-			
-			if (!warnings) {
-				if (se.getOutgoing() == null || se.getOutgoing().size() < 1) {
-					return ctx.createFailureStatus("Start Event 没有对外的连接");
+	public IStatus createMissingFeatureStatus(IValidationContext ctx, EObject object, String featureName) {
+		EStructuralFeature feature = object.eClass().getEStructuralFeature(featureName);
+		String message = ModelUtil.getLabel(object) + " has no " + ModelUtil.getLabel(object, feature);
+		IStatus status = ctx.createFailureStatus(message);
+		ctx.addResult(object);
+		return status;
+	}
+
+	private IStatus validateBaseElement(IValidationContext ctx, BaseElement be) {
+
+		if (be instanceof Process) {
+			Process process = (Process) be;
+
+			if (warnings) {
+				// report warnings only
+				boolean foundStartEvent = false;
+				boolean foundEndEvent = false;
+				List<FlowElement> flowElements = process.getFlowElements();
+				for (FlowElement fe : flowElements) {
+					if (fe instanceof StartEvent) {
+						foundStartEvent = true;
+					}
+					if (fe instanceof EndEvent) {
+						foundEndEvent = true;
+					}
+				}
+				if (!foundStartEvent) {
+					return createFailureStatus(ctx, be, "Process has no Start Event");
+				}
+				if (!foundEndEvent) {
+					return createFailureStatus(ctx, be, "Process has no End Event");
+				}
+				if (isEmpty(process.getName())) {
+					return createMissingFeatureStatus(ctx,be,"name");
+				}
+			}
+			else {
+				// report errors only
+			}
+		}
+		else if (be instanceof Import) {
+			Import elem = (Import)be;
+			if (warnings) {
+			}
+			else {
+				if (isEmpty(elem.getLocation())) {
+					return createMissingFeatureStatus(ctx,be,"location");
+				}
+				if (isEmpty(elem.getNamespace())) {
+					return createMissingFeatureStatus(ctx,be,"namespace");
+				}
+				if (isEmpty(elem.getImportType())) {
+					return createMissingFeatureStatus(ctx,be,"importType");
 				}
 			}
 		}
-		else if (fe instanceof EndEvent) {
-			EndEvent ee = (EndEvent) fe;
-			
-			if (!warnings) {
-				if (ee.getIncoming() == null || ee.getIncoming().size() < 1) {
-					return ctx.createFailureStatus("End Event 没有传入的连接");
+		else if (be instanceof Error) {
+			if (warnings) {
+				if (((Error)be).getStructureRef()==null) {
+					return createMissingFeatureStatus(ctx,be,"structureRef");
 				}
 			}
 		}
-		else if (fe instanceof ScriptTask) {
-			ScriptTask st = (ScriptTask) fe;
+		else if (be instanceof Escalation) {
+			if (warnings) {
+				if (((Escalation)be).getStructureRef()==null) {
+					return createMissingFeatureStatus(ctx,be,"structureRef");
+				}
+			}
+		}
+		else if (be instanceof Message) {
+			if (warnings) {
+				if (((Message)be).getItemRef()==null) {
+					return createMissingFeatureStatus(ctx,be,"itemRef");
+				}
+			}
+		}
+		else if (be instanceof Signal) {
+			if (warnings) {
+				if (((Signal)be).getStructureRef()==null) {
+					return createMissingFeatureStatus(ctx,be,"structureRef");
+				}
+			}
+		}
+		else if (be instanceof ItemDefinition) {
+			if (!warnings) {
+				if (((ItemDefinition)be).getStructureRef()==null) {
+					return createMissingFeatureStatus(ctx,be,"structureRef");
+				}
+			}
+		}
+		else if (be instanceof StartEvent) {
+			StartEvent elem = (StartEvent) be;
+			
+			if (!warnings) {
+				if (elem.getOutgoing() == null || elem.getOutgoing().size() < 1) {
+					return createMissingFeatureStatus(ctx,be,"outgoing");
+				}
+			}
+		}
+		else if (be instanceof EndEvent) {
+			EndEvent elem = (EndEvent) be;
+			
+			if (!warnings) {
+				if (elem.getIncoming() == null || elem.getIncoming().size() < 1) {
+					return createMissingFeatureStatus(ctx,be,"incoming");
+				}
+			}
+		}
+		else if (be instanceof ScriptTask) {
+			ScriptTask elem = (ScriptTask) be;
 			
 			if (warnings) {
-				if (isEmpty(st.getScript())) {
-					return ctx.createFailureStatus("Script Task 中没有脚本");
+				if (isEmpty(elem.getScript())) {
+					return createMissingFeatureStatus(ctx,be,"script");
 				}
-				if (isEmpty(st.getScriptFormat())) {
-					return ctx.createFailureStatus("Script Task 没有设置脚本格式");
+				if (isEmpty(elem.getScriptFormat())) {
+					return createMissingFeatureStatus(ctx,be,"scriptFormat");
 				}
 			}
 		}
-		else if (fe instanceof SendTask) {
-			//SendTask st = (SendTask) fe;
-			/*
-			if (!warnings) {
-				if (st.getOperationRef() == null) {
-					return ctx.createFailureStatus("Send Task has no operation");
-				}
-				if (st.getMessageRef() == null) {
-					return ctx.createFailureStatus("Send Task has no message");
-				}
-			}*/
-		}
-		else if (fe instanceof CatchEvent) {
-			CatchEvent event = (CatchEvent) fe;
+		else if (be instanceof SendTask) {
+			SendTask elem = (SendTask) be;
 
 			if (!warnings) {
-				List<EventDefinition> eventdefs = event.getEventDefinitions();
+				if (elem.getOperationRef() == null) {
+					return createMissingFeatureStatus(ctx,be,"operationRef");
+				}
+				if (elem.getMessageRef() == null) {
+					return createMissingFeatureStatus(ctx,be,"messageRef");
+				}
+			}
+		}
+		else if (be instanceof CatchEvent) {
+			CatchEvent elem = (CatchEvent) be;
+
+			if (warnings) {
+				if (elem.getOutgoing() == null || elem.getOutgoing().size() < 1) {
+					return createMissingFeatureStatus(ctx,be,"outgoing");
+				}
+			}
+			else {
+				List<EventDefinition> eventdefs = elem.getEventDefinitions();
 				if (eventdefs.size()==0) {
-					return ctx.createFailureStatus("Catch Event 没有事件定义");
+					return createMissingFeatureStatus(ctx,be,"eventDefinitions");
 				}
 				
 				for (EventDefinition ed : eventdefs) {
@@ -238,45 +275,53 @@ public class BPMN2BatchValidationConstraint extends AbstractModelConstraint {
 								&& ted.getTimeDuration() == null
 								&& ted.getTimeCycle() == null
 						) {
-							return ctx.createFailureStatus("Timer Event 没有时间定义");
+							return createFailureStatus(ctx,be,"Timer Event has no Timer definition");
 						}
 					} else if (ed instanceof SignalEventDefinition) {
 						if (((SignalEventDefinition) ed).getSignalRef() == null) {
-							return ctx.createFailureStatus("Signal Event has no signal definition");
+							return createFailureStatus(ctx,be,"Signal Event has no Signal definition");
 						}
 					} else if (ed instanceof ErrorEventDefinition) {
 						if (((ErrorEventDefinition) ed).getErrorRef() == null) {
-							return ctx.createFailureStatus("Error Event has no error definition");
+							return createFailureStatus(ctx,be,"Error Event has no Error definition");
 						}
 					} else if (ed instanceof ConditionalEventDefinition) {
 						FormalExpression conditionalExp = (FormalExpression) ((ConditionalEventDefinition) ed)
 								.getCondition();
-						if (conditionalExp.getBody() == null) {
-							return ctx.createFailureStatus("Conditional Event has no condition expression");
+						if (conditionalExp==null || conditionalExp.getBody() == null) {
+							return createFailureStatus(ctx,be,"Conditional Event has no Condition Expression");
 						}
 					} else if (ed instanceof EscalationEventDefinition) {
 						if (((EscalationEventDefinition) ed).getEscalationRef() == null) {
-							return ctx.createFailureStatus("Escalation Event has no escalation definition");
+							return createFailureStatus(ctx,be,"Escalation Event has no Escalation definition");
 						}
 					} else if (ed instanceof MessageEventDefinition) {
 						if (((MessageEventDefinition) ed).getMessageRef() == null) {
-							return ctx.createFailureStatus("Message Event has no message definition");
+							return createFailureStatus(ctx,be,"Message Event has no Message definition");
 						}
 					} else if (ed instanceof CompensateEventDefinition) {
 						if (((CompensateEventDefinition) ed).getActivityRef() == null) {
-							return ctx.createFailureStatus("Compensate Event has no activity definition");
+							return createFailureStatus(ctx,be,"Compensate Event has no Activity definition");
 						}
 					}
 				}
 			}
+			// no more validations on this
+			be = null;
 		}
-		else if (fe instanceof ThrowEvent) {
-			ThrowEvent event = (ThrowEvent) fe;
+		else if (be instanceof ThrowEvent) {
+			ThrowEvent elem = (ThrowEvent) be;
 
-			if (!warnings) {
-				List<EventDefinition> eventdefs = event.getEventDefinitions();
+
+			if (warnings) {
+				if (elem.getOutgoing() == null || elem.getOutgoing().size() < 1) {
+					return createMissingFeatureStatus(ctx,be,"outgoing");
+				}
+			}
+			else {
+				List<EventDefinition> eventdefs = elem.getEventDefinitions();
 				if (eventdefs.size()==0) {
-					return ctx.createFailureStatus("Throw Event 没有事件定义");
+					return createMissingFeatureStatus(ctx,be,"eventDefinitions");
 				}
 
 				for (EventDefinition ed : eventdefs) {
@@ -286,119 +331,221 @@ public class BPMN2BatchValidationConstraint extends AbstractModelConstraint {
 								&& ted.getTimeDuration() == null
 								&& ted.getTimeCycle() == null
 						) {
-							return ctx.createFailureStatus("Timer Event 没有时间定义");
+							return createFailureStatus(ctx,be,"Timer Event has no Timer definition");
 						}
 					} else if (ed instanceof SignalEventDefinition) {
 						if (((SignalEventDefinition) ed).getSignalRef() == null) {
-							return ctx.createFailureStatus("Signal Event has no signal definition");
+							return createFailureStatus(ctx,be,"Signal Event has no Signal definition");
 						}
 					} else if (ed instanceof ErrorEventDefinition) {
 						if (((ErrorEventDefinition) ed).getErrorRef() == null) {
-							return ctx.createFailureStatus("Error Event has no error definition");
+							return createFailureStatus(ctx,be,"Error Event has no Error definition");
 						}
 					} else if (ed instanceof ConditionalEventDefinition) {
 						FormalExpression conditionalExp = (FormalExpression) ((ConditionalEventDefinition) ed)
 								.getCondition();
-						if (conditionalExp.getBody() == null) {
-							return ctx.createFailureStatus("Conditional Event has no condition expression");
+						if (conditionalExp==null || conditionalExp.getBody() == null) {
+							return createFailureStatus(ctx,be,"Conditional Event has no Condition Expression");
 						}
 					} else if (ed instanceof EscalationEventDefinition) {
 						if (((EscalationEventDefinition) ed).getEscalationRef() == null) {
-							return ctx.createFailureStatus("Escalation Event has no conditional escalation definition");
+							return createFailureStatus(ctx,be,"Escalation Event has no conditional Escalation definition");
 						}
 					} else if (ed instanceof MessageEventDefinition) {
 						if (((MessageEventDefinition) ed).getMessageRef() == null) {
-							return ctx.createFailureStatus("Message Event has no conditional message definition");
+							return createFailureStatus(ctx,be,"Message Event has no Message definition");
 						}
 					} else if (ed instanceof CompensateEventDefinition) {
 						if (((CompensateEventDefinition) ed).getActivityRef() == null) {
-							return ctx.createFailureStatus("Compensate Event has no conditional activity definition");
+							return createFailureStatus(ctx,be,"Compensate Event has no Activity definition");
 						}
 					}
 				}
 			}
+			// no more validations on this
+			be = null;
 		}
-		else if (fe instanceof SequenceFlow) {
-			SequenceFlow sf = (SequenceFlow) fe;
+		else if (be instanceof SequenceFlow) {
+			SequenceFlow elem = (SequenceFlow) be;
 
 			if (!warnings) {
-				if (sf.getSourceRef() == null) {
-					return ctx.createFailureStatus("序列流未连接到源");
+				if (elem.getSourceRef() == null) {
+					return createMissingFeatureStatus(ctx,be,"sourceRef");
 				}
-				if (sf.getTargetRef() == null) {
-					return ctx.createFailureStatus("序列流未连接到一个目标");
+				if (elem.getTargetRef() == null) {
+					return createMissingFeatureStatus(ctx,be,"targetRef");
 				}
 			}
 		}
-		else if (fe instanceof Gateway) {
-			//kenshin注释了不需要的验证
-			/*Gateway gw = (Gateway) fe;
+		else if (be instanceof Association) {
+			Association elem = (Association) be;
 
 			if (!warnings) {
-				if (gw.getGatewayDirection() == null
-						|| gw.getGatewayDirection().getValue() == GatewayDirection.UNSPECIFIED.getValue()) {
-					ctx.addResult(Bpmn2Package.eINSTANCE.getGateway_GatewayDirection());
-					return ctx.createFailureStatus("Gateway does not specify a valid direction");
+				if (elem.getSourceRef() == null) {
+					return createMissingFeatureStatus(ctx,be,"sourceRef");
 				}
-				if (gw instanceof ExclusiveGateway) {
-					if (gw.getGatewayDirection().getValue() != GatewayDirection.DIVERGING.getValue()
-							&& gw.getGatewayDirection().getValue() != GatewayDirection.CONVERGING.getValue()) {
-						return ctx.createFailureStatus(
+				if (elem.getTargetRef() == null) {
+					return createMissingFeatureStatus(ctx,be,"targetRef");
+				}
+			}
+		}
+		else if (be instanceof Gateway) {
+			Gateway elem = (Gateway) be;
+
+			if (!warnings) {
+				if (elem.getGatewayDirection() == null
+						|| elem.getGatewayDirection().getValue() == GatewayDirection.UNSPECIFIED.getValue()) {
+					ctx.addResult(Bpmn2Package.eINSTANCE.getGateway_GatewayDirection());
+					return createMissingFeatureStatus(ctx,be,"gatewayDirection");
+				}
+				if (elem instanceof ExclusiveGateway) {
+					if (elem.getGatewayDirection().getValue() != GatewayDirection.DIVERGING.getValue()
+							&& elem.getGatewayDirection().getValue() != GatewayDirection.CONVERGING.getValue()) {
+						return createFailureStatus(ctx,be,
 								"Invalid Gateway direction for Exclusing Gateway. It should be 'Converging' or 'Diverging'");
 					}
 				}
-				if (gw instanceof EventBasedGateway) {
-					if (gw.getGatewayDirection().getValue() != GatewayDirection.DIVERGING.getValue()) {
-						return ctx.createFailureStatus(
+				if (elem instanceof EventBasedGateway) {
+					if (elem.getGatewayDirection().getValue() != GatewayDirection.DIVERGING.getValue()) {
+						return createFailureStatus(ctx,be,
 								"Invalid Gateway direction for EventBased Gateway. It should be 'Diverging'");
 					}
 				}
-				if (gw instanceof ParallelGateway) {
-					if (gw.getGatewayDirection().getValue() != GatewayDirection.DIVERGING.getValue()
-							&& gw.getGatewayDirection().getValue() != GatewayDirection.CONVERGING.getValue()) {
-						return ctx.createFailureStatus(
+				if (elem instanceof ParallelGateway) {
+					if (elem.getGatewayDirection().getValue() != GatewayDirection.DIVERGING.getValue()
+							&& elem.getGatewayDirection().getValue() != GatewayDirection.CONVERGING.getValue()) {
+						return createFailureStatus(ctx,be,
 								"Invalid Gateway direction for Parallel Gateway. It should be 'Converging' or 'Diverging'");
 					}
 				}
-				if (gw instanceof InclusiveGateway) {
-					if (gw.getGatewayDirection().getValue() != GatewayDirection.DIVERGING.getValue()
-							&& gw.getGatewayDirection().getValue() != GatewayDirection.CONVERGING.getValue()) {
-						return ctx.createFailureStatus(
+				if (elem instanceof InclusiveGateway) {
+					if (elem.getGatewayDirection().getValue() != GatewayDirection.DIVERGING.getValue()
+							&& elem.getGatewayDirection().getValue() != GatewayDirection.CONVERGING.getValue()) {
+						return createFailureStatus(ctx,be,
 								"Invalid Gateway direction for Inclusive Gateway. It should be 'Converging' or 'Diverging'");
 					}
 				}
-				if (gw instanceof ComplexGateway) {
-					if (gw.getGatewayDirection().getValue() != GatewayDirection.DIVERGING.getValue()
-							&& gw.getGatewayDirection().getValue() != GatewayDirection.CONVERGING.getValue()) {
-						return ctx.createFailureStatus(
+				if (elem instanceof ComplexGateway) {
+					if (elem.getGatewayDirection().getValue() != GatewayDirection.DIVERGING.getValue()
+							&& elem.getGatewayDirection().getValue() != GatewayDirection.CONVERGING.getValue()) {
+						return createFailureStatus(ctx,be,
 								"Invalid Gateway direction for Complex Gateway. It should be 'Converging' or 'Diverging'");
 					}
 				}
-			}*/
+			}
 		}
-		else if (fe instanceof CallActivity) {
-			/*CallActivity ca = (CallActivity) fe;
-			
-			if (!warnings) {
-				if (ca.getCalledElementRef() == null) {
-					return ctx.createFailureStatus(
-							"CallActivity 没用设定调用流程");
-				}
-			}*/
-		}
-		else if (fe instanceof DataObject) {
-			DataObject dao = (DataObject) fe;
+		else if (be instanceof CallActivity) {
+			CallActivity elem = (CallActivity) be;
 
 			if (!warnings) {
-				if (dao.getName() == null || dao.getName().length() < 1) {
-					return ctx.createFailureStatus("Data Object 没有名称");
+				if (elem.getCalledElementRef() == null) {
+					return createMissingFeatureStatus(ctx,be,"calledElementRef");
+				}
+			}
+		}
+		else if (be instanceof DataObject) {
+			DataObject elem = (DataObject) be;
+
+			if (!warnings) {
+				if (elem.getName() == null || elem.getName().length() < 1) {
+					return createMissingFeatureStatus(ctx,be,"name");
+				}
+			}
+		}
+		else if (be instanceof Interface) {
+			Interface elem = (Interface)be;
+			if (warnings) {
+			}
+			else {
+				if (isEmpty(elem.getOperations())) {
+					return createMissingFeatureStatus(ctx,be,"operations");
+				}
+				if (isEmpty(elem.getName())) {
+					return createMissingFeatureStatus(ctx,be,"name");
+				}
+			}
+		}
+		else if (be instanceof Operation) {
+			Operation elem = (Operation)be;
+			if (warnings) {
+			}
+			else {
+				if (isEmpty(elem.getInMessageRef())) {
+					return createMissingFeatureStatus(ctx,be,"inMessageRef");
+				}
+				if (isEmpty(elem.getName())) {
+					return createMissingFeatureStatus(ctx,be,"name");
+				}
+			}
+		}
+		else if (be instanceof DataAssociation) {
+			DataAssociation elem = (DataAssociation)be;
+			if (warnings) {
+			}
+			else {
+				if (isEmpty(elem.getTargetRef()) && elem.getAssignment().size()==0 && elem.getTransformation()==null) {
+					return createMissingFeatureStatus(ctx,be,"targetRef");
+				}
+			}
+		}
+		else if (be instanceof Assignment) {
+			Assignment elem = (Assignment)be;
+			if (warnings) {
+			}
+			else {
+				if (isEmpty(elem.getFrom())) {
+					return createMissingFeatureStatus(ctx,be,"from");
+				}
+				if (isEmpty(elem.getTo())) {
+					return createMissingFeatureStatus(ctx,be,"to");
+				}
+			}
+		}
+		else if (be instanceof InputOutputSpecification) {
+			InputOutputSpecification elem = (InputOutputSpecification)be;
+			if (warnings) {
+			}
+			else {
+				if (isEmpty(elem.getInputSets())) {
+					return createMissingFeatureStatus(ctx,be,"inputSets");
+				}
+				if (isEmpty(elem.getOutputSets())) {
+					return createMissingFeatureStatus(ctx,be,"outputSets");
+				}
+			}
+		}
+		else if (be instanceof ChoreographyActivity) {
+			ChoreographyActivity elem = (ChoreographyActivity)be;
+			if (elem.getParticipantRefs().size()<2) {
+				return createFailureStatus(ctx,be,"ChoreographyActivity must have at least two Participants");
+			}
+			if (elem.getInitiatingParticipantRef()==null) {
+				return createFailureStatus(ctx,be,"ChoreographyActivity has no initiating Participant");
+			}
+		}
+		else if (be instanceof Resource) {
+			Resource elem = (Resource)be;
+			if (isEmpty(elem.getName())) {
+				return createMissingFeatureStatus(ctx,be,"name");
+			}
+		}
+		else if (be instanceof ChoreographyTask) {
+			ChoreographyTask elem = (ChoreographyTask)be;
+			for (MessageFlow mf : elem.getMessageFlowRef()) {
+				InteractionNode in = mf.getSourceRef();
+				if (!elem.getParticipantRefs().contains(in)) {
+					createFailureStatus(ctx,be,"Message Flow source is not a Participant of the Choreography Task");
+				}
+				in = mf.getTargetRef();
+				if (!elem.getParticipantRefs().contains(in)) {
+					createFailureStatus(ctx,be,"Message Flow target is not a Participant of the Choreography Task");
 				}
 			}
 		}
 		
 		
-		if (fe instanceof FlowNode) {
-			return validateFlowNode(ctx, (FlowNode) fe);
+		if (be instanceof FlowNode) {
+			return validateFlowNode(ctx, (FlowNode) be);
 		}
 
 		return ctx.createSuccessStatus();
@@ -415,12 +562,12 @@ public class BPMN2BatchValidationConstraint extends AbstractModelConstraint {
 			
 			if (needOutgoing) {
 				if ((fn.getOutgoing() == null || fn.getOutgoing().size() < 1)) {
-					return ctx.createFailureStatus("节点没有输出连接");
+					return createMissingFeatureStatus(ctx,fn,"outgoing");
 				}
 			}
 			if (needIncoming) {
 				if ((fn.getIncoming() == null || fn.getIncoming().size() < 1)) {
-					return ctx.createFailureStatus("节点没有进入连接");
+					return createMissingFeatureStatus(ctx,fn,"incoming");
 				}
 			}
 		}
@@ -428,8 +575,17 @@ public class BPMN2BatchValidationConstraint extends AbstractModelConstraint {
 		return ctx.createSuccessStatus();
 	}
 
-	private static boolean isEmpty(String str) {
-		return str == null || str.isEmpty();
+	private static boolean isEmpty(Object object) {
+		if (object instanceof String) {
+			String str = (String) object;
+			return str == null || str.isEmpty();
+		}
+		else if (object instanceof List) {
+			return ((List)object).isEmpty();
+		}
+		else if (object==null)
+			return true;
+		return false;
 	}
 
 	private boolean containsWhiteSpace(String testString) {

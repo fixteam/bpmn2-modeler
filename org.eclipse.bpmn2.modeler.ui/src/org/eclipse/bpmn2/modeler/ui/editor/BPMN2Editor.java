@@ -51,6 +51,7 @@ import org.eclipse.bpmn2.Import;
 import org.eclipse.bpmn2.InputOutputSpecification;
 import org.eclipse.bpmn2.Interface;
 import org.eclipse.bpmn2.ItemDefinition;
+import org.eclipse.bpmn2.Lane;
 import org.eclipse.bpmn2.LinkEventDefinition;
 import org.eclipse.bpmn2.ManualTask;
 import org.eclipse.bpmn2.Message;
@@ -58,6 +59,7 @@ import org.eclipse.bpmn2.MessageEventDefinition;
 import org.eclipse.bpmn2.MessageFlow;
 import org.eclipse.bpmn2.MultiInstanceLoopCharacteristics;
 import org.eclipse.bpmn2.Operation;
+import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.Performer;
 import org.eclipse.bpmn2.PotentialOwner;
 import org.eclipse.bpmn2.Process;
@@ -94,6 +96,8 @@ import org.eclipse.bpmn2.modeler.core.runtime.ToolPaletteDescriptor;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.DiagramEditorAdapter;
 import org.eclipse.bpmn2.modeler.core.utils.ErrorUtils;
+import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
+import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil.Bpmn2DiagramType;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
@@ -106,7 +110,6 @@ import org.eclipse.bpmn2.modeler.ui.property.artifact.CategoryDetailComposite;
 import org.eclipse.bpmn2.modeler.ui.property.artifact.TextAnnotationDetailComposite;
 import org.eclipse.bpmn2.modeler.ui.property.connectors.MessageFlowDetailComposite;
 import org.eclipse.bpmn2.modeler.ui.property.connectors.SequenceFlowDetailComposite;
-import org.eclipse.bpmn2.modeler.ui.property.data.ConditionalEventDefinitionDetailComposite;
 import org.eclipse.bpmn2.modeler.ui.property.data.DataAssignmentDetailComposite;
 import org.eclipse.bpmn2.modeler.ui.property.data.DataObjectPropertySection.DataObjectDetailComposite;
 import org.eclipse.bpmn2.modeler.ui.property.data.DataObjectReferencePropertySection.DataObjectReferenceDetailComposite;
@@ -131,6 +134,7 @@ import org.eclipse.bpmn2.modeler.ui.property.events.BoundaryEventDetailComposite
 import org.eclipse.bpmn2.modeler.ui.property.events.CatchEventDetailComposite;
 import org.eclipse.bpmn2.modeler.ui.property.events.CommonEventDetailComposite;
 import org.eclipse.bpmn2.modeler.ui.property.events.CommonEventPropertySection.EventDefinitionDialogComposite;
+import org.eclipse.bpmn2.modeler.ui.property.events.ConditionalEventDefinitionDetailComposite;
 import org.eclipse.bpmn2.modeler.ui.property.events.EndEventDetailComposite;
 import org.eclipse.bpmn2.modeler.ui.property.events.StartEventDetailComposite;
 import org.eclipse.bpmn2.modeler.ui.property.events.ThrowEventDetailComposite;
@@ -147,6 +151,7 @@ import org.eclipse.bpmn2.modeler.ui.property.tasks.ScriptTaskDetailComposite;
 import org.eclipse.bpmn2.modeler.ui.property.tasks.StandardLoopCharacteristicsDetailComposite;
 import org.eclipse.bpmn2.modeler.ui.property.tasks.TaskDetailComposite;
 import org.eclipse.bpmn2.modeler.ui.views.outline.BPMN2EditorOutlinePage;
+import org.eclipse.bpmn2.modeler.ui.views.outline.BPMN2EditorSelectionSynchronizer;
 import org.eclipse.bpmn2.modeler.ui.wizards.BPMN2DiagramCreator;
 import org.eclipse.bpmn2.modeler.ui.wizards.FileService;
 import org.eclipse.bpmn2.util.Bpmn2ResourceImpl;
@@ -165,6 +170,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.draw2d.PositionConstants;
 import org.eclipse.emf.common.command.BasicCommandStack;
+import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.util.BasicDiagnostic;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
@@ -172,6 +178,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EValidator;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.transaction.NotificationFilter;
 import org.eclipse.emf.transaction.RecordingCommand;
 import org.eclipse.emf.transaction.TransactionalEditingDomain.Lifecycle;
 import org.eclipse.emf.transaction.impl.TransactionalEditingDomainImpl;
@@ -190,6 +197,7 @@ import org.eclipse.graphiti.features.ISaveImageFeature;
 import org.eclipse.graphiti.features.context.ISaveImageContext;
 import org.eclipse.graphiti.features.context.impl.SaveImageContext;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
+import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.services.Graphiti;
@@ -335,9 +343,18 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 	private TargetRuntime targetRuntime;
 	private String modelEnablementProfile;
 //	private Hashtable<BPMNDiagram, GraphicalViewer> mapDiagramToViewer = new Hashtable<BPMNDiagram, GraphicalViewer>();
+	private BPMN2EditorSelectionSynchronizer synchronizer;
 
 	protected DiagramEditorAdapter editorAdapter;
 	protected BPMN2MultiPageEditor multipageEditor;
+	
+	protected boolean saveInProgress = false;
+	private static NotificationFilter filterNone = new NotificationFilter.Custom() {
+		@Override
+		public boolean matches(Notification notification) {
+			return false;
+		}
+	};
 	
 	public BPMN2Editor(BPMN2MultiPageEditor mpe) {
 		multipageEditor = mpe;
@@ -477,6 +494,12 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 		if (modelEnablementProfile==null) {
 			modelEnablementProfile = getPreferences().getDefaultModelEnablementProfile();
 		}
+		if (modelEnablementProfile==null || modelEnablementProfile.isEmpty()) {
+			Bpmn2DiagramType diagramType = ModelUtil.getDiagramType(this);
+			List<ModelEnablementDescriptor> med = getTargetRuntime().getModelEnablements(diagramType);
+			if (med.size()>0)
+				modelEnablementProfile = med.get(0).getProfile();
+		}
 		return modelEnablementProfile;
 	}
 	
@@ -485,7 +508,7 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 	}
 	
 	protected TargetRuntime getTargetRuntime(IEditorInput input) {
-		if (targetRuntime==null) {
+		if (targetRuntime==null && input!=null) {
 			 // If the project has not been configured for a specific runtime through the "BPMN2"
 			 // project properties page (i.e. the target is "None") then allow the runtime extension
 			 // plug-ins an opportunity to identify the given process file contents as their own.
@@ -504,8 +527,9 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 			if (targetRuntime==null)
 				targetRuntime = TargetRuntime.getDefaultRuntime();
 
+			TargetRuntime.setCurrentRuntime(targetRuntime);
 			String profile = targetRuntime.getModelEnablements().get(0).getProfile();
-//			String profile = getPreferences().getDefaultModelEnablementProfile();
+			//String profile = getPreferences().getDefaultModelEnablementProfile();
 			setModelEnablementProfile(profile);
 		}
 		return targetRuntime;
@@ -670,8 +694,7 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 	        BPMN2ValidationStatusLoader vsl = new BPMN2ValidationStatusLoader(this);
 	
 	        try {
-	            vsl.load(Arrays.asList(getModelFile().findMarkers(
-	            		BPMN2ProjectValidator.BPMN2_MARKER_ID, true, IResource.DEPTH_ZERO)));
+	            vsl.load(Arrays.asList(getModelFile().findMarkers(null, true, IResource.DEPTH_ZERO)));
 	        } catch (CoreException e) {
 	            Activator.logStatus(e.getStatus());
 	        }
@@ -788,6 +811,13 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 	}
 	
 	@Override
+	protected SelectionSynchronizer getSelectionSynchronizer() {
+		if (synchronizer == null)
+			synchronizer = new BPMN2EditorSelectionSynchronizer();
+		return synchronizer;
+	}
+
+	@Override
 	public Object getAdapter(Class required) {
 		if (required==ITabDescriptorProvider.class) {
 			if (tabDescriptorProvider==null) {
@@ -824,6 +854,12 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 		if (required == ToolPaletteDescriptor.class) {
 			Bpmn2DiagramType diagramType = ModelUtil.getDiagramType(bpmnDiagram);
 			return getTargetRuntime().getToolPalette(diagramType, getModelEnablementProfile());
+		}
+		if (required == NotificationFilter.class) {
+			if (saveInProgress)
+				return filterNone;
+			else
+				return null;
 		}
 		
 		return super.getAdapter(required);
@@ -892,6 +928,10 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 		return null;
 	}
 	
+	public URI getModelUri() {
+		return modelUri;
+	}
+	
 	public ModelHandler getModelHandler() {
 		return modelHandler;
 	}
@@ -927,6 +967,8 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 		// set Diagram as contents for the graphical viewer and refresh
 		getGraphicalViewer().setContents(diagram);
 		
+		ConnectionLayerClippingStrategy.applyTo(getGraphicalViewer());
+
 		refreshContent();
 		
 		// remember this for later
@@ -935,8 +977,16 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 
 	@Override
 	public void doSave(IProgressMonitor monitor) {
-		super.doSave(monitor);
-
+//		long start = System.currentTimeMillis();
+		try {
+			saveInProgress = true;
+//			System.out.print("Saving...");
+			super.doSave(monitor);
+		}
+		finally {
+			saveInProgress = false;
+		}
+//		System.out.println("done in "+(System.currentTimeMillis()-start)+" ms");
 		Resource resource = getResourceSet().getResource(modelUri, false);
 //		BPMN2ProjectValidator.validateOnSave(resource, monitor);
 	}
@@ -1070,6 +1120,89 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 		super.selectionChanged(part,selection); // Graphiti's DiagramEditorInternal
 		// but apparently GEF doesn't
 		updateActions(getSelectionActions()); // usually done in GEF's GraphicalEditor
+		
+		// if the selected element is obscured by another shape
+		// send it to the top of the z-stack.
+		final List<ContainerShape> moved = new ArrayList<ContainerShape>();
+		for (PictogramElement pe : getSelectedPictogramElements()) {
+			if (pe instanceof ContainerShape && !(pe instanceof Diagram)) {
+				final ContainerShape shape = (ContainerShape)pe;
+				ContainerShape container = shape.getContainer();
+				// make sure this shape has not been deleted
+				if (container==null)
+					continue;
+				int size = container.getChildren().size();
+				if (size>1) {
+					// don't send Choreography Participant bands, Pools or Lanes to front
+					// they're already there...
+					BaseElement baseElement = BusinessObjectUtil.getFirstBaseElement(shape);
+					if (baseElement instanceof Participant || baseElement instanceof Lane)
+						continue;
+					boolean obscured = false;
+					int index = container.getChildren().indexOf(shape);
+					for (int i=index+1; i<container.getChildren().size(); ++i) {
+						PictogramElement sibling = container.getChildren().get(i);
+						if (sibling instanceof ContainerShape &&
+								!FeatureSupport.isLabelShape((ContainerShape)sibling)) {
+							if (GraphicsUtil.intersects(shape, (ContainerShape)sibling)) {
+								boolean siblingIsBoundaryEvent = false;
+								if (baseElement instanceof Activity) {
+									BaseElement be = BusinessObjectUtil.getFirstBaseElement(sibling);
+									for (BoundaryEvent boundaryEvent : ((Activity)baseElement).getBoundaryEventRefs()) {
+										if (be==boundaryEvent) {
+											siblingIsBoundaryEvent = true;
+											break;
+										}
+									}
+								}
+								if (!siblingIsBoundaryEvent) {
+									obscured = true;
+								}
+							}
+						}
+					}
+					// if the selected shape is an Activity, it may have Boundary Event shapes
+					// attached to it - these will have to be moved to the top so they're
+					// not obscured by the Activity.
+					if (baseElement instanceof Activity) {
+						for (BoundaryEvent be : ((Activity)baseElement).getBoundaryEventRefs()) {
+							for (PictogramElement child : container.getChildren()) {
+								if (child instanceof ContainerShape && BusinessObjectUtil.getFirstBaseElement(child) == be) {
+									index = container.getChildren().indexOf(child);
+									for (int i=index+1; i<container.getChildren().size(); ++i) {
+										PictogramElement sibling = container.getChildren().get(i);
+										if (sibling!=shape && sibling instanceof ContainerShape) {
+											if (GraphicsUtil.intersects((ContainerShape)child, (ContainerShape)sibling)) {
+												obscured = true;
+												moved.add((ContainerShape)child);
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					if (obscured) {
+						moved.add(0,shape);
+					}
+				}
+			}
+		}
+		if (!moved.isEmpty()) {
+			Display.getDefault().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					getEditingDomain().getCommandStack().execute(new RecordingCommand(getEditingDomain()) {
+						@Override
+						protected void doExecute() {
+							for (ContainerShape child : moved) {
+								GraphicsUtil.sendToFront(child);
+							}
+						}
+					});
+				}
+			});
+		}
 	}
 
 	/* (non-Javadoc)
@@ -1107,7 +1240,20 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 			});
 		}
 	}
-
+	
+	public static IEditorPart openEditor(URI modelURI) {
+		IEditorPart part = null;
+		try {
+			Bpmn2DiagramEditorInput input = BPMN2DiagramCreator.createDiagram(modelURI, Bpmn2DiagramType.NONE, "");
+			part = BPMN2DiagramCreator.openEditor(input);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return part;
+	}
+	
 	@Override
 	protected void initActionRegistry(ZoomManager zoomManager) {
 		final ActionRegistry actionRegistry = getActionRegistry();

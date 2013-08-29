@@ -11,6 +11,10 @@
 package org.eclipse.bpmn2.modeler.ui.views.outline;
 
 import org.eclipse.bpmn2.BaseElement;
+import org.eclipse.bpmn2.DataInput;
+import org.eclipse.bpmn2.DataInputAssociation;
+import org.eclipse.bpmn2.DataOutput;
+import org.eclipse.bpmn2.DataOutputAssociation;
 
 public class BaseElementTreeEditPart extends AbstractGraphicsTreeEditPart {
 
@@ -19,7 +23,7 @@ public class BaseElementTreeEditPart extends AbstractGraphicsTreeEditPart {
 	}
 
 	public BaseElement getBaseElement() {
-		return (BaseElement) getBpmnModel();
+		return (BaseElement) getModel();
 	}
 
 	// ======================= overwriteable behaviour ========================
@@ -30,5 +34,27 @@ public class BaseElementTreeEditPart extends AbstractGraphicsTreeEditPart {
 	 */
 	@Override
 	protected void createEditPolicies() {
+	}
+	
+	@Override
+	protected String getText() {
+		// Display the Activity's I/O parameter name for Data Input/Output Associations
+		// because DataAssociations don't have a name of their own.
+		if (getModel() instanceof DataOutputAssociation) {
+			DataOutputAssociation doa = (DataOutputAssociation) getModel();
+			if (doa.getSourceRef().size()>0 && doa.getSourceRef().get(0) instanceof DataOutput) {
+				DataOutput d = (DataOutput) doa.getSourceRef().get(0);
+				return d.getName();
+			}
+		}
+		if (getModel() instanceof DataInputAssociation) {
+			DataInputAssociation doa = (DataInputAssociation) getModel();
+			if (doa.getTargetRef() instanceof DataInput) {
+				DataInput d = (DataInput) doa.getTargetRef();
+				return d.getName();
+			}
+		}
+		
+		return super.getText();
 	}
 }

@@ -55,6 +55,7 @@ public class FeatureDescriptor<T extends EObject> extends ObjectDescriptor<T> {
 	}
 	
 	public String getLabel(Object context) {
+		EObject object = adopt(context);
 		if (label==null) {
 			IItemPropertyDescriptor propertyDescriptor = getPropertyDescriptor(feature);
 			if (propertyDescriptor != null)
@@ -76,6 +77,7 @@ public class FeatureDescriptor<T extends EObject> extends ObjectDescriptor<T> {
 	
 	@Override
 	public String getDisplayName(Object context) {
+		EObject object = adopt(context);
 		if (name==null) {
 			String t = null;
 			// derive text from feature's value: default behavior is
@@ -206,6 +208,7 @@ public class FeatureDescriptor<T extends EObject> extends ObjectDescriptor<T> {
 	}
 	
 	public boolean isMultiLine(Object context) {
+		EObject object = adopt(context);
 		if (multiline==0) {
 			IItemPropertyDescriptor propertyDescriptor = getPropertyDescriptor(feature);
 			if (propertyDescriptor!=null)
@@ -215,12 +218,14 @@ public class FeatureDescriptor<T extends EObject> extends ObjectDescriptor<T> {
 	}
 	
 	public EObject createFeature(Object context) {
+		EObject object = adopt(context);
 		if (context instanceof EClass)
 			return createFeature(object, (EClass)context);
 		return createFeature(context, null);
 	}		
 	
 	public EObject createFeature(Object context, EClass eclass) {
+		EObject object = adopt(context);
 		return createFeature(object.eResource(),context,eclass);
 	}
 	
@@ -267,7 +272,7 @@ public class FeatureDescriptor<T extends EObject> extends ObjectDescriptor<T> {
 	}
 	
 	public Object getValue(Object context) {
-		EObject object = context instanceof EObject ? (EObject)context : this.object;
+		EObject object = adopt(context);
 		return object.eGet(feature);
 	}
 	

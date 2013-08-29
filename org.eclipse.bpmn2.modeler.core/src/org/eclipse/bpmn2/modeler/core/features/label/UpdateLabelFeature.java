@@ -69,7 +69,8 @@ public class UpdateLabelFeature extends AbstractUpdateFeature {
 			if (newLabel==null || newLabel.isEmpty())
 				newLabel = "";
 			
-			return oldLabel.equals(newLabel) ? Reason.createFalseReason() : Reason.createTrueReason();
+			if (!oldLabel.equals(newLabel))
+				return Reason.createTrueReason("Label changed");
 		}
 		return Reason.createFalseReason();
 	}
@@ -86,9 +87,14 @@ public class UpdateLabelFeature extends AbstractUpdateFeature {
 			if (name == null) {
 				name = "";
 			}
+			if (name.equals(text.getValue())) {
+				// nothing to do here
+				return true;
+			}
 			text.setValue(name);
+			
+			// TODO: figure out why this causes the undo stack to be flushed if Text old value == new value
 			layoutPictogramElement(context.getPictogramElement());
-
 		}
 
 		if (pe instanceof ContainerShape) {

@@ -22,8 +22,11 @@ import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.SequenceFlow;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.di.DIUtils;
+import org.eclipse.bpmn2.modeler.core.features.ConnectionFeatureContainer;
+import org.eclipse.bpmn2.modeler.core.features.RoutingNet;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
+import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.ui.ImageProvider;
 import org.eclipse.bpmn2.modeler.ui.features.choreography.ChoreographyUtil;
 import org.eclipse.graphiti.datatypes.ILocation;
@@ -38,6 +41,7 @@ import org.eclipse.graphiti.mm.pictograms.Connection;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.FreeFormConnection;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
+import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.services.IGaService;
 /**
@@ -90,13 +94,19 @@ public abstract class AbstractRotateContainerFeature extends AbstractCustomFeatu
 		PictogramElement[] pes = context.getPictogramElements();
 		if (pes != null && pes.length == 1 && pes[0] instanceof ContainerShape) {
 			ContainerShape container = (ContainerShape)pes[0];
+
 			boolean horz = FeatureSupport.isHorizontal(container);
-			changeOrientation(container, !horz);
+			List<Shape> moved = new ArrayList<Shape>();
+			changeOrientation(container, !horz, moved);
 			FeatureSupport.redraw(container);
+			
+			for (Shape shape : moved) {
+				ConnectionFeatureContainer.updateConnections(getFeatureProvider(), shape);
+			}
 		}
 	}
 
-	private void changeOrientation(ContainerShape container, boolean horz) {
+	private void changeOrientation(ContainerShape container, boolean horz, List<Shape> moved) {
 
 		// Recursively change the orientation of Lanes and "Pools" (Participants).
 		// Note that this does not apply to Participant bands contained in a ChoreographTask.
@@ -119,39 +129,17 @@ public abstract class AbstractRotateContainerFeature extends AbstractCustomFeatu
 			// so simply swap x and y as a first cut.
 			// TODO: replace this with auto layout algorithm, TBD later
 			gaService.setLocationAndSize(ga, y, x, width, height);
-			
-			// TODO: also swap x and y of connection bendpoints: connection bendpoint
-			// coordinates are relative to the diagram not the control figure
-			// (i.e. the Lane in this case)
-			ILocation loc = Graphiti.getLayoutService().getLocationRelativeToDiagram(container.getContainer());
-			for (Anchor a : container.getAnchors()) {
-				for (Connection c : a.getIncomingConnections()) {
-					if (c instanceof FreeFormConnection) {
-						FreeFormConnection fc = (FreeFormConnection)c;
-						boolean update = false;
-						for (Point p : fc.getBendpoints()) {
-							int py = p.getX() - loc.getX() + loc.getY();
-							int px = p.getY() - loc.getY() + loc.getX();
-							p.setX(px);
-							p.setY(py);
-							update = true;
-						}
-						if (update)
-							DIUtils.updateDIEdge(c);
-					}
-				}
-			}
-
 			layoutPictogramElement(container);
 		}
 		
 		DIUtils.updateDIShape(container);
 
-		for (PictogramElement pe : container.getChildren()) {
-			if (pe instanceof ContainerShape) {
-				changeOrientation((ContainerShape) pe, horz);
-				if (BusinessObjectUtil.getBusinessObjectForPictogramElement(pe) instanceof ChoreographyTask)
-					ChoreographyUtil.moveChoreographyMessageLinks((ContainerShape) pe);
+		for (Shape shape : container.getChildren()) {
+			if (shape instanceof ContainerShape) {
+				changeOrientation((ContainerShape) shape, horz, moved);
+				if (BusinessObjectUtil.getBusinessObjectForPictogramElement(shape) instanceof ChoreographyTask)
+					ChoreographyUtil.moveChoreographyMessageLinks((ContainerShape) shape);
+				moved.add(shape);
 			}
 		}
 	}

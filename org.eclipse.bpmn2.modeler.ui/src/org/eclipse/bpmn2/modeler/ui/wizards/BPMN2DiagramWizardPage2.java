@@ -279,11 +279,20 @@ public class BPMN2DiagramWizardPage2 extends WizardPage {
 		String targetNamespace = rt.getRuntimeExtension().getTargetNamespace(getDiagramType());
 		if (targetNamespace==null)
 			targetNamespace = "";
+		
+		if (rt!=TargetRuntime.getDefaultRuntime() && !targetNamespace.isEmpty()) {
+			// Target Runtime will provide its own target namespace
 		if (!targetNamespaceText.getText().equals(targetNamespace)) {
 			targetNamespaceText.setText(targetNamespace);
 			updateFilename();
 		}
-		
+		}
+		else {
+			// The default "None" Target Runtime's target namespace may be edited by user.
+			String text = targetNamespaceText.getText();
+			if (text==null || text.isEmpty())
+				targetNamespaceText.setText(targetNamespace);
+		}
 		updateStatus(null);
 	}
 

@@ -16,15 +16,12 @@ package org.eclipse.bpmn2.modeler.ui.features.choreography;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.bpmn2.Bpmn2Factory;
-import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.Choreography;
 import org.eclipse.bpmn2.ChoreographyTask;
 import org.eclipse.bpmn2.Participant;
-import org.eclipse.bpmn2.Process;
+import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.ui.ImageProvider;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.graphiti.features.IFeatureProvider;
@@ -45,7 +42,7 @@ import org.eclipse.swt.widgets.Display;
  */
 public class AddChoreographyParticipantFeature extends AbstractCustomFeature {
 	
-	private boolean changesDone = false;
+	protected boolean changesDone = false;
 	
 	private static ILabelProvider labelProvider = new ILabelProvider() {
 
@@ -129,7 +126,7 @@ public class AddChoreographyParticipantFeature extends AbstractCustomFeature {
 				
 				Participant participant = null;
 				List<Participant> participantList = new ArrayList<Participant>();
-				participant = Bpmn2Factory.eINSTANCE.createParticipant();
+				participant = Bpmn2ModelerFactory.create(Participant.class);
 				participant.setName("New Participant");
 				ModelUtil.setID(participant, task.eResource());
 				
@@ -142,7 +139,6 @@ public class AddChoreographyParticipantFeature extends AbstractCustomFeature {
 				}
 				Participant result = participant;
 
-				changesDone = true;
 				if (participantList.size()>1) {
 					PopupMenu popupMenu = new PopupMenu(participantList, labelProvider);
 					changesDone = popupMenu.show(Display.getCurrent().getActiveShell());

@@ -17,6 +17,7 @@ import java.util.List;
 
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.EndEvent;
+import org.eclipse.bpmn2.Group;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelEnablementDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
@@ -102,7 +103,7 @@ public abstract class AbstractBpmn2CreateConnectionFeature<T extends BaseElement
 			}
 		}
 		
-		if (o instanceof EndEvent)
+		if (o instanceof EndEvent || o instanceof Group)
 			return false;
 		
 		if (o instanceof EObject) {

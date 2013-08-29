@@ -13,6 +13,7 @@ package org.eclipse.bpmn2.modeler.ui.features.choreography;
 import java.io.IOException;
 
 import org.eclipse.bpmn2.BaseElement;
+import org.eclipse.bpmn2.CallActivity;
 import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.Process;
 import org.eclipse.bpmn2.di.BPMNDiagram;
@@ -63,11 +64,16 @@ public class ShowDiagramPageFeature extends AbstractCustomFeature {
 				Participant participant = (Participant)bo;
 				baseElement = participant.getProcessRef();
 			}
+			else if (bo instanceof CallActivity) {
+				CallActivity callActivity = (CallActivity)bo;
+				baseElement = callActivity.getCalledElementRef();
+			}
 			else if (bo instanceof BaseElement) {
 				baseElement = (BaseElement)bo;
 			}
 			
-			return DIUtils.findBPMNDiagram(baseElement) != null;
+			if (DIUtils.findBPMNDiagram(baseElement) != null)
+				return true;
 		}
 		return false;
 	}
@@ -88,13 +94,24 @@ public class ShowDiagramPageFeature extends AbstractCustomFeature {
 				Participant participant = (Participant)bo;
 				baseElement = participant.getProcessRef();
 			}
+			else if (bo instanceof CallActivity) {
+				CallActivity callActivity = (CallActivity)bo;
+				baseElement = callActivity.getCalledElementRef();
+			}
 			else if (bo instanceof BaseElement) {
 				baseElement = (BaseElement)bo;
 			}
 			BPMNDiagram bpmnDiagram = DIUtils.findBPMNDiagram(baseElement);
 			if (bpmnDiagram!=null) {
-				BPMN2MultiPageEditor mpe = ((BPMN2Editor)getDiagramEditor()).getMultipageEditor();
-				mpe.showDesignPage(bpmnDiagram);
+				if (bpmnDiagram.eResource() == ((EObject)bo).eResource()) {
+					BPMN2MultiPageEditor mpe = ((BPMN2Editor)getDiagramEditor()).getMultipageEditor();
+					mpe.showDesignPage(bpmnDiagram);
+				}
+				else {
+					// the called process lives in another BPMN file:
+					// open a new editor to display it.
+					BPMN2Editor.openEditor(bpmnDiagram.eResource().getURI());
+				}
 			}
 		}
 	}

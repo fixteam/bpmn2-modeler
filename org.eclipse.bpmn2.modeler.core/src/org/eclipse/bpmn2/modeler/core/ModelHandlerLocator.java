@@ -80,12 +80,17 @@ public class ModelHandlerLocator {
 					&& !resource.isLoaded()) {
 				handler.loadResource();
 			}
-		} catch (IllegalStateException e) {
-
+		}
+		catch (IllegalStateException e) {
+			// TODO: what does this mean???
 			// Workspace is not initialized so we must be running tests!
 			if (!resource.isLoaded()) {
 				handler.loadResource();
 			}
+		}
+		catch (Exception spe) {
+			// we're here because of an xml parse exception:
+			// try to recover if possible by creating an empty <definitions> element.
 		}
 
 		handler.createDefinitionsIfMissing();

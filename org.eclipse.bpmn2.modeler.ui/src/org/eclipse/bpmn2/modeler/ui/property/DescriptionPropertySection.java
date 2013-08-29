@@ -47,8 +47,6 @@ public class DescriptionPropertySection extends DefaultPropertySection implement
 
 	public class DescriptionPropertyComposite extends DefaultDetailComposite {
 
-		StyledText descriptionText;
-		
 		/**
 		 * @param section
 		 */

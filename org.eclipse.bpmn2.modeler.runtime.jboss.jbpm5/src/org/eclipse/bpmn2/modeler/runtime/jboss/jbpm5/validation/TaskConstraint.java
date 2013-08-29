@@ -41,8 +41,14 @@ public class TaskConstraint extends AbstractModelConstraint {
 					    continue;
 					}
 					@SuppressWarnings("unchecked")
-					List<MetadataType> metadataTypeExtensions = (List<MetadataType>) extensionElements.get(
+					List<MetadataType> metadataTypeExtensions = null;
+					try {
+						metadataTypeExtensions = (List<MetadataType>) extensionElements.get(
 							DroolsPackage.Literals.DOCUMENT_ROOT__METADATA, true);
+					}
+					catch (Exception e) {
+						continue;
+					}
 
 					if (metadataTypeExtensions != null && metadataTypeExtensions.size() > 0) {
 						MetadataType metaType = metadataTypeExtensions.get(0);

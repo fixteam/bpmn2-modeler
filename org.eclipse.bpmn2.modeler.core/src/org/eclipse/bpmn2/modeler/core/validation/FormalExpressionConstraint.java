@@ -37,11 +37,11 @@ public class FormalExpressionConstraint extends
 			if(eObj instanceof FormalExpression){
 				FormalExpression formalExpression = (FormalExpression) eObj;
 				boolean error = false;
-				if(formalExpression.getLanguage() == null || formalExpression.getLanguage().length() == 0){
-					ctx.addResult(Bpmn2Package.eINSTANCE.getFormalExpression_Language());
-					error = true;
-				}
-				if(formalExpression.getBody() == null || formalExpression.getBody().length() == 0){
+//				if(formalExpression.getLanguage() == null || formalExpression.getLanguage().length() == 0){
+//					ctx.addResult(Bpmn2Package.eINSTANCE.getFormalExpression_Language());
+//					error = true;
+//				}
+				if(formalExpression.getBody() == null || formalExpression.getBody().isEmpty()){
 					ctx.addResult(Bpmn2Package.eINSTANCE.getFormalExpression_Body());
 					error = true;
 				}

@@ -81,15 +81,16 @@ public class SampleImageProvider extends AbstractImageProvider {
 		// To create an image of a specific size, use the "huge" versions
 		// to prevent pixelation when stretching a small image
 		String imageId = getImageId(ctd, IconSize.HUGE); 
+		Image img = null;
 		if (imageId != null) {
-			Image img = Graphiti.getGaService().createImage(ga, imageId);
+			img = Graphiti.getGaService().createImage(ga, imageId);
 			img.setProportional(false);
 			img.setWidth(w);
 			img.setHeight(h);
 			img.setStretchH(true);
 			img.setStretchV(true);
 		}
-		return null;
+		return img;
 	}
 	
 	public static String getImageId(CustomTaskDescriptor ctd, IconSize size) {

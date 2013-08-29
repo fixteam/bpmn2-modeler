@@ -30,7 +30,7 @@ public class BPMNDiagramTreeEditPart extends AbstractGraphicsTreeEditPart {
 	}
 
 	public BPMNDiagram getBPMNDiagram() {
-		return (BPMNDiagram) getBpmnModel();
+		return (BPMNDiagram) getModel();
 	}
 
 	// ======================= overwriteable behaviour ========================

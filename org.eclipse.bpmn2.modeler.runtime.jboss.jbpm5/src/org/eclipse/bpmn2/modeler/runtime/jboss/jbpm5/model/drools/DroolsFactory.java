@@ -94,6 +94,15 @@ public interface DroolsFactory extends EFactory {
 	BPSimDataType createBPSimDataType();
 
 	/**
+	 * Returns a new object of class '<em>Callable Element Proxy</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Callable Element Proxy</em>'.
+	 * @generated
+	 */
+	ExternalProcess createExternalProcess();
+
+	/**
 	 * Returns the package supported by this factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->

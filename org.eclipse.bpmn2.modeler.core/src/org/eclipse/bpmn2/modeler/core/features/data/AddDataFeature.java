@@ -12,15 +12,10 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.features.data;
 
-import org.eclipse.bpmn2.DataInput;
-import org.eclipse.bpmn2.DataOutput;
 import org.eclipse.bpmn2.ItemAwareElement;
-import org.eclipse.bpmn2.SubProcess;
-import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.di.DIImport;
 import org.eclipse.bpmn2.modeler.core.features.AbstractAddBPMNShapeFeature;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
-import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
@@ -47,28 +42,7 @@ public abstract class AddDataFeature<T extends ItemAwareElement> extends Abstrac
 
 	@Override
 	public boolean canAdd(IAddContext context) {
-		Object containerBO = BusinessObjectUtil.getBusinessObjectForPictogramElement( context.getTargetContainer() );
-		Object newObject = context.getNewObject();
-		boolean intoDiagram = containerBO instanceof BPMNDiagram;
-		boolean intoSubProcess = containerBO instanceof SubProcess;
-		if (newObject instanceof DataInput || newObject instanceof DataOutput) {
-			// SubProcess are not allowed to define their own DataInputs or DataOutputs
-			if (intoSubProcess)
-				return false;
-			if (intoDiagram) {
-				// check if the SubProcess is on its own BPMNDiagram
-				BPMNDiagram bpmnDiagram = (BPMNDiagram) containerBO;
-				if (bpmnDiagram.getPlane().getBpmnElement() instanceof SubProcess)
-					return false;
-			}
-		}
-		if (intoSubProcess || intoDiagram)
-			return true;
-		if (FeatureSupport.isTargetLane(context) && FeatureSupport.isTargetLaneOnTop(context))
-			return true;
-		if (FeatureSupport.isTargetParticipant(context))
-			return true;
-		return false;
+		return FeatureSupport.isValidDataTarget(context);
 	}
 
 	@Override
@@ -123,6 +97,7 @@ public abstract class AddDataFeature<T extends ItemAwareElement> extends Abstrac
 		AnchorUtil.addFixedPointAnchors(containerShape, invisibleRect);
 
 		layoutPictogramElement(containerShape);
+		updatePictogramElement(containerShape);
 		this.prepareAddContext(context, containerShape, width, height);
 		this.getFeatureProvider().getAddFeature(context).add(context);
 		

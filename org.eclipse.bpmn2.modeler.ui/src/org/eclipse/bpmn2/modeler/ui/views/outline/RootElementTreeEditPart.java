@@ -14,8 +14,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.bpmn2.Collaboration;
+import org.eclipse.bpmn2.Definitions;
+import org.eclipse.bpmn2.EventDefinition;
 import org.eclipse.bpmn2.FlowElementsContainer;
+import org.eclipse.bpmn2.Participant;
+import org.eclipse.bpmn2.Process;
 import org.eclipse.bpmn2.RootElement;
+import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
+import org.eclipse.bpmn2.modeler.ui.util.PropertyUtil;
+import org.eclipse.emf.common.util.TreeIterator;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.swt.graphics.Image;
 
 public class RootElementTreeEditPart extends AbstractGraphicsTreeEditPart {
 	
@@ -24,7 +33,7 @@ public class RootElementTreeEditPart extends AbstractGraphicsTreeEditPart {
 	}
 
 	public RootElement getRootElement() {
-		return (RootElement) getBpmnModel();
+		return (RootElement) getModel();
 	}
 
 	// ======================= overwriteable behaviour ========================
@@ -36,6 +45,12 @@ public class RootElementTreeEditPart extends AbstractGraphicsTreeEditPart {
 	@Override
 	protected void createEditPolicies() {
 	}
+	
+	@Override
+	protected Image getImage() {
+		EObject o = (EObject)getModel();
+		return PropertyUtil.getImage(o);
+	}
 
 	@Override
 	protected List<Object> getModelChildren() {
@@ -44,7 +59,7 @@ public class RootElementTreeEditPart extends AbstractGraphicsTreeEditPart {
 		if (elem != null && elem.eResource() != null) {
 			if (elem instanceof FlowElementsContainer) {
 				FlowElementsContainer container = (FlowElementsContainer)elem;
-				retList.addAll(container.getFlowElements());
+				return FlowElementTreeEditPart.getFlowElementsContainerChildren(container);
 			}
 			if (elem instanceof Collaboration) {
 				Collaboration collaboration = (Collaboration)elem;

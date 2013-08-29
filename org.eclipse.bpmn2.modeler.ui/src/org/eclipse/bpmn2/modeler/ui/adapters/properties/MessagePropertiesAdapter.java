@@ -48,7 +48,7 @@ public class MessagePropertiesAdapter extends RootElementPropertiesAdapter<Messa
     		
     		@Override
     		public String getDisplayName(Object context) {
-    			EObject object = this.object;
+    			EObject object = adopt(context);
     			ItemDefinition itemDefinition = null;
     			if (object instanceof Message) {
     				itemDefinition = (ItemDefinition) object.eGet(feature);

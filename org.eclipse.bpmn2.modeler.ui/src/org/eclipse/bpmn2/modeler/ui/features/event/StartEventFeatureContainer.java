@@ -13,16 +13,11 @@
 package org.eclipse.bpmn2.modeler.ui.features.event;
 
 import org.eclipse.bpmn2.Bpmn2Package;
-import org.eclipse.bpmn2.EndEvent;
-import org.eclipse.bpmn2.Event;
-import org.eclipse.bpmn2.ServiceTask;
 import org.eclipse.bpmn2.StartEvent;
 import org.eclipse.bpmn2.modeler.core.features.MultiUpdateFeature;
 import org.eclipse.bpmn2.modeler.core.features.event.AbstractCreateEventFeature;
 import org.eclipse.bpmn2.modeler.core.features.event.AbstractUpdateEventFeature;
 import org.eclipse.bpmn2.modeler.core.features.event.AddEventFeature;
-import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
-import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.ui.ImageProvider;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.graphiti.features.IAddFeature;
@@ -31,11 +26,11 @@ import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.IReason;
 import org.eclipse.graphiti.features.IUpdateFeature;
 import org.eclipse.graphiti.features.context.IAddContext;
-import org.eclipse.graphiti.features.context.ICreateContext;
 import org.eclipse.graphiti.features.context.IUpdateContext;
 import org.eclipse.graphiti.features.impl.AbstractUpdateFeature;
 import org.eclipse.graphiti.features.impl.Reason;
 import org.eclipse.graphiti.mm.algorithms.Ellipse;
+import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.styles.LineStyle;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
@@ -161,11 +156,13 @@ public class StartEventFeatureContainer extends AbstractEventFeatureContainer {
 			ContainerShape container = (ContainerShape) context.getPictogramElement();
 			StartEvent event = (StartEvent) getBusinessObjectForPictogramElement(container);
 
-			Ellipse ellipse = (Ellipse) peService.getAllContainedShapes(container).iterator().next()
-					.getGraphicsAlgorithm();
-			LineStyle style = event.isIsInterrupting() ? LineStyle.SOLID : LineStyle.DASH;
-			ellipse.setLineStyle(style);
-
+			GraphicsAlgorithm ga = peService.getAllContainedShapes(container).iterator().next().getGraphicsAlgorithm();
+			if (ga instanceof Ellipse) {
+			Ellipse ellipse = (Ellipse) ga;
+				LineStyle style = event.isIsInterrupting() ? LineStyle.SOLID : LineStyle.DASH;
+				ellipse.setLineStyle(style);
+			}
+			
 			peService.setPropertyValue(container, INTERRUPTING, Boolean.toString(event.isIsInterrupting()));
 			return true;
 		}

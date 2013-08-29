@@ -137,6 +137,15 @@
 		</propertyTab>
 
 		<propertyTab
+	        id="bpmn2.jbpm.serviceTask.tab"
+	        replaceTab="org.eclipse.bpmn2.modeler.serviceTask.tab"
+			afterTab="org.eclipse.bpmn2.modeler.description.tab"
+		    class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmServiceTaskPropertySection"
+		    type="org.eclipse.bpmn2.ServiceTask"
+		    label="Service Task">
+		</propertyTab>
+
+		<propertyTab
 	        id="bpmn2.jbpm.receiveTask.tab"
 	        replaceTab="org.eclipse.bpmn2.modeler.receiveTask.tab"
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
@@ -211,8 +220,7 @@
 			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.propertyExtension.FormalExpression"
 			runtimeId="org.jboss.runtime.jbpm5"
 			type="org.eclipse.bpmn2.FormalExpression"
-			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.adapters.JbpmFormalExpressionPropertiesAdapter"
-			>
+			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.adapters.JbpmFormalExpressionPropertiesAdapter">
 		</propertyExtension>
 
 		<propertyExtension
@@ -271,6 +279,14 @@
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.adapters.JbpmGlobalTypePropertiesAdapter">
 		</propertyExtension>
 
+<!-- This needs to go into the SwitchYard extension for the jBPM Target Runtime extension
+		<propertyExtension
+			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.propertyExtension.serviceTask"
+			runtimeId="org.jboss.runtime.jbpm5"
+			type="org.eclipse.bpmn2.ServiceTask"
+			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.adapters.JbpmServiceTaskPropertiesAdapter">
+		</propertyExtension>
+-->
 		<propertyExtension
 			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.propertyExtension.exclusiveGateway"
 			runtimeId="org.jboss.runtime.jbpm5"
@@ -297,6 +313,13 @@
 			runtimeId="org.jboss.runtime.jbpm5"
 			type="org.eclipse.bpmn2.ParallelGateway"
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.adapters.JbpmGatewayPropertiesAdapter">
+		</propertyExtension>
+		
+		<propertyExtension
+			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.propertyExtension.ItemDefinition"
+			runtimeId="org.jboss.runtime.jbpm5"
+			type="org.eclipse.bpmn2.ItemDefinition"
+			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.adapters.JbpmItemDefinitionPropertiesAdapter">
 		</propertyExtension>
 		
 <!-- Graphiti Feature Container Overrides -->
@@ -481,6 +504,11 @@
 			
 			<property name="ioSpecification">
 				<value>
+					<property name="outputSets">
+						<value>
+							<property name="name" value="Output Set" type="EString"/>
+						</value>
+					</property>
 					<property name="dataInputs">
 						<value>
 							<property name="name" value="TaskName" type="EString"/>
@@ -598,6 +626,7 @@
 			<enable object="BusinessRuleTask" feature="isForCompensation"/>
 			<enable object="BusinessRuleTask" feature="name"/>
 			<enable object="BusinessRuleTask" feature="ruleFlowGroup"/>
+			<enable object="CancelEventDefinition"/>
 			<enable object="CallActivity" feature="anyAttribute"/>
 			<enable object="CallActivity" feature="calledElementRef"/>
 			<enable object="CallActivity" feature="dataInputAssociations"/>
@@ -611,6 +640,7 @@
 			<enable object="CatchEvent" feature="dataOutputAssociation"/>
 			<enable object="CompensateEventDefinition" feature="activityRef"/>
 			<enable object="ConditionalEventDefinition" feature="condition"/>
+			<enable object="DataAssociation"/>
 			<enable object="DataInput" feature="anyAttribute"/>
 			<enable object="DataInput" feature="documentation"/>
 			<enable object="DataInput" feature="extensionDefinitions"/>
@@ -644,13 +674,9 @@
 			<enable object="Definitions" feature="diagrams"/>
 			<enable object="Definitions" feature="exporter"/>
 			<enable object="Definitions" feature="exporterVersion"/>
-			<enable object="Definitions" feature="expressionLanguage"/>
 			<enable object="Definitions" feature="extensionValues"/>
 			<enable object="Definitions" feature="extensions"/>
-			<enable object="Definitions" feature="name"/>
 			<enable object="Definitions" feature="rootElements"/>
-			<enable object="Definitions" feature="targetNamespace"/>
-			<enable object="Definitions" feature="typeLanguage"/>
 			<enable object="Documentation" feature="anyAttribute"/>
 			<enable object="Documentation" feature="extensionValues"/>
 			<enable object="Documentation" feature="text"/>
@@ -752,6 +778,9 @@
 			<enable object="Operation" feature="extensionValues"/>
 			<enable object="Operation" feature="id"/>
 			<enable object="Operation" feature="name"/>
+			<enable object="Operation" feature="inMessageRef"/>
+			<enable object="Operation" feature="outMessageRef"/>
+			<enable object="Operation" feature="errorRefs"/>
 			<enable object="ParallelGateway" feature="gatewayDirection"/>
 			<enable object="ParallelGateway" feature="name"/>
 			<enable object="Process" feature="adHoc"/>
@@ -767,10 +796,13 @@
 			<enable object="Property" feature="itemSubjectRef"/>
 			<enable object="Property" feature="name"/>
 			<enable object="ReceiveTask" feature="dataOutputAssociations"/>
+			<enable object="ReceiveTask" feature="implementation"/>
+			<enable object="ReceiveTask" feature="instantiate"/>
 			<enable object="ReceiveTask" feature="ioSpecification"/>
 			<enable object="ReceiveTask" feature="isForCompensation"/>
 			<enable object="ReceiveTask" feature="messageRef"/>
 			<enable object="ReceiveTask" feature="name"/>
+			<enable object="ReceiveTask" feature="operationRef"/>
 			<enable object="RootElement" feature="anyAttribute"/>
 			<enable object="RootElement" feature="extensionValues"/>
 			<enable object="ScriptTask" feature="isForCompensation"/>
@@ -779,9 +811,11 @@
 			<enable object="ScriptTask" feature="scriptFormat"/>
 			<enable object="SendTask" feature="dataInputAssociations"/>
 			<enable object="SendTask" feature="ioSpecification"/>
+			<enable object="SendTask" feature="implementation"/>
 			<enable object="SendTask" feature="isForCompensation"/>
 			<enable object="SendTask" feature="messageRef"/>
 			<enable object="SendTask" feature="name"/>
+			<enable object="SendTask" feature="operationRef"/>
 			<enable object="SequenceFlow" feature="conditionExpression"/>
 			<enable object="SequenceFlow" feature="name"/>
 			<enable object="SequenceFlow" feature="priority"/>
@@ -792,12 +826,14 @@
 			<enable object="ServiceTask" feature="dataOutputAssociations"/>
 			<enable object="ServiceTask" feature="ioSpecification"/>
 			<enable object="ServiceTask" feature="isForCompensation"/>
+			<enable object="ServiceTask" feature="implementation"/>
 			<enable object="ServiceTask" feature="name"/>
 			<enable object="ServiceTask" feature="operationRef"/>
 			<enable object="Signal" feature="id"/>
 			<enable object="Signal" feature="name"/>
 			<enable object="SignalEventDefinition" feature="signalRef"/>
 			<enable object="StartEvent" feature="name"/>
+			<enable object="StartEvent" feature="eventDefinitions"/>
 			<enable object="SubProcess" feature="flowElements"/>
 			<enable object="SubProcess" feature="isForCompensation"/>
 			<enable object="SubProcess" feature="loopCharacteristics"/>
@@ -817,6 +853,7 @@
 			<enable object="TextAnnotation" feature="id"/>
 			<enable object="TextAnnotation" feature="text"/>
 			<enable object="TextAnnotation" feature="textFormat"/>
+			<enable object="TerminateEventDefinition"/>
 			<enable object="ThrowEvent" feature="dataInputAssociation"/>
 			<enable object="TimerEventDefinition" feature="timeCycle"/>
 			<enable object="TimerEventDefinition" feature="timeDuration"/>
@@ -839,8 +876,9 @@
 			<disable object="AdHocSubProcess"/>
 			<disable object="Assignment"/>
 			<disable object="BPSimDataType"/>
-			<disable object="BoundaryEvent"/>
+			<disable object="BusinessRuleTask" feature="isForCompensation"/>
 			<disable object="CallActivity" feature="extensionValues"/>
+			<disable object="CallActivity" feature="isForCompensation"/>
 			<disable object="CompensateEventDefinition"/>
 			<disable object="ConditionalEventDefinition"/>
 			<disable object="DataInputAssociation"/>
@@ -850,6 +888,8 @@
 			<disable object="Documentation"/>
 			<disable object="Error"/>
 			<disable object="ErrorEventDefinition"/>
+			<disable object="Escalation"/>
+			<disable object="Interface"/>
 			<disable object="InputSet"/>
 			<disable object="IntermediateThrowEvent"/>
 			<disable object="Lane"/>
@@ -858,12 +898,19 @@
 			<disable object="Message"/>
 			<disable object="MessageEventDefinition"/>
 			<disable object="OutputSet"/>
-			<disable object="Property"/>
+			<disable object="Process" feature="isExecutable"/>
 			<disable object="ReceiveTask"/>
+			<disable object="ScriptTask" feature="isForCompensation"/>
 			<disable object="SendTask"/>
+			<disable object="SubProcess" feature="isForCompensation"/>
 			<disable object="Task" feature="extensionValues"/>
 			<disable object="UserTask" feature="extensionValues"/>
 			<disable object="Process" feature="adHoc"/>
+
+			<enable object="BoundaryEvent" feature="attachedToRef"/>
+			<enable object="BoundaryEvent" feature="cancelActivity"/>
+			<enable object="BoundaryEvent" feature="eventDefinitions"/>
+			<enable object="BoundaryEvent" feature="name"/>
 			
 			<enable object="GlobalType"/>
 			<enable object="ImportType"/>
@@ -945,7 +992,7 @@
 			<enable object="SequenceFlow" feature="priority"/>
 			<enable object="SequenceFlow" feature="sourceRef"/>
 			<enable object="SequenceFlow" feature="targetRef"/>
-			<enable object="StartEvent"/>
+			<enable object="StartEvent" feature="name"/>
 			<enable object="TerminateEventDefinition" feature="id"/>
 		</modelEnablement>
 		
@@ -960,14 +1007,16 @@
 				<tool name="AdHoc Subprocess" object="AdHocSubProcess"/>
 				<tool name="Subprocess" object="SubProcess"/>
 				<tool name="Reusable Subprocess" object="CallActivity"/>
-				<tool name="Task" object="Task"/>
 				<tool name="Manual Task" object="ManualTask"/>
 				<tool name="User Task" object="UserTask"/>
 				<tool name="Script Task" object="ScriptTask"/>
 				<tool name="Business Rule Task" object="BusinessRuleTask"/>
-				<tool name="Service Task" object="ServiceTask"/>
 				<tool name="Send Task" object="SendTask"/>
 				<tool name="Receive Task" object="ReceiveTask"/>
+			</category>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.simple.BoundaryEvents" name="Boundary Events">
+				<tool name="Error" object="BoundaryEvent+ErrorEventDefinition" icon="ErrorCatchEvent.png"/>
+				<tool name="Timer" object="BoundaryEvent+TimerEventDefinition" icon="TimerCatchEvent.png"/>
 			</category>
 			<category id="org.jboss.runtime.jbpm5.toolpalette.simple.Connection" name="Connections">
 				<tool name="Sequence Flow" object="SequenceFlow"/>
@@ -980,8 +1029,11 @@
 			</category>
 			<category id="org.jboss.runtime.jbpm5.toolpalette.simple.Gateways" name="Gateways">
 				<tool name="Data-based Exclusive (XOR)" object="ExclusiveGateway"/>
-				<tool name="Inclusive" object="InclusiveGateway"/>
 				<tool name="Parallel" object="ParallelGateway"/>
+			</category>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.full.CatchEvents" name="Intermediate Catch Events">
+				<tool name="Signal" object="IntermediateCatchEvent+SignalEventDefinition" icon="SignalCatchEvent.png"/>
+				<tool name="Timer" object="IntermediateCatchEvent+TimerEventDefinition" icon="TimerCatchEvent.png"/>
 			</category>
 		</toolPalette>
 		
@@ -1031,9 +1083,19 @@
 				<tool name="Group" object="Group"/>
 				<tool name="Text Annotation" object="TextAnnotation"/>
 			</category>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.simple.BoundaryEvents" name="Boundary Events">
+				<tool name="Boundary" object="BoundaryEvent" icon="IntermediateEvent.png"/>
+				<tool name="Conditional" object="BoundaryEvent+ConditionalEventDefinition" icon="ConditionalCatchEvent.png"/>
+				<tool name="Error" object="BoundaryEvent+ErrorEventDefinition" icon="ErrorCatchEvent.png"/>
+				<tool name="Escalation" object="BoundaryEvent+EscalationEventDefinition" icon="EscalationCatchEvent.png"/>
+				<tool name="Message" object="BoundaryEvent+MessageEventDefinition" icon="MessageCatchEvent.png"/>
+				<tool name="Signal" object="BoundaryEvent+SignalEventDefinition" icon="SignalCatchEvent.png"/>
+				<tool name="Timer" object="BoundaryEvent+TimerEventDefinition" icon="TimerCatchEvent.png"/>
+			</category>
 			<category id="org.jboss.runtime.jbpm5.toolpalette.full.Connections" name="Connections">
 				<tool name="Association (undirected)" object="Association[$associationDirection=None]"/>
 				<tool name="Association (one-way)" object="Association[$associationDirection=One]"/>
+				<tool name="Data Association" object="DataAssociation"/>
 				<tool name="Sequence Flow" object="SequenceFlow"/>
 			</category>
 			<category id="org.jboss.runtime.jbpm5.toolpalette.full.DataObjects" name="Data Objects">
@@ -1057,15 +1119,14 @@
 			</category>
 			<category id="org.jboss.runtime.jbpm5.toolpalette.full.CatchEvents" name="Intermediate Catch Events">
 				<tool name="Conditional" object="IntermediateCatchEvent+ConditionalEventDefinition" icon="ConditionalCatchEvent.png"/>
-				<tool name="Error" object="IntermediateCatchEvent+ErrorEventDefinition" icon="ErrorCatchEvent.png"/>
-				<tool name="Escalation" object="IntermediateCatchEvent+EscalationEventDefinition" icon="EscalationCatchEvent.png"/>
 				<tool name="Message" object="IntermediateCatchEvent+MessageEventDefinition" icon="MessageCatchEvent.png"/>
 				<tool name="Signal" object="IntermediateCatchEvent+SignalEventDefinition" icon="SignalCatchEvent.png"/>
 				<tool name="Timer" object="IntermediateCatchEvent+TimerEventDefinition" icon="TimerCatchEvent.png"/>
 			</category>
 			<category id="org.jboss.runtime.jbpm5.toolpalette.full.ThrowEvents" name="Intermediate Throw Events">
+				<tool name="Compensation" object="IntermediateThrowEvent+CompensateEventDefinition" icon="CompensationEndEvent.png"/>
 				<tool name="Escalation" object="IntermediateThrowEvent+EscalationEventDefinition" icon="EscalationThrowEvent.png"/>
-				<tool name="Intermediate" object="IntermediateThrowEvent" icon="ThrowEvent.png"/>
+				<tool name="Intermediate" object="IntermediateThrowEvent" icon="IntermediateEvent.png"/>
 				<tool name="Message" object="IntermediateThrowEvent+MessageEventDefinition" icon="MessageThrowEvent.png"/>
 				<tool name="Signal" object="IntermediateThrowEvent+SignalEventDefinition" icon="SignalThrowEvent.png"/>
 			</category>
@@ -1083,48 +1144,13 @@
 				<tool name="Lane" object="Lane"/>
 			</category>
 			
-			<category id="org.jboss.runtime.jbpm5.toolpalette.full.Patterns" name="Workflow Patterns">
-				<tool name="Sub Process with Start-&gt;End"
-					object="SubProcess+StartEvent[x=100,y=100],EndEvent[x=200,y=100],SequenceFlow"/>
-			
-			<!-- TODO: not yet implemented
-				<tool name="Arbitrary Cycles">
-					<composite id="arbitrary.cycles">
-						<object type="Task" id="arbitrary.cycles.taskA" name="Task A"/>
-						<object type="Task" id="arbitrary.cycles.taskB" name="Task B"/>
-						<object type="Task" id="arbitrary.cycles.taskC" name="Task C"/>
-						<object type="Task" id="arbitrary.cycles.taskD" name="Task D"/>
-						<object type="Task" id="arbitrary.cycles.taskE" name="Task E"/>
-						<object type="Task" id="arbitrary.cycles.taskF" name="Task F"/>
-						<object type="Task" id="arbitrary.cycles.taskG" name="Task G"/>
-						<object type="ExclusiveGateway" id="arbitrary.cycles.xor1"/>
-						<object type="ExclusiveGateway" id="arbitrary.cycles.xor2"/>
-						<object type="ExclusiveGateway" id="arbitrary.cycles.xor3"/>
-						<object type="ExclusiveGateway" id="arbitrary.cycles.xor4"/>
-						<object type="ExclusiveGateway" id="arbitrary.cycles.xor5"/>
-						<connection id="arbitrary.cycles.c1" type="SequenceFlow" source="arbitrary.cycles.taskA" target="arbitrary.cycles.xor1"/>
-						<connection id="arbitrary.cycles.c2" type="SequenceFlow" source="arbitrary.cycles.xor1" target="arbitrary.cycles.taskB"/>
-						<connection id="arbitrary.cycles.c3" type="SequenceFlow" source="arbitrary.cycles.xor1" target="arbitrary.cycles.xor2"/>
-						<connection id="arbitrary.cycles.c4" type="SequenceFlow" source="arbitrary.cycles.xor2" target="arbitrary.cycles.taskC"/>
-						<connection id="arbitrary.cycles.c5" type="SequenceFlow" source="arbitrary.cycles.taskB" target="arbitrary.cycles.xor3"/>
-						<connection id="arbitrary.cycles.c6" type="SequenceFlow" source="arbitrary.cycles.taskC" target="arbitrary.cycles.xor3"/>
-						<connection id="arbitrary.cycles.c7" type="SequenceFlow" source="arbitrary.cycles.xor3" target="arbitrary.cycles.taskD"/>
-						<connection id="arbitrary.cycles.c8" type="SequenceFlow" source="arbitrary.cycles.taskD" target="arbitrary.cycles.xor4"/>
-						<connection id="arbitrary.cycles.c9" type="SequenceFlow" source="arbitrary.cycles.xor4" target="arbitrary.cycles.taskE"/>
-						<connection id="arbitrary.cycles.c10" type="SequenceFlow" source="arbitrary.cycles.xor4" target="arbitrary.cycles.taskF"/>
-						<connection id="arbitrary.cycles.c11" type="SequenceFlow" source="arbitrary.cycles.taskF" target="arbitrary.cycles.xor5"/>
-						<connection id="arbitrary.cycles.c12" type="SequenceFlow" source="arbitrary.cycles.xor5" target="arbitrary.cycles.taskG"/>
-						<connection id="arbitrary.cycles.c13" type="SequenceFlow" source="arbitrary.cycles.xor5" target="arbitrary.cycles.xor2"/>
-					</composite>
-				</tool>
-			-->
-			</category>
+			<category id="org.bpmn2.modeler.toolpalette.process.patterns" fromPalette="org.bpmn2.modeler.toolpalette.process.default"/>
 			
 		</toolPalette>
 		
 		
 	</extension>
-	
+
  <extension
        point="org.eclipse.graphiti.ui.imageProviders">
     <imageProvider
@@ -1137,10 +1163,10 @@
          point="org.eclipse.emf.validation.constraintProviders">
       <category
             name="jBPM Constraints"
-            id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5"/>
+            id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validationCategory"/>
       <constraintProvider cache="true">
          <package namespaceUri="http://www.omg.org/spec/BPMN/20100524/MODEL-XMI"/>
-         <constraints categories="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5">
+         <constraints categories="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validationCategory">
             <constraint
                   lang="Java"
                   class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validation.ProcessConstraint"
@@ -1245,13 +1271,31 @@
          point="org.eclipse.emf.validation.constraintBindings">
       <clientContext
             default="false"
-            id="org.eclipse.bpmn2.modeler.core.validationContext">
-         <selector class="org.eclipse.bpmn2.modeler.core.validation.ValidationDelegateClientSelector"/>
+            id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validationContext">
+         <enablement>
+         	<test
+                property="org.eclipse.bpmn2.modeler.property.targetRuntimeId"
+                value="org.jboss.runtime.jbpm5"/>
+         </enablement>
       </clientContext>
       <binding
-            context="org.eclipse.bpmn2.modeler.core.validationContext"
-            category="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5"/>
+            context="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validationContext"
+            category="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validationCategory">
+      </binding>
    </extension>
+  
+  <extension
+        id="org.jboss.runtime.jbpm5.problemMarker"
+        name="jBPM Process Problem"
+        point="org.eclipse.core.resources.markers">
+     <persistent
+           value="true">
+     </persistent>
+     <super
+           type="org.eclipse.emf.validation.problem">
+     </super>
+  </extension>
+   
    <extension
          point="org.eclipse.ui.newWizards">
       <category

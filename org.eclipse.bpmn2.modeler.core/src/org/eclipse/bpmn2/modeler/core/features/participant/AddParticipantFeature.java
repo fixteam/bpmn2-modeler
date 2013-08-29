@@ -18,7 +18,6 @@ import org.eclipse.bpmn2.modeler.core.di.DIImport;
 import org.eclipse.bpmn2.modeler.core.features.AbstractAddBPMNShapeFeature;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
-import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IAddContext;
@@ -39,7 +38,7 @@ public class AddParticipantFeature extends AbstractAddBPMNShapeFeature<Participa
 
 	public static final String MULTIPLICITY = "multiplicity";
 	public static final int DEFAULT_POOL_WIDTH = 600;
-	public static final int DEFAULT_POOL_HEIGHT = 100;
+	public static final int DEFAULT_POOL_HEIGHT = 150;
 
 	public AddParticipantFeature(IFeatureProvider fp) {
 		super(fp);

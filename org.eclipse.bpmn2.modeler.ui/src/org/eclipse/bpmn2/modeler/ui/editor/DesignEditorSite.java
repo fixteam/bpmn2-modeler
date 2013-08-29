@@ -68,6 +68,7 @@ public class DesignEditorSite extends MultiPageEditorSite {
 		catch (Exception e) {
 			// if PictogramElements were deleted, there will be an NPE when searching for
 			// the PEs parent diagram
+			return;
 		}
 		if (parentProvider instanceof MultiPageSelectionProvider) {
 			SelectionChangedEvent newEvent = getNewEvent(parentProvider, event);

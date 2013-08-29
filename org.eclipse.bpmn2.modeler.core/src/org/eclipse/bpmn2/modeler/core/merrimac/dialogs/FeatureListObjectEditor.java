@@ -250,8 +250,8 @@ public class FeatureListObjectEditor extends MultivalueObjectEditor {
 	
 	@Override
 	public void notifyChanged(Notification notification) {
-		if (this.object == notification.getNotifier() &&
-				this.feature == notification.getFeature()) {
+		if ( notification.getEventType() == -1 ||
+				(object == notification.getNotifier() && feature == notification.getFeature())) {
 			super.notifyChanged(notification);
 			updateTextField();
 		}

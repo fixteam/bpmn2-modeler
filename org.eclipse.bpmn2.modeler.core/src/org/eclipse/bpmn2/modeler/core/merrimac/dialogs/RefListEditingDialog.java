@@ -14,7 +14,7 @@ import java.util.Hashtable;
 import java.util.Map.Entry;
 
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
-import org.eclipse.emf.ecore.EClass;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
@@ -139,7 +139,7 @@ public class RefListEditingDialog extends AbstractObjectEditingDialog {
 
 				Object value = entry.getValue();
 				// this can not be null!
-				assert(value instanceof EObject);
+				Assert.isTrue(value instanceof EObject);
 				sourceList.setData(key, value);
 			}
 		}
@@ -183,14 +183,14 @@ public class RefListEditingDialog extends AbstractObjectEditingDialog {
 	
 	private void moveUp() {
 		int index = targetList.getSelectionIndex();
-		assert (index>0);
+		Assert.isTrue(index>0);
 		swap(index,index-1);
 	}
 	
 	private void moveDown() {
 		int index = targetList.getSelectionIndex();
 		int end = targetList.getItemCount() - 1; 
-		assert (index>0 && index<end);
+		Assert.isTrue(index>0 && index<end);
 		swap(index,index+1);
 	}
 	

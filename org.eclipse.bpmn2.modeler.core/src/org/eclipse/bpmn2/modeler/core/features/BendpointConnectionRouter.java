@@ -110,10 +110,6 @@ public class BendpointConnectionRouter extends DefaultConnectionRouter {
 			return calculateSelfConnectionRoute();
 		}
 
-		if (manual) {
-			return null;
-		}
-
 		ConnectionRoute route = new ConnectionRoute(this, 1, source, target);
 		
 		Point pStart;
@@ -136,20 +132,21 @@ public class BendpointConnectionRouter extends DefaultConnectionRouter {
 		}
 
 		route.add(pStart);
+		if (!manual) {
+			oldPoints.clear();
+			oldPoints.add(pStart);
+			if (movedBendpoint!=null)
+				oldPoints.add(movedBendpoint);
+			oldPoints.add(pEnd);
+		}
 		
-		oldPoints.clear();
-		oldPoints.add(pStart);
-		if (movedBendpoint!=null)
-			oldPoints.add(movedBendpoint);
-		oldPoints.add(pEnd);
-
 		Point p1 = pStart;
 		Point p2;
 		Point p3;
 		for (int i=1; i<oldPoints.size(); ++i) {
 			p2 = oldPoints.get(i);
 			ContainerShape shape = getCollision(p1,p2);
-			if (shape!=null) {
+			if (shape!=null && !manual) {
 				if (shape==target) {
 					// find a better target anchor if possible
 					if (targetAnchor==null) {
@@ -162,8 +159,10 @@ public class BendpointConnectionRouter extends DefaultConnectionRouter {
 				// navigate around this shape
 				DetourPoints detour = new DetourPoints(shape, margin);
 				for (Point d : detour.calculateDetour(p1, p2)) {
-					if (!route.add(d))
+					if (!route.add(d)) {
+						++i;
 						break;
+					}
 					p2 = d;
 				}
 				--i;
@@ -172,7 +171,10 @@ public class BendpointConnectionRouter extends DefaultConnectionRouter {
 				route.add(p2);
 			p1 = p2;
 		}
-		route.add(pEnd);
+
+		if (!manual) {
+			route.add(pEnd);
+		}
 		
 		
 		oldPoints.clear();

@@ -3,7 +3,9 @@
 package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.util;
 
 import org.eclipse.bpmn2.BaseElement;
+import org.eclipse.bpmn2.CallableElement;
 import org.eclipse.bpmn2.ItemAwareElement;
+import org.eclipse.bpmn2.RootElement;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.*;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.DocumentRoot;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.DroolsPackage;
@@ -107,6 +109,10 @@ public class DroolsAdapterFactory extends AdapterFactoryImpl {
 				return createBPSimDataTypeAdapter();
 			}
 			@Override
+			public Adapter caseExternalProcess(ExternalProcess object) {
+				return createExternalProcessAdapter();
+			}
+			@Override
 			public Adapter caseBpmn2_DocumentRoot(org.eclipse.bpmn2.DocumentRoot object) {
 				return createBpmn2_DocumentRootAdapter();
 			}
@@ -121,6 +127,14 @@ public class DroolsAdapterFactory extends AdapterFactoryImpl {
 			@Override
 			public Adapter caseBpsim_BPSimDataType(org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.BPSimDataType object) {
 				return createBpsim_BPSimDataTypeAdapter();
+			}
+			@Override
+			public Adapter caseRootElement(RootElement object) {
+				return createRootElementAdapter();
+			}
+			@Override
+			public Adapter caseCallableElement(CallableElement object) {
+				return createCallableElementAdapter();
 			}
 			@Override
 			public Adapter defaultCase(EObject object) {
@@ -255,6 +269,20 @@ public class DroolsAdapterFactory extends AdapterFactoryImpl {
 	}
 
 	/**
+	 * Creates a new adapter for an object of class '{@link org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.ExternalProcess <em>Callable Element Proxy</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.ExternalProcess
+	 * @generated
+	 */
+	public Adapter createExternalProcessAdapter() {
+		return null;
+	}
+
+	/**
 	 * Creates a new adapter for an object of class '{@link org.eclipse.bpmn2.DocumentRoot <em>Document Root</em>}'.
 	 * <!-- begin-user-doc -->
 	 * This default implementation returns null so that we can easily ignore cases;
@@ -307,6 +335,34 @@ public class DroolsAdapterFactory extends AdapterFactoryImpl {
 	 * @generated
 	 */
 	public Adapter createBpsim_BPSimDataTypeAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link org.eclipse.bpmn2.RootElement <em>Root Element</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see org.eclipse.bpmn2.RootElement
+	 * @generated
+	 */
+	public Adapter createRootElementAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link org.eclipse.bpmn2.CallableElement <em>Callable Element</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see org.eclipse.bpmn2.CallableElement
+	 * @generated
+	 */
+	public Adapter createCallableElementAdapter() {
 		return null;
 	}
 

@@ -14,11 +14,15 @@
 package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property;
 
 import org.eclipse.bpmn2.CallableElement;
+import org.eclipse.bpmn2.Definitions;
+import org.eclipse.bpmn2.RootElement;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ObjectEditor;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.TextAndButtonObjectEditor;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.ExternalProcess;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.DroolsFactory;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
@@ -87,8 +91,23 @@ public class JbpmCallActivityDetailComposite extends JbpmActivityDetailComposite
 							domain.getCommandStack().execute(new RecordingCommand(domain) {
 								@Override
 								protected void doExecute() {
-									CallableElement ce = Bpmn2ModelerFactory.create(CallableElement.class);
-									((InternalEObject)ce).eSetProxyURI(URI.createURI((String)result));
+									String id = result.toString();
+									CallableElement ce = null;
+									Definitions defs = ModelUtil.getDefinitions(object);
+									for (RootElement re : defs.getRootElements()) {
+										if (re instanceof ExternalProcess) {
+											if (id.equals(re.getId())) {
+												ce = (ExternalProcess) re;
+												break;
+											}
+										}
+									}
+									if (ce==null) {
+										ce = DroolsFactory.eINSTANCE.createExternalProcess();
+										ce.setName(id);
+										ce.setId(id);
+										defs.getRootElements().add(ce);
+									}
 									
 									object.eSet(feature, ce);
 								}

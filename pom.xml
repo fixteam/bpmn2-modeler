@@ -8,7 +8,7 @@
 
 	<groupId>org.eclipse.bpmn2.modeler</groupId>
 	<artifactId>org.eclipse.bpmn2.modeler.parent</artifactId>
-	<version>0.2.5-SNAPSHOT</version>
+	<version>0.2.6-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>BPMN2 Modeler Parent</name>
@@ -138,7 +138,7 @@
 
 		<repository>
 			<id>eclipse-graphiti-helios</id>
-			<url>http://download.eclipse.org/graphiti/updates/0.8.2</url>
+			<url>http://archive.eclipse.org/graphiti/updates/0.8.2</url>
 			<layout>p2</layout>
 			<snapshots>
 				<enabled>true</enabled>
@@ -150,7 +150,7 @@
 
 		<repository>
 			<id>eclipse-graphiti-indigo</id>
-			<url>http://download.eclipse.org/graphiti/updates/0.9.0</url>
+			<url>http://download.eclipse.org/graphiti/updates/0.9.2</url>
 			<layout>p2</layout>
 			<snapshots>
 				<enabled>true</enabled>
@@ -174,7 +174,10 @@
 
 		<repository>
 			<id>eclipse-graphiti-kepler</id>
-			<url>http://download.eclipse.org/graphiti/updates/milestones/S-0.10.0M6-201303191346/</url>
+			<!--
+			<url>http://download.eclipse.org/graphiti/updates/milestones/</url>
+			-->
+			<url>http://download.eclipse.org/graphiti/updates/0.9.2</url>
 			<layout>p2</layout>
 			<snapshots>
 				<enabled>true</enabled>

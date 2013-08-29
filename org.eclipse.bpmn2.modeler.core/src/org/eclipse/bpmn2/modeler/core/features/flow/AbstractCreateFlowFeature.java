@@ -60,46 +60,52 @@ public abstract class AbstractCreateFlowFeature<
 
 	@Override
 	public Connection create(ICreateConnectionContext context) {
+		Connection connection = null;
 		CONNECTION bo = createBusinessObject(context);
-		AddConnectionContext addContext = new AddConnectionContext(
-				context.getSourceAnchor(),
-				context.getTargetAnchor());
-		addContext.setNewObject(bo);
-
-		IPeService peService = Graphiti.getPeService();
-		IGaService gaService = Graphiti.getGaService();
-		ILocation loc, shapeLoc;
+		if (bo!=null) {
+			AddConnectionContext addContext = new AddConnectionContext(
+					context.getSourceAnchor(),
+					context.getTargetAnchor());
+			addContext.setNewObject(bo);
+	
+			IPeService peService = Graphiti.getPeService();
+			IGaService gaService = Graphiti.getGaService();
+			ILocation loc, shapeLoc;
+			
+			// the CreateConnectionContext contains the source and target locations - the actual
+			// mouse locations where the connection was started and ended. These locations must
+			// be passed to the AddConnectionContext so they can be added (as String properties)
+			// to the Connection once it is created. These String properties are then decoded in
+			// AnchorUtil.getSourceAndTargetBoundaryAnchors() to create Ad Hoc anchors if necessary.
+			loc = context.getSourceLocation();
+			if (loc==null)
+				loc = peService.getLocationRelativeToDiagram(context.getSourceAnchor());
+			shapeLoc = peService.getLocationRelativeToDiagram((Shape)context.getSourceAnchor().getParent());
+			Point p = gaService.createPoint(
+					loc.getX() - shapeLoc.getX(),
+					loc.getY() - shapeLoc.getY());
+			addContext.putProperty(AnchorUtil.CONNECTION_SOURCE_LOCATION, p);
+			
+			loc = context.getTargetLocation();
+			if (loc==null)
+				loc = peService.getLocationRelativeToDiagram(context.getTargetAnchor());
+			shapeLoc = peService.getLocationRelativeToDiagram((Shape)context.getTargetAnchor().getParent());
+			p = gaService.createPoint(
+					loc.getX() - shapeLoc.getX(),
+					loc.getY() - shapeLoc.getY());
+			addContext.putProperty(AnchorUtil.CONNECTION_TARGET_LOCATION, p);
+			addContext.putProperty(AnchorUtil.CONNECTION_CREATED, Boolean.TRUE);
+	
+			connection = (Connection) getFeatureProvider().addIfPossible(addContext);
+			ModelUtil.setID(bo);
+	
+			ConnectionFeatureContainer.updateConnection(getFeatureProvider(), connection);
+	
+			changesDone = true;
+		}
+		else
+			changesDone = false;
 		
-		// the CreateConnectionContext contains the source and target locations - the actual
-		// mouse locations where the connection was started and ended. These locations must
-		// be passed to the AddConnectionContext so they can be added (as String properties)
-		// to the Connection once it is created. These String properties are then decoded in
-		// AnchorUtil.getSourceAndTargetBoundaryAnchors() to create Ad Hoc anchors if necessary.
-		loc = context.getSourceLocation();
-		if (loc==null)
-			loc = peService.getLocationRelativeToDiagram(context.getSourceAnchor());
-		shapeLoc = peService.getLocationRelativeToDiagram((Shape)context.getSourceAnchor().getParent());
-		Point p = gaService.createPoint(
-				loc.getX() - shapeLoc.getX(),
-				loc.getY() - shapeLoc.getY());
-		addContext.putProperty(AnchorUtil.CONNECTION_SOURCE_LOCATION, p);
-		
-		loc = context.getTargetLocation();
-		if (loc==null)
-			loc = peService.getLocationRelativeToDiagram(context.getTargetAnchor());
-		shapeLoc = peService.getLocationRelativeToDiagram((Shape)context.getTargetAnchor().getParent());
-		p = gaService.createPoint(
-				loc.getX() - shapeLoc.getX(),
-				loc.getY() - shapeLoc.getY());
-		addContext.putProperty(AnchorUtil.CONNECTION_TARGET_LOCATION, p);
-		addContext.putProperty(AnchorUtil.CONNECTION_CREATED, Boolean.TRUE);
-
-		Connection connection = (Connection) getFeatureProvider().addIfPossible(addContext);
-		ModelUtil.setID(bo);
-
-		ConnectionFeatureContainer.updateConnection(getFeatureProvider(), connection);
-
-		changesDone = true;
 		return connection;
 	}
 

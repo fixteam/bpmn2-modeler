@@ -3,7 +3,9 @@
 package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.util;
 
 import org.eclipse.bpmn2.BaseElement;
+import org.eclipse.bpmn2.CallableElement;
 import org.eclipse.bpmn2.ItemAwareElement;
+import org.eclipse.bpmn2.RootElement;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.*;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.DocumentRoot;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.DroolsPackage;
@@ -123,6 +125,15 @@ public class DroolsSwitch<T> extends Switch<T> {
 				BPSimDataType bpSimDataType = (BPSimDataType)theEObject;
 				T result = caseBPSimDataType(bpSimDataType);
 				if (result == null) result = caseBpsim_BPSimDataType(bpSimDataType);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case DroolsPackage.EXTERNAL_PROCESS: {
+				ExternalProcess callableElementProxy = (ExternalProcess)theEObject;
+				T result = caseExternalProcess(callableElementProxy);
+				if (result == null) result = caseCallableElement(callableElementProxy);
+				if (result == null) result = caseRootElement(callableElementProxy);
+				if (result == null) result = caseBaseElement(callableElementProxy);
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
@@ -251,6 +262,21 @@ public class DroolsSwitch<T> extends Switch<T> {
 	}
 
 	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Callable Element Proxy</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Callable Element Proxy</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseExternalProcess(ExternalProcess object) {
+		return null;
+	}
+
+	/**
 	 * Returns the result of interpreting the object as an instance of '<em>Document Root</em>'.
 	 * <!-- begin-user-doc -->
 	 * This implementation returns null;
@@ -307,6 +333,36 @@ public class DroolsSwitch<T> extends Switch<T> {
 	 * @generated
 	 */
 	public T caseBpsim_BPSimDataType(org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.BPSimDataType object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Root Element</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Root Element</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseRootElement(RootElement object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Callable Element</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Callable Element</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseCallableElement(CallableElement object) {
 		return null;
 	}
 

@@ -12,7 +12,7 @@
    <feature url="features/org.eclipse.bpmn2.modeler.examples.feature_0.0.0.jar" id="org.eclipse.bpmn2.modeler.examples.feature" version="0.0.0">
       <category name="Eclipse BPMN2 Modeler (Incubation)"/>
    </feature>
-   <feature url="features/org.eclipse.bpmn2.modeler.wsil.feature_0.2.5.qualifier.jar" id="org.eclipse.bpmn2.modeler.wsil.feature" version="0.2.5.qualifier">
+   <feature url="org.eclipse.bpmn2.modeler.wsil.feature_0.2.6.qualifier" id="org.eclipse.bpmn2.modeler.wsil.feature" version="0.2.6.qualifier">
       <category name="Eclipse BPMN2 Modeler (Incubation)"/>
    </feature>
    <category-def name="Eclipse BPMN2 Modeler (Incubation)" label="Eclipse BPMN2 Modeler (Incubation)">

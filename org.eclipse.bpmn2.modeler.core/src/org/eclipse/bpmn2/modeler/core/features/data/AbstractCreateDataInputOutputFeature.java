@@ -15,13 +15,10 @@ package org.eclipse.bpmn2.modeler.core.features.data;
 import java.io.IOException;
 
 import org.eclipse.bpmn2.ItemAwareElement;
-import org.eclipse.bpmn2.SubProcess;
-import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.ModelHandler;
 import org.eclipse.bpmn2.modeler.core.ModelHandlerLocator;
 import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2CreateFeature;
-import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.ICreateContext;
@@ -34,17 +31,7 @@ public abstract class AbstractCreateDataInputOutputFeature<T extends ItemAwareEl
 
 	@Override
 	public boolean canCreate(ICreateContext context) {
-		Object containerBO = BusinessObjectUtil.getBusinessObjectForPictogramElement( context.getTargetContainer() );
-		boolean intoDiagram = containerBO instanceof BPMNDiagram;
-		if (intoDiagram) {
-			// SubProcess are not allowed to define their own DataInputs or DataOutputs
-			BPMNDiagram bpmnDiagram = (BPMNDiagram) containerBO;
-			if (bpmnDiagram.getPlane().getBpmnElement() instanceof SubProcess)
-				intoDiagram = false;
-		}
-		boolean intoLane = FeatureSupport.isTargetLane(context) && FeatureSupport.isTargetLaneOnTop(context);
-		boolean intoParticipant = FeatureSupport.isTargetParticipant(context);
-		return intoDiagram || intoLane || intoParticipant;
+		return FeatureSupport.isValidDataTarget(context);
 	}
 
 	@Override

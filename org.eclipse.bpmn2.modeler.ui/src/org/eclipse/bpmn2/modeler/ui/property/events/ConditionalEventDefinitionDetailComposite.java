@@ -10,13 +10,15 @@
  *
  * @author Innar Made
  ******************************************************************************/
-package org.eclipse.bpmn2.modeler.ui.property.data;
+package org.eclipse.bpmn2.modeler.ui.property.events;
 
 import org.eclipse.bpmn2.ConditionalEventDefinition;
+import org.eclipse.bpmn2.FormalExpression;
 import org.eclipse.bpmn2.modeler.core.adapters.InsertionAdapter;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.ui.editor.BPMN2Editor;
+import org.eclipse.bpmn2.modeler.ui.property.data.ExpressionDetailComposite;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.swt.widgets.Composite;
 
@@ -38,7 +40,7 @@ public class ConditionalEventDefinitionDetailComposite extends ExpressionDetailC
 		if (object instanceof ConditionalEventDefinition) {
 			ConditionalEventDefinition ced = (ConditionalEventDefinition)object;
 			if (ced.getCondition()==null) {
-				object = FACTORY.createFormalExpression();
+				object = createModelObject(FormalExpression.class);
 				InsertionAdapter.add(ced,
 						PACKAGE.getConditionalEventDefinition_Condition(),
 						object);

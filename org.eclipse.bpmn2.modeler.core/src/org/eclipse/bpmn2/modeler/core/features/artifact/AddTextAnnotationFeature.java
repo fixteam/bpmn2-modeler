@@ -26,7 +26,6 @@ import org.eclipse.graphiti.mm.algorithms.Polyline;
 import org.eclipse.graphiti.mm.algorithms.Rectangle;
 import org.eclipse.graphiti.mm.algorithms.styles.Orientation;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
-import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
@@ -41,13 +40,7 @@ public class AddTextAnnotationFeature extends AbstractAddBPMNShapeFeature<TextAn
 
 	@Override
 	public boolean canAdd(IAddContext context) {
-		boolean isAnnotation = getBusinessObject(context) instanceof TextAnnotation;
-		boolean intoDiagram = context.getTargetContainer() instanceof Diagram;
-		boolean intoLane = FeatureSupport.isTargetLane(context) && FeatureSupport.isTargetLaneOnTop(context);
-		boolean intoSubProcess = FeatureSupport.isTargetSubProcess(context);
-		boolean intoParticipant = FeatureSupport.isTargetParticipant(context);
-		
-		return isAnnotation && (intoDiagram || intoLane || intoSubProcess || intoParticipant);
+		return FeatureSupport.isValidArtifactTarget(context);
 	}
 
 	@Override

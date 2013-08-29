@@ -36,6 +36,7 @@ import org.eclipse.bpmn2.modeler.ui.features.LayoutBaseElementTextFeature;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.graphiti.features.IAddFeature;
 import org.eclipse.graphiti.features.ICreateFeature;
 import org.eclipse.graphiti.features.IDeleteFeature;
@@ -228,13 +229,7 @@ public class DataStoreReferenceFeatureContainer extends BaseElementFeatureContai
 		};
 
 		public CreateDataStoreReferenceFeature(IFeatureProvider fp) {
-			super(
-					fp,
-					"Data Store",
-					"Reference to a Data Store instance."
-							+ " Data Stores provide a mechanism for Activities to persist data beyond the lifetime of the Process."
-							+ " The same Data Store instance can be visualized through a Data Store Reference in one or more"
-							+ " places in the Process.");
+			super(fp, "Data Store", "Create Data Store");
 		}
 
 		@Override
@@ -263,14 +258,16 @@ public class DataStoreReferenceFeatureContainer extends BaseElementFeatureContai
 			// it necessarily means that a DataStoreReference is created and added to the FlowElementContainer
 			// which is the target of the ICreateContext. In addition, if the new DataStoreReference refers
 			// to a new DataStore, one is created and added to Definitions.
-			// 
+			changesDone = true;
 			DataStoreReference bo = null;
 			try {
 				ModelHandler mh = ModelHandler.getInstance(getDiagram());
 				bo = Bpmn2ModelerFactory.create(DataStoreReference.class);
 
 				DataStore dataStore = Bpmn2ModelerFactory.create(DataStore.class);
+				String oldName = dataStore.getName();
 				dataStore.setName("Create a new Data Store");
+				dataStore.setId(null);
 
 				List<DataStore> dataStoreList = new ArrayList<DataStore>();
 				dataStoreList.add(dataStore);
@@ -284,23 +281,30 @@ public class DataStoreReferenceFeatureContainer extends BaseElementFeatureContai
 				DataStore result = dataStore;
 				if (dataStoreList.size() > 1) {
 					PopupMenu popupMenu = new PopupMenu(dataStoreList, labelProvider);
-					boolean b = popupMenu.show(Display.getCurrent().getActiveShell());
-					if (b) {
+					changesDone = popupMenu.show(Display.getCurrent().getActiveShell());
+					if (changesDone) {
 						result = (DataStore) popupMenu.getResult();
 					}
+					else {
+						EcoreUtil.delete(dataStore);
+						EcoreUtil.delete(bo);
+						bo = null;
+					}
 				}
-				if (result == dataStore) { // the new one
-					mh.addRootElement(dataStore);
-					ModelUtil.setID(dataStore);
-					dataStore.setName(ModelUtil.toDisplayName(dataStore.getId()));
-					bo.setName(dataStore.getName());
-				} else
-					bo.setName(result.getName() + " Ref");
-
-				bo.setDataStoreRef(result);
-				ModelUtil.setID(bo, mh.getResource());
-				putBusinessObject(context, bo);
-
+				if (changesDone) {
+					if (result == dataStore) { // the new one
+						mh.addRootElement(dataStore);
+						ModelUtil.setID(dataStore);
+						dataStore.setName(oldName);
+						bo.setName(dataStore.getName());
+					} else
+						bo.setName(result.getName() + " Ref");
+	
+					bo.setDataStoreRef(result);
+					ModelUtil.setID(bo, mh.getResource());
+					putBusinessObject(context, bo);
+				}
+				
 			} catch (IOException e) {
 				Activator.showErrorWithLogging(e);
 			}

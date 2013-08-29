@@ -41,24 +41,20 @@ public class MoveBendpointFeature extends DefaultMoveBendpointFeature {
 			FreeFormConnection connection = context.getConnection();
 			BaseElement element = (BaseElement) BusinessObjectUtil.getFirstElementOfType(connection, BaseElement.class);
 			BPMNEdge edge = DIUtils.findBPMNEdge(element);
-			int index = context.getBendpointIndex() + 1;
-			Point p = edge.getWaypoint().get(index);
-			p.setX(context.getX());
-			p.setY(context.getY());
-			
-			// also need to move the connection point if there is one at this bendpoint
-			Shape connectionPointShape = AnchorUtil.getConnectionPointAt(connection, context.getBendpoint());
-			if (connectionPointShape!=null)
-				AnchorUtil.setConnectionPointLocation(connectionPointShape, context.getX(), context.getY());
-			
-			if (index == 1) {
-				AnchorUtil.reConnect((DiagramElement) edge.getSourceElement(), getDiagram());
-			} else if (index == connection.getBendpoints().size()) {
-				AnchorUtil.reConnect((DiagramElement) edge.getTargetElement(), getDiagram());
+			if (edge!=null) {
+				int index = context.getBendpointIndex() + 1;
+				Point p = edge.getWaypoint().get(index);
+				p.setX(context.getX());
+				p.setY(context.getY());
+				
+				// also need to move the connection point if there is one at this bendpoint
+				Shape connectionPointShape = AnchorUtil.getConnectionPointAt(connection, context.getBendpoint());
+				if (connectionPointShape!=null)
+					AnchorUtil.setConnectionPointLocation(connectionPointShape, context.getX(), context.getY());
+				
+				BendpointConnectionRouter.setMovedBendpoint(connection, context.getBendpointIndex());
+				ConnectionFeatureContainer.updateConnection(getFeatureProvider(), connection);
 			}
-
-			BendpointConnectionRouter.setMovedBendpoint(connection, context.getBendpointIndex());
-			ConnectionFeatureContainer.updateConnection(getFeatureProvider(), connection);
 			
 		} catch (Exception e) {
 			Activator.logError(e);

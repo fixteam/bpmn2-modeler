@@ -17,6 +17,7 @@ import static org.eclipse.bpmn2.modeler.core.features.choreography.ChoreographyP
 import org.eclipse.bpmn2.ChoreographyActivity;
 import org.eclipse.bpmn2.modeler.core.features.DefaultLayoutBPMNShapeFeature;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
+import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.ILayoutContext;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
@@ -59,7 +60,7 @@ public class LayoutChoreographyFeature extends DefaultLayoutBPMNShapeFeature {
 			if (property != null && new Boolean(property)) {
 				GraphicsAlgorithm ga = s.getGraphicsAlgorithm();
 				gaService.setSize(ga, newWidth, newHeight);
-				peService.sendToFront(s);
+				GraphicsUtil.sendToFront(s);
 			}
 			// use it when property editor supports enums
 			// property = peService.getPropertyValue(s, ChoreographyProperties.CHOREOGRAPHY_MARKER_SHAPE);

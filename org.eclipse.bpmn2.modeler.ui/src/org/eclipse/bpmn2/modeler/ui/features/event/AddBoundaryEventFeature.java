@@ -25,6 +25,7 @@ import org.eclipse.bpmn2.modeler.core.utils.BoundaryEventPositionHelper.Position
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
+import org.eclipse.graphiti.datatypes.ILocation;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.mm.algorithms.Ellipse;
@@ -70,21 +71,23 @@ public class AddBoundaryEventFeature extends AbstractAddBPMNShapeFeature<Boundar
 		// FIXME: what's going on here?
 		ContainerShape target = isImport ? context.getTargetContainer() : (ContainerShape) context
 		        .getTargetContainer().eContainer();
-
+		if (target==null)
+			target = context.getTargetContainer();
 		ContainerShape containerShape = peService.createContainerShape(target, true);
 		Ellipse ellipse = gaService.createEllipse(containerShape);
 		StyleUtil.applyStyle(ellipse, businessObject);
 		
-		int gatewayWidth = this.getWidth(context);
-		int gatewayHeight = this.getHeight();
+		int width = this.getWidth(context);
+		int height = this.getHeight(context);
+
 
 		if (isImport) { // if loading from DI then place according to context
-			gaService.setLocationAndSize(ellipse, context.getX(), context.getY(), gatewayWidth, gatewayHeight);
+			gaService.setLocationAndSize(ellipse, context.getX(), context.getY(), width, height);
 		} else { // otherwise place it in the center of shape for user to adjust it
 			GraphicsAlgorithm ga = context.getTargetContainer().getGraphicsAlgorithm();
-			int x = ga.getX() + context.getX() - (gatewayWidth / 2);
-			int y = ga.getY() + context.getY() - (gatewayHeight / 2);
-			gaService.setLocationAndSize(ellipse, x, y, gatewayHeight, gatewayHeight);
+			int x = ga.getX() + context.getX() - (width / 2);
+			int y = ga.getY() + context.getY() - (height / 2);
+			gaService.setLocationAndSize(ellipse, x, y, height, height);
 		}
 
 		Ellipse circle = GraphicsUtil.createIntermediateEventCircle(ellipse);
@@ -113,7 +116,7 @@ public class AddBoundaryEventFeature extends AbstractAddBPMNShapeFeature<Boundar
 		anchor.setReferencedGraphicsAlgorithm(ellipse);
 		AnchorUtil.addFixedPointAnchors(containerShape, ellipse);
 
-		this.prepareAddContext(context, containerShape, gatewayWidth, gatewayHeight);
+		this.prepareAddContext(context, containerShape, width, height);
 //		this.getFeatureProvider().getAddFeature(context).add(context);
 		
 		updatePictogramElement(containerShape);

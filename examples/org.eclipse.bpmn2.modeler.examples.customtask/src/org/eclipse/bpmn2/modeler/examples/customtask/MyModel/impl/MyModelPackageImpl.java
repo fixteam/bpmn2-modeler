@@ -7,6 +7,7 @@ import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.di.BpmnDiPackage;
 
 import org.eclipse.bpmn2.modeler.examples.customtask.MyModel.DocumentRoot;
+import org.eclipse.bpmn2.modeler.examples.customtask.MyModel.MyEventDefinition;
 import org.eclipse.bpmn2.modeler.examples.customtask.MyModel.MyModelFactory;
 import org.eclipse.bpmn2.modeler.examples.customtask.MyModel.MyModelPackage;
 import org.eclipse.bpmn2.modeler.examples.customtask.MyModel.Parameter;
@@ -50,6 +51,13 @@ public class MyModelPackageImpl extends EPackageImpl implements MyModelPackage {
 	 * @generated
 	 */
 	private EClass taskConfigEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass myEventDefinitionEClass = null;
 
 	/**
 	 * Creates an instance of the model <b>Package</b>, registered with
@@ -96,6 +104,12 @@ public class MyModelPackageImpl extends EPackageImpl implements MyModelPackage {
 		MyModelPackageImpl theMyModelPackage = (MyModelPackageImpl)(EPackage.Registry.INSTANCE.get(eNS_URI) instanceof MyModelPackageImpl ? EPackage.Registry.INSTANCE.get(eNS_URI) : new MyModelPackageImpl());
 
 		isInited = true;
+
+		// Initialize simple dependencies
+		Bpmn2Package.eINSTANCE.eClass();
+		BpmnDiPackage.eINSTANCE.eClass();
+		DiPackage.eINSTANCE.eClass();
+		DcPackage.eINSTANCE.eClass();
 
 		// Create package meta-data objects
 		theMyModelPackage.createPackageContents();
@@ -180,6 +194,24 @@ public class MyModelPackageImpl extends EPackageImpl implements MyModelPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EClass getMyEventDefinition() {
+		return myEventDefinitionEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getMyEventDefinition_Value() {
+		return (EAttribute)myEventDefinitionEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public MyModelFactory getMyModelFactory() {
 		return (MyModelFactory)getEFactoryInstance();
 	}
@@ -212,6 +244,9 @@ public class MyModelPackageImpl extends EPackageImpl implements MyModelPackage {
 
 		taskConfigEClass = createEClass(TASK_CONFIG);
 		createEReference(taskConfigEClass, TASK_CONFIG__PARAMETERS);
+
+		myEventDefinitionEClass = createEClass(MY_EVENT_DEFINITION);
+		createEAttribute(myEventDefinitionEClass, MY_EVENT_DEFINITION__VALUE);
 	}
 
 	/**
@@ -237,11 +272,15 @@ public class MyModelPackageImpl extends EPackageImpl implements MyModelPackage {
 		setNsPrefix(eNS_PREFIX);
 		setNsURI(eNS_URI);
 
+		// Obtain other dependent packages
+		Bpmn2Package theBpmn2Package = (Bpmn2Package)EPackage.Registry.INSTANCE.getEPackage(Bpmn2Package.eNS_URI);
+
 		// Create type parameters
 
 		// Set bounds for type parameters
 
 		// Add supertypes to classes
+		myEventDefinitionEClass.getESuperTypes().add(theBpmn2Package.getEventDefinition());
 
 		// Initialize classes and features; add operations and parameters
 		initEClass(documentRootEClass, DocumentRoot.class, "DocumentRoot", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
@@ -253,6 +292,9 @@ public class MyModelPackageImpl extends EPackageImpl implements MyModelPackage {
 
 		initEClass(taskConfigEClass, TaskConfig.class, "TaskConfig", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getTaskConfig_Parameters(), this.getParameter(), null, "parameters", null, 0, -1, TaskConfig.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(myEventDefinitionEClass, MyEventDefinition.class, "MyEventDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getMyEventDefinition_Value(), ecorePackage.getEString(), "value", null, 0, 1, MyEventDefinition.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		// Create resource
 		createResource(eNS_URI);

@@ -4,12 +4,12 @@
   <parent>
     <artifactId>org.eclipse.bpmn2.modeler.parent</artifactId>
     <groupId>org.eclipse.bpmn2.modeler</groupId>
-    <version>0.2.5-SNAPSHOT</version>
+    <version>0.2.6-SNAPSHOT</version>
   </parent>
 
   <groupId>org.eclipse.bpmn2.modeler</groupId>
   <artifactId>org.eclipse.bpmn2.modeler.jboss.runtime.feature</artifactId>
-  <version>0.2.5-SNAPSHOT</version>
+  <version>0.2.6-SNAPSHOT</version>
   <packaging>eclipse-feature</packaging>
   <name>JBoss jBPM5 Runtime Extension Feature</name>
   <description>BPMN2 Modeler Runtime Extension plug-in for JBoss jBPM5</description>

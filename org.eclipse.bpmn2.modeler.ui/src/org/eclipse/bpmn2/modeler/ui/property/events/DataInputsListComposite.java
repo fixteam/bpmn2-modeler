@@ -49,9 +49,8 @@ public class DataInputsListComposite extends DefaultListComposite {
 	protected EObject addListItem(EObject object, EStructuralFeature feature) {
 		InputSet inputSet = throwEvent.getInputSet();
 		if (inputSet==null) {
-			inputSet = FACTORY.createInputSet();
+			inputSet = createModelObject(InputSet.class);
 			throwEvent.setInputSet(inputSet);
-			ModelUtil.setID(inputSet);
 		}
 		// generate a unique parameter name
 		String base = "inParam";
@@ -76,10 +75,9 @@ public class DataInputsListComposite extends DefaultListComposite {
 		inputSet.getDataInputRefs().add(param);
 		
 		// create a DataInputAssociation
-		DataInputAssociation inputAssociation = FACTORY.createDataInputAssociation();
+		DataInputAssociation inputAssociation = createModelObject(DataInputAssociation.class);
 		throwEvent.getDataInputAssociation().add(inputAssociation);
 		inputAssociation.setTargetRef((DataInput) param);
-		ModelUtil.setID(inputAssociation);
 		return param;
 	}
 

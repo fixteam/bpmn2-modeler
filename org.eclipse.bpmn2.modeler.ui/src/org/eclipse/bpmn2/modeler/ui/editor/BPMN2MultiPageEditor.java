@@ -397,7 +397,9 @@ public class BPMN2MultiPageEditor extends MultiPageEditorPart implements IGotoMa
 		 * It helps to see whether a particular editor allows 'save as' feature 
 		 */
 		IEditorPart activeEditor = getActiveEditor();
-		return activeEditor.isSaveAsAllowed();
+		if (activeEditor!=null)
+			return activeEditor.isSaveAsAllowed();
+		return false;
 	}
 
 	@Override

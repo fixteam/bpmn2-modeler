@@ -2,16 +2,16 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: BPMN2 Editor Runtime extensions for JBoss jBPM5
 Bundle-SymbolicName: org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5;singleton:=true
-Bundle-Version: 0.2.5.qualifier
+Bundle-Version: 0.2.6.qualifier
 Bundle-Activator: org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.Activator
 Bundle-Vendor: Eclipse.org
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.ui.ide,
- org.eclipse.graphiti;bundle-version="[0.8.2,0.10.0]",
- org.eclipse.graphiti.ui;bundle-version="[0.8.2,0.10.0]",
+ org.eclipse.graphiti;bundle-version="0.9.2",
+ org.eclipse.graphiti.ui;bundle-version="0.9.2",
  org.eclipse.bpmn2.modeler.core,
- org.eclipse.emf.transaction;bundle-version="1.4.0",
- org.eclipse.ui.views.properties.tabbed;bundle-version="3.5.100",
+ org.eclipse.emf.transaction,
+ org.eclipse.ui.views.properties.tabbed,
  org.eclipse.gef,
  org.eclipse.bpmn2.edit,
  org.eclipse.bpmn2.editor,

@@ -12,6 +12,7 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.ui.features.activity.subprocess;
 
+import org.eclipse.bpmn2.Activity;
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.CallActivity;
 import org.eclipse.bpmn2.CallChoreography;
@@ -23,14 +24,21 @@ import org.eclipse.bpmn2.di.BPMNShape;
 import org.eclipse.bpmn2.modeler.core.di.DIUtils;
 import org.eclipse.bpmn2.modeler.core.features.AbstractUpdateBaseElementFeature;
 import org.eclipse.bpmn2.modeler.core.features.MultiUpdateFeature;
+import org.eclipse.bpmn2.modeler.core.features.event.AbstractBoundaryEventOperation;
+import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
+import org.eclipse.bpmn2.modeler.ui.features.AbstractDefaultDeleteFeature;
 import org.eclipse.bpmn2.modeler.ui.features.activity.AbstractActivityFeatureContainer;
+import org.eclipse.graphiti.features.IDeleteFeature;
 import org.eclipse.graphiti.features.IDirectEditingFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.ILayoutFeature;
 import org.eclipse.graphiti.features.IResizeShapeFeature;
 import org.eclipse.graphiti.features.IUpdateFeature;
+import org.eclipse.graphiti.features.context.IDeleteContext;
 import org.eclipse.graphiti.features.context.IUpdateContext;
+import org.eclipse.graphiti.features.context.impl.DeleteContext;
 import org.eclipse.graphiti.features.custom.ICustomFeature;
+import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 
 public abstract class AbstractExpandableActivityFeatureContainer extends AbstractActivityFeatureContainer {
 
@@ -67,7 +75,12 @@ public abstract class AbstractExpandableActivityFeatureContainer extends Abstrac
 	public IResizeShapeFeature getResizeFeature(IFeatureProvider fp) {
 		return new ResizeExpandableActivityFeature(fp);
 	}
-	
+
+	@Override
+	public IDeleteFeature getDeleteFeature(IFeatureProvider fp) {
+		return new DeleteExpandableActivityFeature(fp);
+	}
+
 	@Override
 	public ICustomFeature[] getCustomFeatures(IFeatureProvider fp) {
 		ICustomFeature[] superFeatures = super.getCustomFeatures(fp);

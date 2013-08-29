@@ -2,6 +2,9 @@
  */
 package org.eclipse.bpmn2.modeler.examples.customtask.MyModel.util;
 
+import org.eclipse.bpmn2.BaseElement;
+import org.eclipse.bpmn2.EventDefinition;
+import org.eclipse.bpmn2.RootElement;
 import org.eclipse.bpmn2.modeler.examples.customtask.MyModel.*;
 
 import org.eclipse.emf.ecore.EObject;
@@ -84,6 +87,15 @@ public class MyModelSwitch<T> extends Switch<T> {
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
+			case MyModelPackage.MY_EVENT_DEFINITION: {
+				MyEventDefinition myEventDefinition = (MyEventDefinition)theEObject;
+				T result = caseMyEventDefinition(myEventDefinition);
+				if (result == null) result = caseEventDefinition(myEventDefinition);
+				if (result == null) result = caseRootElement(myEventDefinition);
+				if (result == null) result = caseBaseElement(myEventDefinition);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
 			default: return defaultCase(theEObject);
 		}
 	}
@@ -130,6 +142,66 @@ public class MyModelSwitch<T> extends Switch<T> {
 	 * @generated
 	 */
 	public T caseTaskConfig(TaskConfig object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>My Event Definition</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>My Event Definition</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseMyEventDefinition(MyEventDefinition object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Base Element</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Base Element</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseBaseElement(BaseElement object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Root Element</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Root Element</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseRootElement(RootElement object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Event Definition</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Event Definition</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseEventDefinition(EventDefinition object) {
 		return null;
 	}
 

@@ -30,6 +30,7 @@ import org.eclipse.bpmn2.ComplexGateway;
 import org.eclipse.bpmn2.ConditionalEventDefinition;
 import org.eclipse.bpmn2.Conversation;
 import org.eclipse.bpmn2.ConversationLink;
+import org.eclipse.bpmn2.DataAssociation;
 import org.eclipse.bpmn2.DataInput;
 import org.eclipse.bpmn2.DataInputAssociation;
 import org.eclipse.bpmn2.DataObject;
@@ -74,7 +75,9 @@ import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2CreateFeature;
 import org.eclipse.bpmn2.modeler.core.features.BPMNDiagramFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.features.ConnectionFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.features.ContextConstants;
+import org.eclipse.bpmn2.modeler.core.features.DefaultCopyBPMNElementFeature;
 import org.eclipse.bpmn2.modeler.core.features.DefaultDeleteBPMNShapeFeature;
+import org.eclipse.bpmn2.modeler.core.features.DefaultPasteBPMNElementFeature;
 import org.eclipse.bpmn2.modeler.core.features.DefaultRemoveBPMNShapeFeature;
 import org.eclipse.bpmn2.modeler.core.features.FeatureContainer;
 import org.eclipse.bpmn2.modeler.core.features.activity.task.ICustomTaskFeatureContainer;
@@ -132,8 +135,7 @@ import org.eclipse.bpmn2.modeler.ui.features.event.definitions.SignalEventDefini
 import org.eclipse.bpmn2.modeler.ui.features.event.definitions.TerminateEventDefinitionFeatureContainer;
 import org.eclipse.bpmn2.modeler.ui.features.event.definitions.TimerEventDefinitionContainer;
 import org.eclipse.bpmn2.modeler.ui.features.flow.AssociationFeatureContainer;
-import org.eclipse.bpmn2.modeler.ui.features.flow.DataInputAssociationFeatureContainer;
-import org.eclipse.bpmn2.modeler.ui.features.flow.DataOutputAssociationFeatureContainer;
+import org.eclipse.bpmn2.modeler.ui.features.flow.DataAssociationFeatureContainer;
 import org.eclipse.bpmn2.modeler.ui.features.flow.MessageFlowFeatureContainer;
 import org.eclipse.bpmn2.modeler.ui.features.flow.SequenceFlowFeatureContainer;
 import org.eclipse.bpmn2.modeler.ui.features.gateway.ComplexGatewayFeatureContainer;
@@ -147,6 +149,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.graphiti.dt.IDiagramTypeProvider;
 import org.eclipse.graphiti.features.IAddBendpointFeature;
 import org.eclipse.graphiti.features.IAddFeature;
+import org.eclipse.graphiti.features.ICopyFeature;
 import org.eclipse.graphiti.features.ICreateConnectionFeature;
 import org.eclipse.graphiti.features.ICreateFeature;
 import org.eclipse.graphiti.features.IDeleteFeature;
@@ -155,6 +158,7 @@ import org.eclipse.graphiti.features.IFeature;
 import org.eclipse.graphiti.features.ILayoutFeature;
 import org.eclipse.graphiti.features.IMoveBendpointFeature;
 import org.eclipse.graphiti.features.IMoveShapeFeature;
+import org.eclipse.graphiti.features.IPasteFeature;
 import org.eclipse.graphiti.features.IReconnectionFeature;
 import org.eclipse.graphiti.features.IRemoveBendpointFeature;
 import org.eclipse.graphiti.features.IRemoveFeature;
@@ -163,12 +167,14 @@ import org.eclipse.graphiti.features.IUpdateFeature;
 import org.eclipse.graphiti.features.context.IAddBendpointContext;
 import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.features.context.IContext;
+import org.eclipse.graphiti.features.context.ICopyContext;
 import org.eclipse.graphiti.features.context.ICustomContext;
 import org.eclipse.graphiti.features.context.IDeleteContext;
 import org.eclipse.graphiti.features.context.IDirectEditingContext;
 import org.eclipse.graphiti.features.context.ILayoutContext;
 import org.eclipse.graphiti.features.context.IMoveBendpointContext;
 import org.eclipse.graphiti.features.context.IMoveShapeContext;
+import org.eclipse.graphiti.features.context.IPasteContext;
 import org.eclipse.graphiti.features.context.IPictogramElementContext;
 import org.eclipse.graphiti.features.context.IReconnectionContext;
 import org.eclipse.graphiti.features.context.IRemoveBendpointContext;
@@ -195,6 +201,8 @@ public class BPMNFeatureProvider extends DefaultFeatureProvider {
 	private ICreateFeature[] createFeatures;
 	private ICreateConnectionFeature[] createConnectionFeatures;
 	private HashMap<Class,IFeature> mapBusinessObjectClassToCreateFeature = new HashMap<Class,IFeature>();
+	private DefaultCopyBPMNElementFeature defaultCopyFeature = new DefaultCopyBPMNElementFeature(this);
+	private DefaultPasteBPMNElementFeature defaultPasteFeature = new DefaultPasteBPMNElementFeature(this);
 
 	public BPMNFeatureProvider(IDiagramTypeProvider dtp) {
 		super(dtp);
@@ -249,8 +257,7 @@ public class BPMNFeatureProvider extends DefaultFeatureProvider {
 		containers.put(Association.class,new AssociationFeatureContainer());
 		containers.put(Conversation.class,new ConversationFeatureContainer());
 		containers.put(ConversationLink.class,new ConversationLinkFeatureContainer());
-		containers.put(DataInputAssociation.class,new DataInputAssociationFeatureContainer());
-		containers.put(DataOutputAssociation.class,new DataOutputAssociationFeatureContainer());
+		containers.put(DataAssociation.class,new DataAssociationFeatureContainer());
 		containers.put(SubChoreography.class,new SubChoreographyFeatureContainer());
 		containers.put(CallChoreography.class,new CallChoreographyFeatureContainer());
 		containers.put(Participant.class,new ParticipantFeatureContainer());
@@ -643,5 +650,21 @@ public class BPMNFeatureProvider extends DefaultFeatureProvider {
 				}
 			}
 		}
+	}
+
+	@Override
+	public ICopyFeature getCopyFeature(ICopyContext context) {
+		// TODO: COPY-PASTE enable this once copy-paste functionality is working
+		if (defaultCopyFeature.canCopy(context))
+			return defaultCopyFeature;
+		return null;
+	}
+
+	@Override
+	public IPasteFeature getPasteFeature(IPasteContext context) {
+		// TODO: COPY-PASTE enable this once copy-paste functionality is working
+		if (defaultPasteFeature.canPaste(context))
+			return defaultPasteFeature;
+		return null;
 	}
 }
