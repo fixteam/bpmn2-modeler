@@ -199,7 +199,7 @@ public class FixFlowUiService extends UiService {
 
 				int imageFormat = saveAsImageDialog.getImageFormat();
 				image = createImage(im, 5);
-				/*operation = getSaveToFileOp(shell, filename, image);
+				operation = getSaveToFileOp(shell, filename, image);
 				
 				new ProgressMonitorDialog(shell).run(false, false, operation);
 				
@@ -215,7 +215,7 @@ public class FixFlowUiService extends UiService {
 		        catch (Exception e)   
 		        {   
 		            e.printStackTrace();   
-		        }   */
+		        }   
 				
 			} catch (Exception e) {
 				String message = "Cannot save image: "; //$NON-NLS-1$
