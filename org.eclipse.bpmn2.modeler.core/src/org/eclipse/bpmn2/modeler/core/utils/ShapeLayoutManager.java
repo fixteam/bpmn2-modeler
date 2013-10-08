@@ -3,7 +3,9 @@ package org.eclipse.bpmn2.modeler.core.utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.bpmn2.Activity;
 import org.eclipse.bpmn2.BaseElement;
+import org.eclipse.bpmn2.BoundaryEvent;
 import org.eclipse.bpmn2.FlowNode;
 import org.eclipse.bpmn2.Lane;
 import org.eclipse.bpmn2.SequenceFlow;
@@ -239,8 +241,38 @@ public class ShapeLayoutManager {
 		boolean intersects;
 		do {
 			intersects = false;
-			if (!moveShape(container, child, x, y))
-				break;
+			BaseElement be = BusinessObjectUtil.getFirstBaseElement(child);
+			if (be instanceof BoundaryEvent) {
+				// special handling for Boundary Events
+				Activity activity = ((BoundaryEvent)be).getAttachedToRef();
+				ContainerShape activityShape = null;
+				for (ContainerShape s : allChildren) {
+					if (s!=child) {
+						if (activity == BusinessObjectUtil.getFirstBaseElement(s)) {
+							activityShape = s;
+							break;
+						}
+					}
+				}
+				if (activityShape!=null) {
+					ILocation activityLoc = Graphiti.getPeLayoutService().getLocationRelativeToDiagram(activityShape);
+					IDimension activitySize = GraphicsUtil.calculateSize(activityShape);
+					IDimension eventSize = GraphicsUtil.calculateSize(child);
+					int index = activity.getBoundaryEventRefs().indexOf(be);
+					int count = activity.getBoundaryEventRefs().size();
+					int deltaX = activitySize.getWidth() / 2;
+					if (count>1) {
+						deltaX = index * activitySize.getWidth() / (count-1);
+					}
+					moveShape(activityShape, child, deltaX - eventSize.getWidth()/2, activitySize.getHeight() - eventSize.getHeight()/2);
+					y = 0;
+					break;
+				}
+			}
+			else {
+				if (!moveShape(container, child, x, y))
+					break;
+			}
 			for (ContainerShape c : allChildren) {
 				if (c!=child && GraphicsUtil.intersects(child, c)) {
 					intersects = true;
@@ -260,16 +292,18 @@ public class ShapeLayoutManager {
 		int height = 0;
 		
 		for (ContainerShape child : children) {
-			IDimension size = GraphicsUtil.calculateSize(child);
-			ILocation location = layoutService.getLocationRelativeToDiagram(child);
-			int x = location.getX() - containerLocation.getX();
-			int y = location.getY() - containerLocation.getY();
-			int w = x + size.getWidth();
-			int h = y + size.getHeight();
-			if (w>width)
-				width = w;
-			if (h>height)
-				height = h;
+			if (BusinessObjectUtil.getFirstBaseElement(child)!=null) {
+				IDimension size = GraphicsUtil.calculateSize(child);
+				ILocation location = layoutService.getLocationRelativeToDiagram(child);
+				int x = location.getX() - containerLocation.getX();
+				int y = location.getY() - containerLocation.getY();
+				int w = x + size.getWidth();
+				int h = y + size.getHeight();
+				if (w>width)
+					width = w;
+				if (h>height)
+					height = h;
+			}
 		}
 		if ( BusinessObjectUtil.getFirstBaseElement(container) instanceof Lane) {
 			if (width < 800)
@@ -277,8 +311,9 @@ public class ShapeLayoutManager {
 			if (height < 100)
 				height = 100;
 		}
-			
-		return resizeShape(container, width + HORZ_PADDING, height + VERT_PADDING);
+		if (width!=0 && height!=0)
+			return resizeShape(container, width + HORZ_PADDING, height + VERT_PADDING);
+		return false;
 	}
 	
 	private boolean resizeShape(ContainerShape container, int width, int height) {
@@ -390,6 +425,6 @@ public class ShapeLayoutManager {
 	}
 	
 	private boolean isChildShape(PictogramElement pe) {
-		return pe instanceof ContainerShape && !GraphicsUtil.isLabelShape((Shape)pe);
+		return pe instanceof ContainerShape && !FeatureSupport.isLabelShape((Shape)pe);
 	}
 }

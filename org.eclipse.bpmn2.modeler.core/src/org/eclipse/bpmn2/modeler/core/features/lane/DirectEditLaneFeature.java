@@ -50,9 +50,9 @@ public class DirectEditLaneFeature extends AbstractDirectEditingFeature {
 	@Override
 	public String checkValueValid(String value, IDirectEditingContext context) {
 		if (value.length() < 1) {
-			return "Please enter any text as Pool name.";
+			return "Please enter a descriptive name.";
 		} else if (value.contains("\n")) {
-			return "Line breakes are not allowed in Pool names.";
+			return "Line breakes are not allowed.";
 		}
 		return null;
 	}
@@ -64,6 +64,8 @@ public class DirectEditLaneFeature extends AbstractDirectEditingFeature {
 		GraphicsAlgorithm ga = context.getGraphicsAlgorithm();
 		return bo instanceof Lane && ga instanceof Text;
 	}
-	
-	
+
+	public boolean stretchFieldToFitText() {
+		return true;
+	}
 }

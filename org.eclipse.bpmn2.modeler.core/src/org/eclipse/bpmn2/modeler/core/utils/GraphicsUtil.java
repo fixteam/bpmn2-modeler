@@ -24,8 +24,10 @@ import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.Event;
 import org.eclipse.bpmn2.EventDefinition;
 import org.eclipse.bpmn2.Gateway;
+import org.eclipse.bpmn2.di.BPMNPlane;
+import org.eclipse.bpmn2.di.BPMNShape;
+import org.eclipse.bpmn2.modeler.core.di.DIUtils;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil.AnchorLocation;
-import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil.BoundaryAnchor;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.graphiti.datatypes.IDimension;
@@ -1250,6 +1252,15 @@ public class GraphicsUtil {
 		return new Size(TASK_DEFAULT_WIDTH,TASK_DEFAULT_HEIGHT);
 	}
 	
+	public static boolean contains(Shape parent, Shape child) {
+		IDimension size = calculateSize(child);
+		ILocation loc = Graphiti.getLayoutService().getLocationRelativeToDiagram(child);
+		return contains(parent, createPoint(loc.getX(), loc.getY()))
+				&& contains(parent, createPoint(loc.getX() + size.getWidth(), loc.getY()))
+				&& contains(parent, createPoint(loc.getX() + size.getWidth(), loc.getY() + size.getHeight()))
+				&& contains(parent, createPoint(loc.getX(), loc.getY() + size.getHeight()));
+	}
+	
 	public static boolean contains(Shape shape, Point point) {
 		IDimension size = calculateSize(shape);
 		ILocation loc = Graphiti.getLayoutService().getLocationRelativeToDiagram(shape);
@@ -1605,10 +1616,6 @@ public class GraphicsUtil {
 		return dim;
 	}
 	
-	public static boolean isLabelShape(Shape shape) {
-		return Graphiti.getPeService().getPropertyValue(shape, LABEL_PROPERTY) != null;
-	}
-	
 	public static boolean debug = false;
 
 	public static void dump(String label, List<ContainerShape> shapes) {
@@ -1721,4 +1728,23 @@ public class GraphicsUtil {
 		return result;
 	}
 
+	public static void sendToFront(Shape shape) {
+		peService.sendToFront(shape);
+		BPMNShape bpmnShape = BusinessObjectUtil.getFirstElementOfType(shape, BPMNShape.class);
+		if (bpmnShape!=null) {
+			BPMNPlane plane = (BPMNPlane)bpmnShape.eContainer();
+			plane.getPlaneElement().remove(bpmnShape);
+			plane.getPlaneElement().add(bpmnShape);
+		}
+	}
+
+	public static void sendToBack(Shape shape) {
+		peService.sendToBack(shape);
+		BPMNShape bpmnShape = BusinessObjectUtil.getFirstElementOfType(shape, BPMNShape.class);
+		if (bpmnShape!=null) {
+			BPMNPlane plane = (BPMNPlane)bpmnShape.eContainer();
+			plane.getPlaneElement().remove(bpmnShape);
+			plane.getPlaneElement().add(0,bpmnShape);
+		}
+	}
 }

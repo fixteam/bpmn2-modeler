@@ -20,13 +20,14 @@ import org.eclipse.bpmn2.FlowNode;
 import org.eclipse.bpmn2.Lane;
 import org.eclipse.bpmn2.LaneSet;
 import org.eclipse.bpmn2.Participant;
-import org.eclipse.bpmn2.SubProcess;
 import org.eclipse.bpmn2.Process;
+import org.eclipse.bpmn2.SubProcess;
 import org.eclipse.bpmn2.di.BPMNShape;
 import org.eclipse.bpmn2.modeler.core.di.DIImport;
 import org.eclipse.bpmn2.modeler.core.features.AbstractAddBPMNShapeFeature;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
+import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
 import org.eclipse.dd.dc.Bounds;
 import org.eclipse.emf.ecore.EObject;
@@ -57,12 +58,15 @@ public class AddLaneFeature extends AbstractAddBPMNShapeFeature<Lane> {
 
 	@Override
 	public boolean canAdd(IAddContext context) {
-		boolean isLane = getBusinessObject(context) instanceof Lane;
-		boolean intoDiagram = context.getTargetContainer().equals(getDiagram());
+		// NOTE: This is slightly different from FeatureSupport.isValidFlowElementTarget()
+		// because a Lane can be added to a Lane that is not a top-level Lane. This is not
+		// the case for Activities, Events and Gateways.
+		boolean intoDiagram = context.getTargetContainer() instanceof Diagram;
 		boolean intoLane = FeatureSupport.isTargetLane(context);
 		boolean intoParticipant = FeatureSupport.isTargetParticipant(context);
-		boolean intoSubprocess = FeatureSupport.isTargetSubProcess(context);
-		return isLane && (intoDiagram || intoLane || intoParticipant || intoSubprocess);
+		boolean intoFlowElementContainer = FeatureSupport.isTargetFlowElementsContainer(context);
+		boolean intoGroup = FeatureSupport.isTargetGroup(context);
+		return (intoDiagram || intoLane || intoParticipant || intoFlowElementContainer) && !intoGroup;
 	}
 
 	@Override
@@ -78,6 +82,11 @@ public class AddLaneFeature extends AbstractAddBPMNShapeFeature<Lane> {
 		StyleUtil.applyStyle(rect, businessObject);
 		
 		boolean isImport = context.getProperty(DIImport.IMPORT_PROPERTY) != null;
+		
+		int width = this.getWidth(context);
+		int height = this.getHeight(context);
+		
+		gaService.setLocationAndSize(rect, context.getX(), context.getY(), width, height); ///
 		BPMNShape bpmnShape = createDIShape(containerShape, businessObject, !isImport);
 		
 		if (FeatureSupport.isTargetLane(context)) {
@@ -108,14 +117,9 @@ public class AddLaneFeature extends AbstractAddBPMNShapeFeature<Lane> {
 		boolean horz = bpmnShape.isIsHorizontal();
 		FeatureSupport.setHorizontal(containerShape, horz);
 		
-		int width = this.getWidth(context);
-		int height = this.getHeight(context);
-		
-		gaService.setLocationAndSize(rect, context.getX(), context.getY(), width, height); ///
-		
 		if (FeatureSupport.isTargetLane(context) || FeatureSupport.isTargetParticipant(context)) {
 			for (Shape s : getFlowNodeShapes(context, businessObject)) {
-				Graphiti.getPeService().sendToFront(s);
+				GraphicsUtil.sendToFront(s);
 				s.setContainer(containerShape);
 				
 				for (EObject linkedObj : s.getLink().getBusinessObjects()) {
@@ -145,11 +149,10 @@ public class AddLaneFeature extends AbstractAddBPMNShapeFeature<Lane> {
 				&& (FeatureSupport.isTargetLane(context) || FeatureSupport.isTargetParticipant(context))) {
 			FeatureSupport.redraw(context.getTargetContainer());
 		}
-		
-		peService.sendToBack(containerShape);
-		if (context.getTargetContainer().getContainer() != null) { // only children may be sent back
-			peService.sendToBack(context.getTargetContainer());
-		}
+
+//		if (context.getTargetContainer().getContainer() != null) { // only children may be sent back
+//			peService.sendToBack(context.getTargetContainer());
+//		}
 
 		// hook for subclasses to inject extra code
 		((AddContext)context).setWidth(width);
@@ -158,6 +161,7 @@ public class AddLaneFeature extends AbstractAddBPMNShapeFeature<Lane> {
 
 		peCreateService.createChopboxAnchor(containerShape);
 		AnchorUtil.addFixedPointAnchors(containerShape, rect);
+		layoutPictogramElement(containerShape);
 		
 		return containerShape;
 	}
@@ -226,7 +230,7 @@ public class AddLaneFeature extends AbstractAddBPMNShapeFeature<Lane> {
 	protected int getHeight(IAddContext context) {
 		if (context.getProperty(DIImport.IMPORT_PROPERTY) == null){
 			if (context.getTargetContainer() instanceof Diagram) {
-				return getHeight();
+				return super.getHeight(context);
 			}
 			/*int height = context.getTargetContainer().getGraphicsAlgorithm().getHeight();
 			
@@ -243,7 +247,7 @@ public class AddLaneFeature extends AbstractAddBPMNShapeFeature<Lane> {
 	public int getWidth(IAddContext context) {
 		if (context.getProperty(DIImport.IMPORT_PROPERTY) == null){
 			if (context.getTargetContainer() instanceof Diagram) {
-				return getWidth();
+				return super.getWidth(context);
 			}
 			/*int width = context.getTargetContainer().getGraphicsAlgorithm().getWidth();
 			
