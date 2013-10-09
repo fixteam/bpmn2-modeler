@@ -14,7 +14,6 @@ package org.eclipse.bpmn2.modeler.ui.features.lane;
 
 import java.io.IOException;
 
-import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.Lane;
 import org.eclipse.bpmn2.modeler.core.Activator;
@@ -27,6 +26,7 @@ import org.eclipse.bpmn2.modeler.ui.ImageProvider;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.ICreateContext;
+import org.eclipse.graphiti.mm.pictograms.Diagram;
 
 public class CreateLaneFeature extends AbstractBpmn2CreateFeature<Lane> {
 
@@ -38,11 +38,15 @@ public class CreateLaneFeature extends AbstractBpmn2CreateFeature<Lane> {
 
 	@Override
 	public boolean canCreate(ICreateContext context) {
-		boolean intoDiagram = context.getTargetContainer().equals(getDiagram());
+		// NOTE: This is slightly different from FeatureSupport.isValidFlowElementTarget()
+		// because a Lane can be added to a Lane that is not a top-level Lane. This is not
+		// the case for Activities, Events and Gateways.
+		boolean intoDiagram = context.getTargetContainer() instanceof Diagram;
 		boolean intoLane = FeatureSupport.isTargetLane(context);
 		boolean intoParticipant = FeatureSupport.isTargetParticipant(context);
-		boolean intoSubProcess = FeatureSupport.isTargetSubProcess(context);
-		return intoDiagram || intoLane || intoParticipant || intoSubProcess;
+		boolean intoFlowElementContainer = FeatureSupport.isTargetFlowElementsContainer(context);
+		boolean intoGroup = FeatureSupport.isTargetGroup(context);
+		return (intoDiagram || intoLane || intoParticipant || intoFlowElementContainer) && !intoGroup;
 	}
 
 	@Override

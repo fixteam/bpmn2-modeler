@@ -24,8 +24,10 @@ import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.Event;
 import org.eclipse.bpmn2.EventDefinition;
 import org.eclipse.bpmn2.Gateway;
+import org.eclipse.bpmn2.di.BPMNPlane;
+import org.eclipse.bpmn2.di.BPMNShape;
+import org.eclipse.bpmn2.modeler.core.di.DIUtils;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil.AnchorLocation;
-import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil.BoundaryAnchor;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.graphiti.datatypes.IDimension;
@@ -73,16 +75,16 @@ public class GraphicsUtil {
 	public static final int SHAPE_PADDING = 6;
 	public static final int TEXT_PADDING = 5;
 	public static final String LABEL_PROPERTY = "label";
-	
+
 	// TODO: Determine all cases to make a line break! The following implementation are the easy once.
 	private static final String LINE_BREAK = "\n";
 
 	public static class SizeTemplate{
-		
+
 		private Size eventSize = new Size(GraphicsUtil.EVENT_SIZE, GraphicsUtil.EVENT_SIZE);
 		private Size gatewaySize = new Size(GraphicsUtil.GATEWAY_RADIUS*2, GraphicsUtil.GATEWAY_RADIUS*2);
 		private Size activitySize = new Size(GraphicsUtil.TASK_DEFAULT_WIDTH, GraphicsUtil.TASK_DEFAULT_HEIGHT);
-		
+
 		public Size getEventSize() {
 			return eventSize;
 		}
@@ -102,20 +104,20 @@ public class GraphicsUtil {
 			this.activitySize = activitySize;
 		}
 	}
-	
+
 	public static class Size {
 		private int width;
 		private int height;
-		
+
 		public Size(int width, int height) {
 			this.width = width;
 			this.height = height;
 		}
-		
+
 		public int getWidth() {
 			return this.width;
 		}
-		
+
 		public int getHeight() {
 			return this.height;
 		}
@@ -168,7 +170,7 @@ public class GraphicsUtil {
 	public static class LineSegment {
 		private Point start;
 		private Point end;
-		
+
 		public LineSegment() {
 			this(0,0,0,0);
 		}
@@ -232,13 +234,13 @@ public class GraphicsUtil {
 		public double getDistanceToEnd(Point p) {
 	        return Math.hypot(end.getX()-p.getX(), end.getY()-p.getY());
 		}
-		
+
 		public String toString() {
 			return "[" + start.getX() + "," + start.getY() +"]" +
 					" [" + end.getX() + "," + end.getY() +"]";
 		}
 	}
-	
+
 	/* GATEWAY */
 
 	private static final String DELETABLE_PROPERTY = "deletable";
@@ -249,7 +251,7 @@ public class GraphicsUtil {
 	private static int generateRatioPointValue(float originalPointValue, float ratioValue) {
 		return Math.round(Float.valueOf(originalPointValue * ratioValue));
 	}
-	
+
 	// TODO: Think about line break in the ui...
 	public static int getLabelHeight(AbstractText text) {
 		if (text.getValue() != null && !text.getValue().isEmpty()) {
@@ -274,7 +276,7 @@ public class GraphicsUtil {
 		}
 		return 0;
 	}
-	
+
 	public static void alignWithShape(AbstractText text, ContainerShape labelContainer, 
 			int width,
 			int height,
@@ -284,10 +286,10 @@ public class GraphicsUtil {
 			int preShapeY){
 		final int textHeight = getLabelHeight(text);
 		final int textWidth = getLabelWidth(text);
-		
+
 		int currentLabelX = labelContainer.getGraphicsAlgorithm().getX();
 		int currentLabelY = labelContainer.getGraphicsAlgorithm().getY();
-		
+
 		int newShapeX = shapeX - ((textWidth + SHAPE_PADDING) / 2) + width / 2;
 		int newShapeY = shapeY + height + 2;
 
@@ -295,9 +297,9 @@ public class GraphicsUtil {
 			newShapeX = currentLabelX + (shapeX - preShapeX);
 			newShapeY = currentLabelY + (shapeY - preShapeY);
 		}
-		
+
 		IGaService gaService = Graphiti.getGaService();
-		
+
 		gaService.setLocationAndSize(labelContainer.getGraphicsAlgorithm(), 
 				newShapeX , newShapeY ,
 				textWidth + SHAPE_PADDING, textHeight + SHAPE_PADDING);
@@ -305,19 +307,19 @@ public class GraphicsUtil {
 				0, 0,
 				textWidth + TEXT_PADDING, textHeight + TEXT_PADDING);
 	}
-	
+
 	private static float calculateRatio(float x, float y) {
 		return x / y;
 	}
-	
+
 	private static int getShapeHeight(Shape shape) {
 		return shape.getGraphicsAlgorithm().getHeight();
 	}
-	
+
 	private static int getShapeWidth(Shape shape) {
 		return shape.getGraphicsAlgorithm().getWidth();
 	}
-	
+
 	public static Shape getContainedShape(ContainerShape container, String propertyKey) {
 		IPeService peService = Graphiti.getPeService();
 		Iterator<Shape> iterator = peService.getAllContainedShapes(container).iterator();
@@ -330,7 +332,7 @@ public class GraphicsUtil {
 		}
 		return null;
 	}
-	
+
 	public static List<PictogramElement> getContainedPictogramElements(PictogramElement container, String propertyKey) {
 		List<PictogramElement> pictogramElements = new ArrayList<PictogramElement>();
 		IPeService peService = Graphiti.getPeService();
@@ -357,14 +359,14 @@ public class GraphicsUtil {
 
 	public static Polygon createGatewayPentagon(ContainerShape container) {
 		Shape pentagonShape = peService.createShape(container, false);
-		
+
 		final int gatewayHeight = getShapeHeight(container);
 		final int gatewayWidth = getShapeWidth(container);
-		
+
 		final float heightRatio = calculateRatio(gatewayHeight, Float.valueOf(GATEWAY_RADIUS * 2));
 		final float widthRatio = calculateRatio(gatewayWidth, Float.valueOf(GATEWAY_RADIUS * 2));
-		
-		
+
+
 //		Polygon pentagon = gaService.createPolygon(pentagonShape,
 //				new int[] { GATEWAY_RADIUS, 18,
 //						GATEWAY_RADIUS + 8, GATEWAY_RADIUS - 2,
@@ -377,7 +379,7 @@ public class GraphicsUtil {
 							gatewayWidth / 2 + generateRatioPointValue(5, widthRatio), gatewayHeight / 2 + generateRatioPointValue(7, heightRatio),
 							gatewayWidth / 2 - generateRatioPointValue(5, widthRatio), gatewayHeight / 2 + generateRatioPointValue(7, heightRatio),
 							gatewayWidth / 2 - generateRatioPointValue(8, widthRatio), gatewayHeight / 2 - generateRatioPointValue(2, heightRatio) });
-							
+
 		peService.setPropertyValue(pentagonShape, DELETABLE_PROPERTY, "true");
 		return pentagon;
 	}
@@ -385,16 +387,16 @@ public class GraphicsUtil {
 	public static Ellipse createGatewayInnerCircle(Ellipse outer) {
 		final int gatewayHeight = outer.getHeight();
 		final int gatewayWidth = outer.getWidth();
-		
+
 		final float heightRatio = calculateRatio(gatewayHeight, Float.valueOf(GATEWAY_RADIUS * 2));
 		final float widthRatio = calculateRatio(gatewayWidth, Float.valueOf(GATEWAY_RADIUS * 2));
-		
+
 		Float x = (5 * widthRatio) * new Float(0.8);
 		Float y = (5 * heightRatio) * new Float(0.8);
 
 		Float width = gatewayHeight * new Float(0.8);
 		Float height = gatewayWidth * new Float(0.8);
-		
+
 //		gaService.setLocationAndSize(ellipse, 14, 14, 23, 23);
 		Ellipse ellipse = gaService.createEllipse(outer);
 		gaService.setLocationAndSize(ellipse,
@@ -409,10 +411,10 @@ public class GraphicsUtil {
 	public static Ellipse createGatewayOuterCircle(ContainerShape container) {
 		Shape ellipseShape = peService.createShape(container, false);
 		Ellipse ellipse = gaService.createEllipse(ellipseShape);
-		
+
 		final int gatewayHeight = getShapeHeight(container);
 		final int gatewayWidth = getShapeWidth(container);
-		
+
 		final float heightRatio = calculateRatio(gatewayHeight, Float.valueOf(GATEWAY_RADIUS * 2));
 		final float widthRatio = calculateRatio(gatewayWidth, Float.valueOf(GATEWAY_RADIUS * 2));
 //		gaService.setLocationAndSize(ellipse, 12, 12, 27, 27);
@@ -429,13 +431,13 @@ public class GraphicsUtil {
 
 	public static Cross createGatewayCross(ContainerShape container) {
 		Shape verticalShape = peService.createShape(container, false);
-		
+
 		final int gatewayHeight = getShapeHeight(container);
 		final int gatewayWidth = getShapeWidth(container);
-		
+
 		final float heightRatio = calculateRatio(gatewayHeight, Float.valueOf(GATEWAY_RADIUS * 2));
 		final float widthRatio = calculateRatio(gatewayWidth, Float.valueOf(GATEWAY_RADIUS * 2));
-		
+
 //		Polyline verticalLine = gaService.createPolyline(verticalShape, new int[] { 24, 7, 24, 43 });
 		Polyline verticalLine = gaService.createPolyline(verticalShape,
 				new int[] { generateRatioPointValue(24, widthRatio), generateRatioPointValue(7, heightRatio),
@@ -444,9 +446,9 @@ public class GraphicsUtil {
 		peService.setPropertyValue(verticalShape, DELETABLE_PROPERTY, "false");
 
 		Shape horizontalShape = peService.createShape(container, false);
-		
+
 //		Polyline horizontalLine = gaService.createPolyline(horizontalShape, new int[] { 7, 24, 43, 24 });
-		
+
 		Polyline horizontalLine = gaService.createPolyline(horizontalShape,
 				new int[] { generateRatioPointValue(7, widthRatio), generateRatioPointValue(24, heightRatio),
 							generateRatioPointValue(43, widthRatio), generateRatioPointValue(24, heightRatio) });
@@ -464,7 +466,7 @@ public class GraphicsUtil {
 
 		final int gatewayHeight = getShapeHeight(container);
 		final int gatewayWidth = getShapeWidth(container);
-		
+
 		final float heightRatio = calculateRatio(gatewayHeight, Float.valueOf(GATEWAY_RADIUS * 2));
 		final float widthRatio = calculateRatio(gatewayWidth, Float.valueOf(GATEWAY_RADIUS * 2));
 
@@ -477,7 +479,7 @@ public class GraphicsUtil {
 		peService.setPropertyValue(diagonalDescShape, DELETABLE_PROPERTY, "true");
 
 		Shape diagonalAscShape = service.createShape(container, false);
-		
+
 //		Polyline diagonalAsc = gaService.createPolyline(diagonalAscShape, new int[] { 37, 14, 13, 37 });
 		Polyline diagonalAsc = gaService.createPolyline(diagonalAscShape,
 				new int[] { generateRatioPointValue(37, widthRatio), generateRatioPointValue(14, heightRatio),
@@ -493,13 +495,13 @@ public class GraphicsUtil {
 
 	public static Polygon createEventGatewayParallelCross(ContainerShape container) {
 		Shape crossShape = peService.createShape(container, false);
-		
+
 		final int gatewayHeight = getShapeHeight(container);
 		final int gatewayWidth = getShapeWidth(container);
-		
+
 		final float heightRatio = calculateRatio(gatewayHeight, Float.valueOf(GATEWAY_RADIUS * 2));
 		final float widthRatio = calculateRatio(gatewayWidth, Float.valueOf(GATEWAY_RADIUS * 2));
-		
+
 		int n1x = generateRatioPointValue(14, widthRatio);
 		int n1y = generateRatioPointValue(14, heightRatio);
 		int n2x = generateRatioPointValue(22, widthRatio);
@@ -508,7 +510,7 @@ public class GraphicsUtil {
 		int n3y = generateRatioPointValue(28, heightRatio);
 		int n4x = generateRatioPointValue(36, widthRatio);
 		int n4y = generateRatioPointValue(36, heightRatio);
-		
+
 		Collection<Point> points = new ArrayList<Point>();
 		points.add(gaService.createPoint(n1x, n2y));
 		points.add(gaService.createPoint(n2x, n2y));
@@ -534,7 +536,7 @@ public class GraphicsUtil {
 
 		final int gatewayHeight = getShapeHeight(container);
 		final int gatewayWidth = getShapeWidth(container);
-		
+
 		final float heightRatio = calculateRatio(gatewayHeight, Float.valueOf(GATEWAY_RADIUS * 2));
 		final float widthRatio = calculateRatio(gatewayWidth, Float.valueOf(GATEWAY_RADIUS * 2));
 
@@ -598,26 +600,26 @@ public class GraphicsUtil {
 	public static Envelope createEventEnvelope(Shape shape) {
 		final int eventHeight = shape.getContainer().getGraphicsAlgorithm().getHeight();
 		final int eventWidth = shape.getContainer().getGraphicsAlgorithm().getWidth();
-		
+
 		final float heightRatio = calculateRatio(eventHeight, Float.valueOf(EVENT_SIZE));
 		final float widthRatio = calculateRatio(eventWidth, Float.valueOf(EVENT_SIZE));
-		
+
 //		return createEnvelope(shape, 9, 9, 18, 18);
 		return createEnvelope(shape,
 				generateRatioPointValue(9, widthRatio),
 				generateRatioPointValue(12, heightRatio),
 				generateRatioPointValue(18, widthRatio),
 				generateRatioPointValue(14, heightRatio));
-		
+
 	}
 
 	public static Polygon createEventPentagon(Shape shape) {
 		final int eventHeight = shape.getContainer().getGraphicsAlgorithm().getHeight();
 		final int eventWidth = shape.getContainer().getGraphicsAlgorithm().getWidth();
-		
+
 		final float heightRatio = calculateRatio(eventHeight, Float.valueOf(EVENT_SIZE));
 		final float widthRatio = calculateRatio(eventWidth, Float.valueOf(EVENT_SIZE));
-		
+
 //		return gaService.createPolygon(shape, new int[] { r, 7, r + 10, r - 4, r + 7, r + 10, r - 7, r + 10, r - 10,
 //		        r - 4 });
 		return gaService.createPolygon(shape,
@@ -631,16 +633,16 @@ public class GraphicsUtil {
 	public static Ellipse createIntermediateEventCircle(Ellipse ellipse) {
 		final int eventHeight = ellipse.getHeight();
 		final int eventWidth = ellipse.getWidth();
-		
+
 		final float heightRatio = calculateRatio(eventHeight, Float.valueOf(EVENT_SIZE));
 		final float widthRatio = calculateRatio(eventWidth, Float.valueOf(EVENT_SIZE));
-		
+
 		Float x = (5 * widthRatio) * new Float(0.8);
 		Float y = (5 * heightRatio) * new Float(0.8);
 
 		Float width = eventWidth * new Float(0.8);
 		Float height = eventHeight * new Float(0.8);
-		
+
 		Ellipse circle = gaService.createEllipse(ellipse);
 //		gaService.setLocationAndSize(circle, 
 //				generateRatioPointValue(4, widthRatio), generateRatioPointValue(4, heightRatio),
@@ -656,10 +658,10 @@ public class GraphicsUtil {
 	public static Image createEventImage(Shape shape, String imageId) {
 		final int eventHeight = shape.getContainer().getGraphicsAlgorithm().getHeight();
 		final int eventWidth = shape.getContainer().getGraphicsAlgorithm().getWidth();
-		
+
 		final float heightRatio = calculateRatio(eventHeight, Float.valueOf(EVENT_SIZE));
 		final float widthRatio = calculateRatio(eventWidth, Float.valueOf(EVENT_SIZE));
-		
+
 		Image image = gaService.createImage(shape, imageId);
 		gaService.setLocationAndSize(image, 
 				generateRatioPointValue(8, widthRatio), generateRatioPointValue(8, heightRatio),
@@ -670,10 +672,10 @@ public class GraphicsUtil {
 	public static Polygon createEventSignal(Shape shape) {
 		final int eventHeight = shape.getContainer().getGraphicsAlgorithm().getHeight();
 		final int eventWidth = shape.getContainer().getGraphicsAlgorithm().getWidth();
-		
+
 		final float heightRatio = calculateRatio(eventHeight, Float.valueOf(EVENT_SIZE));
 		final float widthRatio = calculateRatio(eventWidth, Float.valueOf(EVENT_SIZE));
-		
+
 		Polygon polygon = gaService.createPolygon(shape, 
 				new int[] { generateRatioPointValue(16, widthRatio), generateRatioPointValue(4, heightRatio),
 							generateRatioPointValue(28, widthRatio), generateRatioPointValue(26, heightRatio),
@@ -685,13 +687,13 @@ public class GraphicsUtil {
 	public static Polygon createEventEscalation(Shape shape) {
 		final int eventHeight = shape.getContainer().getGraphicsAlgorithm().getHeight();
 		final int eventWidth = shape.getContainer().getGraphicsAlgorithm().getWidth();
-		
+
 		final float heightRatio = calculateRatio(eventHeight, Float.valueOf(EVENT_SIZE));
 		final float widthRatio = calculateRatio(eventWidth, Float.valueOf(EVENT_SIZE));
-		
+
 		int heightRadius = eventHeight / 2;
 		int widthRadius = eventWidth / 2;
-		
+
 		int[] points = { widthRadius, generateRatioPointValue(8, heightRatio),
 						 widthRadius + generateRatioPointValue(8, widthRatio), heightRadius + generateRatioPointValue(9, heightRatio),
 						 widthRadius, heightRadius + generateRatioPointValue(2, heightRatio),
@@ -704,10 +706,10 @@ public class GraphicsUtil {
 	public static Compensation createEventCompensation(Shape shape) {
 		final int eventHeight = shape.getContainer().getGraphicsAlgorithm().getHeight();
 		final int eventWidth = shape.getContainer().getGraphicsAlgorithm().getWidth();
-		
+
 		final float heightRatio = calculateRatio(eventHeight, Float.valueOf(EVENT_SIZE));
 		final float widthRatio = calculateRatio(eventWidth, Float.valueOf(EVENT_SIZE));
-		
+
 		Rectangle rect = gaService.createInvisibleRectangle(shape);
 
 		int w = generateRatioPointValue(22, widthRatio);
@@ -732,10 +734,10 @@ public class GraphicsUtil {
 	public static Polygon createEventLink(Shape shape) {
 		final int eventHeight = shape.getContainer().getGraphicsAlgorithm().getHeight();
 		final int eventWidth = shape.getContainer().getGraphicsAlgorithm().getWidth();
-		
+
 		final float heightRatio = calculateRatio(eventHeight, Float.valueOf(EVENT_SIZE));
 		final float widthRatio = calculateRatio(eventWidth, Float.valueOf(EVENT_SIZE));
-		
+
 		int heightRadius = eventHeight / 2;
 
 		int[] points = { 
@@ -754,13 +756,13 @@ public class GraphicsUtil {
 	public static Polygon createEventError(Shape shape) {
 		final int eventHeight = shape.getContainer().getGraphicsAlgorithm().getHeight();
 		final int eventWidth = shape.getContainer().getGraphicsAlgorithm().getWidth();
-		
+
 		final float heightRatio = calculateRatio(eventHeight, Float.valueOf(EVENT_SIZE));
 		final float widthRatio = calculateRatio(eventWidth, Float.valueOf(EVENT_SIZE));
-		
+
 		int heightRadius = eventHeight / 2;
 		int widthRadius = eventWidth / 2;
-		
+
 		int[] points = { 
 				widthRadius + generateRatioPointValue(4, widthRatio), heightRadius,
 				widthRadius + generateRatioPointValue(10, widthRatio), heightRadius - generateRatioPointValue(10, heightRatio),
@@ -776,13 +778,13 @@ public class GraphicsUtil {
 	public static Polygon createEventCancel(Shape shape) {
 		final int eventHeight = shape.getContainer().getGraphicsAlgorithm().getHeight();
 		final int eventWidth = shape.getContainer().getGraphicsAlgorithm().getWidth();
-		
+
 		final float heightRatio = calculateRatio(eventHeight, Float.valueOf(EVENT_SIZE));
 		final float widthRatio = calculateRatio(eventWidth, Float.valueOf(EVENT_SIZE));
-		
+
 		int heightRadius = eventHeight / 2;
 		int widthRadius = eventWidth / 2;
-		
+
 		int a1 = generateRatioPointValue(9, widthRatio);
 		int a2 = generateRatioPointValue(9, heightRatio);
 		int b1 = generateRatioPointValue(12, widthRatio);
@@ -809,10 +811,10 @@ public class GraphicsUtil {
 	public static Ellipse createEventTerminate(Shape terminateShape) {
 		final int eventHeight = terminateShape.getContainer().getGraphicsAlgorithm().getHeight();
 		final int eventWidth = terminateShape.getContainer().getGraphicsAlgorithm().getWidth();
-		
+
 		final float heightRatio = calculateRatio(eventHeight, Float.valueOf(EVENT_SIZE));
 		final float widthRatio = calculateRatio(eventWidth, Float.valueOf(EVENT_SIZE));
-		
+
 		Ellipse ellipse = gaService.createEllipse(terminateShape);
 		gaService.setLocationAndSize(ellipse,
 				generateRatioPointValue(6, widthRatio), generateRatioPointValue(6, heightRatio),
@@ -825,10 +827,10 @@ public class GraphicsUtil {
 	public static Ellipse createEventNotAllowed(Shape shape) {
 		final int eventHeight = shape.getContainer().getGraphicsAlgorithm().getHeight();
 		final int eventWidth = shape.getContainer().getGraphicsAlgorithm().getWidth();
-		
+
 		final float heightRatio = calculateRatio(eventHeight, Float.valueOf(EVENT_SIZE));
 		final float widthRatio = calculateRatio(eventWidth, Float.valueOf(EVENT_SIZE));
-		
+
 		Ellipse ellipse = gaService.createEllipse(shape);
 		gaService.setLocationAndSize(ellipse,
 				generateRatioPointValue(6, widthRatio), generateRatioPointValue(6, heightRatio),
@@ -837,7 +839,7 @@ public class GraphicsUtil {
 		ellipse.setFilled(false);
 		ellipse.setForeground(manageColor(shape, IColorConstant.RED));
 
-		
+
 		int[] points = {
 				generateRatioPointValue(8, widthRatio), generateRatioPointValue(12, heightRatio),
 				generateRatioPointValue(28, widthRatio), generateRatioPointValue(24, heightRatio),
@@ -998,7 +1000,7 @@ public class GraphicsUtil {
 		return algorithmContainer;
 	}
 
-	
+
 	private static ContainerShape getActivityMarkerContainer(ContainerShape container) {
 		String property = peService.getPropertyValue(container, ACTIVITY_MARKER_CONTAINER);
 		if (property != null && new Boolean(property)) {
@@ -1008,7 +1010,7 @@ public class GraphicsUtil {
 	}
 
 	private static ContainerShape createActivityMarkerContainer(ContainerShape container) {
-		
+
 		ContainerShape markerContainer = getActivityMarkerContainer(container);
 		if (markerContainer==null) {
 			// need to create a marker container first
@@ -1028,7 +1030,7 @@ public class GraphicsUtil {
 			createActivityMarkerMultiSequential(markerContainer);
 			createActivityMarkerAdHoc(markerContainer);
 			createActivityMarkerExpand(markerContainer);
-			
+
 			// make them all invisible
 			Iterator<Shape> iterator = peService.getAllContainedShapes(markerContainer).iterator();
 			while (iterator.hasNext()) {
@@ -1055,7 +1057,7 @@ public class GraphicsUtil {
 		}
 		return offset;
 	}
-	
+
 	public static void layoutActivityMarkerContainer(ContainerShape container) {
 
 		ContainerShape markerContainer = getActivityMarkerContainer(container);
@@ -1070,7 +1072,7 @@ public class GraphicsUtil {
 					lastX += ga.getWidth() + 3;
 				}
 			}
-			
+
 			GraphicsAlgorithm parentGa = container.getGraphicsAlgorithm();
 			GraphicsAlgorithm ga = markerContainer.getGraphicsAlgorithm();
 			int newWidth = parentGa.getWidth();
@@ -1080,7 +1082,7 @@ public class GraphicsUtil {
 			gaService.setLocation(ga, x, y);
 		}
 	}
-	
+
 	public static void showActivityMarker(ContainerShape container, String property) {
 
 		ContainerShape markerContainer = getActivityMarkerContainer(container);
@@ -1090,7 +1092,7 @@ public class GraphicsUtil {
 		GraphicsUtil.getContainedShape(markerContainer, property).setVisible(true);
 		layoutActivityMarkerContainer(container);
 	}
-	
+
 	public static void hideActivityMarker(ContainerShape container, String property) {
 
 		ContainerShape markerContainer = getActivityMarkerContainer(container);
@@ -1100,7 +1102,7 @@ public class GraphicsUtil {
 		GraphicsUtil.getContainedShape(markerContainer, property).setVisible(false);
 		layoutActivityMarkerContainer(container);
 	}
-	
+
 	private static Color manageColor(PictogramElement pe, IColorConstant colorConstant) {
 		Diagram diagram = Graphiti.getPeService().getDiagramForPictogramElement(pe);
 		return Graphiti.getGaService().manageColor(diagram, colorConstant);
@@ -1113,7 +1115,7 @@ public class GraphicsUtil {
 		int totalWidth = MARKER_WIDTH;
 		int parentW = ((ContainerShape) markerContainer.eContainer()).getGraphicsAlgorithm().getWidth();
 		int parentH = ((ContainerShape) markerContainer.eContainer()).getGraphicsAlgorithm().getHeight();
-		
+
 		int lastX = 0;
 
 		Iterator<Shape> iterator = peService.getAllContainedShapes(markerContainer).iterator();
@@ -1175,7 +1177,7 @@ public class GraphicsUtil {
 			temp.setEventSize(new Size(EVENT_SIZE, EVENT_SIZE));
 			temp.setGatewaySize(new Size(GATEWAY_RADIUS*2, GATEWAY_RADIUS*2));
 		}
-		
+
 		SizeTemplate sizeTemplate = diagramSizeMap.get(diagram);
 		if (sizeTemplate == null) {
 			sizeTemplate = new SizeTemplate();
@@ -1188,7 +1190,7 @@ public class GraphicsUtil {
 		if (diagramSizeMap == null) {
 			diagramSizeMap = new HashMap<Diagram, GraphicsUtil.SizeTemplate>();
 		}
-		
+
 		SizeTemplate sizeTemplate = diagramSizeMap.get(diagram);
 		if (sizeTemplate == null) {
 			sizeTemplate = new SizeTemplate();
@@ -1201,7 +1203,7 @@ public class GraphicsUtil {
 		if (diagramSizeMap == null) {
 			diagramSizeMap = new HashMap<Diagram, GraphicsUtil.SizeTemplate>();
 		}
-		
+
 		SizeTemplate sizeTemplate = diagramSizeMap.get(diagram);
 		if (sizeTemplate == null) {
 			sizeTemplate = new SizeTemplate();
@@ -1209,7 +1211,7 @@ public class GraphicsUtil {
 		}
 		sizeTemplate.setActivitySize(new Size(width, height));
 	}
-	
+
 	public static Size getEventSize(Diagram diagram) {
 		if (diagramSizeMap != null) {
 			SizeTemplate temp = diagramSizeMap.get(diagram);
@@ -1219,7 +1221,7 @@ public class GraphicsUtil {
 		}
 		return new Size(EVENT_SIZE, EVENT_SIZE);
 	}
-	
+
 	public static Size getGatewaySize(Diagram diagram) {
 		if (diagramSizeMap != null) {
 			SizeTemplate temp = diagramSizeMap.get(diagram);
@@ -1229,7 +1231,7 @@ public class GraphicsUtil {
 		}
 		return new Size(GATEWAY_RADIUS*2, GATEWAY_RADIUS*2);
 	}
-	
+
 	public static Size getActivitySize(Diagram diagram) {
 		if (diagramSizeMap != null) {
 			SizeTemplate temp = diagramSizeMap.get(diagram);
@@ -1239,7 +1241,7 @@ public class GraphicsUtil {
 		}
 		return new Size(TASK_DEFAULT_WIDTH, TASK_DEFAULT_HEIGHT);
 	}
-	
+
 	public static Size getShapeSize(BaseElement be, Diagram diagram) {
 		if (be instanceof Event)
 			return getEventSize(diagram);
@@ -1249,7 +1251,16 @@ public class GraphicsUtil {
 			return getActivitySize(diagram);
 		return new Size(TASK_DEFAULT_WIDTH,TASK_DEFAULT_HEIGHT);
 	}
-	
+
+	public static boolean contains(Shape parent, Shape child) {
+		IDimension size = calculateSize(child);
+		ILocation loc = Graphiti.getLayoutService().getLocationRelativeToDiagram(child);
+		return contains(parent, createPoint(loc.getX(), loc.getY()))
+				&& contains(parent, createPoint(loc.getX() + size.getWidth(), loc.getY()))
+				&& contains(parent, createPoint(loc.getX() + size.getWidth(), loc.getY() + size.getHeight()))
+				&& contains(parent, createPoint(loc.getX(), loc.getY() + size.getHeight()));
+	}
+
 	public static boolean contains(Shape shape, Point point) {
 		IDimension size = calculateSize(shape);
 		ILocation loc = Graphiti.getLayoutService().getLocationRelativeToDiagram(shape);
@@ -1258,7 +1269,7 @@ public class GraphicsUtil {
 		return x>loc.getX() && x<loc.getX() + size.getWidth() &&
 				y>loc.getY() && y<loc.getY() + size.getHeight();
 	}
-	
+
 	public static boolean intersects(Shape shape1, Shape shape2) {
 		ILayoutService layoutService = Graphiti.getLayoutService();
 		ILocation loc2 = layoutService.getLocationRelativeToDiagram(shape2);
@@ -1268,7 +1279,7 @@ public class GraphicsUtil {
 		int h2 = getShapeHeight(shape2);
 		return intersects(shape1, x2, y2, w2, h2);
 	}
-	
+
 	public static boolean intersects(Shape shape1, int x2, int y2, int w2, int h2) {
 		ILayoutService layoutService = Graphiti.getLayoutService();
 		ILocation loc1 = layoutService.getLocationRelativeToDiagram(shape1);
@@ -1292,7 +1303,7 @@ public class GraphicsUtil {
 		}
 		return true;
 	}
-	
+
 	public static boolean intersects(Shape shape, Connection connection) {
 		Point p1 = createPoint(connection.getStart());
 		Point p3 = createPoint(connection.getEnd());
@@ -1311,7 +1322,7 @@ public class GraphicsUtil {
 			return true;
 		return false;
 	}
-	
+
 	public static boolean intersectsLine(Shape shape, Point p1, Point p2) {
 		ILocation loc = peService.getLocationRelativeToDiagram(shape);
 		IDimension size = calculateSize(shape);
@@ -1328,7 +1339,7 @@ public class GraphicsUtil {
 		return RectangleIntersectsLine.intersectsLine(
 				p1.getX(), p1.getY(), p2.getX(), p2.getY(),
 				loc.getX(), loc.getY(), size.getWidth(), size.getHeight());
-		
+
 //		java.awt.Rectangle rect = new java.awt.Rectangle(loc.getX(), loc.getY(), size.getWidth(), size.getHeight());
 //		return rect.intersectsLine(start.getX(), start.getY(), end.getX(), end.getY());
 	}
@@ -1342,7 +1353,7 @@ public class GraphicsUtil {
 	    private static final int OUT_TOP = 2;
 	    private static final int OUT_RIGHT = 4;
 	    private static final int OUT_BOTTOM = 8;
-	
+
 	    private static int outcode(double pX, double pY, double rectX, double rectY, double rectWidth, double rectHeight) {
 	        int out = 0;
 	        if (rectWidth <= 0) {
@@ -1361,7 +1372,7 @@ public class GraphicsUtil {
 	        }
 	        return out;
 	    }
-	
+
 	    public static boolean intersectsLine(double lineX1, double lineY1, double lineX2, double lineY2, double rectX, double rectY, double rectWidth, double rectHeight) {
 	        int out1, out2;
 	        if ((out2 = outcode(lineX2, lineY2, rectX, rectY, rectWidth, rectHeight)) == 0) {
@@ -1399,7 +1410,7 @@ public class GraphicsUtil {
 				p2End.getX(), p2End.getY()
 		);
 	}
-	
+
 	/**
 	 * Check if two line segments intersects. Integer domain.
 	 * 
@@ -1467,11 +1478,11 @@ public class GraphicsUtil {
 	public static boolean pointsEqual(Point p1, Point p2) {
 		return p1.getX()==p2.getX() && p1.getY()==p2.getY();
 	}
-	
+
 	public static Point createPoint(Point p) {
 		return gaService.createPoint(p.getX(), p.getY());
 	}
-	
+
 	public static Point createPoint(int x, int y) {
 		return gaService.createPoint(x, y);
 	}
@@ -1485,7 +1496,7 @@ public class GraphicsUtil {
 			return createPoint(peService.getLocationRelativeToDiagram((Shape)ac));
 		return null;
 	}
-	
+
 	public static Point getShapeCenter(AnchorContainer shape) {
 		Point p = createPoint(shape);
 		IDimension size = calculateSize(shape);
@@ -1525,13 +1536,13 @@ public class GraphicsUtil {
 		}
 		return length;
 	}
-	
+
 	public static double getLength(Point p1, Point p2) {
 		double a = (double)(p1.getX() - p2.getX());
 		double b = (double)(p1.getY() - p2.getY());
 		return Math.sqrt(a*a + b*b);
 	}
-	
+
 	/**
 	 * Check if the line segment defined by the two Points is vertical.
 	 * 
@@ -1542,7 +1553,7 @@ public class GraphicsUtil {
 	public final static boolean isVertical(Point p1, Point p2) {
 		return Math.abs(p1.getX() - p2.getX()) <= 2;
 	}
-	
+
 	/**
 	 * Check if the line segment defined by the two Points is horizontal.
 	 * 
@@ -1571,7 +1582,7 @@ public class GraphicsUtil {
 		m.setY(start.getY()+d);
 		return m;
 	}
-	
+
 	public static Point getHorzMidpoint(Point start, Point end, double fract) {
 		Point m = GraphicsUtil.createPoint(start);
 		int d = (int)(fract * (double)(end.getX() - start.getX()));
@@ -1583,7 +1594,7 @@ public class GraphicsUtil {
 		GraphicsAlgorithm ga = shape.getGraphicsAlgorithm();
 		if (ga!=null)
 			return gaService.calculateSize(ga);
-		
+
 		IDimension dim = null;
 		if (shape instanceof ContainerShape) {
 			ContainerShape cs = (ContainerShape)shape;
@@ -1604,11 +1615,7 @@ public class GraphicsUtil {
 		}
 		return dim;
 	}
-	
-	public static boolean isLabelShape(Shape shape) {
-		return Graphiti.getPeService().getPropertyValue(shape, LABEL_PROPERTY) != null;
-	}
-	
+
 	public static boolean debug = false;
 
 	public static void dump(String label, List<ContainerShape> shapes) {
@@ -1621,7 +1628,7 @@ public class GraphicsUtil {
 			}
 		}
 	}
-	
+
 	public static void dump(String label, Anchor anchor) {
 		if (debug) {
 			System.out.print(label+" ");
@@ -1637,15 +1644,15 @@ public class GraphicsUtil {
 			}
 		}
 	}
-	
+
 	public static void dump(String label, ContainerShape shape) {
 		dump(0, label,shape,0,0);
 	}
-	
+
 	public static void dump(int level, String label, ContainerShape shape) {
 		dump(level, label,shape,0,0);
 	}
-	
+
 	public static void dump(int level, String label, ContainerShape shape, int x, int y) {
 		if (debug) {
 			String text = getDebugText(shape);
@@ -1659,7 +1666,7 @@ public class GraphicsUtil {
 				System.out.println("");
 		}
 	}
-	
+
 	public static String getDebugText(ContainerShape shape) {
 		EObject be = BusinessObjectUtil.getBusinessObjectForPictogramElement(shape);
 		String id = "";
@@ -1669,13 +1676,13 @@ public class GraphicsUtil {
 		String text = be.eClass().getName()+id+": "+ModelUtil.getDisplayName(be);
 		return text;
 	}
-	
+
 	public static void dump(String label) {
 		if (debug) {
 			System.out.println(label);
 		}
 	}
-	
+
 	public static LineSegment[] getEdges(Shape shape) {
 		ILocation loc = peService.getLocationRelativeToDiagram(shape);
 		IDimension size = GraphicsUtil.calculateSize(shape);
@@ -1689,7 +1696,7 @@ public class GraphicsUtil {
 				loc.getX()+size.getWidth(), loc.getY()+size.getHeight());
 		return new LineSegment[] {top, bottom, left, right};
 	}
-	
+
 	public static LineSegment findNearestEdge(Shape shape, Point p) {
 		LineSegment edges[] = getEdges(shape);
 		LineSegment top = edges[0];
@@ -1699,10 +1706,10 @@ public class GraphicsUtil {
 		double minDist;
 		double dist;
 		LineSegment result;
-		
+
 		minDist = top.getDistance(p);
 		result = top;
-		
+
 		dist = bottom.getDistance(p);
 		if (dist<minDist) {
 			minDist = dist;
@@ -1721,4 +1728,23 @@ public class GraphicsUtil {
 		return result;
 	}
 
+	public static void sendToFront(Shape shape) {
+		peService.sendToFront(shape);
+		BPMNShape bpmnShape = BusinessObjectUtil.getFirstElementOfType(shape, BPMNShape.class);
+		if (bpmnShape!=null) {
+			BPMNPlane plane = (BPMNPlane)bpmnShape.eContainer();
+			plane.getPlaneElement().remove(bpmnShape);
+			plane.getPlaneElement().add(bpmnShape);
+		}
+	}
+
+	public static void sendToBack(Shape shape) {
+		peService.sendToBack(shape);
+		BPMNShape bpmnShape = BusinessObjectUtil.getFirstElementOfType(shape, BPMNShape.class);
+		if (bpmnShape!=null) {
+			BPMNPlane plane = (BPMNPlane)bpmnShape.eContainer();
+			plane.getPlaneElement().remove(bpmnShape);
+			plane.getPlaneElement().add(0,bpmnShape);
+		}
+	}
 }

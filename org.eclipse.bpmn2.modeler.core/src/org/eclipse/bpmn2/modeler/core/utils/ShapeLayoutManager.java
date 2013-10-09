@@ -3,7 +3,9 @@ package org.eclipse.bpmn2.modeler.core.utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.bpmn2.Activity;
 import org.eclipse.bpmn2.BaseElement;
+import org.eclipse.bpmn2.BoundaryEvent;
 import org.eclipse.bpmn2.FlowNode;
 import org.eclipse.bpmn2.Lane;
 import org.eclipse.bpmn2.SequenceFlow;
@@ -36,7 +38,7 @@ public class ShapeLayoutManager {
 	private static final int VERT_PADDING = 50;
 	private DiagramEditor editor;
 	private static final ILayoutService layoutService = Graphiti.getLayoutService();
-	
+
 	public ShapeLayoutManager(DiagramEditor editor) {
 		this.editor = editor;
 	}
@@ -44,17 +46,17 @@ public class ShapeLayoutManager {
 	public void layout(BaseElement container) {
 		layout( getContainerShape(container) );
 	}
-	
+
 	public void layout(ContainerShape container) {
 		layout(container, 0);
 	}
-	
+
 	private void layout(ContainerShape container, int level) {
 
 		GraphicsUtil.dump(level, "layout", container);
 		if (container==null)
 			return;
-		
+
 		// Collect all child shapes: this excludes any label shapes
 		// (which also happen to be ContainerShape objects); we want ONLY the
 		// graphical objects that have corresponding BPMNShape objects.
@@ -124,7 +126,7 @@ public class ShapeLayoutManager {
 				middleShapes.add(child);
 			}
 		}
-		
+
 		// now build threads of sequence flows starting with all of the startShapes
 		List<List<ContainerShape[]>> threads = new ArrayList<List<ContainerShape[]>>();
 		if (startShapes.size()>0) {
@@ -135,11 +137,11 @@ public class ShapeLayoutManager {
 				threads.add(thread);
 			}
 		}
-		
+
 		// arrange the threads
 		int x = HORZ_PADDING;
 		int y = VERT_PADDING;
-		
+
 		for (List<ContainerShape[]> thread : threads) {
 			// stack the threads on top of each other
 			x = HORZ_PADDING;
@@ -165,7 +167,7 @@ public class ShapeLayoutManager {
 		stackShapes(container, unconnectedShapes);
 		if (startShapes.size()==0 && endShapes.size()==0 && middleShapes.size()>0)
 			stackShapes(container, middleShapes);
-		
+
 		// now resize the container so that all children are visible
 		if (!(container instanceof Diagram)) {
 			resizeContainerShape(container);
@@ -200,7 +202,7 @@ public class ShapeLayoutManager {
 			}
 			if (y>maxHeight)
 				maxHeight = y;
-		
+
 			// now handle all containers (Lane, SubProcess, Pool, etc.)
 			x += maxWidth + HORZ_PADDING;
 			y = VERT_PADDING;
@@ -221,7 +223,7 @@ public class ShapeLayoutManager {
 			}
 		}
 	}
-	
+
 	private boolean moveShape(ContainerShape container, ContainerShape shape, int x, int y) {
 		MoveShapeContext context = new MoveShapeContext(shape);
 		context.setLocation(x, y);
@@ -234,13 +236,43 @@ public class ShapeLayoutManager {
 		}
 		return false;
 	}
-	
+
 	private Point moveShape(ContainerShape container, ContainerShape child, int x, int y, List<ContainerShape> allChildren) {
 		boolean intersects;
 		do {
 			intersects = false;
-			if (!moveShape(container, child, x, y))
-				break;
+			BaseElement be = BusinessObjectUtil.getFirstBaseElement(child);
+			if (be instanceof BoundaryEvent) {
+				// special handling for Boundary Events
+				Activity activity = ((BoundaryEvent)be).getAttachedToRef();
+				ContainerShape activityShape = null;
+				for (ContainerShape s : allChildren) {
+					if (s!=child) {
+						if (activity == BusinessObjectUtil.getFirstBaseElement(s)) {
+							activityShape = s;
+							break;
+						}
+					}
+				}
+				if (activityShape!=null) {
+					ILocation activityLoc = Graphiti.getPeLayoutService().getLocationRelativeToDiagram(activityShape);
+					IDimension activitySize = GraphicsUtil.calculateSize(activityShape);
+					IDimension eventSize = GraphicsUtil.calculateSize(child);
+					int index = activity.getBoundaryEventRefs().indexOf(be);
+					int count = activity.getBoundaryEventRefs().size();
+					int deltaX = activitySize.getWidth() / 2;
+					if (count>1) {
+						deltaX = index * activitySize.getWidth() / (count-1);
+					}
+					moveShape(activityShape, child, deltaX - eventSize.getWidth()/2, activitySize.getHeight() - eventSize.getHeight()/2);
+					y = 0;
+					break;
+				}
+			}
+			else {
+				if (!moveShape(container, child, x, y))
+					break;
+			}
 			for (ContainerShape c : allChildren) {
 				if (c!=child && GraphicsUtil.intersects(child, c)) {
 					intersects = true;
@@ -249,27 +281,29 @@ public class ShapeLayoutManager {
 			}
 		}
 		while (intersects);
-		
+
 		return Graphiti.getCreateService().createPoint(x, y);
 	}
-	
+
 	private boolean resizeContainerShape(ContainerShape container) {
 		List<ContainerShape> children = getContainerShapeChildren(container);
 		ILocation containerLocation = layoutService.getLocationRelativeToDiagram(container);
 		int width = 0;
 		int height = 0;
-		
+
 		for (ContainerShape child : children) {
-			IDimension size = GraphicsUtil.calculateSize(child);
-			ILocation location = layoutService.getLocationRelativeToDiagram(child);
-			int x = location.getX() - containerLocation.getX();
-			int y = location.getY() - containerLocation.getY();
-			int w = x + size.getWidth();
-			int h = y + size.getHeight();
-			if (w>width)
-				width = w;
-			if (h>height)
-				height = h;
+			if (BusinessObjectUtil.getFirstBaseElement(child)!=null) {
+				IDimension size = GraphicsUtil.calculateSize(child);
+				ILocation location = layoutService.getLocationRelativeToDiagram(child);
+				int x = location.getX() - containerLocation.getX();
+				int y = location.getY() - containerLocation.getY();
+				int w = x + size.getWidth();
+				int h = y + size.getHeight();
+				if (w>width)
+					width = w;
+				if (h>height)
+					height = h;
+			}
 		}
 		if ( BusinessObjectUtil.getFirstBaseElement(container) instanceof Lane) {
 			if (width < 800)
@@ -277,10 +311,11 @@ public class ShapeLayoutManager {
 			if (height < 100)
 				height = 100;
 		}
-			
-		return resizeShape(container, width + HORZ_PADDING, height + VERT_PADDING);
+		if (width!=0 && height!=0)
+			return resizeShape(container, width + HORZ_PADDING, height + VERT_PADDING);
+		return false;
 	}
-	
+
 	private boolean resizeShape(ContainerShape container, int width, int height) {
 		ResizeShapeContext context = new ResizeShapeContext(container);
 		int x = container.getGraphicsAlgorithm().getX();
@@ -294,7 +329,7 @@ public class ShapeLayoutManager {
 		}
 		return false;
 	}
-	
+
 	private boolean threadContains(List<ContainerShape[]> thread, ContainerShape shape) {
 		for (ContainerShape[] shapes : thread) {
 			for (ContainerShape s : shapes) {
@@ -304,7 +339,7 @@ public class ShapeLayoutManager {
 		}
 		return false;
 	}
-	
+
 	private void buildThread(ContainerShape shape, List<ContainerShape> childShapes, List<ContainerShape[]> thread) {
 		List<ContainerShape> bin = new ArrayList<ContainerShape>();
 		List<SequenceFlow> flows = getOutgoingSequenceFlows(shape);
@@ -324,7 +359,7 @@ public class ShapeLayoutManager {
 			}
 		}
 	}
-	
+
 	private List<SequenceFlow> getIncomingSequenceFlows(ContainerShape shape) {
 		List<SequenceFlow> flows = new ArrayList<SequenceFlow>();
 		for (Anchor a : shape.getAnchors()) {
@@ -337,7 +372,7 @@ public class ShapeLayoutManager {
 		}
 		return flows;
 	}
-	
+
 	private List<SequenceFlow> getOutgoingSequenceFlows(ContainerShape shape) {
 		List<SequenceFlow> flows = new ArrayList<SequenceFlow>();
 		for (Anchor a : shape.getAnchors()) {
@@ -350,7 +385,7 @@ public class ShapeLayoutManager {
 		}
 		return flows;
 	}
-	
+
 	private ContainerShape getContainerShape(BaseElement be) {
 		Diagram diagram = null;
 		BPMNDiagram bpmnDiagram = DIUtils.findBPMNDiagram(be, true);
@@ -368,7 +403,7 @@ public class ShapeLayoutManager {
 						return (ContainerShape)pe;
 				}
 			}
-			
+
 			// maybe the BaseElement is a root element (like a Process or Choreography)?
 			if (bpmnDiagram.getPlane().getBpmnElement() == be)
 				return diagram;
@@ -378,18 +413,18 @@ public class ShapeLayoutManager {
 	}
 
 	private List<ContainerShape> getContainerShapeChildren(ContainerShape container) {
-		
+
 		List<ContainerShape> childShapes = new ArrayList<ContainerShape>();
 		for (PictogramElement pe : container.getChildren()) {
 			if (isChildShape(pe)) {
 				childShapes.add((ContainerShape)pe);
 			}
 		}
-		
+
 		return childShapes;
 	}
-	
+
 	private boolean isChildShape(PictogramElement pe) {
-		return pe instanceof ContainerShape && !GraphicsUtil.isLabelShape((Shape)pe);
+		return pe instanceof ContainerShape && !FeatureSupport.isLabelShape((Shape)pe);
 	}
 }

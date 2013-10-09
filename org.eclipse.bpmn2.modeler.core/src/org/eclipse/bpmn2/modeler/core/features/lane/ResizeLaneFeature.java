@@ -13,10 +13,12 @@
 package org.eclipse.bpmn2.modeler.core.features.lane;
 
 import org.eclipse.bpmn2.Lane;
+import org.eclipse.bpmn2.modeler.core.di.DIUtils;
 import org.eclipse.bpmn2.modeler.core.features.DefaultResizeBPMNShapeFeature;
 import org.eclipse.bpmn2.modeler.core.features.participant.ResizeParticipantFeature;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.IResizeShapeFeature;
 import org.eclipse.graphiti.features.context.IResizeShapeContext;
@@ -85,14 +87,14 @@ public class ResizeLaneFeature extends DefaultResizeBPMNShapeFeature {
 	private void resizeHeight(IResizeShapeContext context) {
 		ContainerShape laneContainerShape = (ContainerShape) context.getShape();
 		GraphicsAlgorithm ga = laneContainerShape.getGraphicsAlgorithm();
-		
+
 		boolean isHorizontal = FeatureSupport.isHorizontal(laneContainerShape);
-		
+
 		if ((isHorizontal && ga.getHeight() != context.getHeight()) 
 				|| (!isHorizontal && ga.getWidth() != context.getWidth())) {
-			
+
 			ContainerShape rootContainer = FeatureSupport.getRootContainer(laneContainerShape);
-			
+
 			boolean fetchFirstProp = false;
 			Object fetchFirstProperty = context.getProperty(ResizeParticipantFeature.RESIZE_FIRST_LANE);
 			if (fetchFirstProperty != null && ((Boolean) fetchFirstProperty).booleanValue()) {
@@ -106,13 +108,13 @@ public class ResizeLaneFeature extends DefaultResizeBPMNShapeFeature {
 					}
 				}
 			}
-			
+
 			ContainerShape lowestContainingLane = getLowestLane(laneContainerShape, fetchFirstProp);
 			GraphicsAlgorithm lowestLaneGA = lowestContainingLane.getGraphicsAlgorithm();
-			
+
 			int width = 0;
 			int height = 0;
-			
+
 			if (isHorizontal) {
 				int dHeight = context.getHeight() - ga.getHeight();
 				height = lowestLaneGA.getHeight() + dHeight;
@@ -128,14 +130,14 @@ public class ResizeLaneFeature extends DefaultResizeBPMNShapeFeature {
 				}
 				height = lowestLaneGA.getHeight();
 			}
-			
+
 			ResizeShapeContext newContext = new ResizeShapeContext(lowestContainingLane);
-			
+
 			newContext.setX(lowestLaneGA.getX());
 			newContext.setY(lowestLaneGA.getY());
 			newContext.setHeight(height);
 			newContext.setWidth(width);
-			
+
 			super.resizeShape(newContext);
 		}
 	}
@@ -143,13 +145,13 @@ public class ResizeLaneFeature extends DefaultResizeBPMNShapeFeature {
 	private void resizeWidth(IResizeShapeContext context) {
 		ContainerShape laneContainerShape = (ContainerShape) context.getShape();
 		GraphicsAlgorithm ga = laneContainerShape.getGraphicsAlgorithm();
-		
+
 		boolean isHorizontal = FeatureSupport.isHorizontal(laneContainerShape);
-		
+
 		if ((isHorizontal && ga.getWidth() != context.getWidth()) 
 				|| (!isHorizontal && ga.getHeight() != context.getHeight())) {
-			
-			
+
+
 			int dWidth = 0;
 			int dHeight = 0;
 			if (isHorizontal) {
@@ -157,7 +159,7 @@ public class ResizeLaneFeature extends DefaultResizeBPMNShapeFeature {
 			} else {
 				dHeight = context.getHeight() - ga.getHeight();
 			}
-			
+
 			Object poolResizeProperty = context.getProperty(ResizeParticipantFeature.POOL_RESIZE_PROPERTY);
 			if (poolResizeProperty != null && ((Boolean) poolResizeProperty).booleanValue()) {
 				if (isHorizontal) {
@@ -169,24 +171,24 @@ public class ResizeLaneFeature extends DefaultResizeBPMNShapeFeature {
 					if (currentChild instanceof ContainerShape) {
 						ContainerShape currentContainer = (ContainerShape) currentChild;
 						GraphicsAlgorithm currentGA = currentChild.getGraphicsAlgorithm();
-						
+
 						ResizeShapeContext newContext = new ResizeShapeContext(currentContainer);
-						
+
 						newContext.setX(currentGA.getX());
 						newContext.setY(currentGA.getY());
 						newContext.setHeight(currentGA.getHeight() + dHeight);
 						newContext.setWidth(currentGA.getWidth() + dWidth);
-						
-						
+
+
 						newContext.putProperty(ResizeParticipantFeature.POOL_RESIZE_PROPERTY, true);
-						
+
 						resizeShape(newContext);
 					}
 				}
 			} else {
 				ContainerShape rootContainer = FeatureSupport.getRootContainer(laneContainerShape);
 				GraphicsAlgorithm rootGA = rootContainer.getGraphicsAlgorithm();
-				
+
 				if (FeatureSupport.isParticipant(rootContainer)) {
 					ResizeShapeContext newContext = new ResizeShapeContext(rootContainer);
 
@@ -213,6 +215,9 @@ public class ResizeLaneFeature extends DefaultResizeBPMNShapeFeature {
 						} else {
 							Graphiti.getGaService().setHeight(rootGA, rootGA.getHeight() + dHeight);
 						}
+						if (laneContainerShape.equals(rootContainer)) {
+							Graphiti.getGaService().setLocation(ga, context.getX(), context.getY());
+						}
 					}
 					for (PictogramElement currentChild : FeatureSupport.getChildsOfBusinessObjectType(container, Lane.class)) {
 						if (currentChild instanceof ContainerShape) {
@@ -223,8 +228,8 @@ public class ResizeLaneFeature extends DefaultResizeBPMNShapeFeature {
 
 							newContext.setX(currentGA.getX());
 							newContext.setY(currentGA.getY());
-							newContext.setHeight(currentGA.getHeight() + dHeight);
 							newContext.setWidth(currentGA.getWidth() + dWidth);
+							newContext.setHeight(currentGA.getHeight() + dHeight);
 
 							newContext.putProperty(LANE_RESIZE_PROPERTY, true);
 
@@ -238,8 +243,37 @@ public class ResizeLaneFeature extends DefaultResizeBPMNShapeFeature {
 
 	@Override
 	public void resizeShape(IResizeShapeContext context) {
+		ContainerShape laneShape = (ContainerShape) context.getShape();
+		GraphicsAlgorithm laneGa = laneShape.getGraphicsAlgorithm();
+		int preX = laneGa.getX();
+		int preY = laneGa.getY();
+
 		resizeHeight(context);
 		resizeWidth(context);
+
+		int deltaX = preX - context.getX();
+		int deltaY = preY - context.getY();
+
+		// Adjust location of children so that a resize up or left
+		// leaves them in the same location relative to the diagram.
+		// This allows the user to create (or remove) space between
+		// the Lane's edge and the contained activities.
+		for (PictogramElement pe : laneShape.getChildren()) {
+			if (pe instanceof ContainerShape) {
+				EObject bo = BusinessObjectUtil.getBusinessObjectForPictogramElement(pe);
+				if (!(bo instanceof Lane)) {
+					ContainerShape child = (ContainerShape) pe;
+					GraphicsAlgorithm ga = child.getGraphicsAlgorithm();
+					Graphiti.getLayoutService().setLocation(ga, ga.getX() + deltaX, ga.getY() + deltaY);
+				}
+			}
+		}
+
+		DIUtils.updateDIShape(laneShape);
+		ContainerShape rootContainer = FeatureSupport.getRootContainer(laneShape);
+		if (rootContainer!=laneShape) {
+			DIUtils.updateDIShape(rootContainer);
+		}
 	}
 
 	private ContainerShape getLowestLane(ContainerShape root, boolean fetchFirst) {
