@@ -18,13 +18,11 @@ import java.util.List;
 
 import org.eclipse.bpmn2.Association;
 import org.eclipse.bpmn2.BaseElement;
-import org.eclipse.bpmn2.Conversation;
+import org.eclipse.bpmn2.ConversationLink;
 import org.eclipse.bpmn2.DataInputAssociation;
 import org.eclipse.bpmn2.DataOutputAssociation;
-import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.MessageFlow;
 import org.eclipse.bpmn2.SequenceFlow;
-import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.di.BPMNShape;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.emf.common.util.EList;
@@ -84,7 +82,7 @@ public class BusinessObjectUtil {
 
 	@SuppressWarnings("unchecked")
 	public static <T extends EObject> T getFirstElementOfType(PictogramElement elem, Class<T> clazz, boolean searchParents) {
-		if (elem.getLink() == null) {
+		if (elem==null || elem.getLink() == null) {
 			if (searchParents) {
 				while (elem!=null && elem.getLink()==null && elem.eContainer() instanceof PictogramElement)
 					elem = (PictogramElement)elem.eContainer();
@@ -163,7 +161,22 @@ public class BusinessObjectUtil {
 
 	public static EObject getBusinessObjectForSelection(ISelection selection) {
 		PictogramElement pe = getPictogramElementForSelection(selection);
-		return getBusinessObjectForPictogramElement(pe);
+		if (pe!=null)
+			return getBusinessObjectForPictogramElement(pe);
+		
+		if (selection instanceof IStructuredSelection &&
+				((IStructuredSelection) selection).isEmpty()==false) {
+		
+			Object firstElement = ((IStructuredSelection) selection).getFirstElement();
+			EditPart editPart = null;
+			if (firstElement instanceof EditPart) {
+				editPart = (EditPart) firstElement;
+				if (editPart.getModel() instanceof EObject) {
+					return (EObject)editPart.getModel();
+				}
+			}
+		}
+		return null;
 	}
 
 	public static EObject getBusinessObjectForPictogramElement(PictogramElement pe) {
@@ -206,7 +219,7 @@ public class BusinessObjectUtil {
 				be == MessageFlow.class ||
 				be == DataInputAssociation.class ||
 				be == DataOutputAssociation.class ||
-				be == Conversation.class;
+				be == ConversationLink.class;
 	}
 
 	public static List<Diagram> getAllDiagrams(Diagram diagram) {

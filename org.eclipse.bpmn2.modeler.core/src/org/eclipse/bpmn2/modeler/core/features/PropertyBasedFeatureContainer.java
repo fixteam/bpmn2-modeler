@@ -21,7 +21,7 @@ import org.eclipse.graphiti.mm.PropertyContainer;
 import org.eclipse.graphiti.mm.pictograms.Connection;
 import org.eclipse.graphiti.services.Graphiti;
 
-public abstract class PropertyBasedFeatureContainer implements FeatureContainer {
+public abstract class PropertyBasedFeatureContainer implements IShapeFeatureContainer, IConnectionFeatureContainer {
 
 	@Override
 	public Object getApplyObject(IContext context) {
@@ -41,6 +41,11 @@ public abstract class PropertyBasedFeatureContainer implements FeatureContainer 
 			return false;
 		}
 		return canApplyToProperty(property);
+	}
+	
+	@Override
+	public boolean isAvailable(IFeatureProvider fp) {
+		return true;
 	}
 
 	protected abstract String getPropertyKey();

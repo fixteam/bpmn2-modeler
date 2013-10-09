@@ -13,15 +13,20 @@
 package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.features;
 
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.DataInput;
 import org.eclipse.bpmn2.DataInputAssociation;
+import org.eclipse.bpmn2.DataOutput;
+import org.eclipse.bpmn2.InputOutputSpecification;
+import org.eclipse.bpmn2.InputSet;
 import org.eclipse.bpmn2.ItemDefinition;
 import org.eclipse.bpmn2.ItemKind;
+import org.eclipse.bpmn2.OutputSet;
 import org.eclipse.bpmn2.Task;
 import org.eclipse.bpmn2.modeler.core.IBpmn2RuntimeExtension;
-import org.eclipse.bpmn2.modeler.core.features.FeatureContainer;
+import org.eclipse.bpmn2.modeler.core.features.IShapeFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor.Property;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
@@ -36,18 +41,22 @@ import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.impl.Pa
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.impl.WorkDefinitionImpl;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.impl.WorkImpl;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.features.JbpmTaskFeatureContainer.JbpmAddTaskFeature;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.util.JbpmModelUtil;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WorkItemDefinition;
 import org.eclipse.bpmn2.modeler.ui.ImageProvider;
 import org.eclipse.bpmn2.modeler.ui.editor.BPMN2Editor;
-import org.eclipse.bpmn2.modeler.ui.features.activity.task.CustomTaskFeatureContainer;
+import org.eclipse.bpmn2.modeler.ui.features.activity.task.CustomShapeFeatureContainer;
 import org.eclipse.bpmn2.modeler.ui.features.activity.task.TaskFeatureContainer;
+import org.eclipse.bpmn2.modeler.ui.features.activity.task.TaskFeatureContainer.CreateTaskFeature;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.graphiti.features.IAddFeature;
 import org.eclipse.graphiti.features.ICreateFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.features.context.IContext;
+import org.eclipse.graphiti.features.context.ICreateContext;
 import org.eclipse.graphiti.features.context.ICustomContext;
 import org.eclipse.graphiti.features.custom.ICustomFeature;
 import org.eclipse.graphiti.mm.GraphicsAlgorithmContainer;
@@ -57,11 +66,11 @@ import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.services.IGaService;
 
-public class JbpmCustomTaskFeatureContainer extends CustomTaskFeatureContainer {
+public class JbpmCustomTaskFeatureContainer extends CustomShapeFeatureContainer {
 	
 	@Override
-	protected FeatureContainer createFeatureContainer(IFeatureProvider fp) {
-		
+	protected IShapeFeatureContainer createFeatureContainer(IFeatureProvider fp) {
+
 		return new TaskFeatureContainer() {
 			@Override
 			public ICreateFeature getCreateFeature(IFeatureProvider fp) {
@@ -72,12 +81,6 @@ public class JbpmCustomTaskFeatureContainer extends CustomTaskFeatureContainer {
 			public IAddFeature getAddFeature(IFeatureProvider fp) {
 				return new JbpmAddCustomTaskFeature(fp);
 			}
-			
-			@Override
-			public ICustomFeature[] getCustomFeatures(IFeatureProvider fp) {
-				return new ICustomFeature[] {new ConfigureWorkItemFeature(fp)};
-			}
-
 		};
 	}
 	
@@ -101,6 +104,53 @@ public class JbpmCustomTaskFeatureContainer extends CustomTaskFeatureContainer {
 			return getCreateImageId();
 		}
 		
+		@SuppressWarnings({ "unchecked", "rawtypes" })
+		public Task createBusinessObject(ICreateContext context) {
+			Task task = super.createBusinessObject(context);
+			final String name = customTaskDescriptor.getName();
+			if (name!=null && !name.isEmpty()) {
+				task.setName(name.trim());
+			}
+			
+			// make sure the ioSpecification has both a default InputSet and OutputSet
+			InputOutputSpecification ioSpecification = task.getIoSpecification();
+			if (ioSpecification!=null) {
+				Resource resource = ModelUtil.getResource(context.getTargetContainer());
+				if (ioSpecification.getInputSets().size()==0) {
+					InputSet is = Bpmn2ModelerFactory.create(resource, InputSet.class);
+					ioSpecification.getInputSets().add(is);
+				}
+				if (ioSpecification.getOutputSets().size()==0) {
+					OutputSet os = Bpmn2ModelerFactory.create(resource, OutputSet.class);
+					ioSpecification.getOutputSets().add(os);
+				}
+			}
+			
+			// Create the ItemDefinitions for each I/O parameter if needed
+			JBPM5RuntimeExtension rx = (JBPM5RuntimeExtension)customTaskDescriptor.getRuntime().getRuntimeExtension();
+			WorkItemDefinition wid = rx.getWorkItemDefinition(name);
+			if (task.getIoSpecification()!=null && wid!=null) {
+				for (DataInput input : task.getIoSpecification().getDataInputs()) {
+					for (Entry<String, String> entry : wid.getParameters().entrySet()) {
+						if (input.getName().equals(entry.getKey())) {
+							if (entry.getValue()!=null)
+								input.setItemSubjectRef(JbpmModelUtil.getDataType(context.getTargetContainer(), entry.getValue()));
+							break;
+						}
+					}
+				}
+				for (DataOutput output : task.getIoSpecification().getDataOutputs()) {
+					for (Entry<String, String> entry : wid.getResults().entrySet()) {
+						if (output.getName().equals(entry.getKey())) {
+							if (entry.getValue()!=null)
+								output.setItemSubjectRef(JbpmModelUtil.getDataType(context.getTargetContainer(), entry.getValue()));
+							break;
+						}
+					}
+				}
+			}
+			return task;
+		}
 	}
 	
 	protected class JbpmAddCustomTaskFeature extends JbpmAddTaskFeature {
@@ -145,6 +195,8 @@ public class JbpmCustomTaskFeatureContainer extends CustomTaskFeatureContainer {
 		return null;
 	}
 
+	@Deprecated
+	// This class is no longer used. Custom Task parameters are now configured in the I/O Parameters property tab 
 	public class ConfigureWorkItemFeature implements ICustomFeature {
 
 		protected IFeatureProvider fp;
@@ -286,7 +338,7 @@ public class JbpmCustomTaskFeatureContainer extends CustomTaskFeatureContainer {
 								ModelUtil.getDefinitions(task).getRootElements().add(itemDefinition);
 								ModelUtil.setID(itemDefinition);
 							}
-							itemDefinition.setItemKind(ItemKind.PHYSICAL);
+							itemDefinition.setItemKind(ItemKind.INFORMATION);
 							itemDefinition.setStructureRef(structureRef);
 							dataInput.setItemSubjectRef(itemDefinition);
 						}

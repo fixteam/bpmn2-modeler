@@ -14,7 +14,7 @@ package org.eclipse.bpmn2.modeler.core.features.artifact;
 
 import org.eclipse.bpmn2.TextAnnotation;
 import org.eclipse.bpmn2.modeler.core.di.DIImport;
-import org.eclipse.bpmn2.modeler.core.features.AbstractAddBPMNShapeFeature;
+import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2AddElementFeature;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
@@ -26,14 +26,13 @@ import org.eclipse.graphiti.mm.algorithms.Polyline;
 import org.eclipse.graphiti.mm.algorithms.Rectangle;
 import org.eclipse.graphiti.mm.algorithms.styles.Orientation;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
-import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.services.IGaService;
 import org.eclipse.graphiti.services.IPeCreateService;
 
-public class AddTextAnnotationFeature extends AbstractAddBPMNShapeFeature<TextAnnotation> {
+public class AddTextAnnotationFeature extends AbstractBpmn2AddElementFeature<TextAnnotation> {
 
 	public AddTextAnnotationFeature(IFeatureProvider fp) {
 		super(fp);
@@ -41,13 +40,7 @@ public class AddTextAnnotationFeature extends AbstractAddBPMNShapeFeature<TextAn
 
 	@Override
 	public boolean canAdd(IAddContext context) {
-		boolean isAnnotation = getBusinessObject(context) instanceof TextAnnotation;
-		boolean intoDiagram = context.getTargetContainer() instanceof Diagram;
-		boolean intoLane = FeatureSupport.isTargetLane(context) && FeatureSupport.isTargetLaneOnTop(context);
-		boolean intoSubProcess = FeatureSupport.isTargetSubProcess(context);
-		boolean intoParticipant = FeatureSupport.isTargetParticipant(context);
-		
-		return isAnnotation && (intoDiagram || intoLane || intoSubProcess || intoParticipant);
+		return FeatureSupport.isValidArtifactTarget(context);
 	}
 
 	@Override

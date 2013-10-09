@@ -9,7 +9,7 @@
   <genPackages prefix="SampleModel" basePackage="org.eclipse.bpmn2.modeler.runtime.example"
       resource="XML" disposableProviderFactory="true" ecorePackage="SampleModel.ecore#/">
     <genClasses ecoreClass="SampleModel.ecore#//DocumentRoot">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute SampleModel.ecore#//DocumentRoot/sampleCustomTaskId"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute SampleModel.ecore#//DocumentRoot/elementId"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

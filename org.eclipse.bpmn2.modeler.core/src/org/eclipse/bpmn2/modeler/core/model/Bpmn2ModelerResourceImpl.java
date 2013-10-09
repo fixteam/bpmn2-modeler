@@ -22,30 +22,35 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.bpmn2.Assignment;
 import org.eclipse.bpmn2.Bpmn2Package;
+import org.eclipse.bpmn2.DataAssociation;
 import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.Expression;
 import org.eclipse.bpmn2.FormalExpression;
 import org.eclipse.bpmn2.Import;
-import org.eclipse.bpmn2.Interface;
 import org.eclipse.bpmn2.ItemDefinition;
 import org.eclipse.bpmn2.Lane;
-import org.eclipse.bpmn2.Operation;
 import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.RootElement;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.di.BPMNEdge;
 import org.eclipse.bpmn2.di.BPMNLabel;
+import org.eclipse.bpmn2.di.BPMNPlane;
 import org.eclipse.bpmn2.di.BPMNShape;
 import org.eclipse.bpmn2.di.BpmnDiPackage;
 import org.eclipse.bpmn2.modeler.core.Activator;
+import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory.Bpmn2ModelerDocumentRootImpl;
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.runtime.CustomTaskDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor.Property;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
+import org.eclipse.bpmn2.modeler.core.utils.ImportUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
+import org.eclipse.bpmn2.modeler.core.utils.NamespaceUtil;
+import org.eclipse.bpmn2.modeler.core.utils.Tuple;
 import org.eclipse.bpmn2.util.Bpmn2ResourceImpl;
 import org.eclipse.bpmn2.util.ImportHelper;
 import org.eclipse.bpmn2.util.OnlyContainmentTypeInfo;
@@ -59,6 +64,8 @@ import org.eclipse.dd.dc.DcPackage;
 import org.eclipse.dd.dc.Point;
 import org.eclipse.dd.di.DiPackage;
 import org.eclipse.dd.di.DiagramElement;
+import org.eclipse.emf.common.util.BasicEList;
+import org.eclipse.emf.common.util.ECollections;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
@@ -72,8 +79,11 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EObjectWithInverseEList;
 import org.eclipse.emf.ecore.util.ExtendedMetaData;
+import org.eclipse.emf.ecore.xmi.IllegalValueException;
+import org.eclipse.emf.ecore.xmi.XMIException;
 import org.eclipse.emf.ecore.xmi.XMLHelper;
 import org.eclipse.emf.ecore.xmi.XMLLoad;
 import org.eclipse.emf.ecore.xmi.XMLResource;
@@ -81,6 +91,10 @@ import org.eclipse.emf.ecore.xmi.XMLSave;
 import org.eclipse.emf.ecore.xmi.impl.ElementHandlerImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMLLoadImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMLSaveImpl;
+import org.eclipse.emf.ecore.xmi.impl.XMLString;
+import org.eclipse.wst.wsdl.Definition;
+import org.eclipse.wst.wsdl.PortType;
+import org.eclipse.wst.wsdl.util.WSDLResourceImpl;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -95,6 +109,93 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 	protected BpmnXmlHelper xmlHelper;
 	protected QNameURIHandler uriHandler;
 	public HashMap xmlNameToFeatureMap = new HashMap();
+	protected static HashSet<EStructuralFeature> qnameMap = new HashSet<EStructuralFeature>();
+	static {
+		qnameMap.add(Bpmn2Package.eINSTANCE.getExtension_Definition());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getRelationship_Sources());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getRelationship_Targets());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getAssociation_SourceRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getAssociation_TargetRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getGroup_CategoryValueRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getCorrelationKey_CorrelationPropertyRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getCorrelationProperty_Type());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getCorrelationPropertyBinding_CorrelationPropertyRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getCorrelationPropertyRetrievalExpression_MessageRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getCorrelationSubscription_CorrelationPropertyBinding());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getError_StructureRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getEscalation_StructureRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getFlowElement_CategoryValueRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getFlowNode_Incoming());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getFlowNode_Outgoing());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getFormalExpression_EvaluatesToTypeRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getInputOutputBinding_OperationRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getItemDefinition_StructureRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getMessage_ItemRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getResourceParameter_Type());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getInterface_ImplementationRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getOperation_InMessageRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getOperation_OutMessageRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getOperation_ErrorRefs());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getOperation_ImplementationRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getCallConversation_CalledCollaborationRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getConversationAssociation_InnerConversationNodeRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getConversationAssociation_OuterConversationNodeRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getConversationLink_SourceRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getConversationLink_TargetRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getConversationNode_MessageFlowRefs());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getConversationNode_ParticipantRefs());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getConversationNode_CorrelationKeys());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getMessageFlow_SourceRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getMessageFlow_TargetRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getMessageFlow_MessageRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getMessageFlowAssociation_InnerMessageFlowRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getMessageFlowAssociation_OuterMessageFlowRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getParticipant_InterfaceRefs());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getParticipant_EndPointRefs());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getParticipant_ProcessRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getParticipantAssociation_InnerParticipantRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getParticipantAssociation_OuterParticipantRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getCallableElement_SupportedInterfaceRefs());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getCallActivity_CalledElementRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getMultiInstanceLoopCharacteristics_LoopDataInputRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getMultiInstanceLoopCharacteristics_LoopDataOutputRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getMultiInstanceLoopCharacteristics_OneBehaviorEventRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getMultiInstanceLoopCharacteristics_NoneBehaviorEventRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getReceiveTask_MessageRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getReceiveTask_OperationRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getResourceRole_ResourceRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getSendTask_MessageRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getSendTask_OperationRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getServiceTask_OperationRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getItemAwareElement_ItemSubjectRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getBoundaryEvent_AttachedToRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getCatchEvent_EventDefinitionRefs());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getCompensateEventDefinition_ActivityRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getErrorEventDefinition_ErrorRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getEscalationEventDefinition_EscalationRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getLinkEventDefinition_Source());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getLinkEventDefinition_Target());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getMessageEventDefinition_OperationRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getMessageEventDefinition_MessageRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getSignal_StructureRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getSignalEventDefinition_SignalRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getThrowEvent_EventDefinitionRefs());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getProcess_Supports());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getProcess_DefinitionalCollaborationRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getLane_PartitionElementRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getGlobalChoreographyTask_InitiatingParticipantRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getChoreographyActivity_ParticipantRefs());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getChoreographyActivity_InitiatingParticipantRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getChoreographyTask_MessageFlowRef());
+		qnameMap.add(Bpmn2Package.eINSTANCE.getCallChoreography_CalledChoreographyRef());
+		qnameMap.add(BpmnDiPackage.eINSTANCE.getBPMNPlane_BpmnElement());
+		qnameMap.add(BpmnDiPackage.eINSTANCE.getBPMNShape_BpmnElement());
+		qnameMap.add(BpmnDiPackage.eINSTANCE.getBPMNShape_ChoreographyActivityShape());
+		qnameMap.add(BpmnDiPackage.eINSTANCE.getBPMNEdge_BpmnElement());
+		qnameMap.add(BpmnDiPackage.eINSTANCE.getBPMNEdge_SourceElement());
+		qnameMap.add(BpmnDiPackage.eINSTANCE.getBPMNEdge_TargetElement());
+		qnameMap.add(BpmnDiPackage.eINSTANCE.getBPMNLabel_LabelStyle());
+	}
 
 	/**
 	 * Creates an instance of the resource.
@@ -135,9 +236,15 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
         // only necessary if this resource will not be added to a ResourceSet instantly
         this.eAdapters().add(oppositeReferenceAdapter);
 	}
+	
+	public void save(Map<?, ?> options) throws IOException {
+		super.save(options);
+	}
 
     @Override
     protected XMLHelper createXMLHelper() {
+    	if (xmlHelper!=null)
+    		return xmlHelper;
         return new Bpmn2ModelerXmlHelper(this);
     }
 
@@ -156,6 +263,7 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 
 	@Override
 	protected XMLSave createXMLSave() {
+        prepareSave();
 		return new Bpmn2ModelerXMLSave(createXMLHelper()) {
 		};
 	}
@@ -163,7 +271,7 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 	@Override
 	protected void prepareSave() {
 		EObject cur;
-		Definitions thisDefinitions = ImportHelper.getDefinitions(this);
+		Definitions definitions = ImportHelper.getDefinitions(this);
 		for (Iterator<EObject> iter = getAllContents(); iter.hasNext();) {
 			cur = iter.next();
 
@@ -171,10 +279,10 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 
 			for (EObject referenced : cur.eCrossReferences()) {
 				setDefaultId(referenced);
-				if (thisDefinitions != null) {
+				if (definitions != null) {
 					Resource refResource = referenced.eResource();
 					if (refResource != null && refResource != this) {
-						createImportIfNecessary(thisDefinitions, refResource);
+						createImportIfNecessary(definitions, refResource);
 					}
 				}
 			}
@@ -182,7 +290,7 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 	}
 
 	/**
-	 * Set the ID attribute of cur to a generated ID, if it is not already set.
+	 * Generate an ID attribute for the given BPMN2 element if not already set.
 	 * 
 	 * @param obj
 	 *            The object whose ID should be set.
@@ -197,7 +305,7 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 	}
 
 	/**
-	 * We need extend the standard SAXXMLHandler to hook into the handling of
+	 * We need to extend the standard SAXXMLHandler to hook into the handling of
 	 * attribute references which may be either simple ID Strings or QNames.
 	 * We'll search through all of the objects' IDs first to find the one we're
 	 * looking for. If not, we'll try a QName search.
@@ -205,20 +313,8 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 	protected static class Bpmn2ModelerXmlHandler extends BpmnXmlHandler {
 
 		Bpmn2Preferences prefs = null;
-		static HashSet<EStructuralFeature> qnameFeatures = new HashSet<EStructuralFeature>();
-		
-		static {
-			qnameFeatures.add(Bpmn2Package.eINSTANCE.getItemDefinition_StructureRef());
-			qnameFeatures.add(Bpmn2Package.eINSTANCE.getMessage_ItemRef());
-			qnameFeatures.add(Bpmn2Package.eINSTANCE.getError_StructureRef());
-			qnameFeatures.add(Bpmn2Package.eINSTANCE.getInterface_ImplementationRef());
-			qnameFeatures.add(Bpmn2Package.eINSTANCE.getOperation_ImplementationRef());
-			qnameFeatures.add(Bpmn2Package.eINSTANCE.getOperation_InMessageRef());
-			qnameFeatures.add(Bpmn2Package.eINSTANCE.getOperation_OutMessageRef());
-			qnameFeatures.add(Bpmn2Package.eINSTANCE.getOperation_ErrorRefs());
-		};
+		ImportUtil importHandler = new ImportUtil();
 
-		
 		public Bpmn2ModelerXmlHandler(XMLResource xmiResource, XMLHelper helper, Map<?, ?> options) {
 			super(xmiResource, helper, options);
 		}
@@ -236,6 +332,18 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 		}
 
 		@Override
+		protected void createObject(EObject peekObject, EStructuralFeature feature) {
+			super.createObject(peekObject, feature);
+			EObject newObject = objects.peekEObject();
+			if (newObject!=null && newObject!=peekObject) {
+				ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(newObject);
+				if (adapter!=null) {
+					adapter.setProperty(ExtendedPropertiesAdapter.LINE_NUMBER, getLineNumber());
+				}
+			}
+		}
+
+		@Override
 		protected void handleObjectAttribs(EObject obj) {
 			super.handleObjectAttribs(obj);
 			if (attribs != null) {
@@ -247,7 +355,7 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 						// and qualify any qnameFeatures contained in this object...
 						String namespaceURI = attribs.getValue(i);
 						for (EStructuralFeature f : obj.eClass().getEAllStructuralFeatures()) {
-							if (qnameFeatures.contains(f)) {
+							if (qnameMap.contains(f)) {
 								Object value = obj.eGet(f);
 								if (ModelUtil.isStringWrapper(value)) {
 									String localpart = ModelUtil.getStringWrapperValue(value);
@@ -314,59 +422,45 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 		@Override
 		protected void setValueFromId(EObject object, EReference eReference, String ids) {
 
-			EObject value = null;
+			Object value = null;
 
-			// hack to handle QNames and arbitrary strings in ItemDefinition structureRefs,
-			// Interface implementationRefs and Operation implementationRefs
-			if (
-					(object instanceof ItemDefinition &&
-						eReference == Bpmn2Package.eINSTANCE.getItemDefinition_StructureRef()) ||
-					(object instanceof Interface &&
-							eReference == Bpmn2Package.eINSTANCE.getInterface_ImplementationRef()) ||
-					(object instanceof Operation &&
-							eReference == Bpmn2Package.eINSTANCE.getOperation_ImplementationRef())
-			) {
-//				try {
-//					// if the ID string is a URI, try to resolve and load the object
-//					URI uri = uriHandler.resolve( URI.createURI(ids) );
-//					value = resourceSet.getEObject(uri, true);
-//				}
-//				catch (Exception e) {
-//				}
-				if (value==null) {
-					// not a URI or can't find EObject: create a string wrapper EObject
-					object.eSet(eReference, ModelUtil.createStringWrapper(ids));
+			// Handle QNames and arbitrary strings in BPMN2 element references
+			if ( qnameMap.contains(eReference) ) {
+				// This reference might be a QName (according to the BPMN2 spec!)
+				// or it might not, in the case of some jBPM Java type references.
+				int i = ids.indexOf(":");
+				if (i>0) {
+					// if the ID string is a QName, try to resolve and load the object
+					String prefix = ids.substring(0,i);
+					String localname = ids.substring(i+1);
+					String namespace = helper.getNamespaceURI(prefix);
+					Import imp = importHandler.findImportForNamespace(helper.getResource(), namespace);
+					if (imp!=null) {
+						value = importHandler.getObjectForLocalname(imp, object, eReference, localname);
+					}
 				}
-				else
-					object.eSet(eReference, value);
-				return;
-			}
-
-			for (EObject o : objects) {
-				TreeIterator<EObject> iter = o.eAllContents();
-				while (iter.hasNext()) {
-					value = iter.next();
-					EStructuralFeature feature = value.eClass().getEIDAttribute();
-					if (feature != null && value.eGet(feature) != null) {
-						Object id = value.eGet(feature);
-						if (id != null && id.equals(ids)) {
-							try {
-								if (object.eGet(eReference) instanceof EList) {
-									((EList)object.eGet(eReference)).add(value);
-								}
-								else {
-									object.eSet(eReference, value);
-								}
-							} catch (Exception e) {
-								String msg = "Invalid or unknown reference from:\n  " +
-										object + "\nfeature:\n  " + eReference +
-										"\nto:\n  " + value;
-								IStatus s = new Status(Status.ERROR, Activator.PLUGIN_ID,
-										msg, e);
-								Activator.getDefault().logStatus(s);
-							}
-							return;
+				
+				if (value==null) {
+					// not a QName or can't find EObject: create a string wrapper EObject for this thing
+					value = ModelUtil.createStringWrapper(ids);
+				}
+				
+				if (value!=null && eReference.getEType().isInstance(value)) {
+					try {
+						if (eReference.isMany()) {
+							((EList)object.eGet(eReference)).add(value);
 						}
+						else {
+							object.eSet(eReference, value);
+						}
+						return;
+					} catch (Exception e) {
+						String msg = "Invalid or unknown reference from:\n  " +
+								object + "\nfeature:\n  " + eReference +
+								"\nto:\n  " + value;
+						IStatus s = new Status(Status.ERROR, Activator.PLUGIN_ID,
+								msg, e);
+						Activator.getDefault().logStatus(s);
 					}
 				}
 			}
@@ -391,10 +485,62 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 		}
 	}
 	
-	public static class Bpmn2ModelerXMLSave extends XMLSaveImpl {
+	public class Bpmn2ModelerXMLSave extends XMLSaveImpl {
 		protected float minX = Float.MAX_VALUE;
 		protected float minY = Float.MAX_VALUE;
+		protected int lineNum = 1;
+		protected int lineOffset = 0;
 
+		@SuppressWarnings("serial")
+		protected class Bpmn2ModelerXMLString extends XMLString {
+			public Bpmn2ModelerXMLString(String publicId, String systemId) {
+				super(Integer.MAX_VALUE, publicId, systemId, null);
+			}
+        	@Override
+        	public void addAttribute(String name, String value) {
+        		// This special little hack removes namespace declarations
+        		// and schemaLocation attributes for the XSI namespace if the prefix
+        		// is anything other than "xsi". The EMF serializers rely on the fact
+        		// that the XSI namespace prefix is ALWAYS "xsi" and they WILL create
+        		// a duplicate namespace declaration if one already existed under a
+        		// different prefix. This would result a nasty warning from the parser.
+        		if (XSI_URI.equals(value) && name.startsWith("xmlns:")) {
+        			int i = name.indexOf(":");
+        			String prefix = name.substring(i+1);
+        			if (!ExtendedMetaData.XSI_PREFIX.equals(prefix))
+        				return;
+        		}
+        		if (name.contains(":schemaLocation")) {
+        			if (!XSI_SCHEMA_LOCATION.equals(name))
+        				return;
+        		}
+        		super.addAttribute(name, value);
+        	}
+
+			@Override
+			public void addAttributeNS(String prefix, String localName, String value) {
+				// Same hack as above - see comments.
+				if (XSI_URI.equals(value) && !ExtendedMetaData.XSI_PREFIX.equals(localName))
+					return;
+				super.addAttributeNS(prefix, localName, value);
+			}
+			
+			@Override
+			public void addLine() {
+				++lineNum;
+				super.addLine();
+				lineOffset = getLength();
+			}
+			
+			public int getLineNum() {
+				return lineNum;
+			}
+			
+			public int getColumnNum() {
+				return getLength() - lineOffset + 1;
+			}
+		};
+		
 		public Bpmn2ModelerXMLSave(XMLHelper helper) {
 			super(helper);
 			helper.getPrefixToNamespaceMap().clear();
@@ -409,8 +555,21 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 			for (BPMNDiagram bpmnDiagram : diagrams) {
 				findMinXY(bpmnDiagram);
 			}
+			
+			doc = createXMLString();
 		}
 
+		protected XMLString createXMLString() {
+			return new Bpmn2ModelerXMLString(publicId, systemId);
+		}
+		
+		protected Bpmn2ModelerXMLString getXMLString() {
+			if (doc==null) {
+				createXMLString();
+			}
+			return (Bpmn2ModelerXMLString)doc;
+		}
+		
         @Override
 		protected void endSave(List<? extends EObject> contents) throws IOException
 		{
@@ -436,21 +595,20 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
             }
             
             // we also want to store x and y with value zero, would be skipped because of default value otherwise
-            if (o instanceof Bounds) {
+            if (o instanceof Bounds || o instanceof Point) {
             	return true;
             }
             
             // empty Expressions should not be saved
-            if (f!=null && f.getEType() == Bpmn2Package.eINSTANCE.getExpression()) {
+            if (f!=null && (f.getEType() == Bpmn2Package.eINSTANCE.getExpression() ||
+            		f.getEType() == Bpmn2Package.eINSTANCE.getFormalExpression())) {
             	Expression expression = (Expression)o.eGet(f);
             	if (expression==null)
             		return false;
             	if (expression instanceof FormalExpression) {
 	            	FormalExpression formalExpression = (FormalExpression)expression;
-	            	if (
-	            			(formalExpression.getBody()==null || formalExpression.getBody().isEmpty()) &&
-	            			(formalExpression.getLanguage()==null || formalExpression.getLanguage().isEmpty()) &&
-	            			formalExpression.getEvaluatesToTypeRef()==null) {
+            		String body = ModelUtil.getExpressionBody(formalExpression);
+	            	if (body==null) {
 	            		return false;
 	            	}
             	}
@@ -464,6 +622,25 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 					Bpmn2Package.eINSTANCE.getDocumentation_Text().equals(f))
 				return false;
             
+			// don't save Assignments if they are invalid: Assignments must have
+			// both a "from" and "to" expression and they may not be empty strings.
+			if (o instanceof DataAssociation && "assignment".equals(f.getName())) {
+				DataAssociation da = (DataAssociation)o;
+				for (Assignment a : da.getAssignment()) {
+					Expression from = a.getFrom();
+					if (from instanceof FormalExpression) {
+						String body = ModelUtil.getExpressionBody(((FormalExpression)from));
+						if (body==null || body.isEmpty())
+							return false;
+					}
+					Expression to = a.getTo();
+					if (to instanceof FormalExpression) {
+						String body = ModelUtil.getExpressionBody(((FormalExpression)to));
+						if (body==null || body.isEmpty())
+							return false;
+					}
+				}
+			}
             return super.shouldSaveFeature(o, f);
         }
 		
@@ -500,6 +677,37 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 					minX = Math.min(minX, b.getX());
 					minY = Math.min(minY, b.getY());
 				}
+			}
+		}
+
+		@Override
+		protected void saveContainedMany(EObject o, EStructuralFeature f) {
+			if (o instanceof BPMNPlane && f==DiPackage.eINSTANCE.getPlane_PlaneElement()) {
+				// Sort the Diagram Elements in ascending Z-order
+				BPMNPlane plane = (BPMNPlane) o;
+				EList<DiagramElement> originalList = new BasicEList<DiagramElement>();
+				originalList.addAll(plane.getPlaneElement());
+				
+				plane.eSetDeliver(false);
+				ECollections.sort((EList<DiagramElement>) plane.getPlaneElement(), new DIZorderComparator());
+				super.saveContainedMany(o, f);
+				ECollections.setEList((EList)plane.getPlaneElement(),originalList);
+				plane.eSetDeliver(true);
+			}
+			else if (o instanceof Definitions && f==Bpmn2Package.eINSTANCE.getDefinitions_RootElements()) {
+				// Sort the Definitions Root Elements to avoid forward references
+				Definitions definitions = (Definitions) o;
+				EList<RootElement> originalList = new BasicEList<RootElement>();
+				originalList.addAll(definitions.getRootElements());
+
+				definitions.eSetDeliver(false);
+				ECollections.sort((EList<RootElement>)definitions.getRootElements(), new RootElementComparator());
+				super.saveContainedMany(o, f);
+				ECollections.setEList((EList)definitions.getRootElements(),originalList);
+				definitions.eSetDeliver(true);
+			}
+			else {
+				super.saveContainedMany(o, f);
 			}
 		}
 
@@ -551,7 +759,7 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 					}
 				}
 			}
-			
+
 			super.saveElement(o, f);
 			
 			if (minX<0 || minY<0) {
@@ -612,7 +820,7 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 			super.traverse(contents);
 		}
 
-		public static class Bpmn2Lookup extends XMLSaveImpl.Lookup {
+		public class Bpmn2Lookup extends XMLSaveImpl.Lookup {
 			public Bpmn2Lookup(XMLMap map, ExtendedMetaData extendedMetaData, ElementHandler elementHandler) {
 				super(map, extendedMetaData, elementHandler);
 			}
@@ -627,67 +835,114 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 				}
 
 				EStructuralFeature[] featureList = listFeatures(cls);
+				EStructuralFeature[] newFeatureList = featureList;
 				if (c == null) {
+					newFeatureList = reorderFeatureList(cls, featureList);
 					classes[index] = cls;
-					features[index] = featureList;
-					featureKinds[index] = listKinds(featureList);
+					features[index] = newFeatureList;
+					featureKinds[index] = listKinds(newFeatureList);
 				}
+				return newFeatureList;
+			}
 
-				if (cls.getName().equalsIgnoreCase("Process")) {
-					EStructuralFeature[] modifiedFeatureList = getModifiedProcessFeatureSet(featureList);
-					if (c == null) {
-						classes[index] = cls;
-						features[index] = modifiedFeatureList;
-						featureKinds[index] = listKinds(modifiedFeatureList);
-					}
-					return modifiedFeatureList;
-				}
+			/**
+			 * Specifies the serialization order of features for a given ECLass.
+			 * Subclasses should override this behavior.
+			 * The default implementation simply returns the original list.
+			 * 
+			 * @param cls - EClass whose features need to be reordered
+			 * @param featureList - the original feature list as provided by the Bpmn2Package
+			 * @return a feature list that specifies the new ordering
+			 */
+			protected EStructuralFeature[] reorderFeatureList(EClass cls, EStructuralFeature[] featureList) {
 				return featureList;
 			}
-		}
-
-		private static EStructuralFeature[] getModifiedProcessFeatureSet(EStructuralFeature[] processFeatureList) {
+			
 			/**
-			 * Feature list for Process provided by eclipse.bpmn2: -
-			 * extensionDefinitions (0) - id (1) - anyAttribute (2) - name (3) -
-			 * definitionalCollaborationRef (4) - isClosed (5) - isExecutable
-			 * (6) - processType (7) - extensionValues (8) - documentation (9) -
-			 * supportedInterfaceRefs (10) - ioSpecification (11) - ioBinding
-			 * (12) - laneSets (13) - flowElements (14) - auditing (15) -
-			 * monitoring (16) - properties (17) - artifacts (18) - resources
-			 * (19) - correlationSubscriptions (20) - supports (21) Semantic.xsd
-			 * sequence definition for Process: <xsd:sequence> <xsd:element
-			 * ref="auditing" minOccurs="0" maxOccurs="1"/> <xsd:element
-			 * ref="monitoring" minOccurs="0" maxOccurs="1"/> <xsd:element
-			 * ref="property" minOccurs="0" maxOccurs="unbounded"/> <xsd:element
-			 * ref="laneSet" minOccurs="0" maxOccurs="unbounded"/> <xsd:element
-			 * ref="flowElement" minOccurs="0" maxOccurs="unbounded"/>
-			 * <xsd:element ref="artifact" minOccurs="0" maxOccurs="unbounded"/>
-			 * <xsd:element ref="resourceRole" minOccurs="0"
-			 * maxOccurs="unbounded"/> <xsd:element
-			 * ref="correlationSubscription" minOccurs="0"
-			 * maxOccurs="unbounded"/> <xsd:element name="supports"
-			 * type="xsd:QName" minOccurs="0" maxOccurs="unbounded"/>
-			 * </xsd:sequence>
+			 * Change the serialization order of features for a given EClass. The string array "featureNames"
+			 * specifies a new ordering for some or all of the features in the feature list; these names must
+			 * be contiguous in the original list. For example, given the following original feature list:
 			 * 
-			 * Moving auditing, monitoring, property above flowElements...
+			 * "w"
+			 * "x"
+			 * "a"
+			 * "b"
+			 * "c"
+			 * "d"
+			 * "e"
+			 * "y"
+			 * "z"
+			 * 
+			 * The featureNames list may not contain this:
+			 * 
+			 * "b"
+			 * "a"
+			 * "e"
+			 * "d"
+			 * 
+			 * because the two sets "b", "a" and "e", "d" are not contiguous. The correct way of specifying this is:
+			 * 
+			 * "b"
+			 * "a"
+			 * "c"
+			 * "e"
+			 * "d"
+			 * 
+			 * Alternatively, the client could call this method twice, the first time with the first set ("b" and "a")
+			 * and a second time with the second set ("e" and "d).
+			 * 
+			 * @param cls
+			 * @param featureList
+			 * @param featureNames
+			 * @return
 			 */
+			protected EStructuralFeature[] reorderFeatureList(EClass cls, EStructuralFeature[] featureList, String[] featureNames) {
+				// the reordered list of features
+				EStructuralFeature[] newFeatureList = new EStructuralFeature[featureList.length];
+				// map of old to new array indexes
+				int[] indexMap = new int[featureList.length];
+				for (int i=0; i<indexMap.length; ++i)
+					indexMap[i] = -1;
 
-			EStructuralFeature[] retArray = new EStructuralFeature[processFeatureList.length];
-			for (int i = 0; i < 13; i++) {
-				retArray[i] = processFeatureList[i];
+				int startIndex = Integer.MAX_VALUE;
+				for (int i=0; i<featureList.length; ++i) {
+					for (int j=0; j<featureNames.length; ++j) {
+						if (featureList[i].getName().equals(featureNames[j])) {
+							if (i<startIndex) {
+								startIndex = i;
+								break;
+							}
+						}
+					}
+				}
+				
+				for (int newIndex=0; newIndex<featureNames.length; ++newIndex) {
+					String fn = featureNames[newIndex];
+					for (int oldIndex=0; oldIndex<featureList.length; ++oldIndex) {
+						EStructuralFeature f = featureList[oldIndex];
+						if (f.getName().equalsIgnoreCase(fn)) {
+							indexMap[oldIndex] = newIndex + startIndex;
+							break;
+						}
+					}
+				}
+				
+				for (int oldIndex=0; oldIndex<featureList.length; ++oldIndex) {
+					EStructuralFeature f = featureList[oldIndex];
+					int newIndex = indexMap[oldIndex];
+					if (newIndex>=0) {
+						newFeatureList[newIndex] = featureList[oldIndex];
+					}
+					else
+						newFeatureList[oldIndex] = featureList[oldIndex];
+				}
+				
+//				System.out.println("Reordered features for "+cls.getName());
+//				for (int newIndex=0; newIndex<newFeatureList.length; ++newIndex) {
+//					System.out.println("  "+newIndex+": "+newFeatureList[newIndex].getName()+" was "+featureList[newIndex].getName());
+//				}
+				return newFeatureList;
 			}
-			retArray[13] = processFeatureList[15]; // auditing
-			retArray[14] = processFeatureList[16]; // monitoring
-			retArray[15] = processFeatureList[17]; // properties
-			retArray[16] = processFeatureList[13]; // lanesets
-			retArray[17] = processFeatureList[14]; // flow elements
-			retArray[18] = processFeatureList[18]; // artifacts
-			retArray[19] = processFeatureList[19]; // resources
-			retArray[20] = processFeatureList[20]; // correlationSubscriptions
-			retArray[21] = processFeatureList[21]; // supports
-
-			return retArray;
 		}
 	}
 	
@@ -737,7 +992,7 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 				// We already have an URI and not QName, e.g. URL
 				return qName;
 			}
-
+			
 			// Split into prefix and local part (fragment)
 			String[] parts = qName.split(":");
 			String prefix, fragment;
@@ -763,8 +1018,26 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 				isTargetNamespacePrefix = xmlHelper.isTargetNamespace(prefix);
 			} catch (Exception e) {
 			}
-			if (!isTargetNamespacePrefix)
+			if (!isTargetNamespacePrefix) {
+				EObject o;
+				String uriString = xmlHelper.getPathForPrefix(prefix).appendFragment(fragment).toString();
+				URI uri = URI.createURI(uriString);
+				ResourceSet rs = ModelUtil.slightlyHackedResourceSet(xmlHelper.getResource().getResourceSet());
+				Resource r = ((Bpmn2ModelerResourceSetImpl)rs).getResource(uri, true, "wsdl"); // the only problem here...
+				if (r instanceof WSDLResourceImpl) {
+					o = r.getContents().get(0);
+					Definition def = (Definition)o;
+					// if eReference -- operation.implementationref
+					// search all of these:
+					for (PortType pt : (List<PortType>)def.getEPortTypes()) {
+						for (org.eclipse.wst.wsdl.Operation op : (List<org.eclipse.wst.wsdl.Operation>)pt.getEOperations()) {
+							
+						}
+					}
+					// and so on for other eReference bpmn2 types
+				}
 				return xmlHelper.getPathForPrefix(prefix).appendFragment(fragment).toString();
+			}
 			else
 				return baseURI.appendFragment(fragment).toString();
 		}
@@ -774,102 +1047,23 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 
 		// List of all EReferences that are defined as type="xsd:QName" in the BPMN 2.0 Schema
 		// This information is not represented in the MDT BPMN2 project metamodel. 
-		protected HashSet<EStructuralFeature> qnameMap = new HashSet<EStructuralFeature>();
 		boolean isQNameFeature = false;
+		ImportUtil importHandler = new ImportUtil();
 
 		public Bpmn2ModelerXmlHelper(Bpmn2ResourceImpl resource) {
 			super(resource);
-			qnameMap.add(Bpmn2Package.eINSTANCE.getExtension_Definition());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getRelationship_Sources());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getRelationship_Targets());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getAssociation_SourceRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getAssociation_TargetRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getGroup_CategoryValueRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getCorrelationKey_CorrelationPropertyRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getCorrelationProperty_Type());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getCorrelationPropertyBinding_CorrelationPropertyRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getCorrelationPropertyRetrievalExpression_MessageRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getCorrelationSubscription_CorrelationPropertyBinding());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getError_StructureRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getEscalation_StructureRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getFlowElement_CategoryValueRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getFlowNode_Incoming());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getFlowNode_Outgoing());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getFormalExpression_EvaluatesToTypeRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getInputOutputBinding_OperationRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getItemDefinition_StructureRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getMessage_ItemRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getResourceParameter_Type());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getInterface_ImplementationRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getOperation_InMessageRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getOperation_OutMessageRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getOperation_ErrorRefs());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getOperation_ImplementationRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getCallConversation_CalledCollaborationRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getConversationAssociation_InnerConversationNodeRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getConversationAssociation_OuterConversationNodeRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getConversationLink_SourceRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getConversationLink_TargetRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getConversationNode_MessageFlowRefs());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getConversationNode_ParticipantRefs());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getConversationNode_CorrelationKeys());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getMessageFlow_SourceRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getMessageFlow_TargetRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getMessageFlow_MessageRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getMessageFlowAssociation_InnerMessageFlowRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getMessageFlowAssociation_OuterMessageFlowRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getParticipant_InterfaceRefs());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getParticipant_EndPointRefs());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getParticipant_ProcessRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getParticipantAssociation_InnerParticipantRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getParticipantAssociation_OuterParticipantRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getCallableElement_SupportedInterfaceRefs());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getCallActivity_CalledElementRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getMultiInstanceLoopCharacteristics_LoopDataInputRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getMultiInstanceLoopCharacteristics_LoopDataOutputRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getMultiInstanceLoopCharacteristics_OneBehaviorEventRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getMultiInstanceLoopCharacteristics_NoneBehaviorEventRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getReceiveTask_MessageRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getReceiveTask_OperationRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getResourceRole_ResourceRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getSendTask_MessageRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getSendTask_OperationRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getServiceTask_OperationRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getItemAwareElement_ItemSubjectRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getBoundaryEvent_AttachedToRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getCatchEvent_EventDefinitionRefs());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getCompensateEventDefinition_ActivityRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getErrorEventDefinition_ErrorRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getEscalationEventDefinition_EscalationRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getLinkEventDefinition_Source());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getLinkEventDefinition_Target());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getMessageEventDefinition_OperationRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getMessageEventDefinition_MessageRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getSignal_StructureRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getSignalEventDefinition_SignalRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getThrowEvent_EventDefinitionRefs());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getProcess_Supports());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getProcess_DefinitionalCollaborationRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getLane_PartitionElementRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getGlobalChoreographyTask_InitiatingParticipantRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getChoreographyActivity_ParticipantRefs());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getChoreographyActivity_InitiatingParticipantRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getChoreographyTask_MessageFlowRef());
-			qnameMap.add(Bpmn2Package.eINSTANCE.getCallChoreography_CalledChoreographyRef());
-			qnameMap.add(BpmnDiPackage.eINSTANCE.getBPMNPlane_BpmnElement());
-			qnameMap.add(BpmnDiPackage.eINSTANCE.getBPMNShape_BpmnElement());
-			qnameMap.add(BpmnDiPackage.eINSTANCE.getBPMNShape_ChoreographyActivityShape());
-			qnameMap.add(BpmnDiPackage.eINSTANCE.getBPMNEdge_BpmnElement());
-			qnameMap.add(BpmnDiPackage.eINSTANCE.getBPMNEdge_SourceElement());
-			qnameMap.add(BpmnDiPackage.eINSTANCE.getBPMNEdge_TargetElement());
-			qnameMap.add(BpmnDiPackage.eINSTANCE.getBPMNLabel_LabelStyle());
 		}		
 		
 		@Override
 		public Object getValue(EObject eObject, EStructuralFeature eStructuralFeature) {
 			Object o = super.getValue(eObject, eStructuralFeature);
-			if (qnameMap.contains(eStructuralFeature))
-				isQNameFeature = true;
+			if (qnameMap.contains(eStructuralFeature)) {
+				List<String> prefixes = urisToPrefixes.get(getTargetNamespace());
+				if (prefixes!=null && prefixes.contains(""))
+					isQNameFeature = false;
+				else
+					isQNameFeature = true;
+			}
 			else
 				isQNameFeature = false;
 			return o;
@@ -879,8 +1073,26 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 		public String getHREF(EObject obj) {
 			// convert the attribute ID references to a QName
 			String s = super.getHREF(obj);
-			if (isQNameFeature && !ModelUtil.isStringWrapper(obj))
-				s = convertToQName(s);
+			if (isQNameFeature) {
+				if (ModelUtil.isStringWrapper(obj)) {
+					s = ModelUtil.getStringWrapperValue(obj);
+				}
+				else if (s.contains("#")) {
+					// object is a reference possibly to another document
+					Import imp = importHandler.findImportForObject(resource, obj);
+					if (imp!=null) {
+						String localname = importHandler.getLocalnameForObject(obj);
+						if (localname!=null) {
+							String prefix = NamespaceUtil.getPrefixForNamespace(resource, imp.getNamespace());
+							if (prefix!=null) {
+								s = prefix + ":" + localname;
+								return s;
+							}
+						}
+					}
+				}
+			}
+			
 			return s;
 		}
 
@@ -945,7 +1157,7 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 		 * @return the string "s" prefixed with the NS prefix for the targetNamespace.
 		 */
 		private String convertToQName(String s) {
-			if (!s.contains(":")) {
+			if (s!=null && !s.contains(":")) {
 				String prefix = getTargetNamespacePrefix();
 				if (prefix!=null && !prefix.isEmpty()) {
 					s = prefix + ":" + s;

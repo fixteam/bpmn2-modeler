@@ -103,9 +103,9 @@ public class ToolEnablementPropertyPage extends PropertyPage {
 		cboProfile = new Combo(container, SWT.READ_ONLY);
 		cboProfile.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		currentProfile = bpmn2Preferences.getDefaultModelEnablementProfile();
-		int i = 1;
+		int i = 0;
 		int iSelected = -1;
-		cboProfile.add("");
+//		cboProfile.add("");
 		for (ModelEnablementDescriptor me : currentRuntime.getModelEnablements()) {
 			String profile = me.getProfile();
 			String text = profile;

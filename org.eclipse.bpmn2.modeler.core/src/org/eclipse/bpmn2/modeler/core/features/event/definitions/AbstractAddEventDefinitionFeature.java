@@ -16,18 +16,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.bpmn2.BaseElement;
+import org.eclipse.bpmn2.CancelEventDefinition;
 import org.eclipse.bpmn2.CatchEvent;
+import org.eclipse.bpmn2.ConditionalEventDefinition;
 import org.eclipse.bpmn2.Event;
 import org.eclipse.bpmn2.EventDefinition;
+import org.eclipse.bpmn2.MessageEventDefinition;
+import org.eclipse.bpmn2.SignalEventDefinition;
+import org.eclipse.bpmn2.StartEvent;
+import org.eclipse.bpmn2.SubProcess;
 import org.eclipse.bpmn2.ThrowEvent;
+import org.eclipse.bpmn2.TimerEventDefinition;
+import org.eclipse.bpmn2.Transaction;
 import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2AddFeature;
 import org.eclipse.bpmn2.modeler.core.features.ContextConstants;
-import org.eclipse.bpmn2.modeler.core.features.IBpmn2AddFeature;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
+import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil.FillStyle;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.graphiti.IExecutionInfo;
 import org.eclipse.graphiti.features.IFeature;
 import org.eclipse.graphiti.features.IFeatureAndContext;
@@ -35,8 +45,6 @@ import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.impl.AddContext;
-import org.eclipse.graphiti.features.impl.AbstractAddShapeFeature;
-import org.eclipse.graphiti.mm.algorithms.Ellipse;
 import org.eclipse.graphiti.mm.algorithms.Polygon;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
@@ -54,7 +62,13 @@ public abstract class AbstractAddEventDefinitionFeature<T extends EventDefinitio
 	@Override
 	public boolean canAdd(IAddContext context) {
 		Object bo = getBusinessObjectForPictogramElement(context.getTargetContainer());
-		return bo != null && bo instanceof Event;
+		Object ed = context.getNewObject();
+		if (bo instanceof Event && ed instanceof EventDefinition) {
+			List<EClass> allowedItems = FeatureSupport.getAllowedEventDefinitions((Event) bo);
+			if (allowedItems.contains(((EventDefinition)ed).eClass()))
+				return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -73,6 +87,10 @@ public abstract class AbstractAddEventDefinitionFeature<T extends EventDefinitio
 	}
 
 	public void draw(Event event, EventDefinition eventDef, ContainerShape container) {
+		if (FeatureSupport.isLabelShape(container)) {
+			// don't draw decorators on Labels
+			return;
+		}
 
 		List<EventDefinition> eventDefinitions = ModelUtil.getEventDefinitions(event);
 		int size = eventDefinitions.size();

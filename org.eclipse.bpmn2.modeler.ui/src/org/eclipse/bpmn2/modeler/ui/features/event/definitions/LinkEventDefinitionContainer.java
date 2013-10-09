@@ -21,7 +21,7 @@ import org.eclipse.bpmn2.IntermediateCatchEvent;
 import org.eclipse.bpmn2.IntermediateThrowEvent;
 import org.eclipse.bpmn2.LinkEventDefinition;
 import org.eclipse.bpmn2.modeler.core.features.event.definitions.AbstractEventDefinitionFeatureContainer;
-import org.eclipse.bpmn2.modeler.core.features.event.definitions.CreateEventDefinition;
+import org.eclipse.bpmn2.modeler.core.features.event.definitions.AbstractCreateEventDefinitionFeature;
 import org.eclipse.bpmn2.modeler.core.features.event.definitions.DecorationAlgorithm;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
@@ -94,25 +94,10 @@ public class LinkEventDefinitionContainer extends AbstractEventDefinitionFeature
 		return linkShape;
 	}
 
-	public static class CreateLinkEventDefinition extends CreateEventDefinition<LinkEventDefinition> {
+	public static class CreateLinkEventDefinition extends AbstractCreateEventDefinitionFeature<LinkEventDefinition> {
 
 		public CreateLinkEventDefinition(IFeatureProvider fp) {
 			super(fp, "Link Event Definition", "Create "+"Link Event Definition");
-		}
-
-		@Override
-		public boolean canCreate(ICreateContext context) {
-			if (!super.canCreate(context)) {
-				return false;
-			}
-
-			Event e = (Event) getBusinessObjectForPictogramElement(context.getTargetContainer());
-
-			if (e instanceof IntermediateCatchEvent || e instanceof IntermediateThrowEvent) {
-				return true;
-			}
-
-			return false;
 		}
 
 		@Override

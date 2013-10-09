@@ -22,7 +22,7 @@ import org.eclipse.bpmn2.EventDefinition;
 import org.eclipse.bpmn2.StartEvent;
 import org.eclipse.bpmn2.SubProcess;
 import org.eclipse.bpmn2.modeler.core.features.event.definitions.AbstractEventDefinitionFeatureContainer;
-import org.eclipse.bpmn2.modeler.core.features.event.definitions.CreateEventDefinition;
+import org.eclipse.bpmn2.modeler.core.features.event.definitions.AbstractCreateEventDefinitionFeature;
 import org.eclipse.bpmn2.modeler.core.features.event.definitions.DecorationAlgorithm;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
@@ -99,44 +99,10 @@ public class CompensateEventDefinitionContainer extends AbstractEventDefinitionF
 		return compensateShape;
 	}
 
-	public static class CreateCompensateEventDefinition extends CreateEventDefinition<CompensateEventDefinition> {
+	public static class CreateCompensateEventDefinition extends AbstractCreateEventDefinitionFeature<CompensateEventDefinition> {
 
 		public CreateCompensateEventDefinition(IFeatureProvider fp) {
 			super(fp, "Compensate Event Definition", "Create "+"Compensate Event Definition");
-		}
-
-		@Override
-		public boolean canCreate(ICreateContext context) {
-			if (!super.canCreate(context)) {
-				return false;
-			}
-
-			Event e = (Event) getBusinessObjectForPictogramElement(context.getTargetContainer());
-
-			if (e instanceof BoundaryEvent) {
-				BoundaryEvent be = (BoundaryEvent) e;
-				return be.isCancelActivity();
-			}
-
-			if (e instanceof StartEvent) {
-				if (((StartEvent) e).isIsInterrupting() == false) {
-					return false;
-				}
-
-				EObject container = context.getTargetContainer().eContainer();
-				if (container instanceof Shape) {
-					Object o = getBusinessObjectForPictogramElement((Shape) container);
-					return o != null && o instanceof SubProcess;
-				}
-
-				return false;
-			}
-
-			if (e instanceof CatchEvent) {
-				return false;
-			}
-
-			return true;
 		}
 
 		@Override

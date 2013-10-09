@@ -13,9 +13,13 @@
 
 package org.eclipse.bpmn2.modeler.core.merrimac.dialogs;
 
+import java.lang.reflect.Field;
+
+import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.merrimac.IConstants;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
 import org.eclipse.bpmn2.modeler.core.utils.ErrorUtils;
+import org.eclipse.bpmn2.modeler.core.utils.JavaReflectionUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.validation.ValidationStatusAdapter;
 import org.eclipse.core.runtime.IStatus;
@@ -53,12 +57,15 @@ public abstract class ObjectEditor implements INotifyChangedListener {
 	private Label label;
 	protected ControlDecoration decoration;
 	protected int style;
-	
+	protected Class messages;
+	protected boolean isWidgetUpdating = false;
+
 	public ObjectEditor(AbstractDetailComposite parent, EObject object, EStructuralFeature feature) {
 		this.parent = parent;
 		this.object = object;
 		this.feature = feature;
 		this.style = SWT.NONE;
+    	messages = JavaReflectionUtil.findClass(parent, "Messages");
 	}
 	
 	/**
@@ -72,6 +79,10 @@ public abstract class ObjectEditor implements INotifyChangedListener {
 	 * @return the control created by the ObjectEditor subclasses (e.g. a Text, or Combo)
 	 */
 	protected abstract Control createControl(Composite composite, String label, int style);
+	
+	public void setStyle(int style) {
+		this.style = style;
+	}
 	
 	public Control createControl(Composite composite, String label) {
 		Control c = createControl(composite,label,style);
@@ -137,7 +148,57 @@ public abstract class ObjectEditor implements INotifyChangedListener {
         return false;
 	}
 	
+	protected FeatureEditingDialog createFeatureEditingDialog(EObject value) {
+		return new FeatureEditingDialog(getDiagramEditor(), object, feature, value);
+	}
+
+	/**
+	 * Returns a descriptive text string for use as a tooltip on the Label for this editor.
+	 * The default implementation constructs a key from the object and feature name owned by this
+	 * editor, and looks up the description text in the messages resource of the parent plugin.
+	 * 
+	 * @return
+	 */
+	protected String getToolTipText() {
+		String fieldName;
+		Field field;
+		String text = "";
+    	if (messages!=null) {
+    		try {
+    			// fetch the description for this EClass and feature
+	    		fieldName = "UI_" + object.eClass().getName() + "_" + feature.getName() + "_description";
+//				text += "\n" + fieldName + "\n";
+	    		field = messages.getField(fieldName);
+	    		text += (String)field.get(null);
+    		}
+    		catch (Exception e) {
+	    		try {
+	    			// if a description is not found for this EClass, try "Any"
+		    		fieldName = "UI_Any_" + feature.getName() + "_description";
+//	    			text += "\n" + fieldName + "\n";
+		    		field = messages.getField(fieldName);
+		    		text += (String)field.get(null);
+	    		}
+	    		catch (Exception e2) {
+	    		}
+    		}
+    		if (text==null || text.isEmpty())
+    			text = "No description for "+label.getText();
+    	}
+    	return text;
+	}
+	
+	/**
+	 * Updates the error decorators and tooltips of this editor's Label widget.
+	 */
 	protected void updateLabelDecorator() {
+		String tooltip = label.getToolTipText();
+		
+		if (tooltip==null && object!=null && feature!=null) {
+   			label.setToolTipText(getToolTipText());
+		}
+		
+		
 		boolean applies = false;
     	String image = null;
     	String text = null;

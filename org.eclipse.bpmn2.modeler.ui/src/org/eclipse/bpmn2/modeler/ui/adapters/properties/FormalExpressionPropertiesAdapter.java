@@ -23,8 +23,11 @@ import org.eclipse.bpmn2.modeler.core.adapters.FeatureDescriptor;
 import org.eclipse.bpmn2.modeler.core.adapters.InsertionAdapter;
 import org.eclipse.bpmn2.modeler.core.adapters.ObjectDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
+import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.util.FeatureMap;
+import org.eclipse.emf.ecore.xml.type.XMLTypePackage;
 import org.eclipse.emf.transaction.RecordingCommand;
 import org.eclipse.emf.transaction.TransactionalEditingDomain;
 
@@ -49,15 +52,16 @@ public class FormalExpressionPropertiesAdapter extends ExtendedPropertiesAdapter
     			
     			public void setValue(Object context, final Object value) {
     				final FormalExpression formalExpression = adopt(context);
+    				final String body = value==null ? null : value.toString();
     				InsertionAdapter.executeIfNeeded(formalExpression);
     				TransactionalEditingDomain editingDomain = getEditingDomain(formalExpression);
 					if (editingDomain == null) {
-	    				formalExpression.setBody(value.toString());
+	    				formalExpression.setBody(body);
 					} else {
 						editingDomain.getCommandStack().execute(new RecordingCommand(editingDomain) {
 							@Override
 							protected void doExecute() {
-			    				formalExpression.setBody(value.toString());
+			    				formalExpression.setBody(body);
 							}
 						});
 					}
@@ -66,9 +70,10 @@ public class FormalExpressionPropertiesAdapter extends ExtendedPropertiesAdapter
 	    		@Override
 	    		public String getDisplayName(Object context) {
 					FormalExpression expression = adopt(context);
-					if (expression.getBody()==null)
+					String body = ModelUtil.getExpressionBody(expression);
+					if (body==null)
 						return "";
-					return expression.getBody();
+					return body;
 	    		}
 	    		
 				@Override
@@ -89,6 +94,7 @@ public class FormalExpressionPropertiesAdapter extends ExtendedPropertiesAdapter
     	
     	final EStructuralFeature language = Bpmn2Package.eINSTANCE.getFormalExpression_Language();
 		setProperty(language, UI_IS_MULTI_CHOICE, Boolean.TRUE);
+		setProperty(language, UI_CAN_SET_NULL, Boolean.TRUE);
     	setFeatureDescriptor(language,
     		new FeatureDescriptor<FormalExpression>(adapterFactory,object,language) {
 				@Override
@@ -112,6 +118,9 @@ public class FormalExpressionPropertiesAdapter extends ExtendedPropertiesAdapter
 			}
     	);
 		
+		EStructuralFeature feature = Bpmn2Package.eINSTANCE.getFormalExpression_EvaluatesToTypeRef();
+		setProperty(feature, UI_IS_MULTI_CHOICE, Boolean.TRUE);
+    	setFeatureDescriptor(feature, new ItemDefinitionRefFeatureDescriptor<FormalExpression>(adapterFactory, object, feature));
 
 		setObjectDescriptor(new ObjectDescriptor<FormalExpression>(adapterFactory, object) {
 			@Override

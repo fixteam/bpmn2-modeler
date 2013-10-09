@@ -20,9 +20,12 @@ import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.CatchEvent;
 import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.ExtensionAttributeValue;
+import org.eclipse.bpmn2.Import;
+import org.eclipse.bpmn2.Interface;
 import org.eclipse.bpmn2.ItemDefinition;
 import org.eclipse.bpmn2.ItemKind;
 import org.eclipse.bpmn2.Process;
+import org.eclipse.bpmn2.Property;
 import org.eclipse.bpmn2.Relationship;
 import org.eclipse.bpmn2.SequenceFlow;
 import org.eclipse.bpmn2.Task;
@@ -58,6 +61,7 @@ import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.DroolsPackage;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.GlobalType;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.ImportType;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.BPSimDataType;
+import org.eclipse.bpmn2.modeler.ui.adapters.properties.ItemDefinitionPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.property.dialogs.SchemaImportDialog;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -66,10 +70,66 @@ import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
 public class JbpmModelUtil {
 
+	public static class ImportHandler extends ImportUtil {
+		private boolean createVariables = false;
+		private IType importedType = null;
+		
+	    public Interface createInterface(Definitions definitions, Import imp, IType type) {
+	    	importedType = type;
+	    	return super.createInterface(definitions, imp, type);
+	    }
+	    
+		public ItemDefinition createItemDefinition(Definitions definitions, Import imp, IType clazz) {
+			ItemDefinition itemDef = null;
+			if (clazz!=importedType) {
+				itemDef = findItemDefinition(definitions, imp, clazz);
+				if (itemDef==null) {
+					itemDef = super.createItemDefinition(definitions, imp, clazz);
+					JbpmModelUtil.addImport(clazz, itemDef, false, createVariables);
+					
+					// create process variables for referenced types only, not the containing class
+					if (createVariables) {
+						List<Process> processes = ModelUtil.getAllRootElements(definitions, Process.class);
+						if (processes.size()>0) {
+							Process process = processes.get(0);
+							String structName = clazz.getElementName();
+							int index = structName.lastIndexOf(".");
+							if (index>0)
+								structName = structName.substring(index+1);
+							String varName = structName + "Var";
+							index = 1;
+							boolean done;
+							do {
+								done = true;
+								for (Property p : process.getProperties()) {
+									if (varName.equals(p.getName())) {
+										varName = structName + "Var" + index++; 
+										done = false;
+										break;
+									}
+								}
+							} while (!done);
+							Property var = (Property) Bpmn2ModelerFactory.createFeature(processes.get(0), "properties");
+							var.setName(varName);
+							var.setId(varName);
+							var.setItemSubjectRef(itemDef);
+						}
+					}
+				}
+			}
+			return itemDef;
+		}
+
+		public void setCreateVariables(boolean createVariables) {
+			this.createVariables = createVariables;
+		}
+	}
+	
 	/**
 	 * Helper method to display a Java class import dialog and create a new ImportType. This method
 	 * will also create a corresponding ItemDefinition for the newly imported java type.
@@ -79,7 +139,7 @@ public class JbpmModelUtil {
 	 * @return an ImportType object if it was created, null if the user canceled the import dialog.
 	 */
 	public static IType showImportDialog(EObject object) {
-		Shell shell = ModelUtil.getEditor(object).getSite().getShell();
+		Shell shell = Display.getDefault().getActiveShell();
 		SchemaImportDialog dialog = new SchemaImportDialog(shell, SchemaImportDialog.ALLOW_JAVA);
 		if (dialog.open() == Window.OK) {
 			Object result[] = dialog.getResult();
@@ -91,6 +151,10 @@ public class JbpmModelUtil {
 	}
 	
 	public static ImportType addImport(final IType type, final EObject object) {
+		return addImport(type,object,true, false);
+	}
+	
+	public static ImportType addImport(final IType type, final EObject object, final boolean recursive, final boolean createVariables) {
 		if (type==null)
 			return null;
 		
@@ -112,8 +176,11 @@ public class JbpmModelUtil {
 				else if (processes.size()==1)
 					process = processes.get(0);
 				else {
-					Shell shell = ModelUtil.getEditor(object).getSite().getShell();
-					MessageDialog.openError(shell, "Error", "No processes defined!");
+					if (recursive) {
+						Shell shell = Display.getDefault().getActiveShell();
+						MessageDialog.openError(shell, "Error", "No processes defined!");
+					}
+					return null;
 				}
 			}
 		}
@@ -122,8 +189,10 @@ public class JbpmModelUtil {
 		List<ImportType> allImports = ModelUtil.getAllExtensionAttributeValues(process, ImportType.class);
 		for (ImportType it : allImports) {
 			if (className.equals(it.getName())) {
-				Shell shell = ModelUtil.getEditor(object).getSite().getShell();
-				MessageDialog.openWarning(shell, "Warning", "The import '"+className+"' already exists.");
+				if (recursive) {
+					Shell shell = Display.getDefault().getActiveShell();
+					MessageDialog.openWarning(shell, "Warning", "The import '"+className+"' already exists.");
+				}
 				return null;
 			}
 		}
@@ -137,60 +206,41 @@ public class JbpmModelUtil {
 			@Override
 			protected void doExecute() {
 				
+				ImportHandler importer = new ImportHandler();
+				importer.setCreateVariables(createVariables);
+				
 				ModelUtil.addExtensionAttributeValue(fProcess,
 						DroolsPackage.eINSTANCE.getDocumentRoot_ImportType(), newImport);
 				
-				if (object instanceof ItemDefinition) {
-					// update the ItemDefinition passed to us...
-					ItemDefinition oldItemDef = (ItemDefinition)object;
-					String oldName = ModelUtil.getStringWrapperValue(oldItemDef.getStructureRef());
-					// ...but only if the structureRef is empty
-					if (oldName!=null && !oldName.isEmpty()) {
-						// if not, duplicate the old one
-						ItemDefinition newItemDef = Bpmn2ModelerFactory.create(ItemDefinition.class);
-						newItemDef.setItemKind(ItemKind.PHYSICAL);
-						EObject structureRef = ModelUtil.createStringWrapper(oldName);
-						newItemDef.setStructureRef(structureRef);
-						// and add it as a new one
-						definitions.getRootElements().add(newItemDef);
-						ModelUtil.setID(newItemDef);
+				if (recursive) {
+					if (object instanceof ItemDefinition) {
+						// update the ItemDefinition passed to us
+						ItemDefinition oldItemDef = (ItemDefinition)object;
+						String oldName = ModelUtil.getStringWrapperValue(oldItemDef.getStructureRef());
+						// and now update the existing item's structureRef
+						oldItemDef.setItemKind(ItemKind.INFORMATION);
+						EObject structureRef = ModelUtil.createStringWrapper(className);
+						oldItemDef.setStructureRef(structureRef);
+						importer.createInterface(definitions, null, type);
 					}
-					// and now update the existing item's structureRef
-					oldItemDef.setItemKind(ItemKind.PHYSICAL);
-					EObject structureRef = ModelUtil.createStringWrapper(className);
-					oldItemDef.setStructureRef(structureRef);
-                    ImportUtil.createInterface(definitions, null, type);
-				}
-				else {
-					// create a new ItemDefinition
-                    ImportUtil.createItemDefinition(definitions, null, type);
-                    //ImportUtil.createInterface(definitions, null, type);
-//					ItemDefinition itemDef = Bpmn2ModelerFactory.create(ItemDefinition.class);
-//					itemDef.setItemKind(ItemKind.PHYSICAL);
-//					EObject structureRef = ModelUtil.createStringWrapper(className);
-//					itemDef.setStructureRef(structureRef);
-//					if (ImportUtil.findItemDefinition(definitions, itemDef)==null) {
-			
-						// create a reference to the ImportType as an extension element to the ItemDefinition?
-//						ImportType ref = (ImportType)DroolsFactory.eINSTANCE.create(DroolsPackage.eINSTANCE.getImportType());
-//						((InternalEObject)ref).eSetProxyURI(EcoreUtil.getURI(newImport));
-//						ModelUtil.addExtensionAttributeValue(itemDef, feature, ref);
-						// Nope, don't need this! The ItemDefinition needs to stick around, otherwise the data types
-						// for process variables and globals would disappear. Besides, jBPM allows data types
-						// (a.k.a. ItemDefinitions) to be defined as sort of "forward references" without actual
-						// knowledge of the physical structure of the data type - these get resolved (somehow,
-						// through FM maybe?) at runtime.
-						// As a side note: if a type is unknown (i.e. there is no "import") then the structure
-						// will be unknown in java scripts (FormalExpressions).
-			
-						// add the ItemDefinition to the root elements
-//						definitions.getRootElements().add(itemDef);
-//						ModelUtil.setID(itemDef);
-//					}
+					else {
+						// create a new ItemDefinition
+						importer.createItemDefinition(definitions, null, type);
+					}
 				}
 			}
 		});
+		
 		return newImport;
+	}
+
+	public static void removeImport(ImportType importType) {
+		Definitions definitions = ModelUtil.getDefinitions(importType);
+		Import imp = Bpmn2ModelerFactory.create(Import.class);
+		imp.setImportType(ImportUtil.IMPORT_TYPE_JAVA);
+		imp.setLocation(importType.getName());
+		definitions.getImports().add(imp);
+		ImportHandler.removeImport(imp);
 	}
 	
 	/**
@@ -234,44 +284,45 @@ public class JbpmModelUtil {
 			}
 			if (itemDef==null) {
 				// create a new ItemDefinition for the jBPM data type
-				itemDef = Bpmn2Factory.eINSTANCE.createItemDefinition();
-				itemDef.setItemKind(ItemKind.PHYSICAL);
-				ModelUtil.setID(itemDef,defs.eResource());
+				itemDef = Bpmn2ModelerFactory.create(ItemDefinition.class);
+				itemDef.setItemKind(ItemKind.INFORMATION);
 				itemDef.setStructureRef(ModelUtil.createStringWrapper(dts));
-				InsertionAdapter.add(defs, Bpmn2Package.eINSTANCE.getDefinitions_RootElements(), itemDef);
+				itemDef.setId("_"+dts);
+				if (defs!=null) {
+					InsertionAdapter.add(defs, Bpmn2Package.eINSTANCE.getDefinitions_RootElements(), itemDef);
+				}
 			}
 			choices.put(dt.getStringType(),itemDef);
 		}
 		
 		// add all imported data types
-		EObject parent = object;
-		while (parent!=null && !(parent instanceof org.eclipse.bpmn2.Process))
-			parent = parent.eContainer();
-		
-		String s;
-		List<ImportType> imports = ModelUtil.getAllExtensionAttributeValues(parent, ImportType.class);
-		for (ImportType it : imports) {
-			s = it.getName();
-			if (s!=null && !s.isEmpty())
-				choices.put(s, it);
-		}
-		
-		// add all Global variable types
-		List<GlobalType> globals = ModelUtil.getAllExtensionAttributeValues(parent, GlobalType.class);
-		for (GlobalType gt : globals) {
-			s = gt.getType();
-			if (s!=null && !s.isEmpty())
-				choices.put(s, gt);
-		}
+//		EObject process = object;
+//		while (process!=null && !(process instanceof org.eclipse.bpmn2.Process))
+//			process = process.eContainer();
+//		if (process==null) {
+//			List<Process> list = ModelUtil.getAllRootElements(defs, Process.class);
+//			if (list.size()>0)
+//				process = list.get(0);
+//		}
+//		
+//		String s;
+//		List<ImportType> imports = ModelUtil.getAllExtensionAttributeValues(process, ImportType.class);
+//		for (ImportType it : imports) {
+//			s = it.getName();
+//			if (s!=null && !s.isEmpty())
+//				choices.put(s, it);
+//		}
+//		
+//		// add all Global variable types
+//		List<GlobalType> globals = ModelUtil.getAllExtensionAttributeValues(process, GlobalType.class);
+//		for (GlobalType gt : globals) {
+//			s = gt.getType();
+//			if (s!=null && !s.isEmpty())
+//				choices.put(s, gt);
+//		}
 
 		// add all ItemDefinitions
-		List<ItemDefinition> itemDefs = ModelUtil.getAllRootElements(defs, ItemDefinition.class);
-		for (ItemDefinition id : itemDefs) {
-			s = ModelUtil.getStringWrapperValue(id.getStructureRef());
-			if (s==null || s.isEmpty())
-				s = id.getId();
-			choices.put(s,id);
-		}
+		choices.putAll( ItemDefinitionPropertiesAdapter.getChoiceOfValues(object) );
 		
 		return choices;
 	}
@@ -337,6 +388,7 @@ public class JbpmModelUtil {
 	public static ItemDefinition findOrCreateItemDefinition(EObject context, String structureRef) {
 		ItemDefinition itemDef = null;
 		Definitions definitions = ModelUtil.getDefinitions(context);
+		Resource resource = ModelUtil.getResource(context);
 		List<ItemDefinition> itemDefs = ModelUtil.getAllRootElements(definitions, ItemDefinition.class);
 		for (ItemDefinition id : itemDefs) {
 			String s = ModelUtil.getStringWrapperValue(id.getStructureRef());
@@ -347,10 +399,10 @@ public class JbpmModelUtil {
 		}
 		if (itemDef==null)
 		{
-			itemDef = Bpmn2ModelerFactory.create(ItemDefinition.class);
+			itemDef = Bpmn2ModelerFactory.create(resource, ItemDefinition.class);
 			itemDef.setStructureRef(ModelUtil.createStringWrapper(structureRef));
-			itemDef.setItemKind(ItemKind.PHYSICAL);
-			definitions.getRootElements().add(itemDef);
+			itemDef.setItemKind(ItemKind.INFORMATION);
+
 			ModelUtil.setID(itemDef);
 		}
 		return itemDef;
@@ -359,15 +411,16 @@ public class JbpmModelUtil {
 	public static BPSimDataType getBPSimData(EObject object) {
 		BPSimDataType processAnalysisData = null;
 		Relationship rel = null;
-		Resource resource = object.eResource();
+		Resource resource = ModelUtil.getResource(object);
 		Definitions definitions = (Definitions) ModelUtil.getDefinitions(object);
 		List<Relationship> relationships = definitions.getRelationships();
 		if (relationships.size()==0) {
-			rel = Bpmn2Factory.eINSTANCE.createRelationship();
+			rel = Bpmn2ModelerFactory.create(resource, Relationship.class);
 			definitions.getRelationships().add(rel);
 			rel.getSources().add(definitions);
 			rel.getTargets().add(definitions);
 			rel.setType("Simulation");
+			ModelUtil.setID(rel);
 		}
 		else {
 			rel = relationships.get(0);
@@ -408,14 +461,14 @@ public class JbpmModelUtil {
 		String id = be.getId();
 		for (ElementParameters ep : scenario.getElementParameters()) {
 			
-			if (id.equals(ep.getId())) {
+			if (id.equals(ep.getElementRef())) {
 				elementParams = ep;
 				break;
 			}
 		}
 		if (elementParams==null) {
 			elementParams = BpsimFactory.eINSTANCE.createElementParameters();
-			elementParams.setId(id);
+			elementParams.setElementRef(id);
 			ModelUtil.setID(elementParams, resource);
 			
 			if (be instanceof Task) {

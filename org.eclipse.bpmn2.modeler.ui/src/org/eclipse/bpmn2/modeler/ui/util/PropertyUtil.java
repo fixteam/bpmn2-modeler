@@ -90,7 +90,11 @@ public class PropertyUtil {
 	}
 	
 	public static Image getImage(EObject element) {
-		String field = "ICON_" + element.eClass().getName().toUpperCase();
+		return getImage(element.eClass().getName());
+	}
+	
+	public static Image getImage(String name) {
+		String field = "ICON_" + name.toUpperCase();
 		Field f;
 		try {
 			f = IConstants.class.getField(field);

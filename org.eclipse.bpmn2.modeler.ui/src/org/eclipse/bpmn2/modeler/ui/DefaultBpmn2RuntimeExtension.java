@@ -77,11 +77,6 @@ public class DefaultBpmn2RuntimeExtension implements IBpmn2RuntimeExtension {
 	public void initialize(DiagramEditor editor) {
 	}
 
-	@Override
-	public Composite getPreferencesComposite(Composite parent, Bpmn2Preferences preferences) {
-		return null;
-	}
-
 
 	/**
 	 * A simple XML parser that checks if the root element of an xml document contains any
@@ -151,11 +146,5 @@ public class DefaultBpmn2RuntimeExtension implements IBpmn2RuntimeExtension {
 
 	public static class RejectedException extends RuntimeException {
 		private static final long serialVersionUID = 1L;
-	}
-
-	@Override
-	public void modelObjectCreated(EObject object) {
-		// TODO Auto-generated method stub
-		
 	}
 }

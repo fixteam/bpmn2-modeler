@@ -31,12 +31,14 @@ import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.Tuple;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.graphiti.features.IAddFeature;
+import org.eclipse.graphiti.features.ICreateConnectionFeature;
 import org.eclipse.graphiti.features.ICreateFeature;
 import org.eclipse.graphiti.features.IDeleteFeature;
 import org.eclipse.graphiti.features.IDirectEditingFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.ILayoutFeature;
 import org.eclipse.graphiti.features.IMoveShapeFeature;
+import org.eclipse.graphiti.features.IReconnectionFeature;
 import org.eclipse.graphiti.features.IResizeShapeFeature;
 import org.eclipse.graphiti.features.IUpdateFeature;
 import org.eclipse.graphiti.features.context.IDeleteContext;
@@ -74,6 +76,11 @@ public class ChoreographyMessageLinkFeatureContainer extends PropertyBasedFeatur
 
 	@Override
 	public ICreateFeature getCreateFeature(IFeatureProvider fp) {
+		return null;
+	}
+	
+	@Override
+	public ICreateConnectionFeature getCreateConnectionFeature(IFeatureProvider fp) {
 		return null;
 	}
 
@@ -185,5 +192,11 @@ public class ChoreographyMessageLinkFeatureContainer extends PropertyBasedFeatur
 				}
 			}
 		};
+	}
+
+	@Override
+	public IReconnectionFeature getReconnectionFeature(IFeatureProvider fp) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

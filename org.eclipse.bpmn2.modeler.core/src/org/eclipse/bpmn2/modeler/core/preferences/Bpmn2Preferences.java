@@ -48,13 +48,14 @@ import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.preferences.ShapeStyle.RoutingStyle;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.core.internal.resources.ProjectPreferences;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
@@ -130,6 +131,8 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	public final static String PREF_CHECK_PROJECT_NATURE_LABEL = "Check if project is configured for BPMN2 Project Nature";
 	public final static String PREF_SIMPLIFY_LISTS = "simplify.lists";
 	public final static String PREF_SIMPLIFY_LISTS_LABEL = "Simplify Documentation lists";
+	public final static String PREF_DO_CORE_VALIDATION = "do.core.validation";
+	public final static String PREF_DO_CORE_VALIDATION_LABEL = "Perform Core BPMN 2.0 &validation";
 
 	private static Hashtable<IProject,Bpmn2Preferences> instances = null;
 	private static IProject activeProject;
@@ -161,7 +164,8 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	private String connectionTimeout;
 	private int popupConfigDialog;
 	private boolean popupConfigDialogFor[] = new boolean[6];
-	private String defaultModelEnablementProfile;
+	private String defaultModelEnablementProfile = "";
+	private boolean doCoreValidation;
 
 	private HashMap<Class, ShapeStyle> shapeStyles = new HashMap<Class, ShapeStyle>();
 	
@@ -227,8 +231,17 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 		if (filename==null) {
 			return getInstance();
 		}
-		IProject project = ResourcesPlugin.getWorkspace().getRoot().findMember(filename).getProject();
+		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+		if (root==null) {
+			return getInstance();
+		}
+		IResource res = ResourcesPlugin.getWorkspace().getRoot().findMember(filename);
+		if (res==null) {
+			return getInstance();
+		}
+		IProject project = res.getProject();
 		return getInstance(project);
+			
 	}
 	
 	/**
@@ -282,6 +295,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 		globalPreferences.setDefault(PREF_POPUP_CONFIG_DIALOG_FOR_EVENT_DEFS, false);
 		globalPreferences.setDefault(PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS, false);
 		globalPreferences.setDefault(PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS, false);
+		globalPreferences.setDefault(PREF_DO_CORE_VALIDATION, true);
 
 		for (Class key : shapeStyles.keySet()) {
 			globalPreferences.setDefault(getShapeStyleId(key), IPreferenceStore.STRING_DEFAULT_DEFAULT);
@@ -310,6 +324,8 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 			projectPreferences.remove(PREF_POPUP_CONFIG_DIALOG_FOR_EVENT_DEFS);
 			projectPreferences.remove(PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS);
 			projectPreferences.remove(PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS);
+			projectPreferences.remove(PREF_DO_CORE_VALIDATION);
+
 			for (Class key : shapeStyles.keySet()) {
 				projectPreferences.remove(getShapeStyleId(key));
 			}
@@ -338,6 +354,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 		globalPreferences.setToDefault(PREF_POPUP_CONFIG_DIALOG_FOR_EVENT_DEFS);
 		globalPreferences.setToDefault(PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS);
 		globalPreferences.setToDefault(PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS);
+		globalPreferences.setToDefault(PREF_DO_CORE_VALIDATION);
 
 		List<Class> keys = new ArrayList<Class>();
 		keys.addAll(shapeStyles.keySet());
@@ -419,6 +436,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 			popupConfigDialogFor[4] = getBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS, false);
 			popupConfigDialogFor[5] = getBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS, false);
 
+			doCoreValidation = getBoolean(PREF_DO_CORE_VALIDATION, true);
 
 			loaded = true;
 		}
@@ -454,6 +472,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 			setBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_EVENT_DEFS, popupConfigDialogFor[3]);
 			setBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS, popupConfigDialogFor[4]);
 			setBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS, popupConfigDialogFor[5]);
+			setBoolean(PREF_DO_CORE_VALIDATION, doCoreValidation);
 		}
 		
 		for (Entry<Class, ShapeStyle> entry : shapeStyles.entrySet()) {
@@ -492,6 +511,16 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	
 /*	public ShapeStyle getShapeStyle(Class clazz) {
 		ShapeStyle ss = shapeStyles.get(clazz);
+		if (ss==null) {
+			// maybe the given class is a subclass of one that we know about?
+			for (Entry<Class, ShapeStyle> entry : shapeStyles.entrySet()) {
+				Class c = entry.getKey();
+				if (c.isAssignableFrom(clazz)) {
+					ss = entry.getValue();
+					break;
+				}
+			}
+		}
 		if (ss==null) {
 			String key = getShapeStyleId(clazz);
 			String value;
@@ -595,7 +624,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 
 	public void setRuntime(TargetRuntime rt) {
 		
-		assert(rt!=null);
+		Assert.isTrue(rt!=null);
 		overrideGlobalString(PREF_TARGET_RUNTIME, rt.getId());
 		targetRuntime = rt;
 	}
@@ -726,6 +755,16 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	public void setShowPopupConfigDialog(Object context, boolean value) {
 		overrideGlobalInt(PREF_POPUP_CONFIG_DIALOG,  value ? 1 : 0);
 		popupConfigDialog = value ? 1 : 0;
+	}
+	
+	public boolean getDoCoreValidation() {
+		load();
+		return doCoreValidation;
+	}
+	
+	public void setDoCoreValidation(boolean enable) {
+		overrideGlobalBoolean(PREF_DO_CORE_VALIDATION, enable);
+		doCoreValidation = enable;
 	}
 
 	public boolean isHorizontalDefault() {

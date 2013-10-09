@@ -22,6 +22,7 @@ import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatyp
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.impl.type.IntegerDataType;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.impl.type.StringDataType;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.impl.type.UndefinedDataType;
+import org.eclipse.core.runtime.Assert;
 
 /**
  * @author Bob Brodt
@@ -32,7 +33,7 @@ public class DataTypeRegistry {
 	public static Hashtable<String,DataTypeFactory> instance = null;
 
 	public static DataTypeFactory getFactory(String type) {
-		assert(type!=null && !type.isEmpty());
+		Assert.isTrue(type!=null && !type.isEmpty());
 		
 		if (instance==null) {
 			instance = new Hashtable<String,DataTypeFactory>();

@@ -19,6 +19,7 @@ import org.eclipse.bpmn2.Process;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.ExternalProcess;
 import org.eclipse.bpmn2.modeler.ui.property.DescriptionPropertySection;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.viewers.ISelection;
@@ -78,6 +79,11 @@ public class JbpmDescriptionPropertySection extends DescriptionPropertySection {
 				BaseElement bpmnElement = ((BPMNDiagram)be).getPlane().getBpmnElement();
 				if (bpmnElement instanceof Process)
 					process = (Process)bpmnElement;
+			}
+			else if (be instanceof ExternalProcess) {
+				// TODO: hook into jBPM guvnor instance to fetch additional info maybe?
+				bindAttribute(be, "name");
+				return;
 			}
 			
 			if (process==null) {

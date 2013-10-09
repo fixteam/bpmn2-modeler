@@ -12,6 +12,7 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.runtime;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultPropertySection;
@@ -20,10 +21,10 @@ import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.graphiti.mm.pictograms.ConnectionDecorator;
+import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
-import org.eclipse.graphiti.ui.platform.AbstractPropertySectionFilter;
 import org.eclipse.jface.viewers.IFilter;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchPart;
@@ -36,7 +37,7 @@ public class Bpmn2SectionDescriptor extends AbstractSectionDescriptor {
 		protected String id;
 		protected String tab;
 		protected AbstractPropertySection sectionClass;
-		protected Class appliesToClass;
+		protected List<Class> appliesToClasses = new ArrayList<Class>();
 		protected String enablesFor;
 		protected String filterClassName;
 		protected PropertySectionFilter filter;
@@ -64,9 +65,12 @@ public class Bpmn2SectionDescriptor extends AbstractSectionDescriptor {
 				enablesFor = e.getAttribute("enablesFor");
 				String type = e.getAttribute("type");
 				if (type!=null && !type.isEmpty()) {
-					appliesToClass = Class.forName(type);
-					if (sectionClass instanceof DefaultPropertySection) {
-						((DefaultPropertySection)sectionClass).setAppliesTo(appliesToClass);
+					String types[] = type.split(" ");
+					for (String t : types) {
+						addAppliesToClass(Class.forName(t));
+						if (sectionClass instanceof DefaultPropertySection) {
+							((DefaultPropertySection)sectionClass).addAppliesToClass(Class.forName(t));
+						}
 					}
 				}
 			} catch (Exception e1) {
@@ -91,21 +95,31 @@ public class Bpmn2SectionDescriptor extends AbstractSectionDescriptor {
 			return tab;
 		}
 
+		protected void addAppliesToClass(Class clazz) {
+			appliesToClasses.add(clazz);
+		}
+		
 		@Override
 		public boolean appliesTo(IWorkbenchPart part, ISelection selection) {
 
+			EObject businessObject = null;
 			PictogramElement pe = BusinessObjectUtil.getPictogramElementForSelection(selection);
-			if (pe instanceof ConnectionDecorator) {
-				// this is a special hack to allow selection of connection decorator labels:
-				// the connection decorator does not have a business object linked to it,
-				// but its parent (the connection) does.
-				pe = (PictogramElement) pe.eContainer();
+			if (pe != null) {
+				if (pe instanceof ConnectionDecorator) {
+					// this is a special hack to allow selection of connection decorator labels:
+					// the connection decorator does not have a business object linked to it,
+					// but its parent (the connection) does.
+					pe = (PictogramElement) pe.eContainer();
+				}
+				if (!filter.select(pe))
+					return false;
+				businessObject = BusinessObjectUtil.getBusinessObjectForPictogramElement(pe);
 			}
-			if (!filter.select(pe))
-				return false;
-			
-			EObject businessObject = BusinessObjectUtil.getBusinessObjectForPictogramElement(pe);
-			DiagramEditor editor = ModelUtil.getDiagramEditor(pe);
+			else {
+				businessObject = BusinessObjectUtil.getBusinessObjectForSelection(selection);
+			}
+				
+			DiagramEditor editor = ModelUtil.getDiagramEditor(businessObject);
 			if (editor!=null) {
 				TargetRuntime rt = (TargetRuntime) editor.getAdapter(TargetRuntime.class);
 				if (rt!=null) {
@@ -123,6 +137,14 @@ public class Bpmn2SectionDescriptor extends AbstractSectionDescriptor {
 					if (count>0 && selected==0)
 						return false;
 				}
+				
+				// check if the selected business object (a BPMN2 model element)
+				// is contained in this editor's Resource
+				Diagram diagram = editor.getDiagramTypeProvider().getDiagram();
+				EObject o = Graphiti.getLinkService().getBusinessObjectForLinkedPictogramElement(diagram);
+				if (o==null || o.eResource() != businessObject.eResource()) {
+					return false;
+				}
 			}
 
 			// should we delegate to the section to determine whether it should be included in this tab?
@@ -133,20 +155,42 @@ public class Bpmn2SectionDescriptor extends AbstractSectionDescriptor {
 			}
 			
 			// if an input description was specified, check if the selected business object is of this description. 
-			if (appliesToClass!=null) {
-				// check all linked BusinessObjects for a match
+			if (appliesToClasses.isEmpty()) {
+				return true;
+			}
+			
+			// check all linked BusinessObjects for a match
+			if (pe!=null) {
 				if (pe.getLink()!=null) {
 					for (EObject eObj : pe.getLink().getBusinessObjects()){
-						if (appliesToClass.isInstance(eObj)) {
+						if (appliesTo(eObj)) {
 							return true;
 						}
 					}
 				}
-				return false;
 			}
-			return true;
+			if (businessObject!=null) {
+				if (appliesTo(businessObject)) {
+					return true;
+				}
+			}
+			return false;
 		}
 
+		public boolean appliesTo(EObject eObj) {
+			for (Class c : appliesToClasses) {
+				if (c.isInstance(eObj))
+					return true;
+			}
+			return false;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.eclipse.ui.views.properties.tabbed.AbstractSectionDescriptor#getEnablesFor()
+		 * Returns the value of the "enablesFor" attribute of the configuration element in plugin.xml
+		 * This is an integer value representing the number of items that must be selected for this
+		 * Property Tab to be enabled.
+		 */
 		@Override
 		public int getEnablesFor() {
 			try {

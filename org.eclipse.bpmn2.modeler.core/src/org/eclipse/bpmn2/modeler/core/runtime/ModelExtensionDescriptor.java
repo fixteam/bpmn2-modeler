@@ -20,6 +20,7 @@ import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.ExtensionAttributeValue;
 import org.eclipse.bpmn2.modeler.core.adapters.AdapterUtil;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
+import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
@@ -135,6 +136,10 @@ public class ModelExtensionDescriptor extends BaseRuntimeDescriptor {
 		public List<Property> getProperties(String path) {
 			return descriptor.getProperties(path);
 		}
+		
+		public ModelExtensionDescriptor getDescriptor() {
+			return descriptor;
+		}
 	}
 	
 	protected String id;
@@ -217,7 +222,14 @@ public class ModelExtensionDescriptor extends BaseRuntimeDescriptor {
 	 * @return an initialized EObject
 	 */
 	private EObject createObject(EClass eClass) {
-		EObject eObject = eClass.getEPackage().getEFactoryInstance().create(eClass);
+		EObject eObject = null;
+		EPackage pkg = eClass.getEPackage();
+		if (pkg==Bpmn2Package.eINSTANCE) {
+			eObject = Bpmn2ModelerFactory.create(containingResource, eClass);
+		}
+		else {
+			eObject = pkg.getEFactoryInstance().create(eClass);
+		}
 		
 		// if the object has an "id", assign it now.
 		String id = ModelUtil.setID(eObject,containingResource);
@@ -529,7 +541,7 @@ public class ModelExtensionDescriptor extends BaseRuntimeDescriptor {
 	public void adaptObject(EObject object) {
 		addModelExtensionAdapter(object);
 		if (description!=null && !description.isEmpty()) {
-			ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(object, ExtendedPropertiesAdapter.class);
+			ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object);
 			if (adapter!=null) {
 				adapter.setProperty(ExtendedPropertiesAdapter.CUSTOM_DESCRIPTION, description);
 			}

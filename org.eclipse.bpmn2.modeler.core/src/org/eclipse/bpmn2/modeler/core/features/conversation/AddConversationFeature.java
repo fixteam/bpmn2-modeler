@@ -14,7 +14,7 @@ package org.eclipse.bpmn2.modeler.core.features.conversation;
 
 import org.eclipse.bpmn2.Conversation;
 import org.eclipse.bpmn2.modeler.core.di.DIImport;
-import org.eclipse.bpmn2.modeler.core.features.AbstractAddBPMNShapeFeature;
+import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2AddElementFeature;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
 import org.eclipse.graphiti.features.IFeatureProvider;
@@ -28,7 +28,7 @@ import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.services.IGaService;
 import org.eclipse.graphiti.services.IPeService;
 
-public class AddConversationFeature extends AbstractAddBPMNShapeFeature<Conversation> {
+public class AddConversationFeature extends AbstractBpmn2AddElementFeature<Conversation> {
 
 	public AddConversationFeature(IFeatureProvider fp) {
 		super(fp);

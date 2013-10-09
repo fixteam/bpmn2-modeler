@@ -11,9 +11,13 @@
 package org.eclipse.bpmn2.modeler.core.validation;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.ProxyURIConverterImplExtension;
+import org.eclipse.bpmn2.modeler.core.adapters.AdapterUtil;
+import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.builder.BPMN2Nature;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerResourceImpl;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerResourceSetImpl;
@@ -26,9 +30,8 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceDescription;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -39,7 +42,6 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EValidator;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.validation.marker.MarkerUtil;
 import org.eclipse.emf.validation.model.EvaluationMode;
@@ -49,7 +51,6 @@ import org.eclipse.emf.validation.service.ModelValidationService;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
-import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
@@ -63,9 +64,7 @@ import org.eclipse.wst.validation.ValidatorMessage;
 
 public class BPMN2ProjectValidator extends AbstractValidator {
 
-    /** ID for BPMN2 specific problem markers. */
-    public static final String BPMN2_MARKER_ID = "org.eclipse.bpmn2.modeler.core.problemMarker";
-	private Bpmn2Preferences preferences;
+    private Bpmn2Preferences preferences;
 	private TargetRuntime targetRuntime;
 	private IFile modelFile;
 
@@ -79,19 +78,21 @@ public class BPMN2ProjectValidator extends AbstractValidator {
         }
     	modelFile = (IFile) file;
     	try {
-			modelFile.deleteMarkers(BPMN2_MARKER_ID, false, IProject.DEPTH_INFINITE);
+			modelFile.deleteMarkers(null, false, IProject.DEPTH_INFINITE);
 		} catch (CoreException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 
-        ResourceSet rs = new Bpmn2ModelerResourceSetImpl();
+    	Bpmn2ModelerResourceSetImpl rs = new Bpmn2ModelerResourceSetImpl();
 		getTargetRuntime().setResourceSet(rs);
-		rs.setURIConverter(new ProxyURIConverterImplExtension());
+		URI modelUri = URI.createPlatformResourceURI(modelFile.getFullPath().toString(), true);
+		rs.setURIConverter(new ProxyURIConverterImplExtension(modelUri));
+    	Map<Object,Object> options = new HashMap<Object,Object>();
+    	options.put(Bpmn2ModelerResourceSetImpl.OPTION_PROGRESS_MONITOR, monitor);
+    	rs.setLoadOptions(options);
 
-		Resource resource = rs.createResource(
-                URI.createPlatformResourceURI(modelFile.getFullPath().toString(), true),
-                Bpmn2ModelerResourceImpl.BPMN2_CONTENT_TYPE_ID);
+		Resource resource = rs.createResource(modelUri, Bpmn2ModelerResourceImpl.BPMN2_CONTENT_TYPE_ID);
         try {
             resource.load(null);
         } catch (IOException e) {
@@ -100,7 +101,7 @@ public class BPMN2ProjectValidator extends AbstractValidator {
         ValidationResult result = new ValidationResult();
         if (resource.getContents().isEmpty()) {
             ValidatorMessage message = ValidatorMessage.create("Invalid bpmn2 file", modelFile);
-            message.setType(BPMN2_MARKER_ID);
+            message.setType(getTargetRuntime().getProblemMarkerId());
             result.add(message);
         } else {
             IBatchValidator validator = ModelValidationService.getInstance().newValidator(EvaluationMode.BATCH);
@@ -205,14 +206,14 @@ public class BPMN2ProjectValidator extends AbstractValidator {
 		}
 		
 		if (needValidation) {
-			validate(file, monitor);
+			// validation will be done by the Project Validation builder
 			return true;
 		}
 		
     	return false;
     }
     
-    public static void processStatus(IStatus status, IResource resource, ValidationResult result) {
+    public void processStatus(IStatus status, IResource resource, ValidationResult result) {
         if (status.isMultiStatus()) {
             for (IStatus child : status.getChildren()) {
                 processStatus(child, resource, result);
@@ -222,7 +223,7 @@ public class BPMN2ProjectValidator extends AbstractValidator {
         }
     }
 
-    public static ValidatorMessage createValidationMessage(IStatus status, IResource resource) {
+    public ValidatorMessage createValidationMessage(IStatus status, IResource resource) {
         ValidatorMessage message = ValidatorMessage.create(status.getMessage(), resource);
         switch (status.getSeverity()) {
         case IStatus.INFO:
@@ -239,7 +240,16 @@ public class BPMN2ProjectValidator extends AbstractValidator {
 
         if (status instanceof IConstraintStatus) {
             IConstraintStatus ics = (IConstraintStatus) status;
-            message.setAttribute(EValidator.URI_ATTRIBUTE, EcoreUtil.getURI(ics.getTarget()).toString());
+            EObject object = ics.getTarget();
+    		ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object);
+			if (adapter!=null) {
+				Object lineNumber = adapter.getProperty(ExtendedPropertiesAdapter.LINE_NUMBER);
+				if (lineNumber!=null) {
+					message.setAttribute(IMarker.LINE_NUMBER, lineNumber);
+				}
+			}
+
+            message.setAttribute(EValidator.URI_ATTRIBUTE, EcoreUtil.getURI(object).toString());
             message.setAttribute(MarkerUtil.RULE_ATTRIBUTE, ics.getConstraint().getDescriptor().getId());
             if (ics.getResultLocus().size() > 0) {
                 StringBuffer relatedUris = new StringBuffer();
@@ -252,7 +262,7 @@ public class BPMN2ProjectValidator extends AbstractValidator {
             }
         }
 
-        message.setType(BPMN2_MARKER_ID);
+        message.setType(getTargetRuntime().getProblemMarkerId());
 
         return message;
     }
@@ -261,21 +271,22 @@ public class BPMN2ProjectValidator extends AbstractValidator {
     public void clean(IProject project, ValidationState state, IProgressMonitor monitor) {
         super.clean(project, state, monitor);
         try {
-            project.deleteMarkers(BPMN2_MARKER_ID, false, IProject.DEPTH_INFINITE);
+            project.deleteMarkers(null, false, IProject.DEPTH_INFINITE);
         } catch (CoreException e) {
             Activator.getDefault().getLog().log(e.getStatus());
         }
     }
 	
     protected TargetRuntime getTargetRuntime() {
-		if (targetRuntime==null)
+//		if (targetRuntime==null)
 			targetRuntime = getPreferences().getRuntime();
 		return targetRuntime;
 	}
 
     protected Bpmn2Preferences getPreferences() {
-		if (preferences==null) {
-			assert(modelFile!=null);
+//		if (preferences==null)
+		{
+			Assert.isTrue(modelFile!=null);
 			IProject project = modelFile.getProject();
 			loadPreferences(project);
 		}

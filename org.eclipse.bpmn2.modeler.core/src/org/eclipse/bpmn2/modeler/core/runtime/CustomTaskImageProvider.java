@@ -2,14 +2,13 @@ package org.eclipse.bpmn2.modeler.core.runtime;
 
 import java.net.URL;
 
-import org.eclipse.bpmn2.modeler.core.features.activity.task.ICustomTaskFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.runtime.ToolPaletteDescriptor.CategoryDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.ToolPaletteDescriptor.ToolDescriptor;
 import org.eclipse.graphiti.mm.GraphicsAlgorithmContainer;
 import org.eclipse.graphiti.mm.algorithms.Image;
 import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.ui.internal.GraphitiUIPlugin;
-import org.eclipse.graphiti.ui.platform.AbstractImageProvider;
+import org.eclipse.graphiti.ui.services.GraphitiUi;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 
@@ -26,6 +25,7 @@ import org.eclipse.jface.resource.ImageRegistry;
 public class CustomTaskImageProvider {
 	
 	public final static String ICONS_FOLDER = "icons/";
+	public final static String providerId = GraphitiUi.getExtensionManager().getDiagramTypeProviderId("BPMN2");
 
 	// Sneaky tip: The values of this enum correspond to the subfolder names in "icons"
 	public enum IconSize {
@@ -94,18 +94,24 @@ public class CustomTaskImageProvider {
 	}
 
 	protected static void registerImage(CustomTaskDescriptor ctd, String icon) {
-		ImageRegistry imageRegistry = GraphitiUIPlugin.getDefault().getImageRegistry();
 		for (IconSize size : IconSize.values()) {
 			String imageId = ctd.getImageId(icon,size); 
 			if (imageId != null) {
 				String filename = ctd.getImagePath(icon,size);
 				URL url = ctd.getFeatureContainer().getClass().getClassLoader().getResource(filename);
 				ImageDescriptor descriptor =  ImageDescriptor.createFromURL(url);
-				imageRegistry.put(imageId, descriptor);
+				registerImage(imageId, descriptor);
 			}
 		}
 	}
 
+	public static void registerImage(String imageId, ImageDescriptor image) {
+		ImageRegistry imageRegistry = GraphitiUIPlugin.getDefault().getImageRegistry();
+//		imageId = providerId + "||" + imageId; // for Graphiti 0.10 only
+		if (imageRegistry.get(imageId) == null)
+			imageRegistry.put(imageId, image);
+	}
+	
 	public static Image createImage(TargetRuntime rt, GraphicsAlgorithmContainer ga, String icon, IconSize size) {
 		// To create an image of a specific size, use the "huge" versions
 		// to prevent pixelation when stretching a small image
@@ -135,14 +141,13 @@ public class CustomTaskImageProvider {
 	}
 
 	protected static void registerImage(TargetRuntime rt, String icon) {
-		ImageRegistry imageRegistry = GraphitiUIPlugin.getDefault().getImageRegistry();
 		for (IconSize size : IconSize.values()) {
 			String imageId = getImageId(rt,icon,size); 
 			if (imageId != null) {
 				String filename = getImagePath(rt,icon,size);
 				URL url = rt.getRuntimeExtension().getClass().getClassLoader().getResource(filename);
 				ImageDescriptor descriptor =  ImageDescriptor.createFromURL(url);
-				imageRegistry.put(imageId, descriptor);
+				registerImage(imageId, descriptor);
 			}
 		}
 	}

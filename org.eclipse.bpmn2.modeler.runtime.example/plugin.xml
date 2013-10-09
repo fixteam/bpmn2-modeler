@@ -59,18 +59,27 @@
 			type="org.eclipse.bpmn2.TextAnnotation"
 			label="Mitigation Task">
 		</propertyTab>
+		
+		<propertyTab
+			id="org.eclipse.bpmn2.modeler.runtime.example.flow.tab"
+			class="default"
+			features="priority"
+			type="org.eclipse.bpmn2.SequenceFlow"
+			label="Risk Mitigation">
+		</propertyTab>
 
 		<customTask
 			description="This task represents a risk that can occur in the connected Elements."
 			featureContainer="org.eclipse.bpmn2.modeler.runtime.example.SampleCustomTaskFeatureContainer"
 			id="org.eclipse.bpmn2.modeler.runtime.example.risk"
 			name="Risk Task"
+			category="Risk &amp; Mitigation"
+			icon="risk.png"
 			runtimeId="org.eclipse.bpmn2.modeler.runtime.example"
 			type="TextAnnotation">
-			<property name="icon" value="risk.png"/>
-			<property name="sampleCustomTaskId" value="org.eclipse.bpmn2.modeler.runtime.example.risk"/>
-			<property name="name" value="Risk Task"/>
-			<property name="text" value="Risk Task"/>
+			<property name="elementId" value="org.eclipse.bpmn2.modeler.runtime.example.risk" type="EString"/>
+			<property name="name" value="Risk Task" type="EString"/>
+			<property name="text" value="Risk Task" type="EString"/>
 			<property name="evaluate" value="true" type="EBoolean"/>
 			<property name="cost" value="0" type="EInt"/>
 		</customTask>
@@ -80,16 +89,31 @@
 			featureContainer="org.eclipse.bpmn2.modeler.runtime.example.SampleCustomTaskFeatureContainer"
 			id="org.eclipse.bpmn2.modeler.runtime.example.mitigation"
 			name="Mitigation Task"
+			category="Risk &amp; Mitigation"
+			icon="mitigation.png"
 			runtimeId="org.eclipse.bpmn2.modeler.runtime.example"
 			type="TextAnnotation">
-			<property name="icon" value="mitigation.png"/>
-			<property name="sampleCustomTaskId" value="org.eclipse.bpmn2.modeler.runtime.example.mitigation"/>
-			<property name="text" value="Mitigation Task"/>
-			<property name="name" value="Mitigation Task"/>
+			<property name="elementId" value="org.eclipse.bpmn2.modeler.runtime.example.mitigation" type="EString"/>
+			<property name="text" value="Mitigation Task" type="EString"/>
+			<property name="name" value="Mitigation Task" type="EString"/>
 			<property name="evaluate" value="true" type="EBoolean"/>
 			<property name="benefit" value="0" type="EInt"/>
 		</customTask>
-				
+
+		<customTask
+			description="Associates a Risk or Mitigation with a Task."
+			featureContainer="org.eclipse.bpmn2.modeler.runtime.example.SampleCustomSequenceFlowFeatureContainer"
+			id="org.eclipse.bpmn2.modeler.runtime.example.flow"
+			name="Mitigation Flow"
+			category="Risk &amp; Mitigation"
+			icon="flow.png"
+			runtimeId="org.eclipse.bpmn2.modeler.runtime.example.flow"
+			type="SequenceFlow">
+			<property name="name" value="Mitigate" type="EString"/>
+			<property name="priority" value="1" type="EInt"/>
+			<property name="elementId" value="org.eclipse.bpmn2.modeler.runtime.example.flow" type="EString"/>
+		</customTask>
+
 		<modelExtension
 			id="org.eclipse.bpmn2.modeler.runtime.example.modelExtension.Association"
 			runtimeId="org.eclipse.bpmn2.modeler.runtime.example"
@@ -110,6 +134,7 @@
 			<enable object="TextAnnotation" feature="benefit"/>
 
 			<enable object="SequenceFlow"/>
+			<enable object="SequenceFlow" feature="priority"/>
 			
 			<enable object="Association" feature="anyAttribute"/>
 			<enable object="Association" feature="affectsTaskExecution"/>

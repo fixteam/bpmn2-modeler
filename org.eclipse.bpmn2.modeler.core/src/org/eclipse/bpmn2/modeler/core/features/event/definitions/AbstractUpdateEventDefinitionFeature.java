@@ -20,6 +20,7 @@ import org.eclipse.bpmn2.Event;
 import org.eclipse.bpmn2.EventDefinition;
 import org.eclipse.bpmn2.ThrowEvent;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
+import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
@@ -38,11 +39,16 @@ public abstract class AbstractUpdateEventDefinitionFeature extends AbstractUpdat
 	}
 
 	public void draw(Event event, ContainerShape container) {
+		if (FeatureSupport.isLabelShape(container)) {
+			// don't draw decorators on Labels
+			return;
+		}
 
 		List<EventDefinition> eventDefinitions = ModelUtil.getEventDefinitions(event);
 		int size = eventDefinitions.size();
 
 		GraphicsUtil.deleteEventShape(container);
+		
 		if (size==1) {
 			Shape addedShape = getDecorationAlgorithm(event).draw(container);
 			link(addedShape, eventDefinitions.get(0));

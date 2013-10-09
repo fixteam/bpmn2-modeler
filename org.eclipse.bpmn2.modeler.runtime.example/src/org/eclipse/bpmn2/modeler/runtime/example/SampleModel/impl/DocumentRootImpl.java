@@ -16,7 +16,7 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  * <p>
  * The following features are implemented:
  * <ul>
- *   <li>{@link org.eclipse.bpmn2.modeler.runtime.example.SampleModel.impl.DocumentRootImpl#getSampleCustomTaskId <em>Sample Custom Task Id</em>}</li>
+ *   <li>{@link org.eclipse.bpmn2.modeler.runtime.example.SampleModel.impl.DocumentRootImpl#getelementId <em>Sample Custom Task Id</em>}</li>
  *   <li>{@link org.eclipse.bpmn2.modeler.runtime.example.SampleModel.impl.DocumentRootImpl#getSampleCustomFlowValue <em>Sample Custom Flow Value</em>}</li>
  * </ul>
  * </p>
@@ -25,24 +25,24 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  */
 public class DocumentRootImpl extends org.eclipse.bpmn2.impl.DocumentRootImpl implements DocumentRoot {
 	/**
-	 * The default value of the '{@link #getSampleCustomTaskId() <em>Sample Custom Task Id</em>}' attribute.
+	 * The default value of the '{@link #getelementId() <em>Sample Custom Task Id</em>}' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see #getSampleCustomTaskId()
+	 * @see #getelementId()
 	 * @generated
 	 * @ordered
 	 */
 	protected static final String SAMPLE_CUSTOM_TASK_ID_EDEFAULT = null;
 
 	/**
-	 * The cached value of the '{@link #getSampleCustomTaskId() <em>Sample Custom Task Id</em>}' attribute.
+	 * The cached value of the '{@link #getelementId() <em>Sample Custom Task Id</em>}' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see #getSampleCustomTaskId()
+	 * @see #getelementId()
 	 * @generated
 	 * @ordered
 	 */
-	protected String sampleCustomTaskId = SAMPLE_CUSTOM_TASK_ID_EDEFAULT;
+	protected String elementId = SAMPLE_CUSTOM_TASK_ID_EDEFAULT;
 
 	/**
 	 * The default value of the '{@link #getSampleCustomFlowValue() <em>Sample Custom Flow Value</em>}' attribute.
@@ -88,8 +88,8 @@ public class DocumentRootImpl extends org.eclipse.bpmn2.impl.DocumentRootImpl im
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public String getSampleCustomTaskId() {
-		return sampleCustomTaskId;
+	public String getelementId() {
+		return elementId;
 	}
 
 	/**
@@ -97,11 +97,11 @@ public class DocumentRootImpl extends org.eclipse.bpmn2.impl.DocumentRootImpl im
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public void setSampleCustomTaskId(String newSampleCustomTaskId) {
-		String oldSampleCustomTaskId = sampleCustomTaskId;
-		sampleCustomTaskId = newSampleCustomTaskId;
+	public void setelementId(String newelementId) {
+		String oldelementId = elementId;
+		elementId = newelementId;
 		if (eNotificationRequired())
-			eNotify(new ENotificationImpl(this, Notification.SET, SampleModelPackage.DOCUMENT_ROOT__SAMPLE_CUSTOM_TASK_ID, oldSampleCustomTaskId, sampleCustomTaskId));
+			eNotify(new ENotificationImpl(this, Notification.SET, SampleModelPackage.DOCUMENT_ROOT__SAMPLE_CUSTOM_TASK_ID, oldelementId, elementId));
 	}
 
 	/**
@@ -134,7 +134,7 @@ public class DocumentRootImpl extends org.eclipse.bpmn2.impl.DocumentRootImpl im
 	public Object eGet(int featureID, boolean resolve, boolean coreType) {
 		switch (featureID) {
 			case SampleModelPackage.DOCUMENT_ROOT__SAMPLE_CUSTOM_TASK_ID:
-				return getSampleCustomTaskId();
+				return getelementId();
 			case SampleModelPackage.DOCUMENT_ROOT__SAMPLE_CUSTOM_FLOW_VALUE:
 				return getSampleCustomFlowValue();
 		}
@@ -150,7 +150,7 @@ public class DocumentRootImpl extends org.eclipse.bpmn2.impl.DocumentRootImpl im
 	public void eSet(int featureID, Object newValue) {
 		switch (featureID) {
 			case SampleModelPackage.DOCUMENT_ROOT__SAMPLE_CUSTOM_TASK_ID:
-				setSampleCustomTaskId((String)newValue);
+				setelementId((String)newValue);
 				return;
 			case SampleModelPackage.DOCUMENT_ROOT__SAMPLE_CUSTOM_FLOW_VALUE:
 				setSampleCustomFlowValue((String)newValue);
@@ -168,7 +168,7 @@ public class DocumentRootImpl extends org.eclipse.bpmn2.impl.DocumentRootImpl im
 	public void eUnset(int featureID) {
 		switch (featureID) {
 			case SampleModelPackage.DOCUMENT_ROOT__SAMPLE_CUSTOM_TASK_ID:
-				setSampleCustomTaskId(SAMPLE_CUSTOM_TASK_ID_EDEFAULT);
+				setelementId(SAMPLE_CUSTOM_TASK_ID_EDEFAULT);
 				return;
 			case SampleModelPackage.DOCUMENT_ROOT__SAMPLE_CUSTOM_FLOW_VALUE:
 				setSampleCustomFlowValue(SAMPLE_CUSTOM_FLOW_VALUE_EDEFAULT);
@@ -186,7 +186,7 @@ public class DocumentRootImpl extends org.eclipse.bpmn2.impl.DocumentRootImpl im
 	public boolean eIsSet(int featureID) {
 		switch (featureID) {
 			case SampleModelPackage.DOCUMENT_ROOT__SAMPLE_CUSTOM_TASK_ID:
-				return SAMPLE_CUSTOM_TASK_ID_EDEFAULT == null ? sampleCustomTaskId != null : !SAMPLE_CUSTOM_TASK_ID_EDEFAULT.equals(sampleCustomTaskId);
+				return SAMPLE_CUSTOM_TASK_ID_EDEFAULT == null ? elementId != null : !SAMPLE_CUSTOM_TASK_ID_EDEFAULT.equals(elementId);
 			case SampleModelPackage.DOCUMENT_ROOT__SAMPLE_CUSTOM_FLOW_VALUE:
 				return SAMPLE_CUSTOM_FLOW_VALUE_EDEFAULT == null ? sampleCustomFlowValue != null : !SAMPLE_CUSTOM_FLOW_VALUE_EDEFAULT.equals(sampleCustomFlowValue);
 		}
@@ -203,8 +203,8 @@ public class DocumentRootImpl extends org.eclipse.bpmn2.impl.DocumentRootImpl im
 		if (eIsProxy()) return super.toString();
 
 		StringBuffer result = new StringBuffer(super.toString());
-		result.append(" (sampleCustomTaskId: ");
-		result.append(sampleCustomTaskId);
+		result.append(" (elementId: ");
+		result.append(elementId);
 		result.append(", sampleCustomFlowValue: ");
 		result.append(sampleCustomFlowValue);
 		result.append(')');

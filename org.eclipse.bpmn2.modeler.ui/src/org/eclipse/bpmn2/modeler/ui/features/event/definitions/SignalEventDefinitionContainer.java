@@ -18,7 +18,7 @@ import org.eclipse.bpmn2.EventDefinition;
 import org.eclipse.bpmn2.MessageEventDefinition;
 import org.eclipse.bpmn2.SignalEventDefinition;
 import org.eclipse.bpmn2.modeler.core.features.event.definitions.AbstractEventDefinitionFeatureContainer;
-import org.eclipse.bpmn2.modeler.core.features.event.definitions.CreateEventDefinition;
+import org.eclipse.bpmn2.modeler.core.features.event.definitions.AbstractCreateEventDefinitionFeature;
 import org.eclipse.bpmn2.modeler.core.features.event.definitions.DecorationAlgorithm;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
@@ -90,7 +90,7 @@ public class SignalEventDefinitionContainer extends AbstractEventDefinitionFeatu
 		return signalShape;
 	}
 
-	public static class CreateSignalEventDefinition extends CreateEventDefinition<SignalEventDefinition> {
+	public static class CreateSignalEventDefinition extends AbstractCreateEventDefinitionFeature<SignalEventDefinition> {
 
 		public CreateSignalEventDefinition(IFeatureProvider fp) {
 			super(fp, "Signal Event Definition", "Create "+"Signal Event Definition");

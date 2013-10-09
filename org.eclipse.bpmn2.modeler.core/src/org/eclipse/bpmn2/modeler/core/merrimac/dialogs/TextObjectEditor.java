@@ -13,19 +13,19 @@
 
 package org.eclipse.bpmn2.modeler.core.merrimac.dialogs;
 
+import org.eclipse.bpmn2.modeler.core.adapters.AdapterUtil;
+import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
 import org.eclipse.bpmn2.modeler.core.utils.ErrorUtils;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
-import org.eclipse.core.databinding.observable.value.IObservableValue;
-import org.eclipse.core.databinding.observable.value.IValueChangeListener;
-import org.eclipse.core.databinding.observable.value.ValueChangeEvent;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.jface.databinding.swt.SWTObservables;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.layout.GridData;
@@ -40,8 +40,8 @@ import org.eclipse.swt.widgets.Text;
 public class TextObjectEditor extends ObjectEditor {
 
 	protected Text text;
-	boolean multiLine = false;
-	boolean testMultiLine = true;
+	protected boolean multiLine = false;
+	protected boolean testMultiLine = true;
 	
 	/**
 	 * @param parent
@@ -79,17 +79,15 @@ public class TextObjectEditor extends ObjectEditor {
 			}
 			
 		});
-		setText(ModelUtil.getDisplayName(object, feature));
+		setText(getText());
 
-		IObservableValue textObserver = SWTObservables.observeText(text, SWT.Modify);
-		textObserver.addValueChangeListener(new IValueChangeListener() {
-
+		text.addModifyListener( new ModifyListener() {
 			@Override
-			public void handleValueChange(final ValueChangeEvent e) {
-				setValue(e.diff.getNewValue());
+			public void modifyText(ModifyEvent e) {
+				if (!isWidgetUpdating)
+					setValue(text.getText());
 			}
 		});
-		
 		text.addFocusListener(new FocusListener() {
 
 			@Override
@@ -102,7 +100,14 @@ public class TextObjectEditor extends ObjectEditor {
 			}
 		});
 
-		
+		// ask the object if this feature is read-only
+		ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object);
+		if (adapter!=null && feature!=null) {
+			Object result = adapter.getProperty(feature, ExtendedPropertiesAdapter.UI_CAN_EDIT);
+			if (result instanceof Boolean)
+				setEditable((Boolean)result);
+		}
+
 		return text;
 	}
 	
@@ -128,30 +133,43 @@ public class TextObjectEditor extends ObjectEditor {
 		updateText();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ObjectEditor#setValue(java.lang.Object)
+	 */
 	@Override
-	protected boolean setValue(Object result) {
+	protected boolean setValue(final Object result) {
+		
 		if (super.setValue(result)) {
 			updateText();
 			return true;
 		}
 		// revert the change on error
-		text.setText(ModelUtil.getDisplayName(object, feature));
+		text.setText(getText());
 		return false;
 	}
-
+	
 	/**
-	 * Update the read-only text field with the give value
-	 * 
-	 * @param value - new value for the text field
+	 * Update the text field widget after its underlying value has changed.
 	 */
 	protected void updateText() {
-		if (!text.getText().equals(getText())) {
-			int pos = text.getCaretPosition();
-			setText(getText());
-			text.setSelection(pos, pos);
+		try {
+			isWidgetUpdating = true;
+			if (!text.getText().equals(getText())) {
+				int pos = text.getCaretPosition();
+				setText(getText());
+				text.setSelection(pos, pos);
+			}
+		}
+		finally {
+			isWidgetUpdating = false;
 		}
 	}
 	
+	/**
+	 * Set the text field with the given value
+	 * 
+	 * @param value - new value for the text field
+	 */
 	protected void setText(String value) {
 		if (value==null)
 			value = "";
@@ -176,12 +194,18 @@ public class TextObjectEditor extends ObjectEditor {
 
 	@Override
 	public void notifyChanged(Notification notification) {
-		super.notifyChanged(notification);
-		if (this.object == notification.getNotifier()) {
+		if (notification.getEventType() == -1) {
+			updateText();
+			super.notifyChanged(notification);
+		}
+		else if (object == notification.getNotifier()) {
 			if (notification.getFeature() instanceof EStructuralFeature) {
 				EStructuralFeature f = (EStructuralFeature)notification.getFeature();
-				if (f!=null && f.getName().equals(this.feature.getName()) )
+				if (f!=null && (f.getName().equals(feature.getName()) ||
+						f.getName().equals("mixed")) ) { // handle the case of FormalExpression.body
 					updateText();
+					super.notifyChanged(notification);
+				}
 			}
 		}
 	}

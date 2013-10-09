@@ -20,23 +20,30 @@ import org.eclipse.bpmn2.modeler.core.Bpmn2TabbedPropertySheetPage;
 import org.eclipse.bpmn2.modeler.core.ModelHandler;
 import org.eclipse.bpmn2.modeler.core.ModelHandlerLocator;
 import org.eclipse.bpmn2.modeler.core.merrimac.IConstants;
-import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ObjectEditor;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelEnablementDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.emf.common.command.Command;
+import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
+import org.eclipse.emf.common.notify.Notifier;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.InternalEObject;
+import org.eclipse.emf.ecore.impl.ENotificationImpl;
+import org.eclipse.emf.ecore.xml.type.XMLTypePackage;
 import org.eclipse.emf.edit.provider.INotifyChangedListener;
 import org.eclipse.emf.transaction.NotificationFilter;
 import org.eclipse.emf.transaction.ResourceSetChangeEvent;
 import org.eclipse.emf.transaction.ResourceSetListener;
 import org.eclipse.emf.transaction.RollbackException;
 import org.eclipse.emf.transaction.impl.TransactionalEditingDomainImpl;
+import org.eclipse.emf.validation.model.EvaluationMode;
+import org.eclipse.emf.validation.service.IValidator;
+import org.eclipse.emf.validation.service.ModelValidationService;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
@@ -52,9 +59,11 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.views.properties.PropertySheet;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 
-public class ListAndDetailCompositeBase extends Composite implements ResourceSetListener {
+public class ListAndDetailCompositeBase extends Composite implements ResourceSetListener, Adapter {
 
 	public final static Bpmn2Package PACKAGE = Bpmn2Package.eINSTANCE;
+	@Deprecated
+	// use createModelObject() instead
 	public final static Bpmn2ModelerFactory FACTORY = Bpmn2ModelerFactory.getInstance();
 	protected AbstractBpmn2PropertySection propertySection;
 	protected FormToolkit toolkit;
@@ -97,6 +106,8 @@ public class ListAndDetailCompositeBase extends Composite implements ResourceSet
 	@Override
 	public void dispose() {
 		removeDomainListener();
+		removeChangeListener(businessObject);
+
 		ModelUtil.disposeChildWidgets(this);
 		super.dispose();
 	}
@@ -138,9 +149,19 @@ public class ListAndDetailCompositeBase extends Composite implements ResourceSet
 			ModelUtil.recursivelayout(getParent());
 		}
 	}
+	
+	public void setVisible(boolean visible) {
+		if (getLayoutData() instanceof GridData) {
+			((GridData)getLayoutData()).exclude = !visible;
+		}
+		super.setVisible(visible);
+		redrawPage();
+	}
 
 	public TabbedPropertySheetPage getTabbedPropertySheetPage() {
-		return getPropertySection().getTabbedPropertySheetPage();
+		if (getPropertySection()!=null)
+			return getPropertySection().getTabbedPropertySheetPage();
+		return null;
 	}
 
 	public FormToolkit getToolkit() {
@@ -197,6 +218,17 @@ public class ListAndDetailCompositeBase extends Composite implements ResourceSet
 		return (ModelEnablementDescriptor)getDiagramEditor().getAdapter(ModelEnablementDescriptor.class);
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	protected <T extends EObject> T createModelObject(Class clazz) {
+		T object = null;
+		EClass eClass = (EClass) Bpmn2Package.eINSTANCE.getEClassifier(clazz.getSimpleName());
+		if (eClass!=null) {
+			object = (T)Bpmn2ModelerFactory.eINSTANCE.create(eClass);
+			ModelUtil.setID(object, ModelUtil.getResource(businessObject));
+		}
+		return object;
+	}
+	
 	public TargetRuntime getTargetRuntime() {
 		return (TargetRuntime) getDiagramEditor().getAdapter(TargetRuntime.class);
 	}
@@ -222,7 +254,26 @@ public class ListAndDetailCompositeBase extends Composite implements ResourceSet
 		} catch (IOException e1) {
 			Activator.logError(e1);
 		}
+		removeChangeListener(businessObject);
 		businessObject = object;
+		addChangeListener(businessObject);
+
+		// Do initial validation to force display of error message if any
+    	Notification n = new ENotificationImpl((InternalEObject) businessObject, 0, null, null, null, false);
+    	validate(n);
+	}
+	
+	protected void addChangeListener(EObject object) {
+		if (object!=null && !object.eAdapters().contains(this))
+			object.eAdapters().add(this);
+	}
+	
+	protected void removeChangeListener(EObject object) {
+		if (object!=null && object.eAdapters().contains(this)) {
+			object.eSetDeliver(false);
+			object.eAdapters().remove(this);
+			object.eSetDeliver(true);
+		}
 	}
 
 	public final EObject getBusinessObject() {
@@ -231,8 +282,14 @@ public class ListAndDetailCompositeBase extends Composite implements ResourceSet
 
 	@Override
 	public NotificationFilter getFilter() {
-		// TODO Auto-generated method stub
-		return null;
+		NotificationFilter filter = null;
+		// the editor needs to return a "do nothing" filter while a save is in progress
+		if (diagramEditor!=null)
+			filter = (NotificationFilter)diagramEditor.getAdapter(NotificationFilter.class);
+		if (filter==null) {
+			filter = NotificationFilter.NOT_TOUCH;
+		}
+		return filter;
 	}
 
 	@Override
@@ -267,18 +324,23 @@ public class ListAndDetailCompositeBase extends Composite implements ResourceSet
 	public void resourceSetChanged(ResourceSetChangeEvent event) {
 		final List<Notification> notifications = new ArrayList<Notification>();
 		for (Notification n : event.getNotifications()) {
-			int et = n.getEventType();
-			if (et==Notification.SET
-					|| et==Notification.UNSET
-					|| et==Notification.ADD
-					|| et==Notification.ADD_MANY
-					|| et==Notification.CREATE
-					|| et==Notification.REMOVE
-					|| et==Notification.REMOVE_MANY) {
-
-				notifications.add(n);
+			if (getFilter().matches(n)) {
+				boolean add = true;
+				if (n.getFeature() instanceof EStructuralFeature) {
+					EStructuralFeature f = (EStructuralFeature)n.getFeature();
+					EClass ec = f.getEContainingClass();
+					// Attempt to reduce the number of notifications to process:
+					// notifications for the XMLTypePackage are inconsequential
+					if (ec.getEPackage()==XMLTypePackage.eINSTANCE)
+						add = false;
+				}				
+				if (add)
+				{
+					notifications.add(n);
+				}
 			}
 		}
+//		System.out.println("resource changed: "+this.getClass().getSimpleName()+" "+notifications.size()+" notifications");		
 		// run this in the UI thread
 		Display.getDefault().asyncExec( new Runnable() {
 			public void run() {
@@ -291,15 +353,40 @@ public class ListAndDetailCompositeBase extends Composite implements ResourceSet
 					}
 				}
 				catch (Exception e) {
+					return;
 				}
-				getAllChildWidgets(parent, kids);
+
+				boolean firstTime = true;
 				for (Notification n : notifications) {
-					for (Control c : kids) {
-						if (!c.isDisposed()) {
-							INotifyChangedListener listener = (INotifyChangedListener)c.getData(
-									IConstants.NOTIFY_CHANGE_LISTENER_KEY);
-							if (listener!=null) {
-								listener.notifyChanged(n);
+					if (getFilter().matches(n)) {
+						if (n.getFeature() instanceof EStructuralFeature) {
+//							EStructuralFeature f = (EStructuralFeature)n.getFeature();
+//							EClass ec = (EClass)f.eContainer();
+//							String et;
+//							switch (n.getEventType()){
+//							case Notification.SET: et = "SET"; break;
+//							case Notification.UNSET: et = "UNSET"; break;
+//							case Notification.ADD: et = "ADD"; break;
+//							case Notification.ADD_MANY: et = "ADD_MANY"; break;
+//							case Notification.REMOVE: et = "REMOVE"; break;
+//							case Notification.REMOVE_MANY: et = "REMOVE_MANY"; break;
+//							default: et = "UNKNOWN";
+//							}
+//							System.out.println("sending notification: "+
+//									ec.getEPackage().getName()+":"+ec.getName()+"."+f.getName()+"   "+et+" old="+n.getOldStringValue()+" new="+n.getNewStringValue());
+							if (firstTime) {
+								getAllChildWidgets(parent, kids);
+								firstTime = false;
+							}
+							for (Control c : kids) {
+								if (!c.isDisposed() && c.isVisible()) {
+									INotifyChangedListener listener = (INotifyChangedListener)c.getData(
+											IConstants.NOTIFY_CHANGE_LISTENER_KEY);
+									if (listener!=null) {
+//										System.out.println("    "+listener.getClass().getSimpleName());
+										listener.notifyChanged(n);
+									}
+								}
 							}
 						}
 					}
@@ -328,5 +415,29 @@ public class ListAndDetailCompositeBase extends Composite implements ResourceSet
 	
 	public void setIsPopupDialog(boolean isPopupDialog) {
 		this.isPopupDialog = isPopupDialog;
+	}
+
+	protected void validate(Notification notification) {
+		IValidator<Notification> validator = ModelValidationService.getInstance().newValidator(EvaluationMode.LIVE);
+		validator.validate(notification);
+	}
+	
+	@Override
+	public void notifyChanged(Notification notification) {
+		validate(notification);
+	}
+
+	@Override
+	public Notifier getTarget() {
+		return null;
+	}
+
+	@Override
+	public void setTarget(Notifier newTarget) {
+	}
+
+	@Override
+	public boolean isAdapterForType(Object type) {
+		return false;
 	}
 }

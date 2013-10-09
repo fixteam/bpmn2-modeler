@@ -362,7 +362,8 @@ public class DefinitionsPropertyComposite extends DefaultDetailComposite  {
 			if (dialog.open() == Window.OK) {
 				Object result[] = dialog.getResult();
 				if (result.length == 1) {
-					return ImportUtil.addImport(object, result[0]);
+					ImportUtil importer = new ImportUtil();
+					return importer.addImport(object, result[0]);
 				}
 			}
 			return null;

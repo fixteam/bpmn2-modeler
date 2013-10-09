@@ -12,20 +12,13 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.runtime;
 
-import java.net.URL;
-
-import org.eclipse.bpmn2.modeler.core.features.activity.task.ICustomTaskFeatureContainer;
+import org.eclipse.bpmn2.modeler.core.features.activity.task.ICustomElementFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.runtime.CustomTaskImageProvider.IconSize;
-import org.eclipse.graphiti.mm.GraphicsAlgorithmContainer;
-import org.eclipse.graphiti.mm.algorithms.Image;
-import org.eclipse.graphiti.services.Graphiti;
-import org.eclipse.graphiti.ui.internal.GraphitiUIPlugin;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.emf.ecore.EObject;
 
 public class CustomTaskDescriptor extends ModelExtensionDescriptor {
 
-	protected ICustomTaskFeatureContainer featureContainer;
+	protected ICustomElementFeatureContainer featureContainer;
 	protected String category;
 	protected String icon;
 	protected String propertyTabs[];
@@ -52,11 +45,11 @@ public class CustomTaskDescriptor extends ModelExtensionDescriptor {
 		super(id,name);
 	}
 	
-	public ICustomTaskFeatureContainer getFeatureContainer() {
+	public ICustomElementFeatureContainer getFeatureContainer() {
 		return featureContainer;
 	}
 
-	public void setFeatureContainer(ICustomTaskFeatureContainer featureContainer) {
+	public void setFeatureContainer(ICustomElementFeatureContainer featureContainer) {
 		this.featureContainer = featureContainer;
 	}
 	
@@ -86,6 +79,16 @@ public class CustomTaskDescriptor extends ModelExtensionDescriptor {
 		if (icon != null && icon.trim().length() > 0) {
 			String prefix = featureContainer.getClass().getPackage().getName();
 			return CustomTaskImageProvider.ICONS_FOLDER + size.value + "/" + icon.trim();
+		}
+		return null;
+	}
+	
+	public static CustomTaskDescriptor getDescriptor(EObject object) {
+		if (object!=null) {
+			ModelExtensionAdapter adapter = ModelExtensionDescriptor.getModelExtensionAdapter(object);
+			if (adapter!=null && adapter.getDescriptor() instanceof CustomTaskDescriptor) {
+				return (CustomTaskDescriptor)adapter.getDescriptor();
+			}
 		}
 		return null;
 	}

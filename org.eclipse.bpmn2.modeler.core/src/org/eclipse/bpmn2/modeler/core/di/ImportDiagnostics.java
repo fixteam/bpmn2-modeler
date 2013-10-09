@@ -3,17 +3,13 @@ package org.eclipse.bpmn2.modeler.core.di;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.runtime.CustomTaskDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
-import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.dd.di.DiagramElement;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -121,11 +117,10 @@ public class ImportDiagnostics implements IStructuredContentProvider, ILabelProv
 		ImportDiagnostic d = (ImportDiagnostic)element;
 		String text = "";
 		String id = "";
-		String name = "";
 		if (d.element!=null)
 			text = getText(d.element);
 		else
-			text = "Unknown Type";
+			return d.message;
 		
 		text += ": " + d.message;
 		return text;

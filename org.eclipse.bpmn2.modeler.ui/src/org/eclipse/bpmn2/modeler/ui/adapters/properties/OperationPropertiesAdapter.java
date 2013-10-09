@@ -22,6 +22,7 @@ import org.eclipse.bpmn2.Operation;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.adapters.InsertionAdapter;
 import org.eclipse.bpmn2.modeler.core.adapters.ObjectDescriptor;
+import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.InterfacePropertiesAdapter.ImplementationRefFeatureDescriptor;
 import org.eclipse.emf.common.notify.AdapterFactory;
@@ -135,11 +136,16 @@ public class OperationPropertiesAdapter extends ExtendedPropertiesAdapter<Operat
 				else if (interfaces.size()==1) {
 					intf = interfaces.get(0);
 				}
-				else {
-					intf = (Interface)ModelUtil.createObject(resource, Bpmn2Package.eINSTANCE.getInterface());
-					InsertionAdapter.add(definitions, Bpmn2Package.eINSTANCE.getDefinitions_RootElements(), intf);
+				else if (definitions != null) {
+					intf = Bpmn2ModelerFactory.create(resource, Interface.class);
+//					InsertionAdapter.add(definitions, Bpmn2Package.eINSTANCE.getDefinitions_RootElements(), intf);
+					definitions.getRootElements().add(intf);
 				}
-				InsertionAdapter.add(intf, Bpmn2Package.eINSTANCE.getInterface_Operations(), operation);
+				
+//				InsertionAdapter.add(intf, Bpmn2Package.eINSTANCE.getInterface_Operations(), operation);
+				if (intf!=null) {
+					intf.getOperations().add(operation);
+				}
 				return operation;
 			}
     		

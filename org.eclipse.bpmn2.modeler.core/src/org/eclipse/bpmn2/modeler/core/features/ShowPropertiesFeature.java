@@ -21,9 +21,12 @@ import org.eclipse.graphiti.features.context.ICustomContext;
 import org.eclipse.graphiti.features.custom.AbstractCustomFeature;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
+import org.eclipse.jface.window.Window;
 
 public class ShowPropertiesFeature extends AbstractCustomFeature {
 
+	protected boolean changesDone = false;
+	
 	public ShowPropertiesFeature(IFeatureProvider fp) {
 		super(fp);
 	}
@@ -56,13 +59,21 @@ public class ShowPropertiesFeature extends AbstractCustomFeature {
 	@Override
 	public void execute(ICustomContext context) {
 		PictogramElement[] pes = context.getPictogramElements();
-		DiagramEditor ed = (DiagramEditor)getDiagramEditor();
-		ed.setPictogramElementForSelection(pes[0]);
-		ed.refresh();
+		DiagramEditor editor = (DiagramEditor)getDiagramEditor();
+		editor.setPictogramElementForSelection(pes[0]);
+		editor.refresh();
 		EObject businessObject = BusinessObjectUtil.getBusinessObjectForPictogramElement(pes[0]);
 		ObjectEditingDialog dialog =
-				new ObjectEditingDialog(ed, businessObject);
-		dialog.open();
+				new ObjectEditingDialog(editor, businessObject);
+		if (dialog.open() == Window.OK)
+			changesDone = dialog.hasDoneChanges();
+		else
+			changesDone = false;
+	}
+
+	@Override
+	public boolean hasDoneChanges() {
+		return changesDone;
 	}
 
 	@Override

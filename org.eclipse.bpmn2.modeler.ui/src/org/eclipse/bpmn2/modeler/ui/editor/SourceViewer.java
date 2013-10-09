@@ -10,8 +10,10 @@
  *******************************************************************************/
 package org.eclipse.bpmn2.modeler.ui.editor;
 
+import org.eclipse.bpmn2.modeler.ui.editor.DesignEditor;
 import org.eclipse.gef.ui.actions.ActionRegistry;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
+import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.eclipse.wst.sse.ui.StructuredTextEditor;
 
 public class SourceViewer extends StructuredTextEditor {
@@ -35,7 +37,7 @@ public class SourceViewer extends StructuredTextEditor {
 	public Object getAdapter(Class required) {
 		if (required==ActionRegistry.class)
 			return getActionRegistry();
-		if (required==BPMN2Editor.class || required==DiagramEditor.class)
+		if (required==BPMN2Editor.class || required==DiagramEditor.class || required==DesignEditor.class)
 			return multiPageEditor.getDesignEditor();
 		return super.getAdapter(required);
 	}

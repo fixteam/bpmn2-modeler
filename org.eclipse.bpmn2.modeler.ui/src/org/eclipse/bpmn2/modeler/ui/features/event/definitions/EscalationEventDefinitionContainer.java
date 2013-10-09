@@ -22,7 +22,7 @@ import org.eclipse.bpmn2.IntermediateCatchEvent;
 import org.eclipse.bpmn2.StartEvent;
 import org.eclipse.bpmn2.SubProcess;
 import org.eclipse.bpmn2.modeler.core.features.event.definitions.AbstractEventDefinitionFeatureContainer;
-import org.eclipse.bpmn2.modeler.core.features.event.definitions.CreateEventDefinition;
+import org.eclipse.bpmn2.modeler.core.features.event.definitions.AbstractCreateEventDefinitionFeature;
 import org.eclipse.bpmn2.modeler.core.features.event.definitions.DecorationAlgorithm;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
@@ -95,35 +95,10 @@ public class EscalationEventDefinitionContainer extends AbstractEventDefinitionF
 		return escalationShape;
 	}
 
-	public static class CreateEscalationEventDefinition extends CreateEventDefinition<EscalationEventDefinition> {
+	public static class CreateEscalationEventDefinition extends AbstractCreateEventDefinitionFeature<EscalationEventDefinition> {
 
 		public CreateEscalationEventDefinition(IFeatureProvider fp) {
 			super(fp, "Escalation Event Definition", "Create "+"Escalation Event Definition");
-		}
-
-		@Override
-		public boolean canCreate(ICreateContext context) {
-			if (!super.canCreate(context)) {
-				return false;
-			}
-
-			Event e = (Event) getBusinessObjectForPictogramElement(context.getTargetContainer());
-
-			if (e instanceof StartEvent) {
-				EObject container = context.getTargetContainer().eContainer();
-				if (container instanceof Shape) {
-					Object o = getBusinessObjectForPictogramElement((Shape) container);
-					return o != null && o instanceof SubProcess;
-				}
-
-				return false;
-			}
-
-			if (e instanceof IntermediateCatchEvent) {
-				return false;
-			}
-
-			return true;
 		}
 
 		@Override

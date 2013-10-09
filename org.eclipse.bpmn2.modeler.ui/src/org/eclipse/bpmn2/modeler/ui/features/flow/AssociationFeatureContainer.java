@@ -39,6 +39,7 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.graphiti.features.IAddFeature;
 import org.eclipse.graphiti.features.ICreateConnectionFeature;
+import org.eclipse.graphiti.features.IDeleteFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.IReason;
 import org.eclipse.graphiti.features.IReconnectionFeature;
@@ -288,23 +289,6 @@ public class AssociationFeatureContainer extends BaseElementConnectionFeatureCon
 		@Override
 		public EClass getBusinessObjectClass() {
 			return Bpmn2Package.eINSTANCE.getAssociation();
-		}
-
-		@Override
-		public Association createBusinessObject(ICreateConnectionContext context) {
-			Association bo = null;
-			try {
-				ModelHandler mh = ModelHandler.getInstance(getDiagram());
-				BaseElement source = getSourceBo(context);
-				BaseElement target = getTargetBo(context);
-				bo = mh.createAssociation(source, target);
-				putBusinessObject(context, bo);
-
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return bo;
 		}
 	}
 	

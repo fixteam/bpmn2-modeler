@@ -10,13 +10,9 @@
  *******************************************************************************/
 package org.eclipse.bpmn2.modeler.ui.property.diagrams;
 
-import java.io.IOException;
-
-import org.eclipse.bpmn2.di.BPMNDiagram;
-import org.eclipse.bpmn2.modeler.core.ModelHandlerLocator;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultPropertySection;
-import org.eclipse.bpmn2.modeler.ui.Activator;
+import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Composite;
@@ -39,13 +35,6 @@ public class DefinitionsPropertySection extends DefaultPropertySection {
 	@Override
 	protected EObject getBusinessObjectForSelection(ISelection selection) {
 		EObject be = super.getBusinessObjectForSelection(selection);
-		if (be instanceof BPMNDiagram) {
-			try {
-				return ModelHandlerLocator.getModelHandler(be.eResource()).getDefinitions();
-			} catch (IOException e) {
-				Activator.showErrorWithLogging(e);
-			}
-		}
-		return null;
+		return ModelUtil.getDefinitions(be);
 	}
 }

@@ -117,10 +117,10 @@ public class TimerEventDefinitionDetailComposite extends DefaultDetailComposite 
 		}
 		else{
 			timerType = TimerType.NONE;
-			exp = FACTORY.createFormalExpression();
+			exp = createModelObject(FormalExpression.class);
 		}
 			
-		if (exp.getBody()==null)
+		if (ModelUtil.getExpressionBody(exp)==null)
 			exp.setBody("");
 		
 		timeValueEditor = new TextObjectEditor(this, exp, PACKAGE.getFormalExpression_Body());
@@ -133,8 +133,7 @@ public class TimerEventDefinitionDetailComposite extends DefaultDetailComposite 
 					domain.getCommandStack().execute(new RecordingCommand(domain) {
 						@Override
 						protected void doExecute() {
-							FormalExpression exp = FACTORY.createFormalExpression();
-							ModelUtil.setID(exp);
+							FormalExpression exp = createModelObject(FormalExpression.class);
 							event.eUnset(PACKAGE.getTimerEventDefinition_TimeCycle());
 							event.eUnset(PACKAGE.getTimerEventDefinition_TimeDuration());
 							event.setTimeDate(exp);
@@ -155,8 +154,7 @@ public class TimerEventDefinitionDetailComposite extends DefaultDetailComposite 
 					domain.getCommandStack().execute(new RecordingCommand(domain) {
 						@Override
 						protected void doExecute() {
-							FormalExpression exp = FACTORY.createFormalExpression();
-							ModelUtil.setID(exp);
+							FormalExpression exp = createModelObject(FormalExpression.class);
 							event.eUnset(PACKAGE.getTimerEventDefinition_TimeDate());
 							event.eUnset(PACKAGE.getTimerEventDefinition_TimeDuration());
 							event.setTimeCycle(exp);
@@ -177,8 +175,7 @@ public class TimerEventDefinitionDetailComposite extends DefaultDetailComposite 
 					domain.getCommandStack().execute(new RecordingCommand(domain) {
 						@Override
 						protected void doExecute() {
-							FormalExpression exp = FACTORY.createFormalExpression();
-							ModelUtil.setID(exp);
+							FormalExpression exp = createModelObject(FormalExpression.class);
 							event.eUnset(PACKAGE.getTimerEventDefinition_TimeDate());
 							event.eUnset(PACKAGE.getTimerEventDefinition_TimeCycle());
 							event.setTimeDuration(exp);

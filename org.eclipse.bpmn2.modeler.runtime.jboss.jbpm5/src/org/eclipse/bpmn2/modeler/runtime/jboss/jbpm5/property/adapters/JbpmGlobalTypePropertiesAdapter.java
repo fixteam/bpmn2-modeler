@@ -89,6 +89,11 @@ public class JbpmGlobalTypePropertiesAdapter extends ExtendedPropertiesAdapter<G
 		setObjectDescriptor(new ObjectDescriptor<GlobalType>(adapterFactory, object) {
 
 			@Override
+			public String getLabel(Object context) {
+				return "Global Variable";
+			}
+
+			@Override
 			public String getDisplayName(Object context) {
 				GlobalType object = adopt(context);
 				return object.getIdentifier();

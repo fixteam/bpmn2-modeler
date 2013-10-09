@@ -50,9 +50,9 @@ public class DirectEditParticipantFeature extends AbstractDirectEditingFeature {
 	@Override
 	public String checkValueValid(String value, IDirectEditingContext context) {
 		if (value.length() < 1) {
-			return "Please enter any text as Pool name.";
+			return "Please enter descriptive name.";
 		} else if (value.contains("\n")) {
-			return "Line breakes are not allowed in Pool names.";
+			return "Line breakes are not allowed.";
 		}
 		return null;
 	}
@@ -63,5 +63,9 @@ public class DirectEditParticipantFeature extends AbstractDirectEditingFeature {
 		Object bo = getBusinessObjectForPictogramElement(pe);
 		GraphicsAlgorithm ga = context.getGraphicsAlgorithm();
 		return bo instanceof Participant && ga instanceof Text;
+	}
+
+	public boolean stretchFieldToFitText() {
+		return true;
 	}
 }

@@ -533,7 +533,10 @@ public class DesignEditor extends BPMN2Editor {
 							BPMNDiagram bpmnDiagram = (BPMNDiagram)item.getData();
 							if (bpmnDiagram!=null) {
 								if (bpmnDiagram==notifier || bpmnDiagram.getPlane().getBpmnElement() == notifier) {
-									item.setText(n.getNewStringValue());
+									String text = n.getNewStringValue();
+									if (text==null || text.isEmpty())
+										text = "Unnamed";
+									item.setText(text);
 								}
 							}
 						}
@@ -541,7 +544,10 @@ public class DesignEditor extends BPMN2Editor {
 							BPMNDiagram bpmnDiagram = multipageEditor.getBpmnDiagram(i);
 							if (bpmnDiagram == notifier) {
 								CTabItem item = multipageEditor.getTabItem(i);
-								item.setText(n.getNewStringValue());
+								String text = n.getNewStringValue();
+								if (text==null || text.isEmpty())
+									text = "Unnamed";
+								item.setText(text);
 							}
 						}
 					}

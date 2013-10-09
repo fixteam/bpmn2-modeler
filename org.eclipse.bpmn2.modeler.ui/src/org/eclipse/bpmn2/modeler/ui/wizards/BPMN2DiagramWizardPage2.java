@@ -16,11 +16,11 @@ import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil.Bpmn2DiagramType;
 import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -50,7 +50,6 @@ public class BPMN2DiagramWizardPage2 extends WizardPage {
 	private ISelection selection;
 
 	private IResource diagramContainer;
-	private Bpmn2DiagramType diagramType = Bpmn2DiagramType.NONE;
 
 	/**
 	 * Constructor for SampleNewWizardPage.
@@ -80,10 +79,12 @@ public class BPMN2DiagramWizardPage2 extends WizardPage {
 		containerText = new Text(container, SWT.BORDER | SWT.SINGLE);
 		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
 		containerText.setLayoutData(gd);
+		containerText.setEditable(false);
 		containerText.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				dialogChanged();
+				targetNamespaceText.setText("");
+				dialogChanged(true);
 			}
 		});
 
@@ -103,7 +104,7 @@ public class BPMN2DiagramWizardPage2 extends WizardPage {
 		fileText.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				dialogChanged();
+				dialogChanged(false);
 			}
 		});
 
@@ -115,13 +116,13 @@ public class BPMN2DiagramWizardPage2 extends WizardPage {
 		targetNamespaceText.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				dialogChanged();
+				dialogChanged(false);
 			}
 		});
-
+		
 		updatePageDescription();
 		updateFilename();
-		dialogChanged();
+		dialogChanged(true);
 		setControl(container);
 	}
 
@@ -146,6 +147,8 @@ public class BPMN2DiagramWizardPage2 extends WizardPage {
 			break;
 		case CHOREOGRAPHY:
 			descriptionType = "Choreography Diagram";
+			break;
+		default:
 			break;
 		}
 		setDescription("Enter a file name for the new "+descriptionType);
@@ -172,7 +175,7 @@ public class BPMN2DiagramWizardPage2 extends WizardPage {
 		IContainer container = getFileContainer();
 		if (container!=null) {
 			String text = container.getFullPath().toString();
-			if (text!=null && !text.equals(containerText.getText()))
+			if (text!=null && !text.equals(getContainerName()))
 				containerText.setText(text);
 			for (int i=1; ; ++i) {
 				filename = fileType+"_" + i + ".bpmn";
@@ -242,70 +245,112 @@ public class BPMN2DiagramWizardPage2 extends WizardPage {
 	 * Ensures that both text fields are set.
 	 */
 
-	private void dialogChanged() {
-		diagramContainer = ResourcesPlugin.getWorkspace().getRoot().findMember(new Path(getContainerName()));
-		String fileName = getFileName();
+	private void dialogChanged(boolean initialize) {
+		boolean complete = false;
+		if (validateContainer()) {
+			diagramContainer = getFileContainer();
+			if (initialize) {
+				
+				TargetRuntime rt = Bpmn2Preferences.getInstance(diagramContainer.getProject()).getRuntime();
+				String targetNamespace = rt.getRuntimeExtension().getTargetNamespace(getDiagramType());
+				if (targetNamespace==null)
+					targetNamespace = "";
+				
+				if (rt!=TargetRuntime.getDefaultRuntime() && !targetNamespace.isEmpty()) {
+					// Target Runtime will provide its own target namespace
+					if (!targetNamespaceText.getText().equals(targetNamespace)) {
+						targetNamespaceText.setText(targetNamespace);
+						updateFilename();
+					}
+				}
+				else {
+					// The default "None" Target Runtime's target namespace may be edited by user.
+					String text = targetNamespaceText.getText();
+					if (text==null || text.isEmpty()) {
+						targetNamespaceText.setText(targetNamespace);
+						updateFilename();
+					}
+				}
 
-		if (getContainerName().length() == 0) {
-			updateStatus("Folder must be specified");
-			return;
+			}
+			if (validateFileName() && validateTargetNamespace()) {
+				updateStatus(null);
+				complete = true;
+			}
 		}
-		if (diagramContainer == null || (diagramContainer.getType() & (IResource.PROJECT | IResource.FOLDER)) == 0) {
-			updateStatus("Folder must exist");
-			return;
+		setPageComplete(complete);
+	}
+
+	private boolean validateContainer() {
+		IContainer container = getFileContainer();
+		if (container==null) {
+			setErrorMessage("Project and Folder must exist");
+			return false;
 		}
-		if (!diagramContainer.isAccessible()) {
-			updateStatus("Project must be writable");
-			return;
+		if ((container.getType() & (IResource.PROJECT | IResource.FOLDER)) == 0) {
+			setErrorMessage("Folder must exist");
+			return false;
 		}
+		if (!container.isAccessible()) {
+			setErrorMessage("Project must be writable");
+			return false;
+		}
+		return true;
+	}
+	
+	private boolean validateFileName() {
+		if (!validateContainer())
+			return false;
+		
+		IContainer container = getFileContainer();
+		String fileName = getFileName();
 		if (fileName.length() == 0) {
-			updateStatus("Name must be specified");
-			return;
+			setErrorMessage("Name must be specified");
+			return false;
 		}
 		if (fileName.replace('\\', '/').indexOf('/', 1) > 0) {
-			updateStatus("Name must be valid");
-			return;
+			setErrorMessage("Name must be valid");
+			return false;
 		}
 		int dotLoc = fileName.lastIndexOf('.');
 		if (dotLoc != -1) {
 			String ext = fileName.substring(dotLoc + 1);
 			if (ext.equalsIgnoreCase("bpmn") == false && ext.equalsIgnoreCase("bpmn2") == false) {
-				updateStatus("File extension must be \"bpmn\" or \"bpmn2\"");
-				return;
+				setErrorMessage("File extension must be \"bpmn\" or \"bpmn2\"");
+				return false;
 			}
 		}
-		
-		TargetRuntime rt = Bpmn2Preferences.getInstance(diagramContainer.getProject()).getRuntime();
-		String targetNamespace = rt.getRuntimeExtension().getTargetNamespace(getDiagramType());
-		if (targetNamespace==null)
-			targetNamespace = "";
-		if (!targetNamespaceText.getText().equals(targetNamespace)) {
-			targetNamespaceText.setText(targetNamespace);
-			updateFilename();
+		else {
+			setErrorMessage("Name is missing a file extension");
+			return false;
 		}
-		
-		updateStatus(null);
+		IResource file = container.findMember(fileName);
+		if (file!=null) {
+			setErrorMessage("The file "+fileName+" already exists in this Project Folder");
+			return false;
+		}
+		return true;
 	}
 
+	private boolean validateTargetNamespace() {
+		String targetNamespace = targetNamespaceText.getText();
+		if (targetNamespace==null || targetNamespace.isEmpty()) {
+			setErrorMessage("Target Namespace must be specified");
+			return false;
+		}
+		URI uri = URI.createURI(targetNamespace);
+		if (!(uri.hasAuthority() &&uri.hasAbsolutePath())) {
+			setErrorMessage("Target Namespace must be in the form 'http://absolute/path'");
+			return false;
+		}
+		return true;
+	}
+	
 	@Override
 	public boolean isPageComplete() {
-		IContainer container = getFileContainer();
-		if (container!=null) {
-			String filename = fileText.getText();
-			IResource file = container.findMember(filename);
-			if (file==null) {
-				String targetNamespace = targetNamespaceText.getText();
-				if (!targetNamespace.isEmpty()) {
-					setErrorMessage(null);
-					return true;
-				}
-				else
-					setErrorMessage("A Target Namespace must be specified");
-			}
-			else
-				setErrorMessage("The file "+filename+" already exists in this project");
-		}
-		return false;
+		return validateContainer() &&
+				validateFileName() &&
+				validateTargetNamespace();
 	}
 
 	private void updateStatus(String message) {

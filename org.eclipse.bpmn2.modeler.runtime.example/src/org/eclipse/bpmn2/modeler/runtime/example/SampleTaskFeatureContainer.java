@@ -46,7 +46,7 @@ public class SampleTaskFeatureContainer extends TaskFeatureContainer {
 			public Task createBusinessObject(ICreateContext context) {
 				Task task = super.createBusinessObject(context);
 				
-				EStructuralFeature attr = SampleModelPackage.eINSTANCE.getDocumentRoot_SampleCustomTaskId();
+				EStructuralFeature attr = SampleModelPackage.eINSTANCE.getDocumentRoot_elementId();
 				task.eSet(attr, "task.id");
 				
 				attr = ModelUtil.createDynamicAttribute(SampleModelPackage.eINSTANCE, task, "execute", "EBoolean");

@@ -20,6 +20,7 @@ import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractListComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractPropertiesProvider;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.DroolsPackage;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.ImportType;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.util.JbpmModelUtil;
 import org.eclipse.bpmn2.modeler.ui.property.ExtensionValueListComposite;
 import org.eclipse.bpmn2.modeler.ui.property.diagrams.DefinitionsPropertyComposite;
@@ -52,16 +53,13 @@ public class JbpmDefinitionsPropertyComposite extends DefinitionsPropertyComposi
 			propertiesProvider = new AbstractPropertiesProvider(object) {
 				String[] properties = new String[] {
 						"name",
-						"targetNamespace",
-						"typeLanguage",
-						"expressionLanguage",
-						"rootElements#ItemDefinition",
 						"imports",
+						"rootElements#ItemDefinition",
 						"rootElements#Resource",
 						"rootElements#Message",
 						"rootElements#Error",
-						"rootElements#Escalation",
 						"rootElements#Signal",
+						"rootElements#Escalation",
 				};
 				
 				@Override
@@ -89,7 +87,15 @@ public class JbpmDefinitionsPropertyComposite extends DefinitionsPropertyComposi
 								IType type = JbpmModelUtil.showImportDialog(object);
 								return JbpmModelUtil.addImport(type, object);
 							}
-	
+							
+							@Override
+							protected Object removeListItem(EObject object, EStructuralFeature feature, int index) {
+								ImportType importType = (ImportType) super.getListItem(object, feature, index);
+								if (importType!=null) {
+									JbpmModelUtil.removeImport(importType);
+								}
+								return super.removeListItem(object, feature, index);
+							}	
 						};
 						importsTable.bindList(process, DroolsPackage.eINSTANCE.getDocumentRoot_ImportType());
 						importsTable.setTitle("Imports");

@@ -10,12 +10,10 @@
  *******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.features.label;
 
-import org.eclipse.bpmn2.BoundaryEvent;
 import org.eclipse.bpmn2.BaseElement;
-import org.eclipse.bpmn2.FlowElementsContainer;
+import org.eclipse.bpmn2.BoundaryEvent;
 import org.eclipse.bpmn2.modeler.core.di.DIImport;
 import org.eclipse.bpmn2.modeler.core.features.ContextConstants;
-import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
@@ -40,12 +38,7 @@ public class AddLabelFeature extends AbstractAddShapeFeature {
 
 	@Override
 	public boolean canAdd(IAddContext context) {
-		boolean intoDiagram = context.getTargetContainer().equals(getDiagram());
-		boolean intoLane = FeatureSupport.isTargetLane(context) && FeatureSupport.isTargetLaneOnTop(context);
-		boolean intoParticipant = FeatureSupport.isTargetParticipant(context);
-		boolean intoFlowELementContainer = BusinessObjectUtil.containsElementOfType(context.getTargetContainer(),
-		        FlowElementsContainer.class);
-		return intoDiagram || intoLane || intoParticipant || intoFlowELementContainer;
+		return FeatureSupport.isValidFlowElementTarget(context);
 	}
 
 	@Override

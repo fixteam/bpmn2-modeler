@@ -27,7 +27,7 @@ public class ReadonlyTextObjectEditor extends TextAndButtonObjectEditor {
 	protected void buttonClicked(int buttonId) {
 		Object value = object.eGet(feature);
 		if (value == null || value instanceof EObject) {
-			FeatureEditingDialog dialog = new FeatureEditingDialog(getDiagramEditor(), object, feature, (EObject)value);
+			FeatureEditingDialog dialog = createFeatureEditingDialog((EObject)value);
 			if (dialog.open()==Window.OK){
 				setValue(dialog.getNewObject());
 			}

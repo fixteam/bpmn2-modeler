@@ -13,7 +13,6 @@
 
 package org.eclipse.bpmn2.modeler.ui.adapters.properties;
 
-import java.io.IOException;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -47,8 +46,9 @@ public class ItemAwareElementPropertiesAdapter<T extends ItemAwareElement> exten
 		
     	EStructuralFeature feature = Bpmn2Package.eINSTANCE.getItemAwareElement_ItemSubjectRef();
     	
+		setProperty(feature, UI_IS_MULTI_CHOICE, Boolean.TRUE);
     	setFeatureDescriptor(feature,
-			new ItemAwareElementFeatureDescriptor<T>(adapterFactory, object, feature)
+			new ItemDefinitionRefFeatureDescriptor<T>(adapterFactory, object, feature)
     	);
     	
     	feature = Bpmn2Package.eINSTANCE.getItemAwareElement_DataState();

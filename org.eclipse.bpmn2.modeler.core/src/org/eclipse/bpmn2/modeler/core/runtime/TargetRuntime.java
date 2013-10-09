@@ -25,7 +25,7 @@ import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.modeler.core.AbstractPropertyChangeListenerProvider;
 import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.IBpmn2RuntimeExtension;
-import org.eclipse.bpmn2.modeler.core.features.activity.task.ICustomTaskFeatureContainer;
+import org.eclipse.bpmn2.modeler.core.features.activity.task.ICustomElementFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerResourceImpl;
 import org.eclipse.bpmn2.modeler.core.preferences.ShapeStyle;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor.Property;
@@ -34,6 +34,7 @@ import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil.Bpmn2DiagramType;
 import org.eclipse.bpmn2.util.Bpmn2Resource;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IContributor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EClass;
@@ -50,6 +51,8 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 	// extension point ID for Target Runtimes
 	public static final String RUNTIME_EXTENSION_ID = "org.eclipse.bpmn2.modeler.runtime";
 	public static final String DEFAULT_RUNTIME_ID = "com.founder.fix.fixflow.designer.fixflow";
+	// ID for BPMN2 specific problem markers
+	public static final String BPMN2_MARKER_ID = "org.eclipse.bpmn2.modeler.core.problemMarker";
 	
 	// our cached registry of target runtimes contributed by other plugins
 	protected static TargetRuntime targetRuntimes[];
@@ -71,6 +74,7 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 	protected ArrayList<ToolPaletteDescriptor> toolPalettes;
 	protected HashMap<Class, ShapeStyle> shapeStyles;
 	protected Bpmn2Resource bpmnResource;
+	protected String problemMarkerId;
 
 	public TargetRuntime(String id, String name, String versions, String description) {
 		this.id = id;
@@ -158,6 +162,16 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 						rt.setRuntimeExtension((IBpmn2RuntimeExtension) e.createExecutableExtension("class"));
 					
 						rtList.add(rt);
+
+						// add validation problem marker IDs
+						IContributor contributor = e.getDeclaringExtension().getContributor();
+						IConfigurationElement[] markers = Platform.getExtensionRegistry().getConfigurationElementsFor(
+								"org.eclipse.core.resources.markers");
+						for (IConfigurationElement m : markers) {
+							if (m.getDeclaringExtension().getContributor() == contributor) {
+								rt.setProblemMarkerId(m.getDeclaringExtension().getUniqueIdentifier());
+							}
+						}
 					}
 				}
 				
@@ -219,6 +233,7 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 						}
 					}
 				}
+				
 				// process propertyTab, propertyExtension, customTask, modelExtension and modelEnablement next
 				for (IConfigurationElement e : config) {
 					if (!e.getName().equals("runtime")) {
@@ -245,7 +260,7 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 							if (tabs!=null) {
 								ct.propertyTabs = tabs.split(" ");
 							}
-							ct.featureContainer = (ICustomTaskFeatureContainer) e.createExecutableExtension("featureContainer");
+							ct.featureContainer = (ICustomElementFeatureContainer) e.createExecutableExtension("featureContainer");
 							ct.featureContainer.setCustomTaskDescriptor(ct);
 							ct.featureContainer.setId(id);
 							ct.setPermanent(true);
@@ -254,7 +269,7 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 						}
 						else if (e.getName().equals("propertyExtension")) {
 							String id = e.getAttribute("id");
-							PropertyExtensionDescriptor pe = new PropertyExtensionDescriptor(currentRuntime);
+							PropertyExtensionDescriptor pe = new PropertyExtensionDescriptor(currentRuntime, e);
 							pe.type = e.getAttribute("type");
 							pe.adapterClassName = e.getAttribute("class");
 							currentRuntime.addPropertyExtension(pe);
@@ -850,5 +865,15 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 	    		}
 			}
 		}
+	}
+	
+	protected void setProblemMarkerId(String id) {
+		problemMarkerId = id;
+	}
+
+	public String getProblemMarkerId() {
+		if (problemMarkerId==null)
+			return BPMN2_MARKER_ID;
+		return problemMarkerId;
 	}
 }

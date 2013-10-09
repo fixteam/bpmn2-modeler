@@ -84,6 +84,7 @@ public class Bpmn2EditorPreferencePage extends PreferencePage implements IWorkbe
 	Button defaultSize;
 	FontControl textFont;
 	ColorControl textColor;
+	Label routingStyleLabel;
 	Combo routingStyle;
 
 	
@@ -176,7 +177,7 @@ public class Bpmn2EditorPreferencePage extends PreferencePage implements IWorkbe
         layout = new GridLayout(2,false);
         routingStyleComposite.setLayout(layout);
 
-        Label routingStyleLabel = new Label(routingStyleComposite, SWT.LEFT);
+        routingStyleLabel = new Label(routingStyleComposite, SWT.LEFT);
 		routingStyleLabel.setText("Routing Style:");
 		routingStyleLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		routingStyle = new Combo(routingStyleComposite, SWT.READ_ONLY);
@@ -285,6 +286,8 @@ public class Bpmn2EditorPreferencePage extends PreferencePage implements IWorkbe
 			((GridData)defaultSize.getLayoutData()).exclude = !isShape;
 			routingStyle.setVisible(!isShape);
 			((GridData)routingStyle.getLayoutData()).exclude = isShape;
+			routingStyleLabel.setVisible(!isShape);
+			((GridData)routingStyleLabel.getLayoutData()).exclude = isShape;
 			if (!isShape) {
 				routingStyle.removeAll();
 				int i = 0;

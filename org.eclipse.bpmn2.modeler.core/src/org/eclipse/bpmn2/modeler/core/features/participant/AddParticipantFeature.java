@@ -15,10 +15,9 @@ package org.eclipse.bpmn2.modeler.core.features.participant;
 import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.di.BPMNShape;
 import org.eclipse.bpmn2.modeler.core.di.DIImport;
-import org.eclipse.bpmn2.modeler.core.features.AbstractAddBPMNShapeFeature;
+import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2AddElementFeature;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
-import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IAddContext;
@@ -35,11 +34,11 @@ import org.eclipse.graphiti.services.IGaService;
 import org.eclipse.graphiti.services.IPeCreateService;
 import org.eclipse.graphiti.services.IPeService;
 
-public class AddParticipantFeature extends AbstractAddBPMNShapeFeature<Participant> {
+public class AddParticipantFeature extends AbstractBpmn2AddElementFeature<Participant> {
 
 	public static final String MULTIPLICITY = "multiplicity";
 	public static final int DEFAULT_POOL_WIDTH = 600;
-	public static final int DEFAULT_POOL_HEIGHT = 100;
+	public static final int DEFAULT_POOL_HEIGHT = 150;
 
 	public AddParticipantFeature(IFeatureProvider fp) {
 		super(fp);

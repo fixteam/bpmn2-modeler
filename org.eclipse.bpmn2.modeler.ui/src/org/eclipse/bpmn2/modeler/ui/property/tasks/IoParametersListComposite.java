@@ -26,7 +26,7 @@ import org.eclipse.bpmn2.modeler.core.adapters.InsertionAdapter;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultListComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.ListCompositeColumnProvider;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.TableColumn;
-import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
+import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
@@ -56,17 +56,23 @@ public class IoParametersListComposite extends DefaultListComposite {
 			setListItemClass(listItemClass);
 			
 			EStructuralFeature f;
-			f = (EAttribute)listItemClass.getEStructuralFeature("name");
-			columnProvider.add(new IoParameterNameColumn(activity,f));
 			if (isInput) {
-				columnProvider.add(new TableColumn(activity,PACKAGE.getDataInput_IsCollection()));
 				f = PACKAGE.getActivity_DataInputAssociations();
-				columnProvider.add(new IoParameterMappingColumn(activity,f));
+				columnProvider.add(new IoParameterMappingColumn(activity,f)).setHeaderText("From");
+
+				f = (EAttribute)listItemClass.getEStructuralFeature("name");
+				columnProvider.add(new IoParameterNameColumn(activity,f)).setHeaderText("To");
+
+				columnProvider.add(new TableColumn(activity,PACKAGE.getDataInput_IsCollection()));
 			}
 			else {
-				columnProvider.add(new TableColumn(activity,PACKAGE.getDataOutput_IsCollection()));
+				f = (EAttribute)listItemClass.getEStructuralFeature("name");
+				columnProvider.add(new IoParameterNameColumn(activity,f)).setHeaderText("From");
+
 				f = PACKAGE.getActivity_DataOutputAssociations();
-				columnProvider.add(new IoParameterMappingColumn(activity,f));
+				columnProvider.add(new IoParameterMappingColumn(activity,f)).setHeaderText("To");
+
+				columnProvider.add(new TableColumn(activity,PACKAGE.getDataOutput_IsCollection()));
 			}
 		}
 		else if (container instanceof CallableElement) {
@@ -82,82 +88,30 @@ public class IoParametersListComposite extends DefaultListComposite {
 		InsertionAdapter.executeIfNeeded(ioSpecification);
 		
 		param = super.addListItem(object, feature);
-		if (param instanceof DataInput) {
-			// add the new parameter to the InputSet
-			List<InputSet> inputSets = ioSpecification.getInputSets();
-			if (inputSets.size()==0) {
-				inputSets.add(FACTORY.createInputSet());
-			}
-			InputSet inputSet = inputSets.get(0);
-			
-			// generate a unique parameter name
-			String base = "input";
-			int suffix = 1;
-			String name = base + suffix;
-			for (;;) {
-				boolean found = false;
-				for (DataInput p : inputSet.getDataInputRefs()) {
-					if (name.equals(p.getName())) {
-						found = true;
-						break;
-					}
-				}
-				if (!found)
-					break;
-				name = base + ++suffix;
-			}
-			((DataInput)param).setName(name);
-
-			inputSet.getDataInputRefs().add((DataInput) param);
-			ModelUtil.setID(inputSet);
+		
+		// make sure the ioSpecification has both a default InputSet and OutputSet
+		if (ioSpecification.getInputSets().size()==0) {
+			InputSet is = Bpmn2ModelerFactory.create(ioSpecification.eResource(), InputSet.class);
+			ioSpecification.getInputSets().add(is);
 		}
-		else if (param instanceof DataOutput)
-		{
-			// add the new parameter to the OutputSet
-			List<OutputSet> outputSets = ioSpecification.getOutputSets();
-			if (outputSets.size()==0) {
-				outputSets.add(FACTORY.createOutputSet());
-			}
-			OutputSet outputSet = outputSets.get(0);
-			
-			// generate a unique parameter name
-			String base = "output";
-			int suffix = 1;
-			String name = base + suffix;
-			for (;;) {
-				boolean found = false;
-				for (DataOutput p : outputSet.getDataOutputRefs()) {
-					if (name.equals(p.getName())) {
-						found = true;
-						break;
-					}
-				}
-				if (!found)
-					break;
-				name = base + ++suffix;
-			}
-			((DataOutput)param).setName(name);
-
-			outputSet.getDataOutputRefs().add((DataOutput) param);
-			ModelUtil.setID(outputSet);
+		if (ioSpecification.getOutputSets().size()==0) {
+			OutputSet os = Bpmn2ModelerFactory.create(ioSpecification.eResource(), OutputSet.class);
+			ioSpecification.getOutputSets().add(os);
 		}
 		
 		if (activity!=null) {
 			// this is an Activity - create an Input or Output DataAssociation
 			if (param instanceof DataInput) {
-				DataInputAssociation inputAssociation = FACTORY.createDataInputAssociation();
+				DataInputAssociation inputAssociation = createModelObject(DataInputAssociation.class);
 				activity.getDataInputAssociations().add(inputAssociation);
 				inputAssociation.setTargetRef((DataInput) param);
-				ModelUtil.setID(inputAssociation);
 			}
 			else if (param instanceof DataOutput)
 			{
-				DataOutputAssociation outputAssociation = (DataOutputAssociation) ModelUtil.createObject(PACKAGE.getDataOutputAssociation());
-				//FACTORY.createDataOutputAssociation();
+				DataOutputAssociation outputAssociation = createModelObject(DataOutputAssociation.class);
 				activity.getDataOutputAssociations().add(outputAssociation);
 				outputAssociation.getSourceRef().clear();
 				outputAssociation.getSourceRef().add((DataOutput) param);
-				ModelUtil.setID(outputAssociation);
 			}
 		}
 		else if (element!=null) {
@@ -209,7 +163,7 @@ public class IoParametersListComposite extends DefaultListComposite {
 				List<DataOutputAssociation> dataOutputAssociations = activity.getDataOutputAssociations();
 				List<DataOutputAssociation> removed = new ArrayList<DataOutputAssociation>();
 				for (DataOutputAssociation doa : dataOutputAssociations) {
-					if (doa.getTargetRef()!=null && doa.getTargetRef().equals(item))
+					if (doa.getSourceRef()!=null && doa.getSourceRef().contains(item))
 						removed.add(doa);
 				}
 				dataOutputAssociations.removeAll(removed);

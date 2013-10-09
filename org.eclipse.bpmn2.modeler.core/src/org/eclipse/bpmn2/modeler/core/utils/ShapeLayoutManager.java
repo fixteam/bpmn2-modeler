@@ -11,7 +11,6 @@ import org.eclipse.bpmn2.Lane;
 import org.eclipse.bpmn2.SequenceFlow;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.di.DIUtils;
-import org.eclipse.bpmn2.modeler.core.features.ConnectionFeatureContainer;
 import org.eclipse.graphiti.datatypes.IDimension;
 import org.eclipse.graphiti.datatypes.ILocation;
 import org.eclipse.graphiti.features.IMoveShapeFeature;
@@ -175,7 +174,7 @@ public class ShapeLayoutManager {
 
 		// TODO: remove this temporary hack to fix Manhattan Router issue
 		for (ContainerShape child : childShapes) {
-			ConnectionFeatureContainer.updateConnections(editor.getDiagramTypeProvider().getFeatureProvider(), child);
+			FeatureSupport.updateConnections(editor.getDiagramTypeProvider().getFeatureProvider(), child);
 		}
 	}
 

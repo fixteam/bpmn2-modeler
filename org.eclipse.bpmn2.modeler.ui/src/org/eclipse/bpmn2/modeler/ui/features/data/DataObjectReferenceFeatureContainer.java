@@ -15,16 +15,15 @@ package org.eclipse.bpmn2.modeler.ui.features.data;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.DataObjectReference;
 import org.eclipse.bpmn2.modeler.core.features.AbstractCreateFlowElementFeature;
+import org.eclipse.bpmn2.modeler.core.features.MultiUpdateFeature;
 import org.eclipse.bpmn2.modeler.core.features.data.AddDataFeature;
 import org.eclipse.bpmn2.modeler.core.features.label.UpdateLabelFeature;
-import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.ui.ImageProvider;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.graphiti.features.IAddFeature;
 import org.eclipse.graphiti.features.ICreateFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.IUpdateFeature;
-import org.eclipse.graphiti.features.context.ICreateContext;
 
 public class DataObjectReferenceFeatureContainer extends AbstractDataFeatureContainer {
 
@@ -45,7 +44,10 @@ public class DataObjectReferenceFeatureContainer extends AbstractDataFeatureCont
 
 	@Override
 	public IUpdateFeature getUpdateFeature(IFeatureProvider fp) {
-		return new UpdateLabelFeature(fp);
+		MultiUpdateFeature multiUpdate = new MultiUpdateFeature(fp);
+		multiUpdate.addUpdateFeature(new UpdateDataObjectFeature(fp));
+		multiUpdate.addUpdateFeature(new UpdateLabelFeature(fp));
+		return multiUpdate;
 	}
 
 	public class AddDataObjectReferenceFeature extends AddDataFeature<DataObjectReference> {

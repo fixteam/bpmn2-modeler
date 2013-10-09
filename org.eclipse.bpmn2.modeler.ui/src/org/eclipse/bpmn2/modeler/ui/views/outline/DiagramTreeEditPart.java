@@ -14,9 +14,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.bpmn2.Definitions;
+import org.eclipse.bpmn2.Participant;
+import org.eclipse.bpmn2.Process;
+import org.eclipse.bpmn2.RootElement;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.di.DIUtils;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
+import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
+import org.eclipse.emf.common.util.TreeIterator;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
 
@@ -32,7 +38,7 @@ public class DiagramTreeEditPart extends AbstractGraphicsTreeEditPart {
 	}
 
 	public Diagram getDiagram() {
-		return (Diagram) getBpmnModel();
+		return (Diagram) getModel();
 	}
 
 	public List<Diagram> getAllDiagrams() {
@@ -59,8 +65,28 @@ public class DiagramTreeEditPart extends AbstractGraphicsTreeEditPart {
 		BPMNDiagram bpmnDiagram = (BPMNDiagram) BusinessObjectUtil.getBusinessObjectForPictogramElement(diagram);
 		if (bpmnDiagram!=null) {
 			Definitions definitions = (Definitions)bpmnDiagram.eContainer();
-			if (id == BPMN2EditorOutlinePage.ID_BUSINESS_MODEL_OUTLINE)
-				retList.addAll(definitions.getRootElements());
+			if (id == BPMN2EditorOutlinePage.ID_BUSINESS_MODEL_OUTLINE) {
+				for (RootElement elem : definitions.getRootElements()) {
+					boolean addIt = true;
+					if (elem instanceof Process) {
+						// don't include this Process in root children if it's already
+						// being accounted for inside a Pool
+						TreeIterator<EObject> iter = definitions.eAllContents();
+						while (iter.hasNext()) {
+							EObject next = iter.next();
+							if (next instanceof Participant) {
+								Participant participant = (Participant)next;
+								if (participant.getProcessRef() == elem) {
+									addIt = false;
+									break;
+								}
+							}
+						}
+					}
+					if (addIt)
+						retList.add(elem);
+				}
+			}
 			else if (id == BPMN2EditorOutlinePage.ID_INTERCHANGE_MODEL_OUTLINE)
 				retList.addAll(definitions.getDiagrams());
 			

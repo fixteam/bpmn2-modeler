@@ -57,7 +57,7 @@ public class TextAnnotationDetailComposite extends DefaultDetailComposite {
 
 	@Override
 	public void createBindings(EObject be) {
-		ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(be, ExtendedPropertiesAdapter.class);
+		ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(be);
 		adapter.getFeatureDescriptor(Bpmn2Package.eINSTANCE.getTextAnnotation_Text()).setMultiLine(true);
 		super.createBindings(be);
 	}

@@ -21,15 +21,18 @@ import org.eclipse.bpmn2.Event;
 import org.eclipse.bpmn2.Gateway;
 import org.eclipse.bpmn2.Message;
 import org.eclipse.bpmn2.modeler.core.features.ContextConstants;
-import org.eclipse.bpmn2.modeler.core.features.FeatureContainer;
+import org.eclipse.bpmn2.modeler.core.features.IConnectionFeatureContainer;
+import org.eclipse.bpmn2.modeler.core.features.IShapeFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.graphiti.features.IAddFeature;
+import org.eclipse.graphiti.features.ICreateConnectionFeature;
 import org.eclipse.graphiti.features.ICreateFeature;
 import org.eclipse.graphiti.features.IDeleteFeature;
 import org.eclipse.graphiti.features.IDirectEditingFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.ILayoutFeature;
 import org.eclipse.graphiti.features.IMoveShapeFeature;
+import org.eclipse.graphiti.features.IReconnectionFeature;
 import org.eclipse.graphiti.features.IRemoveFeature;
 import org.eclipse.graphiti.features.IResizeShapeFeature;
 import org.eclipse.graphiti.features.IUpdateFeature;
@@ -42,7 +45,7 @@ import org.eclipse.graphiti.mm.algorithms.AbstractText;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 
-public class LabelFeatureContainer implements FeatureContainer {
+public class LabelFeatureContainer implements IShapeFeatureContainer, IConnectionFeatureContainer {
 
 	@Override
 	public Object getApplyObject(IContext context) {
@@ -84,9 +87,19 @@ public class LabelFeatureContainer implements FeatureContainer {
 				o instanceof DataStore ||
 				o instanceof DataStoreReference;
 	}
+	
+	@Override
+	public boolean isAvailable(IFeatureProvider fp) {
+		return true;
+	}
 
 	@Override
 	public ICreateFeature getCreateFeature(IFeatureProvider fp) {
+		return null;
+	}
+	
+	@Override
+	public ICreateConnectionFeature getCreateConnectionFeature(IFeatureProvider fp) {
 		return null;
 	}
 
@@ -132,6 +145,12 @@ public class LabelFeatureContainer implements FeatureContainer {
 	
 	@Override
 	public ICustomFeature[] getCustomFeatures(IFeatureProvider fp) {
+		return null;
+	}
+
+	@Override
+	public IReconnectionFeature getReconnectionFeature(IFeatureProvider fp) {
+		// TODO Auto-generated method stub
 		return null;
 	}
 }

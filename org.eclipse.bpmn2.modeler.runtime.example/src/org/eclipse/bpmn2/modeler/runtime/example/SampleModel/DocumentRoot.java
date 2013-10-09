@@ -9,7 +9,7 @@ package org.eclipse.bpmn2.modeler.runtime.example.SampleModel;
  * <p>
  * The following features are supported:
  * <ul>
- *   <li>{@link org.eclipse.bpmn2.modeler.runtime.example.SampleModel.DocumentRoot#getSampleCustomTaskId <em>Sample Custom Task Id</em>}</li>
+ *   <li>{@link org.eclipse.bpmn2.modeler.runtime.example.SampleModel.DocumentRoot#getelementId <em>Sample Custom Task Id</em>}</li>
  *   <li>{@link org.eclipse.bpmn2.modeler.runtime.example.SampleModel.DocumentRoot#getSampleCustomFlowValue <em>Sample Custom Flow Value</em>}</li>
  * </ul>
  * </p>
@@ -28,22 +28,22 @@ public interface DocumentRoot extends org.eclipse.bpmn2.DocumentRoot {
 	 * </p>
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Sample Custom Task Id</em>' attribute.
-	 * @see #setSampleCustomTaskId(String)
-	 * @see org.eclipse.bpmn2.modeler.runtime.example.SampleModel.SampleModelPackage#getDocumentRoot_SampleCustomTaskId()
+	 * @see #setelementId(String)
+	 * @see org.eclipse.bpmn2.modeler.runtime.example.SampleModel.SampleModelPackage#getDocumentRoot_elementId()
 	 * @model extendedMetaData="kind='attribute' name='taskId' namespace='##targetNamespace'"
 	 * @generated
 	 */
-	String getSampleCustomTaskId();
+	String getelementId();
 
 	/**
-	 * Sets the value of the '{@link org.eclipse.bpmn2.modeler.runtime.example.SampleModel.DocumentRoot#getSampleCustomTaskId <em>Sample Custom Task Id</em>}' attribute.
+	 * Sets the value of the '{@link org.eclipse.bpmn2.modeler.runtime.example.SampleModel.DocumentRoot#getelementId <em>Sample Custom Task Id</em>}' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @param value the new value of the '<em>Sample Custom Task Id</em>' attribute.
-	 * @see #getSampleCustomTaskId()
+	 * @see #getelementId()
 	 * @generated
 	 */
-	void setSampleCustomTaskId(String value);
+	void setelementId(String value);
 
 	/**
 	 * Returns the value of the '<em><b>Sample Custom Flow Value</b></em>' attribute.

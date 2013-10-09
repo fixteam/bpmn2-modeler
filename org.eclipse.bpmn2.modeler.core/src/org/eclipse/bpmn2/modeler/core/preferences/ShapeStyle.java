@@ -39,7 +39,7 @@ public class ShapeStyle {
 	IColorConstant shapeForeground;
 	Font textFont;
 	IColorConstant textColor;
-	RoutingStyle routingStyle = RoutingStyle.ManualBendpoint;
+	RoutingStyle routingStyle = RoutingStyle.Manhattan;
 	boolean defaultSize;
 	boolean dirty;
 

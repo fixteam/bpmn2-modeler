@@ -43,6 +43,9 @@ public class IoParameterMappingColumn extends TableColumn {
 
 	@Override
 	public String getHeaderText() {
+		if (headerText!=null)
+			return headerText;
+		
 		return ModelUtil.getLabel(
 				Bpmn2Package.eINSTANCE.getDataAssociation(),
 				feature.getName().startsWith("dataInput") ?
@@ -70,7 +73,7 @@ public class IoParameterMappingColumn extends TableColumn {
 						FormalExpression expr  = getTargetExpression(da, assign);
 						String body = ModelUtil.getDisplayName(expr);
 						if (text2==null)
-							text2 = "Expression: " + body;
+							text2 = "\"" + body + "\"";
 						else
 							text2 += ",\n" + body;
 					}
@@ -151,6 +154,7 @@ public class IoParameterMappingColumn extends TableColumn {
 		// the real object to be modified is the DataAssociation
 		EStructuralFeature f = getTargetFeature((ItemAwareElement)element);
 		super.modify(association, f, value);
+		tableViewer.refresh(element);
 	}
 	
 	protected List<DataAssociation> getDataAssociations(ItemAwareElement element) {

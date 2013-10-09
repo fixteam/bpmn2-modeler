@@ -16,18 +16,13 @@ import java.util.List;
 import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.runtime.Bpmn2SectionDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.Bpmn2TabDescriptor;
-import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
@@ -42,7 +37,6 @@ import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.eclipse.ui.views.properties.tabbed.ITabDescriptorProvider;
 
-// TODO: create a tabbed composite that contains all of the sections normally displayed in the tabbed property sheet
 public class DefaultDialogComposite extends AbstractDialogComposite {
 
 	protected IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
@@ -66,7 +60,6 @@ public class DefaultDialogComposite extends AbstractDialogComposite {
 			folder.setLayout(new FormLayout());
 			folder.setBackground(parent.getBackground());
 
-			int index = 0;
 			for (ITabDescriptor td : tabDescriptors) {
 				if (td instanceof Bpmn2TabDescriptor && !((Bpmn2TabDescriptor)td).isPopup()) {
 					// exclude this tab if not intended for popup dialog

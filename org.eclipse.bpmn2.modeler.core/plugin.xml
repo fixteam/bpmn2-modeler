@@ -24,7 +24,7 @@
             <constraint
                   lang="Java"
                   class="org.eclipse.bpmn2.modeler.core.validation.ValidIdConstraint"
-                  severity="CANCEL"
+                  severity="WARNING"
                   mode="Batch"
                   name="Valid IDs"
                   id="org.eclipse.bpmn2.modeler.core.validation.ValidId"
@@ -46,7 +46,7 @@
             </constraint>
             <constraint
 			        lang="OCL"
-			         severity="CANCEL"
+			         severity="ERROR"
 			         mode="Live"
 			         name="StartEventIncoming"
 			         id="org.eclipse.bpmn2.modeler.core.validation.StartEvent.incoming"
@@ -60,7 +60,7 @@
 			</constraint>
 			<constraint
 			        lang="OCL"
-			         severity="CANCEL"
+			         severity="ERROR"
 			         mode="Live"
 			         name="EndEventOutgoing"
 			         id="org.eclipse.bpmn2.modeler.core.validation.EndEvent.outgoing"
@@ -79,15 +79,15 @@
 			         name="UniqueId"
 			         id="org.eclipse.bpmn2.modeler.core.validation.BaseElement.id"
 			         statusCode="3" isEnabledByDefault="true">
-			      <description>ID needs to be unique.</description>
-			      <message>ID needs to be unqiue.</message>
+			      <description>ID must be unique.</description>
+			      <message>ID must be unqiue.</message>
 			      <target class="BaseElement" />
 					<![CDATA[
 						self.id->notEmpty() implies bpmn2::BaseElement.allInstances()->select(s | s.id = self.id)->size() <= 1
 					]]>
 			</constraint>
 			<constraint
-					class="org.eclipse.bpmn2.modeler.core.validation.BPMN2BatchValidationConstraint"
+					class="org.eclipse.bpmn2.modeler.core.validation.BPMN2ValidationConstraints"
 					id="org.eclipse.bpmn2.modeler.core.validation.error"
 					isEnabledByDefault="true"
 					lang="Java"
@@ -97,12 +97,11 @@
 					statusCode="1">
 				<message>{0}</message>
 				<description>Diagram Validation Errors</description>
-				<target class="BPMNDiagram"/>
 				<target class="Definitions"/>
 				<target class="BaseElement"/>
 			</constraint>
  			<constraint
-					class="org.eclipse.bpmn2.modeler.core.validation.BPMN2BatchValidationConstraint"
+					class="org.eclipse.bpmn2.modeler.core.validation.BPMN2ValidationConstraints"
 					id="org.eclipse.bpmn2.modeler.core.validation.warning"
 					isEnabledByDefault="true"
 					lang="Java"
@@ -112,7 +111,21 @@
 					statusCode="1">
 				<message>{0}</message>
 				<description>Diagram Validation Warnings</description>
-				<target class="BPMNDiagram"/>
+				<target class="Definitions"/>
+				<target class="BaseElement"/>
+			</constraint>
+			<!-- Live validation constraints for user feedback during editing -->
+			<constraint
+					class="org.eclipse.bpmn2.modeler.core.validation.BPMN2ValidationConstraints"
+					id="org.eclipse.bpmn2.modeler.core.validation.live.error"
+					isEnabledByDefault="true"
+					lang="Java"
+					mode="Live"
+					name="Infos"
+					severity="INFO"
+					statusCode="1">
+				<message>{0}</message>
+				<description>Diagram Validation Errors</description>
 				<target class="Definitions"/>
 				<target class="BaseElement"/>
 			</constraint>
@@ -140,13 +153,13 @@
 		         lang="java"
 		         mode="Batch"
 		         name="FormalExpressionConstraint"
-		         severity="ERROR"
+		         severity="WARNING"
 		         statusCode="1">
 		      <message>
-		         Expression and Language must not be blank
+		         Expression is blank
 		      </message>
 		      <description>
-		         Expression and Language must not be blank
+		         Expressions should not be blank
 		      </description>
 		      <target
 		            class="FormalExpression">
@@ -162,7 +175,16 @@
       <clientContext
             default="false"
             id="org.eclipse.bpmn2.modeler.core.validationContext">
-         <selector class="org.eclipse.bpmn2.modeler.core.validation.ValidationDelegateClientSelector"/>
+         <enablement>
+            <or>
+	         	<test
+	                property="org.eclipse.bpmn2.modeler.property.targetRuntimeId"
+	                value="org.eclipse.bpmn2.modeler.runtime.none"/>
+	         	<test
+	                property="org.eclipse.bpmn2.modeler.property.doCoreValidation"
+	                value="true"/>
+            </or>
+         </enablement>
       </clientContext>
       <binding
             context="org.eclipse.bpmn2.modeler.core.validationContext"
@@ -170,13 +192,13 @@
    </extension>
 	
 	<extension point="org.eclipse.emf.validation.validationListeners">
-		<listener class="org.eclipse.bpmn2.modeler.core.validation.ProblemsReporter">
+		<listener class="org.eclipse.bpmn2.modeler.core.validation.LiveValidationListener">
 			<clientContext id="org.eclipse.bpmn2.modeler.core.validationContext"/>
 		</listener>
 	</extension>
 
   <extension
-        id="projectValidator"
+        id="org.eclipse.bpmn2.modeler.core.projectValidator"
         name="BPMN 2.0 Project Validator"
         point="org.eclipse.wst.validation.validatorV2">
      <validator
@@ -209,7 +231,7 @@
   
   <extension
         id="org.eclipse.bpmn2.modeler.core.problemMarker"
-        name="BPMN 2.0 Modeler"
+        name="Core BPMN 2.0 Problem"
         point="org.eclipse.core.resources.markers">
      <persistent
            value="true">
@@ -218,6 +240,7 @@
            type="org.eclipse.emf.validation.problem">
      </super>
   </extension>
+  
   <extension
         id="org.eclipse.bpmn2.modeler.core.bpmn2Builder"
         name="BPMN2 Validation Builder"
@@ -252,5 +275,15 @@
      <persistent
            value="true">
      </persistent>
+  </extension>
+  <extension
+        point="org.eclipse.core.expressions.propertyTesters">
+     <propertyTester
+           class="org.eclipse.bpmn2.modeler.core.validation.ResourcePropertyTester"
+           id="org.eclipse.bpmn2.modeler.core.targetRuntimePropertyTester"
+           namespace="org.eclipse.bpmn2.modeler.property"
+           properties="targetRuntimeId,toolPaletteProfile,doCoreValidation"
+           type="org.eclipse.emf.ecore.EObject">
+     </propertyTester>
   </extension>
 </plugin>

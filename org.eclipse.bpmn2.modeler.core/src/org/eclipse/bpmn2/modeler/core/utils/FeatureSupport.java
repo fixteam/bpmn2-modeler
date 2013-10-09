@@ -21,14 +21,21 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.bpmn2.BaseElement;
+import org.eclipse.bpmn2.BoundaryEvent;
+import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.CallActivity;
 import org.eclipse.bpmn2.CallableElement;
 import org.eclipse.bpmn2.ChoreographyTask;
 import org.eclipse.bpmn2.CorrelationPropertyRetrievalExpression;
 import org.eclipse.bpmn2.Definitions;
+import org.eclipse.bpmn2.EndEvent;
+import org.eclipse.bpmn2.Event;
 import org.eclipse.bpmn2.FlowElement;
 import org.eclipse.bpmn2.FlowElementsContainer;
 import org.eclipse.bpmn2.Group;
+import org.eclipse.bpmn2.ImplicitThrowEvent;
+import org.eclipse.bpmn2.IntermediateCatchEvent;
+import org.eclipse.bpmn2.IntermediateThrowEvent;
 import org.eclipse.bpmn2.Lane;
 import org.eclipse.bpmn2.Message;
 import org.eclipse.bpmn2.MessageEventDefinition;
@@ -38,29 +45,32 @@ import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.Process;
 import org.eclipse.bpmn2.ReceiveTask;
 import org.eclipse.bpmn2.SendTask;
+import org.eclipse.bpmn2.StartEvent;
 import org.eclipse.bpmn2.SubProcess;
 import org.eclipse.bpmn2.TextAnnotation;
+import org.eclipse.bpmn2.Transaction;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.di.BPMNShape;
 import org.eclipse.bpmn2.modeler.core.ModelHandler;
 import org.eclipse.bpmn2.modeler.core.ModelHandlerLocator;
 import org.eclipse.bpmn2.modeler.core.di.DIUtils;
+import org.eclipse.bpmn2.modeler.core.features.AbstractConnectionRouter;
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.emf.common.util.ECollections;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
+import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.graphiti.datatypes.ILocation;
 import org.eclipse.graphiti.features.IFeatureProvider;
-import org.eclipse.graphiti.features.context.IAddContext;
+import org.eclipse.graphiti.features.ILayoutFeature;
+import org.eclipse.graphiti.features.IUpdateFeature;
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.ICreateContext;
 import org.eclipse.graphiti.features.context.IMoveShapeContext;
 import org.eclipse.graphiti.features.context.IPictogramElementContext;
 import org.eclipse.graphiti.features.context.ITargetContext;
-import org.eclipse.graphiti.features.context.impl.AddContext;
-import org.eclipse.graphiti.features.context.impl.CreateContext;
-import org.eclipse.graphiti.features.context.impl.MoveShapeContext;
+import org.eclipse.graphiti.features.context.impl.LayoutContext;
+import org.eclipse.graphiti.features.context.impl.UpdateContext;
 import org.eclipse.graphiti.mm.algorithms.AbstractText;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.Polyline;
@@ -72,6 +82,7 @@ import org.eclipse.graphiti.mm.pictograms.Connection;
 import org.eclipse.graphiti.mm.pictograms.ConnectionDecorator;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
+import org.eclipse.graphiti.mm.pictograms.FreeFormConnection;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
@@ -104,16 +115,14 @@ public class FeatureSupport {
 	public static boolean isValidDataTarget(ITargetContext context) {
 		Object containerBO = BusinessObjectUtil.getBusinessObjectForPictogramElement( context.getTargetContainer() );
 		boolean intoDiagram = containerBO instanceof BPMNDiagram;
-		if (intoDiagram) {
-			// SubProcess are not allowed to define their own DataInputs or DataOutputs
-			BPMNDiagram bpmnDiagram = (BPMNDiagram) containerBO;
-			if (bpmnDiagram.getPlane().getBpmnElement() instanceof SubProcess)
-				intoDiagram = false;
-		}
-		boolean intoLane = isTargetLane(context) && isTargetLaneOnTop(context);
-		boolean intoParticipant = isTargetParticipant(context);
-		boolean intoGroup = isTargetGroup(context);
-		return (intoDiagram || intoLane || intoParticipant) && !intoGroup;
+		boolean intoSubProcess = containerBO instanceof SubProcess;
+		if (intoSubProcess || intoDiagram)
+			return true;
+		if (FeatureSupport.isTargetLane(context) && FeatureSupport.isTargetLaneOnTop(context))
+			return true;
+		if (FeatureSupport.isTargetParticipant(context))
+			return true;
+		return false;
 	}
 	
 	public static boolean isTargetSubProcess(ITargetContext context) {
@@ -885,4 +894,148 @@ public class FeatureSupport {
 		}
 		return result;
 	}
+	
+	public static List<EClass> getAllowedEventDefinitions(Event event) {
+		BaseElement eventOwner = null;
+		if (event instanceof BoundaryEvent) {
+			eventOwner = ((BoundaryEvent)event).getAttachedToRef();
+		}
+		else {
+			EObject parent = event.eContainer();
+			while (parent!=null) {
+				if (parent instanceof FlowElementsContainer ) {
+					eventOwner = (BaseElement)parent;
+					break;
+				}
+				parent = parent.eContainer();
+			}
+		}
+		
+		List<EClass> allowedItems = new ArrayList<EClass>();
+		if (event instanceof BoundaryEvent) {
+			if (eventOwner instanceof Transaction) {
+//				if (((BoundaryEvent)event).isCancelActivity())
+					allowedItems.add(Bpmn2Package.eINSTANCE.getCancelEventDefinition());
+			}
+//			if (((BoundaryEvent)event).isCancelActivity())
+				allowedItems.add(Bpmn2Package.eINSTANCE.getCompensateEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getConditionalEventDefinition());
+//			if (((BoundaryEvent)event).isCancelActivity())
+				allowedItems.add(Bpmn2Package.eINSTANCE.getErrorEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getEscalationEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getMessageEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getSignalEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getTimerEventDefinition());
+		}
+		else if (event instanceof IntermediateCatchEvent) {
+			allowedItems.add(Bpmn2Package.eINSTANCE.getConditionalEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getLinkEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getMessageEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getSignalEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getTimerEventDefinition());
+		}
+		else if (event instanceof StartEvent) {
+			if (eventOwner instanceof SubProcess) {
+//				if (((StartEvent)event).isIsInterrupting()) {
+					allowedItems.add(Bpmn2Package.eINSTANCE.getCompensateEventDefinition());
+					allowedItems.add(Bpmn2Package.eINSTANCE.getErrorEventDefinition());
+//				}
+				allowedItems.add(Bpmn2Package.eINSTANCE.getEscalationEventDefinition());
+			}
+			allowedItems.add(Bpmn2Package.eINSTANCE.getConditionalEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getMessageEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getSignalEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getTimerEventDefinition());
+		}
+		else if (event instanceof EndEvent) {
+			if (eventOwner instanceof Transaction)
+				allowedItems.add(Bpmn2Package.eINSTANCE.getCancelEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getCompensateEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getErrorEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getEscalationEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getMessageEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getSignalEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getTerminateEventDefinition());
+		}
+		else if (event instanceof ImplicitThrowEvent) {
+			allowedItems.add(Bpmn2Package.eINSTANCE.getCompensateEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getEscalationEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getLinkEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getMessageEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getSignalEventDefinition());
+		}
+		else if (event instanceof IntermediateThrowEvent) {
+			allowedItems.add(Bpmn2Package.eINSTANCE.getCompensateEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getEscalationEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getLinkEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getMessageEventDefinition());
+			allowedItems.add(Bpmn2Package.eINSTANCE.getSignalEventDefinition());
+		}
+		return allowedItems;
+	}
+
+	public static boolean updateConnection(IFeatureProvider fp, Connection connection) {
+		boolean layoutChanged = false;
+		LayoutContext layoutContext = new LayoutContext(connection);
+		ILayoutFeature layoutFeature = fp.getLayoutFeature(layoutContext);
+		if (layoutFeature!=null) {
+			layoutFeature.layout(layoutContext);
+			layoutChanged = layoutFeature.hasDoneChanges();
+		}
+		
+		boolean updateChanged = false;
+		UpdateContext updateContext = new UpdateContext(connection);
+		IUpdateFeature updateFeature = fp.getUpdateFeature(updateContext);
+		if (updateFeature!=null && updateFeature.updateNeeded(updateContext).toBoolean()) {
+			updateFeature.update(updateContext);
+			updateChanged = updateFeature.hasDoneChanges();
+		}
+		
+		return layoutChanged || updateChanged;
+	}
+
+	public static boolean updateConnection(IFeatureProvider fp, Connection connection, boolean force) {
+		AbstractConnectionRouter.setForceRouting(connection, force);
+		return updateConnection(fp,connection);
+	}
+
+	public static void updateConnections(IFeatureProvider fp, AnchorContainer ac, List<Connection> alreadyUpdated) {
+		for (int ai=0; ai<ac.getAnchors().size(); ++ai) {
+			Anchor a = ac.getAnchors().get(ai);
+			for (int ci=0; ci<a.getIncomingConnections().size(); ++ci) {
+				Connection c = a.getIncomingConnections().get(ci);
+				if (c instanceof FreeFormConnection) {
+					if (!alreadyUpdated.contains(c)) {
+						updateConnection(fp, c, true);
+						alreadyUpdated.add(c);
+					}
+				}
+			}
+		}
+		
+		for (int ai=0; ai<ac.getAnchors().size(); ++ai) {
+			Anchor a = ac.getAnchors().get(ai);
+			for (int ci=0; ci<a.getOutgoingConnections().size(); ++ci) {
+				Connection c = a.getOutgoingConnections().get(ci);
+				if (c instanceof FreeFormConnection) {
+					if (!alreadyUpdated.contains(c)) {
+						updateConnection(fp, c, true);
+						alreadyUpdated.add(c);
+					}
+				}
+			}
+		}
+	}
+
+	public static void updateConnections(IFeatureProvider fp, AnchorContainer ac) {
+		List<Connection> alreadyUpdated = new ArrayList<Connection>();
+		if (ac instanceof ContainerShape) {
+			for (Shape child : ((ContainerShape)ac).getChildren()) {
+				if (child instanceof ContainerShape)
+					updateConnections(fp, child, alreadyUpdated);
+			}
+		}
+		updateConnections(fp, ac, alreadyUpdated);
+	}
+	
 }

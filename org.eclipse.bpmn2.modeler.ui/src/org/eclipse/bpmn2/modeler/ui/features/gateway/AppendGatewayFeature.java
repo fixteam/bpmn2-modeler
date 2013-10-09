@@ -16,7 +16,7 @@ package org.eclipse.bpmn2.modeler.ui.features.gateway;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.Gateway;
 import org.eclipse.bpmn2.modeler.ui.ImageProvider;
-import org.eclipse.bpmn2.modeler.ui.features.AbstractAppendNodeNodeFeature;
+import org.eclipse.bpmn2.modeler.ui.features.AbstractAppendNodeFeature;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IContext;
@@ -27,7 +27,7 @@ import org.eclipse.graphiti.features.custom.AbstractCustomFeature;
  * @author Bob Brodt
  *
  */
-public class AppendGatewayFeature extends AbstractAppendNodeNodeFeature<Gateway> {
+public class AppendGatewayFeature extends AbstractAppendNodeFeature<Gateway> {
 
 	/**
 	 * @param fp

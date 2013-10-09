@@ -13,22 +13,14 @@
 
 package org.eclipse.bpmn2.modeler.ui.adapters.properties;
 
-import org.eclipse.bpmn2.Bpmn2Factory;
-import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.Definitions;
-import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.IBpmn2RuntimeExtension;
-import org.eclipse.bpmn2.modeler.core.adapters.AdapterUtil;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
-import org.eclipse.bpmn2.modeler.core.adapters.FeatureDescriptor;
 import org.eclipse.bpmn2.modeler.core.adapters.ObjectDescriptor;
+import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
-import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.emf.common.notify.AdapterFactory;
-import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.transaction.RecordingCommand;
-import org.eclipse.emf.transaction.TransactionalEditingDomain;
 
 /**
  * @author Bob Brodt
@@ -46,7 +38,7 @@ public class DefinitionsPropertiesAdapter extends ExtendedPropertiesAdapter<Defi
 		setObjectDescriptor(new ObjectDescriptor<Definitions>(adapterFactory, object) {
 			@Override
 			public Definitions createObject(Resource resource, Object context) {
-				Definitions definitions = Bpmn2Factory.eINSTANCE.createDefinitions();
+				Definitions definitions = Bpmn2ModelerFactory.create(Definitions.class);
 				IBpmn2RuntimeExtension rte = TargetRuntime.getCurrentRuntime().getRuntimeExtension();
 				definitions.setTypeLanguage(rte.getTypeLanguages()[0]);
 				definitions.setExpressionLanguage(rte.getExpressionLanguages()[0]);

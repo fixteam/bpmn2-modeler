@@ -55,6 +55,7 @@ public class FeatureDescriptor<T extends EObject> extends ObjectDescriptor<T> {
 	}
 	
 	public String getLabel(Object context) {
+		EObject object = adopt(context);
 		if (label==null) {
 			IItemPropertyDescriptor propertyDescriptor = getPropertyDescriptor(feature);
 			if (propertyDescriptor != null)
@@ -76,6 +77,7 @@ public class FeatureDescriptor<T extends EObject> extends ObjectDescriptor<T> {
 	
 	@Override
 	public String getDisplayName(Object context) {
+		EObject object = adopt(context);
 		if (name==null) {
 			String t = null;
 			// derive text from feature's value: default behavior is
@@ -193,7 +195,7 @@ public class FeatureDescriptor<T extends EObject> extends ObjectDescriptor<T> {
 	public String getChoiceString(Object value) {
 		if (value instanceof EObject) {
 			EObject eObject = (EObject)value;
-			ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(eObject, ExtendedPropertiesAdapter.class);
+			ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(eObject);
 			if (adapter!=null)
 				return adapter.getObjectDescriptor().getDisplayName(eObject);
 			return ModelUtil.toDisplayName( eObject.eClass().getName() );
@@ -206,6 +208,7 @@ public class FeatureDescriptor<T extends EObject> extends ObjectDescriptor<T> {
 	}
 	
 	public boolean isMultiLine(Object context) {
+		EObject object = adopt(context);
 		if (multiline==0) {
 			IItemPropertyDescriptor propertyDescriptor = getPropertyDescriptor(feature);
 			if (propertyDescriptor!=null)
@@ -215,12 +218,14 @@ public class FeatureDescriptor<T extends EObject> extends ObjectDescriptor<T> {
 	}
 	
 	public EObject createFeature(Object context) {
+		EObject object = adopt(context);
 		if (context instanceof EClass)
 			return createFeature(object, (EClass)context);
 		return createFeature(context, null);
 	}		
 	
 	public EObject createFeature(Object context, EClass eclass) {
+		EObject object = adopt(context);
 		return createFeature(object.eResource(),context,eclass);
 	}
 	
@@ -233,7 +238,7 @@ public class FeatureDescriptor<T extends EObject> extends ObjectDescriptor<T> {
 			if (eclass==null)
 				eclass = (EClass)feature.getEType();
 			
-			ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(eclass, ExtendedPropertiesAdapter.class);
+			ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(eclass);
 			if (adapter!=null) {
 				if (resource==null)
 					resource = object.eResource();
@@ -267,7 +272,7 @@ public class FeatureDescriptor<T extends EObject> extends ObjectDescriptor<T> {
 	}
 	
 	public Object getValue(Object context) {
-		EObject object = context instanceof EObject ? (EObject)context : this.object;
+		EObject object = adopt(context);
 		return object.eGet(feature);
 	}
 	
@@ -337,4 +342,39 @@ public class FeatureDescriptor<T extends EObject> extends ObjectDescriptor<T> {
 			}
 		}
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		Object thisValue = object.eGet(feature);
+		
+		if (thisValue==null && obj==null)
+			return true;
+		
+		if (thisValue instanceof EObject && obj instanceof EObject) {
+			return compare((EObject)thisValue, (EObject)obj, false);
+		}
+		
+		if (thisValue!=null && obj!=null)
+			return thisValue.equals(obj);
+		
+		return false;
+	}
+	
+	@Override
+	public boolean similar(Object obj) {
+		Object thisValue = object.eGet(feature);
+		
+		if (thisValue==null && obj==null)
+			return true;
+		
+		if (thisValue instanceof EObject && obj instanceof EObject) {
+			return compare((EObject)thisValue, (EObject)obj, true);
+		}
+		
+		if (thisValue!=null && obj!=null)
+			return thisValue.equals(obj);
+		
+		return false;
+	}
+
 }

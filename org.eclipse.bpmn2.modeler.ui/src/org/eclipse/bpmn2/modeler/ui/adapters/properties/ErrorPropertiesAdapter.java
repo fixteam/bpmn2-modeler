@@ -15,10 +15,8 @@ package org.eclipse.bpmn2.modeler.ui.adapters.properties;
 
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.Error;
-import org.eclipse.bpmn2.modeler.core.adapters.ObjectDescriptor;
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.ecore.resource.Resource;
 
 /**
  * @author Bob Brodt
@@ -32,6 +30,10 @@ public class ErrorPropertiesAdapter extends RootElementPropertiesAdapter<Error> 
 	 */
 	public ErrorPropertiesAdapter(AdapterFactory adapterFactory, Error object) {
 		super(adapterFactory, object);
+
+		EStructuralFeature feature = Bpmn2Package.eINSTANCE.getError_StructureRef();
+		setProperty(feature, UI_IS_MULTI_CHOICE, Boolean.TRUE);
+    	setFeatureDescriptor(feature, new ItemDefinitionRefFeatureDescriptor<Error>(adapterFactory, object, feature));
 		
     	setObjectDescriptor(new RootElementObjectDescriptor<Error>(adapterFactory, object) {
 			@Override

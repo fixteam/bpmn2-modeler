@@ -100,6 +100,10 @@ public class LayoutParticipantFeature extends DefaultLayoutBPMNShapeFeature {
 		}
 
 		DIUtils.updateDIShape(containerShape);
+		
+		// make sure this Pool does not obscure any of its contained shapes
+		GraphicsUtil.sendToBack(containerShape);
+		
 		return super.layout(context);
 	}
 }

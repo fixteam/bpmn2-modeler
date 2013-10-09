@@ -117,6 +117,8 @@ public class DroolsValidator extends EObjectValidator {
 				return validateOnExitScriptType((OnExitScriptType)value, diagnostics, context);
 			case DroolsPackage.BP_SIM_DATA_TYPE:
 				return validateBPSimDataType((BPSimDataType)value, diagnostics, context);
+			case DroolsPackage.EXTERNAL_PROCESS:
+				return validateExternalProcess((ExternalProcess)value, diagnostics, context);
 			case DroolsPackage.PACKAGE_NAME_TYPE:
 				return validatePackageNameType((String)value, diagnostics, context);
 			case DroolsPackage.PRIORITY_TYPE:
@@ -202,6 +204,15 @@ public class DroolsValidator extends EObjectValidator {
 	 */
 	public boolean validateBPSimDataType(BPSimDataType bpSimDataType, DiagnosticChain diagnostics, Map<Object, Object> context) {
 		return validate_EveryDefaultConstraint(bpSimDataType, diagnostics, context);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public boolean validateExternalProcess(ExternalProcess callableElementProxy, DiagnosticChain diagnostics, Map<Object, Object> context) {
+		return validate_EveryDefaultConstraint(callableElementProxy, diagnostics, context);
 	}
 
 	/**

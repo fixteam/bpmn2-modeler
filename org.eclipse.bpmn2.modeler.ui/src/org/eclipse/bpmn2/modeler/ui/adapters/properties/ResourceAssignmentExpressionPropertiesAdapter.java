@@ -46,11 +46,14 @@ public class ResourceAssignmentExpressionPropertiesAdapter extends ExtendedPrope
 
 				@Override
 				public String getDisplayName(Object context) {
-					ResourceAssignmentExpression expression = adopt(context);
-					if (expression.getExpression() instanceof FormalExpression) {
-						return ((FormalExpression)expression.getExpression()).getBody();
+					ResourceAssignmentExpression rae = adopt(context);
+					String text = null;
+					if (rae.getExpression() instanceof FormalExpression) {
+						text = ModelUtil.getExpressionBody((FormalExpression)rae.getExpression());
 					}
-					return "";
+					if (text==null)
+						return "";
+					return text;
 				}
 
 				@Override

@@ -13,26 +13,38 @@
 package org.eclipse.bpmn2.modeler.ui.features.activity.subprocess;
 
 import org.eclipse.bpmn2.Activity;
+import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.CallActivity;
 import org.eclipse.bpmn2.CallableElement;
+import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.GlobalBusinessRuleTask;
 import org.eclipse.bpmn2.GlobalManualTask;
 import org.eclipse.bpmn2.GlobalScriptTask;
 import org.eclipse.bpmn2.GlobalTask;
 import org.eclipse.bpmn2.GlobalUserTask;
 import org.eclipse.bpmn2.Process;
+import org.eclipse.bpmn2.RootElement;
+import org.eclipse.bpmn2.di.BPMNDiagram;
+import org.eclipse.bpmn2.modeler.core.di.DIUtils;
 import org.eclipse.bpmn2.modeler.core.features.DefaultResizeBPMNShapeFeature;
 import org.eclipse.bpmn2.modeler.core.features.MultiUpdateFeature;
-import org.eclipse.bpmn2.modeler.core.features.ShowPropertiesFeature;
 import org.eclipse.bpmn2.modeler.core.features.activity.AbstractCreateExpandableFlowNodeFeature;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
+import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.ui.ImageProvider;
 import org.eclipse.bpmn2.modeler.ui.features.activity.AbstractActivityFeatureContainer;
+import org.eclipse.bpmn2.modeler.ui.features.activity.DeleteActivityFeature;
+import org.eclipse.bpmn2.modeler.ui.features.activity.MorphActivityFeature;
+import org.eclipse.bpmn2.modeler.ui.features.choreography.ShowDiagramPageFeature;
+import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.graphiti.features.IAddFeature;
 import org.eclipse.graphiti.features.ICreateFeature;
+import org.eclipse.graphiti.features.IDeleteFeature;
 import org.eclipse.graphiti.features.IDirectEditingFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.ILayoutFeature;
@@ -40,6 +52,7 @@ import org.eclipse.graphiti.features.IReason;
 import org.eclipse.graphiti.features.IResizeShapeFeature;
 import org.eclipse.graphiti.features.IUpdateFeature;
 import org.eclipse.graphiti.features.context.IAddContext;
+import org.eclipse.graphiti.features.context.IDeleteContext;
 import org.eclipse.graphiti.features.context.IUpdateContext;
 import org.eclipse.graphiti.features.custom.ICustomFeature;
 import org.eclipse.graphiti.features.impl.AbstractUpdateFeature;
@@ -101,6 +114,47 @@ public class CallActivityFeatureContainer extends AbstractActivityFeatureContain
 	}
 
 	@Override
+	public IDeleteFeature getDeleteFeature(IFeatureProvider fp) {
+		return new DeleteActivityFeature(fp) {
+			@Override
+			public void delete(final IDeleteContext context) {
+				PictogramElement pe = context.getPictogramElement();
+				CallActivity callActivity = BusinessObjectUtil.getFirstElementOfType(pe, CallActivity.class);
+				CallableElement calledActivity = callActivity.getCalledElementRef();
+				// if there are no other references to this called element, delete it from the model
+				boolean canDeleteCalledActivity = (calledActivity!=null);
+				if (canDeleteCalledActivity) {
+					Definitions definitions = ModelUtil.getDefinitions(callActivity);
+					TreeIterator<EObject> iter = definitions.eAllContents();
+					while (iter.hasNext() && canDeleteCalledActivity) {
+						EObject o = iter.next();
+						if (o!=callActivity && o instanceof BaseElement) {
+							for (EObject cr : o.eCrossReferences()) {
+								if (cr == calledActivity) {
+									canDeleteCalledActivity = false;
+									break;
+								}
+							}
+						}
+					}
+				}
+				
+				super.delete(context);
+				
+				if (canDeleteCalledActivity) {
+					// if the called activity is a Process, it may have its own
+					// diagram page which needs to be removed as well.
+					BPMNDiagram bpmnDiagram = DIUtils.findBPMNDiagram(calledActivity);
+					if (bpmnDiagram != null) {
+						DIUtils.deleteDiagram(getDiagramEditor(), bpmnDiagram);
+					}
+					EcoreUtil.delete(calledActivity);
+				}
+			}
+		};
+	}
+
+	@Override
 	public ILayoutFeature getLayoutFeature(IFeatureProvider fp) {
 		return new LayoutExpandableActivityFeature(fp) {
 			protected int getMarkerContainerOffset() {
@@ -139,16 +193,10 @@ public class CallActivityFeatureContainer extends AbstractActivityFeatureContain
 	@Override
 	public ICustomFeature[] getCustomFeatures(IFeatureProvider fp) {
 		ICustomFeature[] superFeatures = super.getCustomFeatures(fp);
-		ICustomFeature[] thisFeatures = new ICustomFeature[superFeatures.length];
-		int index = 1;
-		for (int i = 0; i < superFeatures.length; ++i) {
-			if (superFeatures[i] instanceof ShowPropertiesFeature) {
-				thisFeatures[0] = superFeatures[i];
-				index = 0;
-			}
-			else {
-				thisFeatures[index + i] = superFeatures[i];
-			}
+		ICustomFeature[] thisFeatures = new ICustomFeature[1 + superFeatures.length];
+		thisFeatures[0] = new ShowDiagramPageFeature(fp);
+		for (int superIndex=0, thisIndex=1; superIndex<superFeatures.length; ++superIndex) {
+			thisFeatures[thisIndex++] = superFeatures[superIndex];
 		}
 		return thisFeatures;
 	}

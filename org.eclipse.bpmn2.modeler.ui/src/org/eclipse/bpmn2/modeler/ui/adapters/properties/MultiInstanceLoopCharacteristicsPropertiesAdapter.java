@@ -18,23 +18,18 @@ import java.util.Hashtable;
 import java.util.List;
 
 import org.eclipse.bpmn2.Activity;
-import org.eclipse.bpmn2.DataAssociation;
+import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.DataInput;
 import org.eclipse.bpmn2.DataObject;
 import org.eclipse.bpmn2.DataObjectReference;
 import org.eclipse.bpmn2.DataOutput;
-import org.eclipse.bpmn2.DocumentRoot;
-import org.eclipse.bpmn2.Event;
-import org.eclipse.bpmn2.FlowElementsContainer;
 import org.eclipse.bpmn2.InputOutputSpecification;
-import org.eclipse.bpmn2.ItemAwareElement;
 import org.eclipse.bpmn2.MultiInstanceLoopCharacteristics;
 import org.eclipse.bpmn2.Process;
-import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.SubProcess;
-import org.eclipse.bpmn2.Task;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.adapters.FeatureDescriptor;
+import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.ecore.EClass;
@@ -114,7 +109,7 @@ public class MultiInstanceLoopCharacteristicsPropertiesAdapter extends ExtendedP
 				if (f!=null) {
 					InputOutputSpecification ioSpecification = (InputOutputSpecification)container.eGet(f);
 					if (ioSpecification==null) {
-						ioSpecification = (InputOutputSpecification)ModelUtil.createFeature(container, f);
+						ioSpecification = Bpmn2ModelerFactory.createFeature(container, f, InputOutputSpecification.class);
 					}
 					if (value instanceof DataInput)
 						ioSpecification.getDataInputs().add((DataInput)value);

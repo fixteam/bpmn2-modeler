@@ -12,11 +12,11 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.merrimac.clad;
 
-import org.eclipse.bpmn2.Event;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
-import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EReference;
 import org.eclipse.graphiti.mm.pictograms.ConnectionDecorator;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.jface.viewers.ISelection;
@@ -26,7 +26,7 @@ import org.eclipse.ui.IWorkbenchPart;
 public class DefaultPropertySection extends AbstractBpmn2PropertySection {
 
 	protected AbstractPropertiesProvider propertiesProvider = null;
-	protected Class appliesToClass = null;
+	protected List<Class> appliesToClasses = new ArrayList<Class>();
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.bpmn2.modeler.ui.property.AbstractBpmn2PropertySection#createSectionRoot()
@@ -68,7 +68,7 @@ public class DefaultPropertySection extends AbstractBpmn2PropertySection {
 	@Override
 	public boolean appliesTo(IWorkbenchPart part, ISelection selection) {
 		if (super.appliesTo(part, selection)) {
-			if (appliesToClass==null) {
+			if (appliesToClasses.isEmpty()) {
 				return true;
 			}
 			
@@ -84,21 +84,28 @@ public class DefaultPropertySection extends AbstractBpmn2PropertySection {
 				// check all linked BusinessObjects for a match
 				if (pe.getLink()!=null) {
 					for (EObject eObj : pe.getLink().getBusinessObjects()){
-						if (appliesToClass.isInstance(eObj)) {
+						if (appliesTo(eObj))
 							return true;
-						}
 					}
 				}
 			}
 			EObject eObj = BusinessObjectUtil.getBusinessObjectForSelection(selection);
 			if (eObj!=null)
-				return appliesToClass.isInstance(eObj);
+				return appliesTo(eObj);
+		}
+		return false;
+	}
+
+	public boolean appliesTo(EObject eObj) {
+		for (Class c : appliesToClasses) {
+			if (c.isInstance(eObj))
+				return true;
 		}
 		return false;
 	}
 	
-	public void setAppliesTo(Class appliesToClass) {
-		this.appliesToClass = appliesToClass;
+	public void addAppliesToClass(Class c) {
+		appliesToClasses.add(c);
 	}
 	
 	protected EObject getBusinessObjectForSelection(ISelection selection) {

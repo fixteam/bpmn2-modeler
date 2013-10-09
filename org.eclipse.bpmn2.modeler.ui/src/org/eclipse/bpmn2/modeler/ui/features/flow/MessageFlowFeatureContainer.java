@@ -28,44 +28,50 @@ import org.eclipse.bpmn2.StartEvent;
 import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.ModelHandler;
 import org.eclipse.bpmn2.modeler.core.features.BaseElementConnectionFeatureContainer;
+import org.eclipse.bpmn2.modeler.core.features.DefaultDeleteBPMNShapeFeature;
+import org.eclipse.bpmn2.modeler.core.features.DefaultMoveBPMNShapeFeature;
 import org.eclipse.bpmn2.modeler.core.features.flow.AbstractAddFlowFeature;
 import org.eclipse.bpmn2.modeler.core.features.flow.AbstractCreateFlowFeature;
 import org.eclipse.bpmn2.modeler.core.features.flow.AbstractReconnectFlowFeature;
 import org.eclipse.bpmn2.modeler.core.features.label.UpdateLabelFeature;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
+import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
+import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
 import org.eclipse.bpmn2.modeler.ui.ImageProvider;
 import org.eclipse.bpmn2.modeler.ui.features.choreography.ChoreographyUtil;
 import org.eclipse.bpmn2.modeler.ui.features.data.MessageFeatureContainer;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.graphiti.datatypes.ILocation;
 import org.eclipse.graphiti.features.IAddFeature;
 import org.eclipse.graphiti.features.ICreateConnectionFeature;
+import org.eclipse.graphiti.features.IDeleteFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.IMoveShapeFeature;
 import org.eclipse.graphiti.features.IReason;
 import org.eclipse.graphiti.features.IReconnectionFeature;
-import org.eclipse.graphiti.features.IRemoveFeature;
 import org.eclipse.graphiti.features.IUpdateFeature;
 import org.eclipse.graphiti.features.context.IAddConnectionContext;
 import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.ICreateConnectionContext;
+import org.eclipse.graphiti.features.context.IDeleteContext;
+import org.eclipse.graphiti.features.context.IMoveShapeContext;
 import org.eclipse.graphiti.features.context.IPictogramElementContext;
-import org.eclipse.graphiti.features.context.IRemoveContext;
 import org.eclipse.graphiti.features.context.IUpdateContext;
 import org.eclipse.graphiti.features.context.impl.AddContext;
 import org.eclipse.graphiti.features.context.impl.AreaContext;
+import org.eclipse.graphiti.features.context.impl.DeleteContext;
 import org.eclipse.graphiti.features.context.impl.MoveShapeContext;
-import org.eclipse.graphiti.features.context.impl.RemoveContext;
-import org.eclipse.graphiti.features.impl.DefaultRemoveFeature;
 import org.eclipse.graphiti.features.impl.Reason;
 import org.eclipse.graphiti.mm.algorithms.Ellipse;
 import org.eclipse.graphiti.mm.algorithms.Polyline;
 import org.eclipse.graphiti.mm.algorithms.styles.LineStyle;
 import org.eclipse.graphiti.mm.pictograms.Connection;
 import org.eclipse.graphiti.mm.pictograms.ConnectionDecorator;
+import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
@@ -77,18 +83,20 @@ import org.eclipse.graphiti.util.IColorConstant;
 public class MessageFlowFeatureContainer extends BaseElementConnectionFeatureContainer {
 
 	public final static String MESSAGE_REF = "message.ref";
-	IPeService peService = Graphiti.getPeService();
-	IGaService gaService = Graphiti.getGaService();
+	final static IPeService peService = Graphiti.getPeService();
+	final static IGaService gaService = Graphiti.getGaService();
 
 	public Object getApplyObject(IContext context) {
-		// FIXME: move the Participant Band Message delete functionality into a Custom Feature
-		// the same way the "Add Message" is handled currently
+		Object object = super.getApplyObject(context);
 		if (context instanceof IPictogramElementContext) {
 			PictogramElement pe = ((IPictogramElementContext) context).getPictogramElement();
 			if (ChoreographyUtil.isChoreographyMessageLink(pe))
 				return null;
+			MessageFlow mf = getMessageFlow(pe);
+			if (mf!=null)
+				return mf;
 		}
-		return super.getApplyObject(context);
+		return object;
 	}
 	
 	@Override
@@ -107,71 +115,13 @@ public class MessageFlowFeatureContainer extends BaseElementConnectionFeatureCon
 	}
 
 	@Override
-	public IRemoveFeature getRemoveFeature(final IFeatureProvider fp) {
-		return new DefaultRemoveFeature(fp) {
-
-			@Override
-			public void postRemove(IRemoveContext context) {
-				super.postRemove(context);
-				Connection connection = (Connection) context.getPictogramElement();
-				removeMessageDecorator(fp, connection);
-			}
-		};
+	public IDeleteFeature getDeleteFeature(final IFeatureProvider fp) {
+		return new DeleteMessageFromMessageFlowFeature(fp);
 	}
 
 	@Override
 	public IUpdateFeature getUpdateFeature(IFeatureProvider fp) {
-		return new UpdateLabelFeature(fp) {
-
-			@Override
-			public IReason updateNeeded(IUpdateContext context) {
-				if (context.getPictogramElement() instanceof Connection) {
-					Connection connection = (Connection) context.getPictogramElement();
-					MessageFlow messageFlow = (MessageFlow) BusinessObjectUtil.getFirstBaseElement(connection);
-					
-					String oldMessageRef = peService.getPropertyValue(connection, MESSAGE_REF);
-					if (oldMessageRef==null)
-						oldMessageRef = "";
-					
-					String newMessageRef = messageToString(messageFlow.getMessageRef());
-					
-					if (!oldMessageRef.equals(newMessageRef)) {
-						return Reason.createTrueReason("Message Ref Changed");
-					}
-					
-					// check if connection has been moved or reconnected
-					if (messageDecoratorMoved(connection))
-						return Reason.createTrueReason("Message Decorator Moved");
-				}
-				return super.updateNeeded(context);
-			}
-			
-			@Override
-			public boolean update(IUpdateContext context) {
-				Connection connection = (Connection) context.getPictogramElement();
-				MessageFlow messageFlow = (MessageFlow) BusinessObjectUtil.getFirstBaseElement(connection);
-				Message message = messageFlow.getMessageRef();
-				String oldMessageRef = peService.getPropertyValue(connection, MESSAGE_REF);
-				if (oldMessageRef==null)
-					oldMessageRef = "";
-				
-				String newMessageRef = messageToString(messageFlow.getMessageRef());
-				
-				if (!oldMessageRef.equals(newMessageRef)) {
-					removeMessageDecorator(getFeatureProvider(), connection);
-					if (message!=null) {
-						addMessageDecorator(getFeatureProvider(), connection, message);
-					}
-					peService.setPropertyValue(connection, MESSAGE_REF, newMessageRef);
-				}
-				else {
-					// move the message decorator
-					adjustMessageDecorator(getFeatureProvider(), connection);
-				}
-
-				return super.update(context);
-			}
-		};
+		return new UpdateMessageFlowFeature(fp);
 	}
 	
 	@Override
@@ -179,7 +129,182 @@ public class MessageFlowFeatureContainer extends BaseElementConnectionFeatureCon
 		return new ReconnectMessageFlowFeature(fp);
 	}
 	
-	public class AddMessageFlowFeature extends AbstractAddFlowFeature<MessageFlow> {
+	public static ContainerShape findMessageShape(Connection connection) {
+		ConnectionDecorator d = findMessageDecorator(connection);
+		if (d!=null) {
+			return BusinessObjectUtil.getFirstElementOfType(d, ContainerShape.class);
+		}
+		return null;
+	}
+	
+	public static MessageFlow getMessageFlow(PictogramElement pe) {
+		if (pe instanceof ContainerShape) {
+			String id = peService.getPropertyValue(pe, MESSAGE_REF);
+			if (id!=null && !id.isEmpty()) {
+				EObject o = pe.eContainer();
+				while (!(o instanceof Diagram)) {
+					o = o.eContainer();
+				}
+				if (o instanceof Diagram) {
+					Diagram diagram = (Diagram) o;
+					for (Connection connection : diagram.getConnections()) {
+						MessageFlow messageFlow = BusinessObjectUtil.getFirstElementOfType(connection, MessageFlow.class);
+						if (messageFlow!=null) {
+							if (id.equals(messageFlow.getId()))
+								return messageFlow;
+						}
+					}
+				}
+			}
+		}
+		else if (pe instanceof Connection) {
+			MessageFlow messageFlow = BusinessObjectUtil.getFirstElementOfType(pe, MessageFlow.class);
+			return messageFlow;
+		}
+		else if (pe instanceof ConnectionDecorator) {
+			pe = ((ConnectionDecorator)pe).getConnection();
+			MessageFlow messageFlow = BusinessObjectUtil.getFirstElementOfType(pe, MessageFlow.class);
+			return messageFlow;
+		}
+		return null;
+	}
+	
+	protected static String messageToString(Message message) {
+		if (message==null)
+			return "";
+		return message.getId();
+	}
+	
+	protected static Connection getMessageFlowConnection(PictogramElement pe) {
+		if (pe instanceof ContainerShape) {
+			String id = peService.getPropertyValue(pe, MESSAGE_REF);
+			if (id!=null && !id.isEmpty()) {
+				EObject o = pe.eContainer();
+				while (!(o instanceof Diagram)) {
+					o = o.eContainer();
+				}
+				if (o instanceof Diagram) {
+					Diagram diagram = (Diagram) o;
+					for (Connection connection : diagram.getConnections()) {
+						MessageFlow messageFlow = BusinessObjectUtil.getFirstElementOfType(connection, MessageFlow.class);
+						if (messageFlow!=null) {
+							if (id.equals(messageFlow.getId()))
+								return connection;
+						}
+					}
+				}
+			}
+		}
+		else if (pe instanceof Connection) {
+			MessageFlow messageFlow = BusinessObjectUtil.getFirstElementOfType(pe, MessageFlow.class);
+			if (messageFlow!=null)
+				return (Connection)pe;
+		}
+		else if (pe instanceof ConnectionDecorator) {
+			pe = ((ConnectionDecorator)pe).getConnection();
+			MessageFlow messageFlow = BusinessObjectUtil.getFirstElementOfType(pe, MessageFlow.class);
+			if (messageFlow!=null)
+				return (Connection)pe;
+		}
+		return null;
+	}
+	
+	protected static ConnectionDecorator findMessageDecorator(Connection connection) {
+		for (ConnectionDecorator d : connection.getConnectionDecorators()) {
+			if (Graphiti.getPeService().getPropertyValue(d, MESSAGE_REF) != null) {
+				return d;
+			}
+		}
+		return null;
+	}
+	
+	protected static boolean messageDecoratorMoved(Connection connection) {
+		ContainerShape messageShape = findMessageShape(connection);
+		if (messageShape!=null) {
+			ILocation loc = peService.getConnectionMidpoint(connection, 0.25);
+			int w = MessageFeatureContainer.ENVELOPE_WIDTH / 2;
+			int h = MessageFeatureContainer.ENVELOPE_HEIGHT / 2;
+			int x = loc.getX() - w;
+			int y = loc.getY() - h;
+			ILocation shapeLoc = peService.getLocationRelativeToDiagram(messageShape);
+			return x != shapeLoc.getX() || y != shapeLoc.getY();
+		}
+		return false;
+	}
+	
+	protected static void adjustMessageDecorator(IFeatureProvider fp, Connection connection) {
+		ContainerShape messageShape = findMessageShape(connection);
+		if (messageShape!=null) {
+			// calculate new location: this will be 1/4 of the distance from start of the connection line
+			ILocation loc = peService.getConnectionMidpoint(connection, 0.25);
+			int w = MessageFeatureContainer.ENVELOPE_WIDTH / 2;
+			int h = MessageFeatureContainer.ENVELOPE_HEIGHT / 2;
+			int x = loc.getX() - w;
+			int y = loc.getY() - h;
+			MoveShapeContext moveContext = new MoveShapeContext(messageShape);
+			moveContext.setX(x);
+			moveContext.setY(y);
+			IMoveShapeFeature moveFeature = fp.getMoveShapeFeature(moveContext);
+			moveFeature.moveShape(moveContext);
+		}
+	}
+
+	protected static void addMessageDecorator(IFeatureProvider fp, Connection connection, Message message, Shape messageShape) {
+		ILocation loc = peService.getConnectionMidpoint(connection, 0.25);
+		Diagram diagram = peService.getDiagramForPictogramElement(connection);
+		ConnectionDecorator decorator = peService.createConnectionDecorator(connection, true, 0.25, true);
+		MessageFlow messageFlow = BusinessObjectUtil.getFirstElementOfType(connection, MessageFlow.class);
+		
+		int w = MessageFeatureContainer.ENVELOPE_WIDTH / 2;
+		int h = MessageFeatureContainer.ENVELOPE_HEIGHT / 2;
+		int x = loc.getX() - w;
+		int y = loc.getY() - h;
+		if (messageShape==null) {
+			AddContext addContext = new AddContext(new AreaContext(), message);
+			addContext.putProperty(MessageFeatureContainer.IS_REFERENCE, Boolean.TRUE);
+			addContext.setX(x);
+			addContext.setY(y);
+			addContext.setTargetContainer(diagram);
+			IAddFeature addFeature = fp.getAddFeature(addContext);
+			messageShape = (Shape) addFeature.add(addContext);
+		}
+		else {
+			MoveShapeContext moveContext = new MoveShapeContext(messageShape);
+			moveContext.setLocation(x, y);
+			moveContext.setSourceContainer(messageShape.getContainer());
+			moveContext.setTargetContainer(messageShape.getContainer());
+			IMoveShapeFeature moveFeature = fp.getMoveShapeFeature(moveContext);
+			moveFeature.moveShape(moveContext);
+		}
+		fp.link(decorator, new Object[] {message, messageShape});
+		peService.setPropertyValue(decorator, MESSAGE_REF, "true");
+		// Set our MessageFlow ID in the Message shape. Sadly Graphiti shape properties
+		// can only hold Strings, so if the MessageFlow ID is null, we need to assign
+		// a new one to it.
+		String id = messageFlow.getId();
+		if (id==null || id.isEmpty())
+			id = ModelUtil.setID(messageFlow);
+		peService.setPropertyValue(messageShape, MESSAGE_REF, id);
+		messageFlow.setMessageRef(message);
+	}
+	
+	protected static void removeMessageDecorator(IFeatureProvider fp, Connection connection) {
+		ConnectionDecorator decorator = findMessageDecorator(connection);
+		if (decorator!=null) {
+			ContainerShape messageShape = findMessageShape(connection);
+			if (messageShape!=null) {
+				peService.removeProperty(messageShape, MESSAGE_REF);
+				DeleteContext deleteContext = new DeleteContext(messageShape);
+				IDeleteFeature deleteFeature = fp.getDeleteFeature(deleteContext);
+				deleteFeature.delete(deleteContext);
+			}
+			peService.deletePictogramElement(decorator);
+			MessageFlow mf = BusinessObjectUtil.getFirstElementOfType(connection, MessageFlow.class);
+			mf.setMessageRef(null);
+		}
+	}
+
+	public static class AddMessageFlowFeature extends AbstractAddFlowFeature<MessageFlow> {
 		public AddMessageFlowFeature(IFeatureProvider fp) {
 			super(fp);
 		}
@@ -228,83 +353,6 @@ public class MessageFlowFeatureContainer extends BaseElementConnectionFeatureCon
 		@Override
 		protected Class<? extends BaseElement> getBoClass() {
 			return MessageFlow.class;
-		}
-	}
-
-	protected String messageToString(Message message) {
-		if (message==null)
-			return "";
-		return message.getId();
-	}
-
-	protected ConnectionDecorator findMessageDecorator(Connection connection) {
-		for (ConnectionDecorator d : connection.getConnectionDecorators()) {
-			if (peService.getPropertyValue(d, MESSAGE_REF) != null) {
-				return d;
-			}
-		}
-		return null;
-	}
-	
-	protected boolean messageDecoratorMoved(Connection connection) {
-		ConnectionDecorator decorator = findMessageDecorator(connection);
-		if (decorator!=null) {
-			ILocation loc = peService.getConnectionMidpoint(connection, 0.25);
-			PictogramElement messageShape = (PictogramElement) decorator.getLink().getBusinessObjects().get(1);
-			int w = MessageFeatureContainer.ENVELOPE_WIDTH / 2;
-			int h = MessageFeatureContainer.ENVELOPE_HEIGHT / 2;
-			int x = loc.getX() - w;
-			int y = loc.getY() - h;
-			ILocation shapeLoc = peService.getLocationRelativeToDiagram((Shape)messageShape);
-			return x != shapeLoc.getX() || y != shapeLoc.getY();
-		}
-		return false;
-	}
-	
-	protected void adjustMessageDecorator(IFeatureProvider fp, Connection connection) {
-		ConnectionDecorator decorator = findMessageDecorator(connection);
-		if (decorator!=null) {
-			// calculate new location: this will be 1/4 of the distance from start of the connection line
-			ILocation loc = peService.getConnectionMidpoint(connection, 0.25);
-			Shape messageShape = (Shape) decorator.getLink().getBusinessObjects().get(1);
-			int w = MessageFeatureContainer.ENVELOPE_WIDTH / 2;
-			int h = MessageFeatureContainer.ENVELOPE_HEIGHT / 2;
-			int x = loc.getX() - w;
-			int y = loc.getY() - h;
-			MoveShapeContext moveContext = new MoveShapeContext(messageShape);
-			moveContext.setX(x);
-			moveContext.setY(y);
-			IMoveShapeFeature moveFeature = fp.getMoveShapeFeature(moveContext);
-			moveFeature.moveShape(moveContext);
-		}
-	}
-
-	protected void addMessageDecorator(IFeatureProvider fp, Connection connection, Message message) {
-		ILocation loc = peService.getConnectionMidpoint(connection, 0.25);
-		Diagram diagram = peService.getDiagramForPictogramElement(connection);
-		ConnectionDecorator decorator = peService.createConnectionDecorator(connection, true, 0.25, true);
-
-		int w = MessageFeatureContainer.ENVELOPE_WIDTH;
-		int h = MessageFeatureContainer.ENVELOPE_HEIGHT;
-		AddContext addContext = new AddContext(new AreaContext(), message);
-		addContext.putProperty(MessageFeatureContainer.IS_REFERENCE, Boolean.TRUE);
-		addContext.setX(loc.getX() - w/2);
-		addContext.setY(loc.getY() - h/2);
-		addContext.setTargetContainer(diagram);
-		PictogramElement messageShape = fp.addIfPossible(addContext);
-		fp.link(decorator, new Object[] {message, messageShape});
-		peService.setPropertyValue(decorator, MESSAGE_REF, "true");
-	}
-	
-	protected void removeMessageDecorator(IFeatureProvider fp, Connection connection) {
-		ConnectionDecorator decorator = findMessageDecorator(connection);
-		if (decorator!=null) {
-			PictogramElement messageShape = (PictogramElement) decorator.getLink().getBusinessObjects().get(1);
-			RemoveContext removeContext = new RemoveContext(messageShape);
-			IRemoveFeature removeFeature = fp.getRemoveFeature(removeContext);
-			removeFeature.remove(removeContext);
-			
-			peService.deletePictogramElement(decorator);
 		}
 	}
 
@@ -367,23 +415,6 @@ public class MessageFlowFeatureContainer extends BaseElementConnectionFeatureCon
 		}
 
 		@Override
-		public MessageFlow createBusinessObject(ICreateConnectionContext context) {
-			MessageFlow bo = null;
-			try {
-				ModelHandler mh = ModelHandler.getInstance(getDiagram());
-				InteractionNode source = getSourceBo(context);
-				InteractionNode target = getTargetBo(context);
-				bo = mh.createMessageFlow(source, target);
-				bo.setName("");
-				putBusinessObject(context, bo);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return bo;
-		}
-
-		@Override
 		protected Class<InteractionNode> getSourceClass() {
 			return InteractionNode.class;
 		}
@@ -420,6 +451,131 @@ public class MessageFlowFeatureContainer extends BaseElementConnectionFeatureCon
 		@Override
 		public EClass getBusinessObjectClass() {
 			return Bpmn2Package.eINSTANCE.getMessageFlow();
+		}
+	}
+	
+	public static class DeleteMessageFromMessageFlowFeature extends DefaultDeleteBPMNShapeFeature {
+
+		public DeleteMessageFromMessageFlowFeature(IFeatureProvider fp) {
+			super(fp);
+		}
+
+		boolean canDeleteMessage = true;
+		Connection messageFlowConnection;
+		
+		@Override
+		public boolean canDelete(IDeleteContext context) {
+			PictogramElement pe = context.getPictogramElement();
+			if (getMessageFlow(pe)!=null)
+				return true;
+			return false;
+		}
+
+		@Override
+		public void delete(IDeleteContext context) {
+			ContainerShape messageShape = (ContainerShape) context.getPictogramElement();
+			for (Shape child : messageShape.getChildren()) {
+				peService.deletePictogramElement(child);
+			}
+			
+			messageFlowConnection = getMessageFlowConnection(messageShape);
+			Message message = BusinessObjectUtil.getFirstElementOfType(messageShape, Message.class);
+			List<EObject> list = FeatureSupport.findMessageReferences(getDiagram(), message);
+			if (list.size()>2)
+				canDeleteMessage = false;
+
+			if (canDeleteMessage) {
+				EcoreUtil.delete(message, true);
+			}
+
+			ConnectionDecorator decorator = findMessageDecorator(messageFlowConnection);
+			if (decorator!=null) {
+				peService.deletePictogramElement(decorator);
+			}
+			super.delete(context);
+		}
+		
+		@Override
+		protected void deleteBusinessObject(Object bo) {
+			if (bo instanceof Message && !canDeleteMessage)
+				return;
+			super.deleteBusinessObject(bo);
+		}
+		
+		@Override
+		public void postDelete(IDeleteContext context) {
+			MessageFlow messageFlow = (MessageFlow) BusinessObjectUtil.getFirstBaseElement(messageFlowConnection);
+			messageFlow.setMessageRef(null);
+			peService.setPropertyValue(messageFlowConnection, MESSAGE_REF, "");
+		}
+
+	}
+
+	public static class UpdateMessageFlowFeature extends UpdateLabelFeature {
+
+		boolean isUpdating = false;
+		
+		public UpdateMessageFlowFeature(IFeatureProvider fp) {
+			super(fp);
+		}
+
+		@Override
+		public IReason updateNeeded(IUpdateContext context) {
+			if (isUpdating)
+				return Reason.createFalseReason();
+			
+			if (context.getPictogramElement() instanceof Connection) {
+				Connection connection = (Connection) context.getPictogramElement();
+				MessageFlow messageFlow = (MessageFlow) BusinessObjectUtil.getFirstBaseElement(connection);
+				
+				String oldMessageRef = peService.getPropertyValue(connection, MESSAGE_REF);
+				if (oldMessageRef==null)
+					oldMessageRef = "";
+				
+				String newMessageRef = messageToString(messageFlow.getMessageRef());
+				
+				if (!oldMessageRef.equals(newMessageRef)) {
+					return Reason.createTrueReason("Message Ref Changed");
+				}
+				
+				// check if connection has been moved or reconnected
+				if (messageDecoratorMoved(connection))
+					return Reason.createTrueReason("Message Decorator Moved");
+			}
+			return super.updateNeeded(context);
+		}
+		
+		@Override
+		public boolean update(IUpdateContext context) {
+			try {
+				isUpdating = true;
+				Connection connection = (Connection) context.getPictogramElement();
+				MessageFlow messageFlow = (MessageFlow) BusinessObjectUtil.getFirstBaseElement(connection);
+				Message message = messageFlow.getMessageRef();
+				String oldMessageRef = peService.getPropertyValue(connection, MESSAGE_REF);
+				if (oldMessageRef==null)
+					oldMessageRef = "";
+				
+				String newMessageRef = messageToString(messageFlow.getMessageRef());
+				
+				if (!oldMessageRef.equals(newMessageRef)) {
+					removeMessageDecorator(getFeatureProvider(), connection);
+					if (message!=null) {
+						Shape messageShape = (Shape) context.getProperty(MESSAGE_REF);
+						addMessageDecorator(getFeatureProvider(), connection, message, messageShape);
+					}
+					peService.setPropertyValue(connection, MESSAGE_REF, newMessageRef);
+				}
+				else {
+					// move the message decorator
+					adjustMessageDecorator(getFeatureProvider(), connection);
+				}
+
+				return super.update(context);
+			}
+			finally {
+				isUpdating = false;
+			}
 		}
 	}
 	

@@ -102,7 +102,7 @@ public class FeatureListObjectEditor extends MultivalueObjectEditor {
 				createButton.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(SelectionEvent e) {
 						// create a new target object
-						FeatureEditingDialog dialog = new FeatureEditingDialog(getDiagramEditor(), object, feature, null);							
+						FeatureEditingDialog dialog = createFeatureEditingDialog(null);							
 						if ( dialog.open() == Window.OK) {
 							updateEObject(dialog.getNewObject());
 							updateTextField();
@@ -250,8 +250,8 @@ public class FeatureListObjectEditor extends MultivalueObjectEditor {
 	
 	@Override
 	public void notifyChanged(Notification notification) {
-		if (this.object == notification.getNotifier() &&
-				this.feature == notification.getFeature()) {
+		if ( notification.getEventType() == -1 ||
+				(object == notification.getNotifier() && feature == notification.getFeature())) {
 			super.notifyChanged(notification);
 			updateTextField();
 		}

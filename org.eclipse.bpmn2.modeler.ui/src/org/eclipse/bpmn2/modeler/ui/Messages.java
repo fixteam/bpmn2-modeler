@@ -127,6 +127,24 @@ public class Messages extends NLS {
 	public static String UI_CallConversation_long_description;
 	public static String UI_SubConversation_long_description;
 	public static String UI_TextAnnotation_long_description;
+
+	public static String UI_Any_name_description;
+	public static String UI_Documentation_text_description;
+	public static String UI_Any_isForCompensation_description;
+	public static String UI_DataInput_name_description;
+	public static String UI_DataInputAssociation_sourceRef_description;
+	public static String UI_DataOutput_name_description;
+	public static String UI_DataOutputAssociation_targetRef_description;
+	public static String UI_Any_implementation_description;
+	public static String UI_Any_operationRef_description;
+	public static String UI_Any_messageRef_description;
+	public static String UI_Any_instantiate_description;
+
+	public static String UI_Any_itemSubjectRef_description;
+	public static String UI_Any_itemKind_description;
+	public static String UI_Any_isCollection_description;
+	public static String UI_Any_structureRef_description;
+	public static String UI_Any_dataState_description;
 	
 	private Messages() {
 		// Do not instantiate

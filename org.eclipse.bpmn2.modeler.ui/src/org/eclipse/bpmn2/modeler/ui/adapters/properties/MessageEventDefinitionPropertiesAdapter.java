@@ -39,5 +39,4 @@ public class MessageEventDefinitionPropertiesAdapter extends EventDefinitionProp
     	ref = Bpmn2Package.eINSTANCE.getMessageEventDefinition_MessageRef();
     	setFeatureDescriptor(ref, new MessageRefFeatureDescriptor<MessageEventDefinition>(adapterFactory,object,ref));
     }
-
 }

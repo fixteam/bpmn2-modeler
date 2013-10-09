@@ -150,7 +150,7 @@ public class ResizeExpandableActivityFeature extends DefaultResizeBPMNShapeFeatu
 		} catch (Exception e) {
 			Activator.logError(e);
 		}
-		Graphiti.getPeService().sendToBack(containerShape);
+//		Graphiti.getPeService().sendToBack(containerShape);
 		
 		super.resizeShape(context);
 	}

@@ -12,13 +12,10 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.features.gateway;
 
-import org.eclipse.bpmn2.FlowElementsContainer;
 import org.eclipse.bpmn2.Gateway;
-import org.eclipse.bpmn2.di.BPMNShape;
 import org.eclipse.bpmn2.modeler.core.di.DIImport;
-import org.eclipse.bpmn2.modeler.core.features.AbstractAddBPMNShapeFeature;
+import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2AddElementFeature;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
-import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
@@ -34,7 +31,7 @@ import org.eclipse.graphiti.services.IGaService;
 import org.eclipse.graphiti.services.IPeService;
 
 public class AddGatewayFeature<T extends Gateway>
-	extends AbstractAddBPMNShapeFeature<T> {
+	extends AbstractBpmn2AddElementFeature<T> {
 
 	public AddGatewayFeature(IFeatureProvider fp) {
 		super(fp);
@@ -42,12 +39,7 @@ public class AddGatewayFeature<T extends Gateway>
 
 	@Override
 	public boolean canAdd(IAddContext context) {
-		boolean intoDiagram = context.getTargetContainer().equals(getDiagram());
-		boolean intoLane = FeatureSupport.isTargetLane(context) && FeatureSupport.isTargetLaneOnTop(context);
-		boolean intoParticipant = FeatureSupport.isTargetParticipant(context);
-		boolean intoFlowELementContainer = BusinessObjectUtil.containsElementOfType(context.getTargetContainer(),
-		        FlowElementsContainer.class);
-		return intoDiagram || intoLane || intoParticipant || intoFlowELementContainer;
+		return FeatureSupport.isValidFlowElementTarget(context);
 	}
 
 	@Override

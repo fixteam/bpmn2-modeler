@@ -23,6 +23,8 @@ import org.eclipse.bpmn2.DataOutputAssociation;
 import org.eclipse.bpmn2.InputOutputSpecification;
 import org.eclipse.bpmn2.InputSet;
 import org.eclipse.bpmn2.OutputSet;
+import org.eclipse.bpmn2.ReceiveTask;
+import org.eclipse.bpmn2.SendTask;
 import org.eclipse.bpmn2.modeler.core.adapters.InsertionAdapter;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultDetailComposite;
@@ -92,10 +94,12 @@ public class IoSetsListComposite extends DefaultListComposite {
 			tc.setHeaderText("Evaluated While Executing");
 			columnProvider.add(tc);
 			
-			f = listItemClass.getEStructuralFeature("outputSetRefs");
-			tc = new IoSetNameColumn(ioSpecification,f);
-			tc.setHeaderText("Output Sets Produced");
-			columnProvider.add(tc);
+			if (!(container instanceof SendTask)) {
+				f = listItemClass.getEStructuralFeature("outputSetRefs");
+				tc = new IoSetNameColumn(ioSpecification,f);
+				tc.setHeaderText("Output Sets Produced");
+				columnProvider.add(tc);
+			}
 		}
 		else {
 			ioSet = ioSpecification.getOutputSets();
@@ -115,10 +119,12 @@ public class IoSetsListComposite extends DefaultListComposite {
 			tc.setHeaderText("Produced While Executing");
 			columnProvider.add(tc);
 			
-			f = listItemClass.getEStructuralFeature("inputSetRefs");
-			tc = new IoSetNameColumn(ioSpecification,f);
-			tc.setHeaderText("Input Sets Required");
-			columnProvider.add(tc);
+			if (!(container instanceof ReceiveTask)) {
+				f = listItemClass.getEStructuralFeature("inputSetRefs");
+				tc = new IoSetNameColumn(ioSpecification,f);
+				tc.setHeaderText("Input Sets Required");
+				columnProvider.add(tc);
+			}
 		}
 		if (container instanceof Activity) {
 			this.activity = (Activity)container;
@@ -165,7 +171,18 @@ public class IoSetsListComposite extends DefaultListComposite {
 		public void createBindings(EObject be) {
 			isInput = (be instanceof InputSet);
 			bindAttribute(be, "name");
-			
+
+			// find the IoSetsListComposite if there is one, so we can get the Activity
+			// that owns this critter
+			Activity activity = null;
+			Composite parent = getParent();
+			while (parent!=null) {
+				if (parent instanceof IoSetsListComposite) {
+					activity = ((IoSetsListComposite)parent).activity;
+					break;
+				}
+				parent = parent.getParent();
+			}
 			ioRefsEditor = new IoSetsFeatureEditor(this,be);
 			ioRefsEditor.create(isInput ? "dataInputRefs" : "dataOutputRefs");
 
@@ -175,8 +192,12 @@ public class IoSetsListComposite extends DefaultListComposite {
 			whileExecIoRefsEditor = new IoSetsFeatureEditor(this,be);
 			whileExecIoRefsEditor.create(isInput ? "whileExecutingInputRefs" : "whileExecutingOutputRefs");
 
-			ioSetRefsEditor = new IoSetsFeatureEditor(this,be);
-			ioSetRefsEditor.create(isInput ? "outputSetRefs" : "inputSetRefs");
+			if (
+					(isInput && !(activity instanceof SendTask)) ||
+					(!isInput && !(activity instanceof ReceiveTask)) ) {
+				ioSetRefsEditor = new IoSetsFeatureEditor(this,be);
+				ioSetRefsEditor.create(isInput ? "outputSetRefs" : "inputSetRefs");
+			}
 		}
 		
 		public class IoSetsFeatureEditor extends  TextAndButtonObjectEditor {

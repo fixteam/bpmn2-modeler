@@ -19,6 +19,8 @@ import java.util.Hashtable;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.impl.EObjectImpl;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
@@ -159,20 +161,24 @@ public class PropertiesCompositeFactory {
 	public static AbstractDialogComposite createDialogComposite(EClass eClass, Composite parent, int style) {
 		Class clazz = findDialogCompositeClass(eClass.getInstanceClass());
 		Composite composite = null;
-		try {
-			Constructor ctor = null;
-			// allow the composite to be declared in an enclosing class
-			Class ec = clazz.getEnclosingClass();
-			if (ec!=null) {
-				ctor = clazz.getConstructor(ec,Composite.class,EClass.class,int.class);
-				composite = (Composite) ctor.newInstance(null,parent,eClass,style);
+		for (int i=0; i<2 && composite==null; ++i) {
+			try {
+				Constructor ctor = null;
+				// allow the composite to be declared in an enclosing class
+				Class ec = clazz.getEnclosingClass();
+				if (ec!=null) {
+					ctor = clazz.getConstructor(ec,Composite.class,EClass.class,int.class);
+					composite = (Composite) ctor.newInstance(null,parent,eClass,style);
+				}
+				else {
+					ctor = clazz.getConstructor(Composite.class,EClass.class,int.class);
+					composite = (Composite) ctor.newInstance(parent,eClass,style);
+				}
+			} catch (Exception e) {
+				if (i==0)
+					logError(eClass.getInstanceClass(),e);
+				clazz = findDialogCompositeClass(EObject.class);
 			}
-			else {
-				ctor = clazz.getConstructor(Composite.class,EClass.class,int.class);
-				composite = (Composite) ctor.newInstance(parent,eClass,style);
-			}
-		} catch (Exception e) {
-			logError(eClass.getInstanceClass(),e);
 		}
 		return (AbstractDialogComposite)composite;
 	}

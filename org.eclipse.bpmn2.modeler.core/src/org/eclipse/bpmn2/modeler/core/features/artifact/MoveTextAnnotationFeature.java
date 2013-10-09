@@ -25,11 +25,7 @@ public class MoveTextAnnotationFeature extends DefaultMoveBPMNShapeFeature {
 
 	@Override
 	public boolean canMoveShape(IMoveShapeContext context) {
-		boolean intoDiagram = context.getTargetContainer().equals(getDiagram());
-		boolean intoLane = FeatureSupport.isTargetLane(context);
-		boolean intoParticipant = FeatureSupport.isTargetParticipant(context);
-		
-		return intoDiagram || intoLane || intoParticipant;
+		return FeatureSupport.isValidArtifactTarget(context);
 	}
 
 	@Override

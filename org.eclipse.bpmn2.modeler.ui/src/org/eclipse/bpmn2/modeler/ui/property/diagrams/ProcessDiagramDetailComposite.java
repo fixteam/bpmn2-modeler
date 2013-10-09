@@ -38,7 +38,6 @@ public class ProcessDiagramDetailComposite extends DefaultDetailComposite {
 						"processType",
 						"isExecutable",
 						"isClosed",
-						"laneSets",
 						"correlationSubscriptions"
 				};
 				

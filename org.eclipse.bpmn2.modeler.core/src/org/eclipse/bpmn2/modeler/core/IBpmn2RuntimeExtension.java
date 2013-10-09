@@ -66,8 +66,4 @@ public interface IBpmn2RuntimeExtension {
 	 * @param editor
 	 */
 	public void initialize(DiagramEditor editor);
-	
-	public Composite getPreferencesComposite(Composite parent, Bpmn2Preferences preferences);
-	
-	public void modelObjectCreated(EObject object);
 }

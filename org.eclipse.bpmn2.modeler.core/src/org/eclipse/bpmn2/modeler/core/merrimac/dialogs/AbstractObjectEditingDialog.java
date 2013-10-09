@@ -14,31 +14,39 @@
 package org.eclipse.bpmn2.modeler.core.merrimac.dialogs;
 
 import org.eclipse.bpmn2.modeler.core.Activator;
+import org.eclipse.bpmn2.modeler.core.validation.LiveValidationListener;
+import org.eclipse.bpmn2.modeler.core.validation.ValidationErrorHandler;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.transaction.RecordingCommand;
-import org.eclipse.emf.transaction.TransactionalEditingDomain;
-import org.eclipse.emf.transaction.impl.TransactionalEditingDomainImpl;
+import org.eclipse.emf.transaction.RollbackException;
+import org.eclipse.emf.transaction.Transaction;
+import org.eclipse.emf.transaction.impl.InternalTransactionalEditingDomain;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.FormDialog;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 
-public abstract class AbstractObjectEditingDialog extends FormDialog {
+public abstract class AbstractObjectEditingDialog extends FormDialog implements ValidationErrorHandler {
 
 	protected IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
 	protected DiagramEditor editor;
@@ -46,9 +54,10 @@ public abstract class AbstractObjectEditingDialog extends FormDialog {
 	protected EObject object;
 	protected boolean cancel = false;
 	protected boolean abortOnCancel = true;
-
+	protected Transaction transaction;
 	protected Composite dialogContent;
-	
+    private Text errorMessageText;
+    
 	public AbstractObjectEditingDialog(DiagramEditor editor, EObject object) {
 		super(editor.getEditorSite().getShell());
 		setHelpAvailable(false);
@@ -91,6 +100,20 @@ public abstract class AbstractObjectEditingDialog extends FormDialog {
 		getShell().pack();
 	}
 	
+	@Override
+	protected Control createDialogArea(Composite parent) {
+        Composite composite = (Composite) super.createDialogArea(parent);
+        
+        errorMessageText = new Text(parent, SWT.READ_ONLY | SWT.WRAP | SWT.BORDER);
+        errorMessageText.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL
+                | GridData.HORIZONTAL_ALIGN_FILL));
+        errorMessageText.setForeground(errorMessageText.getDisplay()
+                .getSystemColor(SWT.COLOR_RED));
+        errorMessageText.setBackground(errorMessageText.getDisplay()
+                .getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+        return composite;
+	}
+
 	abstract protected Composite createDialogContent(Composite parent);
 	abstract protected String getPreferenceKey();
 	
@@ -135,12 +158,20 @@ public abstract class AbstractObjectEditingDialog extends FormDialog {
 			}
 	
 		});
+		
+        hookTransaction();
 	}
 	
 	protected void aboutToOpen() {
 		dialogContent.setData(object);
 	}
 
+	@Override
+	public void create() {
+		super.create();
+		startTransaction();
+	}
+	
 	@Override
 	public int open() {
 		if (getShell()==null)
@@ -150,41 +181,28 @@ public abstract class AbstractObjectEditingDialog extends FormDialog {
 		getShell().setSize(600,400);
 
 		addControlListener();
-		aboutToOpen();
-
-		final int result[] = new int[1];
-		final String cancelMsg = getShell().getText()+" Dialog canceled by user";
-		final TransactionalEditingDomainImpl domain = (TransactionalEditingDomainImpl)editor.getEditingDomain();
-		if (domain!=null && domain.getActiveTransaction()==null) {
-			domain.getCommandStack().execute(new RecordingCommand(domain) {
-				@Override
-				protected void doExecute() {
-					result[0] = open(domain);
-					if (result[0]!=Window.OK) {
-						if (isAbortOnCancel()) {
-							throw new OperationCanceledException(cancelMsg);
-						}
-					}
-				}
-			});
-		}
-		else {
-			result[0] = open(domain);
-			if (result[0]!=Window.OK) {
-				if (isAbortOnCancel()) {
-					if (domain!=null && domain.getActiveTransaction()!=null)
-						domain.getActiveTransaction().abort(new Status(IStatus.INFO, Activator.PLUGIN_ID, cancelMsg));
-				}
-			}
-		}
 		
-		return result[0];
-	}
-	
-	protected int open(TransactionalEditingDomain domain) {
+		// Tell the Live Validation Listener to report validation errors to us
+		// instead of the Workbench Status line.
+		LiveValidationListener.setValidationErrorHandler(this);
+		getShell().addDisposeListener(new DisposeListener() {
+			public void widgetDisposed(DisposeEvent event) {
+				LiveValidationListener.setValidationErrorHandler(null);
+			}
+		});
+		
+		aboutToOpen();
+		
 		return super.open();
 	}
 	
+	@Override
+	public boolean close() {
+		if (getReturnCode() != OK)
+			cancel = true;
+		return super.close();
+	}
+
 	/**
 	 * Return state of the "abortOnCancel transaction on cancel" flag
 	 * 
@@ -207,12 +225,14 @@ public abstract class AbstractObjectEditingDialog extends FormDialog {
 
 	@Override
 	protected void cancelPressed() {
+		cancel = true;
 		dialogContent.dispose();
 		super.cancelPressed();
 	}
 	
 	@Override
 	protected void okPressed() {
+		cancel = false;
 		dialogContent.dispose();
 		super.okPressed();
 	}
@@ -224,4 +244,75 @@ public abstract class AbstractObjectEditingDialog extends FormDialog {
 		Button button_1 = createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
 		button_1.setText("取消");
 	}
+	
+	public boolean hasDoneChanges() {
+		return transaction==null || !transaction.getChangeDescription().isEmpty();
+	}
+	
+	protected void startTransaction() {
+		if (transaction==null) {
+			try {
+				final InternalTransactionalEditingDomain transactionalDomain = (InternalTransactionalEditingDomain) editor
+						.getEditingDomain();
+				transaction = transactionalDomain.startTransaction(false, null);
+			}
+			catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private void hookTransaction() {
+		getShell().addDisposeListener(new DisposeListener() {
+			public void widgetDisposed(DisposeEvent event) {
+				if (transaction!=null && transaction.isActive()) {
+					if (cancel) {
+						transaction.rollback();
+					}
+					else {
+						try {
+							transaction.commit();
+						}
+						catch (RollbackException e) {
+							ErrorDialog.openError(getShell(), "Error Commiting Model Changes",
+									"An error occurred while trying to commit changes.", new Status(IStatus.ERROR,
+											Activator.PLUGIN_ID, e.getMessage(), e));
+						}
+					}
+				}
+			}
+		});
+	}
+	
+	protected void rollbackTransaction() {
+		if (transaction!=null) {
+			transaction.rollback();
+			transaction = null;
+		}
+	}
+	
+	public void reportError(IStatus s)
+	{
+		String errorMessage = (s==null) ? null : s.getMessage();
+    	if (errorMessageText != null && !errorMessageText.isDisposed()) {
+    		errorMessageText.setText(errorMessage == null ? "" : errorMessage); //$NON-NLS-1$
+    		// Disable the error message text control if there is no error, or
+    		// no error text (empty or whitespace only).  Hide it also to avoid
+    		// color change.
+    		boolean hasError = errorMessage != null && (StringConverter.removeWhiteSpaces(errorMessage)).length() > 0;
+    		errorMessageText.setEnabled(hasError);
+    		errorMessageText.setVisible(hasError);
+    		GridData gd = (GridData) errorMessageText.getLayoutData();
+    		gd.exclude = !hasError;
+    		if (dialogArea!=null)
+    			dialogArea.getParent().layout();
+ 
+    		if (s!=null && s.getSeverity()>=IStatus.ERROR) {
+	    		Control button = getButton(IDialogConstants.OK_ID);
+	    		if (button != null) {
+	    			button.setEnabled(hasError);
+	    		}
+    		}
+    	}
+    }
 }

@@ -10,13 +10,10 @@
  *******************************************************************************/
 package org.eclipse.bpmn2.modeler.ui.property.diagrams;
 
-import org.eclipse.bpmn2.Property;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultListComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.ListCompositeColumnProvider;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.TableColumn;
-import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.swt.widgets.Composite;
@@ -48,29 +45,5 @@ public class PropertyListComposite extends DefaultListComposite {
 			columnProvider.add(new TableColumn(object, PACKAGE.getItemAwareElement_ItemSubjectRef()));
 		}
 		return columnProvider;
-	}
-
-	@Override
-	protected EObject addListItem(EObject object, EStructuralFeature feature) {
-		EList<Property> properties = (EList)object.eGet(feature);
-		// generate a unique parameter name
-		String base = "localVar";
-		int suffix = 1;
-		String name = base + suffix;
-		for (;;) {
-			boolean found = false;
-			for (Property p : properties) {
-				if (name.equals(p.getName()) || name.equals(p.getId())) {
-					found = true;
-					break;
-				}
-			}
-			if (!found)
-				break;
-			name = base + ++suffix;
-		}
-		Property prop  = (Property)super.addListItem(object, feature);
-		prop.setName(name);
-		return prop;
 	}
 }

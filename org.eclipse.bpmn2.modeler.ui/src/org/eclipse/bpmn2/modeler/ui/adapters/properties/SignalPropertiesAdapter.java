@@ -14,14 +14,9 @@
 package org.eclipse.bpmn2.modeler.ui.adapters.properties;
 
 import org.eclipse.bpmn2.Bpmn2Package;
-import org.eclipse.bpmn2.Process;
 import org.eclipse.bpmn2.Signal;
-import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
-import org.eclipse.bpmn2.modeler.core.adapters.ObjectDescriptor;
 import org.eclipse.emf.common.notify.AdapterFactory;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.ecore.resource.Resource;
 
 /**
  * @author Bob Brodt
@@ -35,6 +30,10 @@ public class SignalPropertiesAdapter extends RootElementPropertiesAdapter<Signal
 	 */
 	public SignalPropertiesAdapter(AdapterFactory adapterFactory, Signal object) {
 		super(adapterFactory, object);
+
+		EStructuralFeature feature = Bpmn2Package.eINSTANCE.getSignal_StructureRef();
+		setProperty(feature, UI_IS_MULTI_CHOICE, Boolean.TRUE);
+    	setFeatureDescriptor(feature, new ItemDefinitionRefFeatureDescriptor<Signal>(adapterFactory, object, feature));
 		
     	setObjectDescriptor(new RootElementObjectDescriptor<Signal>(adapterFactory, object) {
 			@Override

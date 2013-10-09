@@ -2,11 +2,13 @@ package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wizards;
 
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
+import org.eclipse.bpmn2.modeler.core.validation.SyntaxCheckerUtils;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.JBPM5RuntimeExtension;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.viewers.ISelection;
@@ -61,12 +63,54 @@ public class NewJbpmProcessWizardPage1 extends WizardPage {
 		container.setLayout(layout);
 		layout.numColumns = 3;
 		layout.verticalSpacing = 9;
-		Label label = new Label(container, SWT.NULL);
-		label.setText("&Container:");
+		Label label;
+		GridData gridData;
+		
+		label = new Label(container, SWT.NULL);
+		label.setText("Process &name:");
+		nameText = new Text(container, SWT.BORDER | SWT.SINGLE);
+		gridData = new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1);
+		nameText.setLayoutData(gridData);
+		nameText.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				fileText.setText(nameText.getText() + ".bpmn2");
+				String processid = packageText.getText() + "." + nameText.getText();
+				processid = SyntaxCheckerUtils.toNCName(processid.replaceAll(" ", "_"));
+				processIdText.setText(processid);
+				dialogChanged();
+			}
+		});
 
+		label = new Label(container, SWT.NULL);
+		label.setText("&Package:");
+		packageText = new Text(container, SWT.BORDER | SWT.SINGLE);
+		gridData = new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1);
+		packageText.setLayoutData(gridData);
+		packageText.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				String processid = packageText.getText() + "." + nameText.getText();
+				processid = SyntaxCheckerUtils.toNCName(processid.replaceAll(" ", "_"));
+				processIdText.setText(processid);
+				dialogChanged();
+			}
+		});
+
+		label = new Label(container, SWT.NULL);
+		label.setText("Process &ID:");
+		processIdText = new Text(container, SWT.BORDER | SWT.SINGLE);
+		gridData = new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1);
+		processIdText.setLayoutData(gridData);
+		processIdText.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				dialogChanged();
+			}
+		});
+		
+		label = new Label(container, SWT.NULL);
+		label.setText("&Container:");
 		containerText = new Text(container, SWT.BORDER | SWT.SINGLE);
-		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-		containerText.setLayoutData(gd);
+		gridData = new GridData(GridData.FILL_HORIZONTAL);
+		containerText.setLayoutData(gridData);
 		containerText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				dialogChanged();
@@ -84,56 +128,23 @@ public class NewJbpmProcessWizardPage1 extends WizardPage {
 		label.setText("&File name:");
 
 		fileText = new Text(container, SWT.BORDER | SWT.SINGLE);
-		gd = new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1);
-		fileText.setLayoutData(gd);
+		gridData = new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1);
+		fileText.setLayoutData(gridData);
 		fileText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				dialogChanged();
 			}
 		});
 		
-		label = new Label(container, SWT.NULL);
-		label.setText("Process &name:");
-		nameText = new Text(container, SWT.BORDER | SWT.SINGLE);
-		gd = new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1);
-		nameText.setLayoutData(gd);
-		nameText.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				dialogChanged();
-			}
-		});
-
-		label = new Label(container, SWT.NULL);
-		label.setText("Process &ID:");
-		processIdText = new Text(container, SWT.BORDER | SWT.SINGLE);
-		gd = new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1);
-		processIdText.setLayoutData(gd);
-		processIdText.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				dialogChanged();
-			}
-		});
-
-		label = new Label(container, SWT.NULL);
-		label.setText("&Package:");
-		packageText = new Text(container, SWT.BORDER | SWT.SINGLE);
-		gd = new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1);
-		packageText.setLayoutData(gd);
-		packageText.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				dialogChanged();
-			}
-		});
-		
 		isJbpmRuntimeCheckbox = new Button(container, SWT.CHECK);
-		isJbpmRuntimeCheckbox.setText("Set jBPM5 Runtime as the default for this project.");
+		isJbpmRuntimeCheckbox.setText("Set jBPM Runtime as the default for this project.");
 		isJbpmRuntimeCheckbox.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				dialogChanged();
 			}
 		});
-		gd = new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 3, 1);
-		isJbpmRuntimeCheckbox.setLayoutData(gd);
+		gridData = new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 3, 1);
+		isJbpmRuntimeCheckbox.setLayoutData(gridData);
 
 		initialize();
 		dialogChanged();
@@ -152,6 +163,10 @@ public class NewJbpmProcessWizardPage1 extends WizardPage {
 			if (ssel.size() > 1)
 				return;
 			Object obj = ssel.getFirstElement();
+			// The selected TreeElement could be a JavaProject, which is adaptable
+			if (!(obj instanceof IResource) && obj instanceof IAdaptable) {
+				obj = ((IAdaptable)obj).getAdapter(IResource.class);
+			}
 			if (obj instanceof IResource) {
 				if (obj instanceof IContainer)
 					container = (IContainer) obj;

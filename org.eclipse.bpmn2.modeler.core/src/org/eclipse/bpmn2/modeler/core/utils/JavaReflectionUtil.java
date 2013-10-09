@@ -20,6 +20,12 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+import org.eclipse.bpmn2.modeler.core.Activator;
+import org.eclipse.core.internal.registry.osgi.OSGIUtils;
+import org.eclipse.osgi.framework.adaptor.BundleClassLoader;
+import org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader;
+import org.osgi.framework.Bundle;
+
 /**
  * As the name implies, this is a static class of java reflection utilities
  * @author Bob Brodt
@@ -36,8 +42,29 @@ public class JavaReflectionUtil {
 	 * @return - the class or null if not found
 	 */
 	public static Class findClass(Object object, String simpleName) {
-		ClassLoader cl = object.getClass().getClassLoader();
-		String packageName = object.getClass().getPackage().getName();
+		Class clazz = object.getClass();
+		do {
+			Class result = findClass(clazz, simpleName);
+			if (result!=null)
+				return result;
+			clazz = clazz.getSuperclass();
+		}
+		while (clazz!=null);
+		try {
+			// last resort: try the UI plugin, this is where the Messages class is defined
+			Bundle b = OSGIUtils.getDefault().getBundle("org.eclipse.bpmn2.modeler.ui");
+			clazz = b.loadClass("org.eclipse.bpmn2.modeler.ui.Messages");
+			Class result = findClass(clazz, simpleName);
+			if (result!=null)
+				return result;
+		} catch (Exception e) {
+		}
+		return null;
+	}
+	
+	public static Class findClass(Class clazz, String simpleName) {
+		ClassLoader cl = clazz.getClassLoader();
+		String packageName = clazz.getPackage().getName();
 		int index;
 		while ((index = packageName.lastIndexOf(".")) != -1) {
 			String className = packageName + "." + simpleName; 

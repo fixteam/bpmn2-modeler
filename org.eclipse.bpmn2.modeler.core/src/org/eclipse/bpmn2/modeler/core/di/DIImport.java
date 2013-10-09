@@ -15,38 +15,36 @@ package org.eclipse.bpmn2.modeler.core.di;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.eclipse.bpmn2.AdHocSubProcess;
 import org.eclipse.bpmn2.Association;
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.BoundaryEvent;
-import org.eclipse.bpmn2.Choreography;
 import org.eclipse.bpmn2.ChoreographyActivity;
-import org.eclipse.bpmn2.Collaboration;
 import org.eclipse.bpmn2.ConversationLink;
 import org.eclipse.bpmn2.DataAssociation;
 import org.eclipse.bpmn2.DataInput;
 import org.eclipse.bpmn2.DataObject;
 import org.eclipse.bpmn2.DataObjectReference;
 import org.eclipse.bpmn2.DataOutput;
+import org.eclipse.bpmn2.DataStoreReference;
 import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.Event;
 import org.eclipse.bpmn2.FlowElement;
 import org.eclipse.bpmn2.FlowNode;
 import org.eclipse.bpmn2.ItemAwareElement;
 import org.eclipse.bpmn2.Lane;
+import org.eclipse.bpmn2.LaneSet;
 import org.eclipse.bpmn2.MessageFlow;
 import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.Process;
-import org.eclipse.bpmn2.RootElement;
 import org.eclipse.bpmn2.SequenceFlow;
 import org.eclipse.bpmn2.SubChoreography;
 import org.eclipse.bpmn2.SubProcess;
-import org.eclipse.bpmn2.Transaction;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.di.BPMNEdge;
 import org.eclipse.bpmn2.di.BPMNPlane;
@@ -106,7 +104,7 @@ public class DIImport {
 	private TransactionalEditingDomain domain;
 	private ModelHandler modelHandler;
 	private IFeatureProvider featureProvider;
-	private HashMap<BaseElement, PictogramElement> elements;
+	private LinkedHashMap<BaseElement, PictogramElement> elements;
 	private Bpmn2Preferences preferences;
 	private ImportDiagnostics diagnostics;
 	private final IPeService peService = Graphiti.getPeService();
@@ -128,7 +126,7 @@ public class DIImport {
 		
 		diagnostics = new ImportDiagnostics(modelHandler.getResource());
 		preferences = (Bpmn2Preferences) editor.getAdapter(Bpmn2Preferences.class);		
-		elements = new HashMap<BaseElement, PictogramElement>();
+		elements = new LinkedHashMap<BaseElement, PictogramElement>();
 		domain.getCommandStack().execute(new RecordingCommand(domain) {
 			@Override
 			protected void doExecute() {
@@ -156,7 +154,6 @@ public class DIImport {
 					ModelUtil.addID( iter.next() );
 				}
 				
-				// do the import
 				// do the import
 				for (BPMNDiagram d : bpmnDiagrams) {
 					diagram = DIUtils.getOrCreateDiagram(editor,d);
@@ -246,6 +243,12 @@ public class DIImport {
 				if (feature!=null && feature.canLayout(context))
 					feature.layout(context);
 			}
+			else if (be instanceof Participant) {
+				LayoutContext context = new LayoutContext(pe);
+				ILayoutFeature feature = featureProvider.getLayoutFeature(context);
+				if (feature!=null && feature.canLayout(context))
+					feature.layout(context);
+			}
 //			else if (be instanceof FlowNode) {
 //				LayoutContext context = new LayoutContext(pe);
 //				ILayoutFeature feature = featureProvider.getLayoutFeature(context);
@@ -253,13 +256,13 @@ public class DIImport {
 //					feature.layout(context);
 //			}
 //
-//			if (pe instanceof Connection) {
-//				UpdateContext context = new UpdateContext(pe);
-//				IUpdateFeature feature = featureProvider.getUpdateFeature(context);
-//				if (feature!=null && feature.updateNeeded(context).toBoolean()) {
-//					feature.update(context);
-//				}
-//			}
+			else if (pe instanceof Connection) {
+				UpdateContext context = new UpdateContext(pe);
+				IUpdateFeature feature = featureProvider.getUpdateFeature(context);
+				if (feature!=null && feature.updateNeeded(context).toBoolean()) {
+					feature.update(context);
+				}
+			}
 		}
  
 	}
@@ -331,6 +334,49 @@ public class DIImport {
 							// synthesize missing Lane shapes
 							for (Lane lane : lanes) {
 								synthesizeLane(lane);
+							}
+						}
+					}
+				} else if (bpmnElement instanceof DataObject ||
+						bpmnElement instanceof DataObjectReference ||
+						bpmnElement instanceof DataStoreReference) {
+					
+					EObject container = bpmnElement.eContainer();
+					if ((container instanceof SubProcess || container instanceof SubChoreography)
+							&& !elements.containsKey(container)) {
+						postpone = true;
+					}
+				} else if (bpmnElement instanceof Lane) {
+					// if this Lane is a child of another Lane, wait until the parent
+					// is materialized, regardless of what the Z-order implied by the
+					// order of BPMNShape elements is.
+					Lane lane = (Lane)bpmnElement;
+					if (lane.eContainer() instanceof LaneSet) {
+						LaneSet ls = (LaneSet)lane.eContainer();
+						if (ls.eContainer() instanceof Lane) {
+							Lane parentLane = (Lane)ls.eContainer();
+							if (!elements.containsKey(parentLane)) {
+								postpone = true;
+							}
+						}
+						else if (ls.eContainer() instanceof Process) {
+							// The Lane's container is a Process: if there is a Participant
+							// (Pools) that references this process, wait until that Participant
+							// shape is materialized.
+							Process process = (Process)ls.eContainer();
+							Definitions definitions = modelHandler.getDefinitions();
+							TreeIterator<EObject> iter = definitions.eAllContents();
+							while (iter.hasNext()) {
+								EObject next = iter.next();
+								if (next instanceof Participant) {
+									Participant participant = (Participant)next;
+									if (participant.getProcessRef() == process) {
+										if (!elements.containsKey(participant)) {
+											postpone = true;
+											break;
+										}
+									}
+								}
 							}
 						}
 					}
@@ -450,6 +496,11 @@ public class DIImport {
 	 */
 	private void createShape(BPMNShape shape) {
 		BaseElement bpmnElement = shape.getBpmnElement();
+		if (bpmnElement==null) {
+			diagnostics.add(IStatus.ERROR, shape, "The referenced BPMN element does not exist");
+			return;
+		}
+
 		if (shape.getChoreographyActivityShape() != null) {
 			// FIXME: we currently generate participant bands automatically
 			return;
@@ -488,13 +539,15 @@ public class DIImport {
 
 		if (bpmnElement instanceof Lane) {
 			handleLane((Lane)bpmnElement, context, shape);
-		} else if (bpmnElement instanceof FlowNode ||
-				bpmnElement instanceof DataObject ||
-				bpmnElement instanceof DataObjectReference) {
+		} else if (bpmnElement instanceof FlowNode){ 
 			handleFlowElement((FlowElement) bpmnElement, context, shape);
 		} else if (bpmnElement instanceof Participant) {
 			handleParticipant((Participant) bpmnElement, context, shape);
-		} else if (bpmnElement instanceof DataInput || bpmnElement instanceof DataOutput) {
+		} else if (bpmnElement instanceof DataInput ||
+				bpmnElement instanceof DataOutput ||
+				bpmnElement instanceof DataObject ||
+				bpmnElement instanceof DataObjectReference ||
+				bpmnElement instanceof DataStoreReference) {
 			handleItemAwareElement((ItemAwareElement)bpmnElement, context, shape);
 		} else {
 			context.setTargetContainer(diagram);
@@ -648,13 +701,25 @@ public class DIImport {
 		int w = (int) shape.getBounds().getWidth();
 		int h = (int) shape.getBounds().getHeight();
 
-		// find a correct container element
-		// if this Data Object is contained within a Lane, make the Lane the target container
-		for (Entry<BaseElement, PictogramElement> entry : elements.entrySet()) {
-			if (entry.getKey() instanceof Lane) {
-				ContainerShape laneShape = (ContainerShape)entry.getValue();
-				if (GraphicsUtil.intersects(laneShape, x, y, w, h)) {
-					targetContainer = (ContainerShape) laneShape;
+		// Find a container for this data object shape: ItemAwareElements may or may not
+		// be direct child elements in the BPMN2 model (e.g. a DataObject inside a Lane,
+		// or a DataStoreReference inside a Pool) but we still want to visually represent
+		// them as child elements in the graphical view. So, for example, a DataObject that
+		// that was originally dropped into a Lane should move and behave as if it were a
+		// child shape of the Lane.
+		ArrayList<Entry<BaseElement, PictogramElement>> entries =
+				new ArrayList<Entry<BaseElement, PictogramElement>>(elements.entrySet());
+		// We have to iterate over the list of created elements in reverse order.
+		// This is the graphical Z-order, from top to bottom, of the BPMNShape elements.
+		for (int i=entries.size()-1; i>=0; --i) {
+			Entry<BaseElement, PictogramElement> entry = entries.get(i);
+			BaseElement key = entry.getKey();
+			if ((key instanceof Lane && FeatureSupport.isLaneOnTop((Lane)key)) ||
+					key instanceof Participant ||
+					key instanceof SubProcess) {
+				ContainerShape value = (ContainerShape)entry.getValue();
+				if (GraphicsUtil.intersects(value, x, y, w, h)) {
+					targetContainer = (ContainerShape) value;
 					ILocation loc = Graphiti.getPeLayoutService().getLocationRelativeToDiagram(targetContainer);
 					x -= loc.getX();
 					y -= loc.getY();
@@ -662,8 +727,16 @@ public class DIImport {
 				}
 			}
 		}
-		if (targetContainer==null)
+		if (targetContainer==null) {
+			// Some data items are both ItemAwareElements and FlowElements (i.e. DataObject,
+			// DataObjectReference, and DataStoreReference) and if they are not "contained"
+			// within a Lane or Pool, they need to be handled like FlowElements.
+			if (element instanceof FlowElement) {
+				handleFlowElement((FlowElement)element, context, shape);
+				return;
+			}
 			targetContainer = getDiagram(shape);
+		}
 		context.setTargetContainer(targetContainer);
 		context.setLocation(x, y);
 	}
@@ -705,18 +778,26 @@ public class DIImport {
 			// Data Association allows connections for multiple starting points, we don't support it yet
 			List<ItemAwareElement> sourceRef = ((DataAssociation) bpmnElement).getSourceRef();
 			ItemAwareElement targetRef = ((DataAssociation) bpmnElement).getTargetRef();
-			if (sourceRef != null) {
+			if (sourceRef != null && sourceRef.size()>0) {
 				source = sourceRef.get(0);
 			}
 			target = targetRef;
-			do {
-				se = elements.get(source);
-				source = source.eContainer();
-			} while (se == null && source.eContainer() != null);
-			do {
-				te = elements.get(target);
-				target = target.eContainer();
-			} while (te == null && target.eContainer() != null);
+			if (source!=null) {
+				do {
+					se = elements.get(source);
+					source = source.eContainer();
+				} while (se == null && source.eContainer() != null);
+			}
+			if (target!=null) {
+				do {
+					te = elements.get(target);
+					target = target.eContainer();
+				} while (te == null && target.eContainer() != null);
+			}
+		}
+		else if (bpmnElement==null) {
+			diagnostics.add(IStatus.ERROR, bpmnEdge, "The referenced BPMN element does not exist");
+			return;
 		}
 
 		ModelUtil.addID(bpmnElement);

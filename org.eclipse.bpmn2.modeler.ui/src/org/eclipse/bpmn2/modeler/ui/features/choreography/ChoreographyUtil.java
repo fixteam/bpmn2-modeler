@@ -50,11 +50,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.graphiti.datatypes.IDimension;
 import org.eclipse.graphiti.datatypes.ILocation;
 import org.eclipse.graphiti.features.IFeatureProvider;
-import org.eclipse.graphiti.features.context.IContext;
-import org.eclipse.graphiti.features.context.IMoveContext;
-import org.eclipse.graphiti.features.context.IMoveShapeContext;
 import org.eclipse.graphiti.features.context.IPictogramElementContext;
-import org.eclipse.graphiti.features.context.IResizeShapeContext;
 import org.eclipse.graphiti.mm.PropertyContainer;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.Polyline;
@@ -203,7 +199,6 @@ public class ChoreographyUtil implements ChoreographyProperties {
 			resizeParticipantBandChildren(container, w);
 			DIUtils.updateDIShape(container);
 			AnchorUtil.relocateFixPointAnchors(container, w, (int) bounds.getHeight());
-			AnchorUtil.reConnect(bpmnShape, diagram);
 		}
 
 		Collections.reverse(bottom); // start from bottom towards center
@@ -216,7 +211,6 @@ public class ChoreographyUtil implements ChoreographyProperties {
 			resizeParticipantBandChildren(container, w);
 			DIUtils.updateDIShape(container);
 			AnchorUtil.relocateFixPointAnchors(container, w, (int) bounds.getHeight());
-			AnchorUtil.reConnect(bpmnShape, diagram);
 		}
 	}
 

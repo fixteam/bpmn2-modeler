@@ -18,6 +18,8 @@ import org.eclipse.bpmn2.modeler.ui.Activator;
 import org.eclipse.bpmn2.modeler.ui.Messages;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -35,6 +37,7 @@ public class Bpmn2PropertyPage extends PropertyPage {
 	
 	private Combo cboRuntimes;
 	private Button btnShowAdvancedProperties;
+	private Button btnDoCoreValidation;
 	private Button btnShowDescriptions;
 	private Button btnShowIds;
 	private Button btnCheckProjectNature;
@@ -63,6 +66,38 @@ public class Bpmn2PropertyPage extends PropertyPage {
 		
 		cboRuntimes = new Combo(container, SWT.READ_ONLY);
 		cboRuntimes.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 2, 1));
+		cboRuntimes.addSelectionListener( new SelectionListener() {
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if (btnDoCoreValidation!=null) {
+					int index = cboRuntimes.getSelectionIndex();
+					if (index>=0) {
+						String item = cboRuntimes.getItem(index);
+						TargetRuntime rt = (TargetRuntime)cboRuntimes.getData(item);
+						if (TargetRuntime.BPMN2_MARKER_ID.equals(rt.getProblemMarkerId())) {
+							btnDoCoreValidation.setEnabled(false);
+							btnDoCoreValidation.setSelection(true);
+						}
+						else {
+							btnDoCoreValidation.setEnabled(true);
+							btnDoCoreValidation.setSelection(prefs.getDoCoreValidation());
+						}
+					}
+				}
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+		});
+
+		btnDoCoreValidation = new Button(container, SWT.CHECK);
+		btnDoCoreValidation.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1));
+		btnDoCoreValidation.setText(Bpmn2Preferences.PREF_DO_CORE_VALIDATION_LABEL);
 		
 		btnShowAdvancedProperties = new Button(container, SWT.CHECK);
 		btnShowAdvancedProperties.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1));
@@ -98,8 +133,6 @@ public class Bpmn2PropertyPage extends PropertyPage {
 		cboIsMarkerVisible = new BPMNDIAttributeDefaultCombo(group);
 		cboIsMarkerVisible.setText(Bpmn2Preferences.PREF_IS_MARKER_VISIBLE_LABEL);
 		
-		runtimeComposite = prefs.getRuntime().getRuntimeExtension().getPreferencesComposite(container, prefs);
-
 		initData();
 
 		return container;
@@ -125,6 +158,7 @@ public class Bpmn2PropertyPage extends PropertyPage {
 
 	private void initData() {
 		btnShowAdvancedProperties.setSelection( prefs.getShowAdvancedPropertiesTab() );
+		btnDoCoreValidation.setSelection( prefs.getDoCoreValidation() );
 		btnShowDescriptions.setSelection( prefs.getShowDescriptions() );
 		btnShowIds.setSelection( prefs.getShowIdAttribute() );
 		btnCheckProjectNature.setSelection( prefs.getCheckProjectNature() );
@@ -133,13 +167,22 @@ public class Bpmn2PropertyPage extends PropertyPage {
 		cboIsMessageVisible.setValue( prefs.getIsMessageVisible() );
 		cboIsMarkerVisible.setValue( prefs.getIsMarkerVisible() );
 		
-		TargetRuntime cr = prefs.getRuntime();
+		TargetRuntime rt = prefs.getRuntime();
 		int i = 0;
 		for (TargetRuntime r : TargetRuntime.getAllRuntimes()) {
 			cboRuntimes.add(r.getName());
-			if (r == cr)
+			cboRuntimes.setData(r.getName(), r);
+			if (r == rt)
 				cboRuntimes.select(i);
 			++i;
+		}
+		if (TargetRuntime.BPMN2_MARKER_ID.equals(rt.getProblemMarkerId())) {
+			btnDoCoreValidation.setEnabled(false);
+			btnDoCoreValidation.setSelection(true);
+		}
+		else {
+			btnDoCoreValidation.setEnabled(true);
+			btnDoCoreValidation.setSelection(prefs.getDoCoreValidation());
 		}
 	}
 
@@ -166,6 +209,7 @@ public class Bpmn2PropertyPage extends PropertyPage {
 		prefs.setRuntime(rt);
 		
 		prefs.setShowAdvancedPropertiesTab(btnShowAdvancedProperties.getSelection());
+		prefs.setDoCoreValidation(btnDoCoreValidation.getSelection());
 		prefs.setShowDescriptions(btnShowDescriptions.getSelection());
 		prefs.setShowIdAttribute(btnShowIds.getSelection());
 		prefs.setCheckProjectNature(btnCheckProjectNature.getSelection());

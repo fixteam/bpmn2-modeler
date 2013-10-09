@@ -186,13 +186,7 @@ public class BoundaryEventPositionHelper {
 		ILocation activityLoc = peService.getLocationRelativeToDiagram(activityContainer);
 
 		if (!activityContainer.equals(context.getTargetContainer())) {
-			if (activityContainer.eContainer().equals(context.getTargetContainer())) {
-				ContainerShape parent = (ContainerShape)activityContainer.eContainer();
-				// FIXME: what's going on here?
-				if (parent instanceof Diagram) {
-					return false;
-				}
-			}
+			return false;
 		}
 
 		PositionOnLine pos = getPositionOnLine(x, y, eventGa.getWidth(), eventGa.getHeight(), activityLoc.getX(),

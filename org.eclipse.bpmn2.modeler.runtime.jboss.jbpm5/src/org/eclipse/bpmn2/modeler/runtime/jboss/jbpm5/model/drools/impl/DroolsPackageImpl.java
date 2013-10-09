@@ -9,6 +9,7 @@ import org.eclipse.bpmn2.di.BpmnDiPackage;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.BpsimPackage;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.impl.BpsimPackageImpl;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.BPSimDataType;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.ExternalProcess;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.DocumentRoot;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.DroolsFactory;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.DroolsPackage;
@@ -92,6 +93,13 @@ public class DroolsPackageImpl extends EPackageImpl implements DroolsPackage {
 	 * @generated
 	 */
 	private EClass bpSimDataTypeEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass callableElementProxyEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -485,6 +493,15 @@ public class DroolsPackageImpl extends EPackageImpl implements DroolsPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EClass getExternalProcess() {
+		return callableElementProxyEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public EDataType getPackageNameType() {
 		return packageNameTypeEDataType;
 	}
@@ -591,6 +608,8 @@ public class DroolsPackageImpl extends EPackageImpl implements DroolsPackage {
 
 		bpSimDataTypeEClass = createEClass(BP_SIM_DATA_TYPE);
 
+		callableElementProxyEClass = createEClass(EXTERNAL_PROCESS);
+
 		// Create data types
 		packageNameTypeEDataType = createEDataType(PACKAGE_NAME_TYPE);
 		priorityTypeEDataType = createEDataType(PRIORITY_TYPE);
@@ -635,6 +654,7 @@ public class DroolsPackageImpl extends EPackageImpl implements DroolsPackage {
 		documentRootEClass.getESuperTypes().add(theBpmn2Package.getDocumentRoot());
 		globalTypeEClass.getESuperTypes().add(theBpmn2Package.getItemAwareElement());
 		bpSimDataTypeEClass.getESuperTypes().add(theBpsimPackage.getBPSimDataType());
+		callableElementProxyEClass.getESuperTypes().add(theBpmn2Package.getCallableElement());
 
 		// Initialize classes and features; add operations and parameters
 		initEClass(documentRootEClass, DocumentRoot.class, "DocumentRoot", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
@@ -674,6 +694,8 @@ public class DroolsPackageImpl extends EPackageImpl implements DroolsPackage {
 		initEAttribute(getOnExitScriptType_ScriptFormat(), theXMLTypePackage.getString(), "scriptFormat", null, 1, 1, OnExitScriptType.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(bpSimDataTypeEClass, BPSimDataType.class, "BPSimDataType", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+		initEClass(callableElementProxyEClass, ExternalProcess.class, "ExternalProcess", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
 		// Initialize data types
 		initEDataType(packageNameTypeEDataType, String.class, "PackageNameType", IS_SERIALIZABLE, !IS_GENERATED_INSTANCE_CLASS);

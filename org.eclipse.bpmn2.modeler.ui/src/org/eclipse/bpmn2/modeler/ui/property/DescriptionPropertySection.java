@@ -47,8 +47,6 @@ public class DescriptionPropertySection extends DefaultPropertySection implement
 
 	public class DescriptionPropertyComposite extends DefaultDetailComposite {
 
-		StyledText descriptionText;
-		
 		/**
 		 * @param section
 		 */
@@ -104,7 +102,7 @@ public class DescriptionPropertySection extends DefaultPropertySection implement
 		public String getDescription(EObject object) {
 			String description = null;
 
-			ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(object, ExtendedPropertiesAdapter.class);
+			ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object);
 			if (adapter!=null) {
 				// if this is a Custom Task, use the description provided by the <customTask> extension
 				if (ModelExtensionDescriptor.getModelExtensionAdapter(object) != null)
