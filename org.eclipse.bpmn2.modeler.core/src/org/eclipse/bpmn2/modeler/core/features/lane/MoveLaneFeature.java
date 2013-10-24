@@ -31,7 +31,7 @@ public class MoveLaneFeature extends DefaultMoveBPMNShapeFeature {
 		if (context.getSourceContainer() == null) {
 			return false;
 		}
-
+		
 		moveStrategy = getStrategy(context);
 
 		if (moveStrategy == null) {

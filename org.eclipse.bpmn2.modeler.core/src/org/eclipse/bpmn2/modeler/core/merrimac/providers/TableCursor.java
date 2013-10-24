@@ -563,7 +563,7 @@ public class TableCursor extends Canvas {
 
 				@Override
 				public void getDefaultAction(AccessibleControlEvent e) {
-					String action = "Edit field"; 
+					String action = Messages.TableCursor_Edit; 
 					e.result = action;
 				}
 

@@ -15,6 +15,10 @@ package org.eclipse.bpmn2.modeler.ui.property.data;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractPropertiesProvider;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultDetailComposite;
+import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ComboObjectEditor;
+import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ObjectEditor;
+import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
+import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.swt.widgets.Composite;
 
@@ -36,9 +40,9 @@ public class ExpressionDetailComposite extends DefaultDetailComposite {
 		if (propertiesProvider==null) {
 			propertiesProvider = new AbstractPropertiesProvider(object) {
 				String[] properties = new String[] {
-						"language",
-						"body",
-						"evaluatesToTypeRef"
+						"language", //$NON-NLS-1$
+						"body", //$NON-NLS-1$
+						"evaluatesToTypeRef" //$NON-NLS-1$
 				};
 				
 				@Override
@@ -48,5 +52,29 @@ public class ExpressionDetailComposite extends DefaultDetailComposite {
 			};
 		}
 		return propertiesProvider;
+	}
+	
+	@Override
+	protected void bindAttribute(Composite parent, EObject object, EAttribute attribute, String label) {
+
+		if (isModelObjectEnabled(object.eClass(), attribute) && "language".equals(attribute.getName())) { //$NON-NLS-1$
+
+			if (parent==null)
+				parent = getAttributesParent();
+			
+			if (label==null)
+				label = getPropertiesProvider().getLabel(object, attribute);
+			
+			ObjectEditor editor = new ComboObjectEditor(this,object,attribute) {
+				
+				@Override
+				protected boolean canSetNull() {
+					return true;
+				}
+			};
+			editor.createControl(parent,label);
+		}
+		else
+			super.bindAttribute(parent, object, attribute, label);
 	}
 }

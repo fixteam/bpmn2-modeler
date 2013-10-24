@@ -58,6 +58,6 @@ public class FaultAdapter extends AbstractStatefulAdapter implements ILabeledEle
 	}
 
 	public String getLabel() {
-		return getLabel ( getTarget() ) + " - " + getLabel ( getTarget() );		
+		return getLabel ( getTarget() ) + " - " + getLabel ( getTarget() );		 //$NON-NLS-1$
 	}
 }

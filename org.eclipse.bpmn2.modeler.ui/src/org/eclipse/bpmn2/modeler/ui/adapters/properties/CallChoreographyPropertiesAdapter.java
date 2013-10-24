@@ -59,7 +59,7 @@ public class CallChoreographyPropertiesAdapter extends ExtendedPropertiesAdapter
 					// first add all local Choreographies
 					List<Choreography> localChoreographies = ModelUtil.getAllRootElements(defs, Choreography.class);
 					for (Choreography elem : localChoreographies) {
-						label = ModelUtil.getDisplayName(elem) + " (" + elem.getId() + ")";
+						label = ModelUtil.getDisplayName(elem) + " (" + elem.getId() + ")"; //$NON-NLS-1$ //$NON-NLS-2$
 						choices.put(label, elem);
 					}
 					
@@ -74,7 +74,7 @@ public class CallChoreographyPropertiesAdapter extends ExtendedPropertiesAdapter
 								Definitions importDefs = ((DocumentRoot)object).getDefinitions();
 								for (RootElement elem : importDefs.getRootElements()) {
 									if (elem instanceof Choreography) {
-										label = ModelUtil.getDisplayName(elem) + " (" + imp.getLocation() + ")";
+										label = ModelUtil.getDisplayName(elem) + " (" + imp.getLocation() + ")"; //$NON-NLS-1$ //$NON-NLS-2$
 										choices.put(label, elem);
 									}
 								}

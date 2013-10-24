@@ -12,23 +12,17 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.di;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.bpmn2.BaseElement;
-import org.eclipse.bpmn2.Collaboration;
 import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.DocumentRoot;
-import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.di.BPMNEdge;
 import org.eclipse.bpmn2.di.BPMNPlane;
 import org.eclipse.bpmn2.di.BPMNShape;
 import org.eclipse.bpmn2.di.BpmnDiFactory;
-import org.eclipse.bpmn2.modeler.core.Activator;
-import org.eclipse.bpmn2.modeler.core.ModelHandler;
-import org.eclipse.bpmn2.modeler.core.ModelHandlerLocator;
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
@@ -62,10 +56,9 @@ import org.eclipse.graphiti.mm.pictograms.FreeFormConnection;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.PictogramLink;
 import org.eclipse.graphiti.mm.pictograms.Shape;
-import org.eclipse.graphiti.platform.IDiagramEditor;
+import org.eclipse.graphiti.platform.IDiagramBehavior;
 import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.services.ILayoutService;
-import org.eclipse.graphiti.ui.editor.DiagramEditor;
 
 public class DIUtils {
 
@@ -224,7 +217,7 @@ public class DIUtils {
 	 * @param bpmnDiagram
 	 * @return
 	 */
-	public static Diagram getOrCreateDiagram(final IDiagramEditor editor, final BPMNDiagram bpmnDiagram) {
+	public static Diagram getOrCreateDiagram(final IDiagramBehavior editor, final BPMNDiagram bpmnDiagram) {
 		// do we need to create a new Diagram or is this already in the model?
 		Diagram diagram = findDiagram(editor, bpmnDiagram);
 		if (diagram!=null) {
@@ -233,7 +226,7 @@ public class DIUtils {
 		}
 
 		// create a new one
-		IDiagramTypeProvider dtp = editor.getDiagramTypeProvider();
+		IDiagramTypeProvider dtp = editor.getDiagramContainer().getDiagramTypeProvider();
 		String typeId = dtp.getDiagram().getDiagramTypeId();
 		final Diagram newDiagram = Graphiti.getCreateService().createDiagram(typeId, bpmnDiagram.getName(), true);
 		final IFeatureProvider featureProvider = dtp.getFeatureProvider();
@@ -256,8 +249,8 @@ public class DIUtils {
 	 * @param bpmnDiagram
 	 * @return
 	 */
-	public static Diagram findDiagram(final IDiagramEditor editor, final BPMNDiagram bpmnDiagram) {
-		ResourceSet resourceSet = editor.getResourceSet();
+	public static Diagram findDiagram(final IDiagramBehavior editor, final BPMNDiagram bpmnDiagram) {
+		ResourceSet resourceSet = editor.getEditingDomain().getResourceSet();
 		if (resourceSet!=null) {
 			return findDiagram(resourceSet, bpmnDiagram);
 		}
@@ -280,7 +273,7 @@ public class DIUtils {
 		return null;
 	}
 	
-	public static void deleteDiagram(final IDiagramEditor editor, final BPMNDiagram bpmnDiagram) {
+	public static void deleteDiagram(final IDiagramBehavior editor, final BPMNDiagram bpmnDiagram) {
 		Diagram diagram = DIUtils.findDiagram(editor, bpmnDiagram);
 		if (diagram!=null) {
 			List<EObject> list = new ArrayList<EObject>();
@@ -339,7 +332,7 @@ public class DIUtils {
 	 * @return
 	 */
 	public static BPMNDiagram findBPMNDiagram(final BaseElement baseElement, boolean contains) {
-		if (baseElement==null)
+		if (baseElement==null || baseElement.eResource()==null)
 			return null;
 		ResourceSet resourceSet = baseElement.eResource().getResourceSet();
 		if (resourceSet==null)
@@ -441,14 +434,16 @@ public class DIUtils {
 	
 	public static BPMNEdge findBPMNEdge(EObject baseElement) {
 		Definitions definitions = ModelUtil.getDefinitions(baseElement);
-		for (BPMNDiagram d : definitions.getDiagrams()) {
-			BPMNDiagram bpmnDiagram = (BPMNDiagram)d;
-			BaseElement bpmnElement = null;
-			for (DiagramElement de : bpmnDiagram.getPlane().getPlaneElement()) {
-				if (de instanceof BPMNEdge) {
-					bpmnElement = ((BPMNEdge)de).getBpmnElement();
-					if (bpmnElement == baseElement)
-						return (BPMNEdge)de;
+		if (definitions!=null) {
+			for (BPMNDiagram d : definitions.getDiagrams()) {
+				BPMNDiagram bpmnDiagram = (BPMNDiagram)d;
+				BaseElement bpmnElement = null;
+				for (DiagramElement de : bpmnDiagram.getPlane().getPlaneElement()) {
+					if (de instanceof BPMNEdge) {
+						bpmnElement = ((BPMNEdge)de).getBpmnElement();
+						if (bpmnElement == baseElement)
+							return (BPMNEdge)de;
+					}
 				}
 			}
 		}
@@ -461,7 +456,7 @@ public class DIUtils {
 			BPMNDiagram bpmnDiagram = (BPMNDiagram)d;
 			BaseElement bpmnElement = null;
 			for (DiagramElement de : bpmnDiagram.getPlane().getPlaneElement()) {
-				EStructuralFeature f = de.eClass().getEStructuralFeature("bpmnElement");
+				EStructuralFeature f = de.eClass().getEStructuralFeature("bpmnElement"); //$NON-NLS-1$
 				if (f!=null) {
 					bpmnElement = (BaseElement) de.eGet(f);
 					if (bpmnElement == object)

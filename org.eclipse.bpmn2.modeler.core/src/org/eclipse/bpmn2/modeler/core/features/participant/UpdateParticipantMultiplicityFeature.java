@@ -35,7 +35,7 @@ import org.eclipse.graphiti.services.IPeService;
 
 public class UpdateParticipantMultiplicityFeature extends AbstractUpdateFeature {
 
-	public static final String MULTIPLICITY_MARKER = "multiplicity.marker";
+	public static final String MULTIPLICITY_MARKER = "multiplicity.marker"; //$NON-NLS-1$
 
 	public UpdateParticipantMultiplicityFeature(IFeatureProvider fp) {
 		super(fp);

@@ -14,6 +14,7 @@ package org.eclipse.bpmn2.modeler.ui.property.data;
 
 import org.eclipse.bpmn2.Assignment;
 import org.eclipse.bpmn2.Expression;
+import org.eclipse.bpmn2.FormalExpression;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultDetailComposite;
@@ -62,9 +63,8 @@ public class DataAssignmentDetailComposite extends DefaultDetailComposite {
 				editingDomain.getCommandStack().execute(new RecordingCommand(editingDomain) {
 					@Override
 					protected void doExecute() {
-						Expression exp = FACTORY.createFormalExpression();
+						Expression exp = createModelObject(FormalExpression.class);
 						assignment.setTo(exp);
-						ModelUtil.setID(exp);
 					}
 				});
 				toExp = assignment.getTo();
@@ -75,9 +75,8 @@ public class DataAssignmentDetailComposite extends DefaultDetailComposite {
 				editingDomain.getCommandStack().execute(new RecordingCommand(editingDomain) {
 					@Override
 					protected void doExecute() {
-						Expression exp = FACTORY.createFormalExpression();
+						Expression exp = createModelObject(FormalExpression.class);
 						assignment.setFrom(exp);
-						ModelUtil.setID(exp);
 					}
 				});
 				fromExp = assignment.getFrom();
@@ -88,14 +87,14 @@ public class DataAssignmentDetailComposite extends DefaultDetailComposite {
 						Expression.class, this, SWT.NONE);
 			}
 			toDetails.setBusinessObject(toExp);
-			toDetails.setTitle("To Expression");
+			toDetails.setTitle(Messages.DataAssignmentDetailComposite_From_Title);
 	
 			if (fromDetails==null) {
 				fromDetails = PropertiesCompositeFactory.createDetailComposite(
 						Expression.class, this, SWT.NONE);
 			}
 			fromDetails.setBusinessObject(fromExp);
-			fromDetails.setTitle("From Expression");
+			fromDetails.setTitle(Messages.DataAssignmentDetailComposite_To_Title);
 		}
 	}
 }

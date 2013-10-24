@@ -18,10 +18,10 @@ import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.ModelHandler;
 import org.eclipse.bpmn2.modeler.core.ModelHandlerLocator;
 import org.eclipse.bpmn2.modeler.core.di.DIUtils;
-import org.eclipse.bpmn2.modeler.core.features.ConnectionFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.features.BendpointConnectionRouter;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
+import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.dd.dc.DcFactory;
 import org.eclipse.dd.di.DiagramElement;
 import org.eclipse.graphiti.features.IFeatureProvider;
@@ -63,14 +63,8 @@ public class AddBendpointFeature extends DefaultAddBendpointFeature {
 			BPMNEdge edge = DIUtils.findBPMNEdge(element);
 			int index = context.getBendpointIndex() + 1;
 			edge.getWaypoint().add(index, p);
-			if (index == 1) {
-				AnchorUtil.reConnect((DiagramElement) edge.getSourceElement(), getDiagram());
-			} else if (index == connection.getBendpoints().size()) {
-				AnchorUtil.reConnect((DiagramElement) edge.getTargetElement(), getDiagram());
-			}
-		
 			BendpointConnectionRouter.setAddedBendpoint(connection, context.getBendpointIndex());
-			ConnectionFeatureContainer.updateConnection(getFeatureProvider(), connection);
+			FeatureSupport.updateConnection(getFeatureProvider(), connection);
 			
 		} catch (Exception e) {
 			Activator.logError(e);

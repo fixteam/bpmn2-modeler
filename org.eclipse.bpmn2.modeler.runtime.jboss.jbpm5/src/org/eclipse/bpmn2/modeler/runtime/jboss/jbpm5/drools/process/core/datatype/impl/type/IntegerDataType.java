@@ -53,11 +53,11 @@ public class IntegerDataType
 
     public String writeValue(Object value) {
         Integer i = (Integer) value;
-        return i == null ? "" : i.toString();
+        return i == null ? "" : i.toString(); //$NON-NLS-1$
     }
 
     public String getStringType() {
-        return "Integer";
+        return "Integer"; //$NON-NLS-1$
     }
 
 }

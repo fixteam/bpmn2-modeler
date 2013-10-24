@@ -17,7 +17,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.bpmn2.ExtensionAttributeValue;
 import org.eclipse.bpmn2.modeler.core.merrimac.IConstants;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.BooleanObjectEditor;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ComboObjectEditor;
@@ -41,6 +40,7 @@ import org.eclipse.emf.ecore.util.FeatureMap;
 import org.eclipse.emf.ecore.util.FeatureMap.Entry;
 import org.eclipse.emf.edit.provider.INotifyChangedListener;
 import org.eclipse.emf.transaction.ResourceSetListener;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Font;
@@ -74,12 +74,13 @@ import org.eclipse.ui.forms.widgets.Section;
  */
 public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase implements ResourceSetListener {
 
-	public final String EMPTY_LABEL_PROPERTY = "empty.label";
+	public final String EMPTY_LABEL_PROPERTY = "empty.label"; //$NON-NLS-1$
 	protected Section attributesSection = null;
 	protected Composite attributesComposite = null;
 	protected Font descriptionFont = null;
 	protected AbstractPropertiesProvider propertiesProvider = null;
-
+	protected StyledText descriptionText = null;
+	
 	/**
 	 * Constructor for embedding this composite in an AbstractBpmn2PropertySection.
 	 * This is the "normal" method of creating this composite.
@@ -150,15 +151,16 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 			doit = true;
 		}
 		if (doit) {
-			String text =
-					"This Property Sheet is empty because the model element\n" +
-					"\"" + be.eClass().getName() + "\" has no visible features.\n\n" +
-					"At least one of these element features must be enabled:\n";
+			String text = NLS.bind(
+				Messages.AbstractDetailComposite_Empty_Property_Sheet,
+				be.eClass().getName());
+			
+			String elements = "";
 			String props[] = getPropertiesProvider().getProperties();
 			for (String s : props) {
-				text += "    " + s + "\n";
+				elements += "    " + s + "\n"; //$NON-NLS-1$ //$NON-NLS-2$
 			}
-			text += "\nPlease configure the Tool Enablement Preferences for this project accordingly.";
+			text += NLS.bind(Messages.AbstractDetailComposite_Empty_Property_Sheet_Elements,elements);
 
 			Label label = createLabel(this, text);
 			label.setData(EMPTY_LABEL_PROPERTY);
@@ -178,14 +180,14 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 		
 		if (attributesSection==null || attributesSection.isDisposed()) {
 
-			attributesSection = createSection(this, "Attributes");
+			attributesSection = createSection(this, Messages.AbstractDetailComposite_Attributes);
 			
 			attributesSection.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, true, 3, 1));
 			attributesComposite = toolkit.createComposite(attributesSection);
 			attributesSection.setClient(attributesComposite);
 			attributesComposite.setLayout(new GridLayout(3,false));
 
-			final String prefName = "detail."+businessObject.eClass().getName()+".expanded";
+			final String prefName = "detail."+businessObject.eClass().getName()+".expanded"; //$NON-NLS-1$ //$NON-NLS-2$
 			attributesSection.addExpansionListener(new IExpansionListener() {
 				
 				@Override
@@ -318,22 +320,22 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 
 	protected StyledText createDescription(Composite parent, String description) {
 		Display display = Display.getCurrent();
-		final StyledText styledText = new StyledText(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | SWT.READ_ONLY);
-		styledText.setText(description);
+		descriptionText = new StyledText(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | SWT.READ_ONLY);
+		descriptionText.setText(description);
 
-	    styledText.setFont(getDescriptionFont());
+	    descriptionText.setFont(getDescriptionFont());
 		
-		styledText.setBackground(display.getSystemColor(SWT.COLOR_INFO_BACKGROUND));
-		styledText.setForeground(display.getSystemColor(SWT.COLOR_INFO_FOREGROUND));
+		descriptionText.setBackground(display.getSystemColor(SWT.COLOR_INFO_BACKGROUND));
+		descriptionText.setForeground(display.getSystemColor(SWT.COLOR_INFO_FOREGROUND));
 		
 		GridData d = new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1);
 		d.horizontalIndent = 4;
 		d.verticalIndent = 4;
 		d.heightHint = (int)(5.5 * getDescriptionFont().getFontData()[0].getHeight());
 		d.widthHint = 100;
-		styledText.setLayoutData(d);
+		descriptionText.setLayoutData(d);
 
-		return styledText;
+		return descriptionText;
 	}
 
 	protected Section createSection(Composite parent, final String title) {
@@ -357,7 +359,7 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 //	    section.setTextClient(toolbar);
 
 		if (getBusinessObject()!=null) {
-			final String prefKey = "section."+getBusinessObject().eClass().getName()+title+"."+".expanded";
+			final String prefKey = "section."+getBusinessObject().eClass().getName()+title+"."+".expanded"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			boolean expanded = preferenceStore.getBoolean(prefKey);
 			section.setExpanded(expanded);
 		}
@@ -370,7 +372,7 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 			@Override
 			public void expansionStateChanged(ExpansionEvent e) {
 				if (getBusinessObject()!=null) {
-					final String prefKey = "section."+getBusinessObject().eClass().getName()+title+"."+".expanded";
+					final String prefKey = "section."+getBusinessObject().eClass().getName()+title+"."+".expanded"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 					preferenceStore.setValue(prefKey, e.getState());
 				}
 			}
@@ -422,7 +424,7 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 	
 	protected void bindAttribute(Composite parent, EObject object, EAttribute attribute, String label) {
 
-		if (isModelObjectEnabled(object.eClass(), attribute) || "anyAttribute".equals(attribute.getName())) {
+		if (isModelObjectEnabled(object.eClass(), attribute) || "anyAttribute".equals(attribute.getName())) { //$NON-NLS-1$
 
 			if (parent==null)
 				parent = getAttributesParent();
@@ -461,7 +463,7 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 			) {
 				ObjectEditor editor = new FloatObjectEditor(this,object,attribute);
 				editor.createControl(parent,label);
-			} else if ("anyAttribute".equals(attribute.getName()) ||
+			} else if ("anyAttribute".equals(attribute.getName()) || //$NON-NLS-1$
 					object.eGet(attribute) instanceof FeatureMap) {
 				List<Entry> basicList = ((BasicFeatureMap) object.eGet(attribute)).basicList();
 				for (Entry entry : basicList) {
@@ -579,7 +581,9 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 				}
 				catch (Exception e) {
 				}
-				Notification n = new ENotificationImpl(null, Notification.SET, -1, 0, 0);
+				// Send a notification to all listeners about this refresh event.
+				// This will cause all children to be refreshed when a property tab switch happens.
+				Notification n = new ENotificationImpl(null, -1, -1, 0, 0);
 				getAllChildWidgets(parent, kids);
 				for (Control c : kids) {
 					INotifyChangedListener listener = (INotifyChangedListener)c.getData(
@@ -612,10 +616,10 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 					List<String> list = new ArrayList<String>();
 					EClass c = o.eClass();
 					// add name and id attributes first (if any)
-					if (c.getEStructuralFeature("name")!=null)
-						list.add("name");
-					if (c.getEStructuralFeature("id")!=null)
-						list.add("id");
+					if (c.getEStructuralFeature("name")!=null) //$NON-NLS-1$
+						list.add("name"); //$NON-NLS-1$
+					if (c.getEStructuralFeature("id")!=null) //$NON-NLS-1$
+						list.add("id"); //$NON-NLS-1$
 					for (EStructuralFeature attribute : o.eClass().getEStructuralFeatures()) {
 						if (!list.contains(attribute.getName()))
 							list.add(attribute.getName());

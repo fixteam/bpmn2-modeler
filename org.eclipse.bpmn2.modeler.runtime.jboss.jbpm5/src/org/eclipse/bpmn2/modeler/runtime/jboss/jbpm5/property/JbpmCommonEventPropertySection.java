@@ -43,13 +43,13 @@ public class JbpmCommonEventPropertySection extends CommonEventPropertySection {
 		if (super.appliesTo(part, selection)) {
 			EObject be = getBusinessObjectForSelection(selection);
 			if (be instanceof Event) {
-				return isModelObjectEnabled(be, "isInterrupting") ||
-						isModelObjectEnabled(be, "parallelMultiple") ||
-						isModelObjectEnabled(be, "cancelActivity") ||
-						isModelObjectEnabled(be, "eventDefinitions") ||
-						isModelObjectEnabled(be, "dataInputs") ||
-						isModelObjectEnabled(be, "dataOutputs") ||
-						isModelObjectEnabled(be, "properties");
+				return isModelObjectEnabled(be, "isInterrupting") || //$NON-NLS-1$
+						isModelObjectEnabled(be, "parallelMultiple") || //$NON-NLS-1$
+						isModelObjectEnabled(be, "cancelActivity") || //$NON-NLS-1$
+						isModelObjectEnabled(be, "eventDefinitions") || //$NON-NLS-1$
+						isModelObjectEnabled(be, "dataInputs") || //$NON-NLS-1$
+						isModelObjectEnabled(be, "dataOutputs") || //$NON-NLS-1$
+						isModelObjectEnabled(be, "properties"); //$NON-NLS-1$
 			}
 		}
 		return false;

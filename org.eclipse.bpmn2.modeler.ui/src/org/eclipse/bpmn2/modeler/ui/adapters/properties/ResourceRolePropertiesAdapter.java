@@ -48,10 +48,10 @@ public class ResourceRolePropertiesAdapter extends ExtendedPropertiesAdapter<Res
 					ResourceAssignmentExpression rae = rr.getResourceAssignmentExpression();
 					if (rae!=null) {
 						ExtendedPropertiesAdapter<ResourceAssignmentExpression> adapter =
-								(ExtendedPropertiesAdapter<ResourceAssignmentExpression>) AdapterUtil.adapt(rae, ExtendedPropertiesAdapter.class);
+								ExtendedPropertiesAdapter.adapt(rae);
 						return adapter.getObjectDescriptor().getDisplayName(rae);
 					}
-					return "";
+					return ""; //$NON-NLS-1$
 				}
 
 				@Override
@@ -61,7 +61,7 @@ public class ResourceRolePropertiesAdapter extends ExtendedPropertiesAdapter<Res
 						ResourceAssignmentExpression rae = rr.getResourceAssignmentExpression();
 						if (rae!=null) {
 							ExtendedPropertiesAdapter<ResourceAssignmentExpression> adapter =
-									(ExtendedPropertiesAdapter<ResourceAssignmentExpression>) AdapterUtil.adapt(rae, ExtendedPropertiesAdapter.class);
+									ExtendedPropertiesAdapter.adapt(rae);
 					    	EStructuralFeature raeFeature = Bpmn2Package.eINSTANCE.getResourceAssignmentExpression_Expression();
 							adapter.getFeatureDescriptor(raeFeature).setValue(rae, value);
 						}

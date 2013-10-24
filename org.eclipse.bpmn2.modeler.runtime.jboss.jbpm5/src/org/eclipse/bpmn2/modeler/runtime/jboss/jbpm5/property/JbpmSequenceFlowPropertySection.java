@@ -46,7 +46,7 @@ public class JbpmSequenceFlowPropertySection extends SequenceFlowPropertySection
 							Bpmn2Package.eINSTANCE.getSequenceFlow_ConditionExpression());
 
 					boolean defaultEnabled = true;
-					EStructuralFeature defaultFeature = gateway.eClass().getEStructuralFeature("default");
+					EStructuralFeature defaultFeature = gateway.eClass().getEStructuralFeature("default"); //$NON-NLS-1$
 					if (defaultFeature!=null) {
 						if (!isModelObjectEnabled(gateway.eClass(), defaultFeature))
 							defaultEnabled = false;

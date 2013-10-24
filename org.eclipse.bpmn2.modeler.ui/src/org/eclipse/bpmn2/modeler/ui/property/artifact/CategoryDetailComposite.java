@@ -38,9 +38,9 @@ public class CategoryDetailComposite extends DefaultDetailComposite {
 		if (propertiesProvider==null) {
 			propertiesProvider = new AbstractPropertiesProvider(object) {
 				String[] properties = new String[] {
-						"anyAttribute",
-						"name",
-						"categoryValue",
+						"anyAttribute", //$NON-NLS-1$
+						"name", //$NON-NLS-1$
+						"categoryValue", //$NON-NLS-1$
 				};
 				
 				@Override

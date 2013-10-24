@@ -25,7 +25,7 @@ import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.modeler.core.AbstractPropertyChangeListenerProvider;
 import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.IBpmn2RuntimeExtension;
-import org.eclipse.bpmn2.modeler.core.features.activity.task.ICustomTaskFeatureContainer;
+import org.eclipse.bpmn2.modeler.core.features.activity.task.ICustomElementFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerResourceImpl;
 import org.eclipse.bpmn2.modeler.core.preferences.ShapeStyle;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor.Property;
@@ -34,6 +34,7 @@ import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil.Bpmn2DiagramType;
 import org.eclipse.bpmn2.util.Bpmn2Resource;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IContributor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EClass;
@@ -48,8 +49,10 @@ import org.eclipse.graphiti.ui.editor.DiagramEditor;
 public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 
 	// extension point ID for Target Runtimes
-	public static final String RUNTIME_EXTENSION_ID = "org.eclipse.bpmn2.modeler.runtime";
-	public static final String DEFAULT_RUNTIME_ID = "com.founder.fix.fixflow.designer.fixflow";
+	public static final String RUNTIME_EXTENSION_ID = "org.eclipse.bpmn2.modeler.runtime"; //$NON-NLS-1$
+	public static final String DEFAULT_RUNTIME_ID = "com.founder.fix.fixflow.designer.fixflow"; //$NON-NLS-1$
+	// ID for BPMN2 specific problem markers
+	public static final String BPMN2_MARKER_ID = "org.eclipse.bpmn2.modeler.core.problemMarker"; //$NON-NLS-1$
 	
 	// our cached registry of target runtimes contributed by other plugins
 	protected static TargetRuntime targetRuntimes[];
@@ -71,12 +74,13 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 	protected ArrayList<ToolPaletteDescriptor> toolPalettes;
 	protected HashMap<Class, ShapeStyle> shapeStyles;
 	protected Bpmn2Resource bpmnResource;
+	protected String problemMarkerId;
 
 	public TargetRuntime(String id, String name, String versions, String description) {
 		this.id = id;
 		this.name = name;
 		if (versions!=null)
-			this.versions = versions.split("[, ]");
+			this.versions = versions.split("[, ]"); //$NON-NLS-1$
 		this.description = description;
 	}
 	
@@ -148,16 +152,26 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 				// first create all the Target Runtimes because other
 				// extension elements refer to these by runtimeId
 				for (IConfigurationElement e : config) {
-					if (e.getName().equals("runtime")) {
-						String id = e.getAttribute("id");
-						String name = e.getAttribute("name");
-						String versions = e.getAttribute("versions");
-						String description = e.getAttribute("description");
+					if (e.getName().equals("runtime")) { //$NON-NLS-1$
+						String id = e.getAttribute("id"); //$NON-NLS-1$
+						String name = e.getAttribute("name"); //$NON-NLS-1$
+						String versions = e.getAttribute("versions"); //$NON-NLS-1$
+						String description = e.getAttribute("description"); //$NON-NLS-1$
 						TargetRuntime rt = new TargetRuntime(id,name,versions,description);
 						
-						rt.setRuntimeExtension((IBpmn2RuntimeExtension) e.createExecutableExtension("class"));
+						rt.setRuntimeExtension((IBpmn2RuntimeExtension) e.createExecutableExtension("class")); //$NON-NLS-1$
 					
 						rtList.add(rt);
+
+						// add validation problem marker IDs
+						IContributor contributor = e.getDeclaringExtension().getContributor();
+						IConfigurationElement[] markers = Platform.getExtensionRegistry().getConfigurationElementsFor(
+								"org.eclipse.core.resources.markers"); //$NON-NLS-1$
+						for (IConfigurationElement m : markers) {
+							if (m.getDeclaringExtension().getContributor() == contributor) {
+								rt.setProblemMarkerId(m.getDeclaringExtension().getUniqueIdentifier());
+							}
+						}
 					}
 				}
 				
@@ -165,18 +179,18 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 				
 				// process model first
 				for (IConfigurationElement e : config) {
-					if (!e.getName().equals("runtime")) {
+					if (!e.getName().equals("runtime")) { //$NON-NLS-1$
 						currentRuntime = getRuntime(e);
 						
-						if (e.getName().equals("model")) {
+						if (e.getName().equals("model")) { //$NON-NLS-1$
 							ModelDescriptor md = new ModelDescriptor();
-							if (e.getAttribute("uri")!=null) {
-								String uri = e.getAttribute("uri");
+							if (e.getAttribute("uri")!=null) { //$NON-NLS-1$
+								String uri = e.getAttribute("uri"); //$NON-NLS-1$
 								md.setEPackage(EPackage.Registry.INSTANCE.getEPackage(uri));
 								md.setEFactory(md.getEPackage().getEFactoryInstance());
 							}
-							if (e.getAttribute("resourceFactory")!=null)
-								md.setResourceFactory((ResourceFactoryImpl) e.createExecutableExtension("resourceFactory"));
+							if (e.getAttribute("resourceFactory")!=null) //$NON-NLS-1$
+								md.setResourceFactory((ResourceFactoryImpl) e.createExecutableExtension("resourceFactory")); //$NON-NLS-1$
 							currentRuntime.setModelDescriptor(md);
 						}
 					}
@@ -185,32 +199,32 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 				// need to process the Default Runtime first (defined in o.e.b.m.ui) because
 				// other plugins can refer to this.
 				for (IConfigurationElement e : config) {
-					if (!e.getName().equals("runtime")) {
+					if (!e.getName().equals("runtime")) { //$NON-NLS-1$
 						currentRuntime = getRuntime(e);
 						if (currentRuntime.getId().equals(TargetRuntime.DEFAULT_RUNTIME_ID)) {
-							if (e.getName().equals("propertyTab")) {
+							if (e.getName().equals("propertyTab")) { //$NON-NLS-1$
 								Bpmn2TabDescriptor td = new Bpmn2TabDescriptor(e);
 								Bpmn2SectionDescriptor sd = new Bpmn2SectionDescriptor(td,e);
 								currentRuntime.getTabs().add(td);
 							}
-							if (e.getName().equals("modelEnablement")) {
+							if (e.getName().equals("modelEnablement")) { //$NON-NLS-1$
 								ModelEnablementDescriptor me;
-								String type = e.getAttribute("type");
-								String profile = e.getAttribute("profile");
+								String type = e.getAttribute("type"); //$NON-NLS-1$
+								String profile = e.getAttribute("profile"); //$NON-NLS-1$
 								currentRuntime.addModelEnablements(me = new ModelEnablementDescriptor(currentRuntime));
 								me.setType(type);
 								me.setProfile(profile);
 								
-								if (e.getAttribute("override") != null) {
-									me.setOverride(new Boolean(e.getAttribute("override")));
+								if (e.getAttribute("override") != null) { //$NON-NLS-1$
+									me.setOverride(new Boolean(e.getAttribute("override"))); //$NON-NLS-1$
 								}
 								
 								for (IConfigurationElement c : e.getChildren()) {
-									String object = c.getAttribute("object");
-									String feature = c.getAttribute("feature");
-									if (c.getName().equals("enable")) {
+									String object = c.getAttribute("object"); //$NON-NLS-1$
+									String feature = c.getAttribute("feature"); //$NON-NLS-1$
+									if (c.getName().equals("enable")) { //$NON-NLS-1$
 										me.setEnabled(object, feature, true);
-									} else if (c.getName().equals("disable")) {
+									} else if (c.getName().equals("disable")) { //$NON-NLS-1$
 										me.setEnabled(object, feature, false);
 									}
 								}
@@ -219,12 +233,13 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 						}
 					}
 				}
+				
 				// process propertyTab, propertyExtension, customTask, modelExtension and modelEnablement next
 				for (IConfigurationElement e : config) {
-					if (!e.getName().equals("runtime")) {
+					if (!e.getName().equals("runtime")) { //$NON-NLS-1$
 						currentRuntime = getRuntime(e);
 						
-						if (e.getName().equals("propertyTab")) {
+						if (e.getName().equals("propertyTab")) { //$NON-NLS-1$
 							if (currentRuntime.getId().equals(TargetRuntime.DEFAULT_RUNTIME_ID)) {
 								// already done
 								continue;
@@ -233,88 +248,88 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 							Bpmn2SectionDescriptor sd = new Bpmn2SectionDescriptor(td,e);
 							currentRuntime.getTabs().add(td);
 						}
-						else if (e.getName().equals("customTask")) {
-							String id = e.getAttribute("id");
-							String name = e.getAttribute("name");
+						else if (e.getName().equals("customTask")) { //$NON-NLS-1$
+							String id = e.getAttribute("id"); //$NON-NLS-1$
+							String name = e.getAttribute("name"); //$NON-NLS-1$
 							CustomTaskDescriptor ct = new CustomTaskDescriptor(id,name);
-							ct.type = e.getAttribute("type");
-							ct.description = e.getAttribute("description");
-							ct.category = e.getAttribute("category");
-							ct.icon = e.getAttribute("icon");
-							String tabs = e.getAttribute("propertyTabs");
+							ct.type = e.getAttribute("type"); //$NON-NLS-1$
+							ct.description = e.getAttribute("description"); //$NON-NLS-1$
+							ct.category = e.getAttribute("category"); //$NON-NLS-1$
+							ct.icon = e.getAttribute("icon"); //$NON-NLS-1$
+							String tabs = e.getAttribute("propertyTabs"); //$NON-NLS-1$
 							if (tabs!=null) {
-								ct.propertyTabs = tabs.split(" ");
+								ct.propertyTabs = tabs.split(" "); //$NON-NLS-1$
 							}
-							ct.featureContainer = (ICustomTaskFeatureContainer) e.createExecutableExtension("featureContainer");
+							ct.featureContainer = (ICustomElementFeatureContainer) e.createExecutableExtension("featureContainer"); //$NON-NLS-1$
 							ct.featureContainer.setCustomTaskDescriptor(ct);
 							ct.featureContainer.setId(id);
 							ct.setPermanent(true);
 							getModelExtensionProperties(ct,e);
 							currentRuntime.addCustomTask(ct);
 						}
-						else if (e.getName().equals("propertyExtension")) {
-							String id = e.getAttribute("id");
-							PropertyExtensionDescriptor pe = new PropertyExtensionDescriptor(currentRuntime);
-							pe.type = e.getAttribute("type");
-							pe.adapterClassName = e.getAttribute("class");
+						else if (e.getName().equals("propertyExtension")) { //$NON-NLS-1$
+							String id = e.getAttribute("id"); //$NON-NLS-1$
+							PropertyExtensionDescriptor pe = new PropertyExtensionDescriptor(currentRuntime, e);
+							pe.type = e.getAttribute("type"); //$NON-NLS-1$
+							pe.adapterClassName = e.getAttribute("class"); //$NON-NLS-1$
 							currentRuntime.addPropertyExtension(pe);
 						}
-						else if (e.getName().equals("featureContainer")) {
-							String id = e.getAttribute("id");
+						else if (e.getName().equals("featureContainer")) { //$NON-NLS-1$
+							String id = e.getAttribute("id"); //$NON-NLS-1$
 							FeatureContainerDescriptor fc = new FeatureContainerDescriptor(currentRuntime);
-							fc.type = e.getAttribute("type");
-							fc.containerClassName = e.getAttribute("class");
+							fc.type = e.getAttribute("type"); //$NON-NLS-1$
+							fc.containerClassName = e.getAttribute("class"); //$NON-NLS-1$
 							currentRuntime.addFeatureContainer(fc);
 						}
-						else if (e.getName().equals("modelExtension")) {
-							String id = e.getAttribute("id");
-							String name = e.getAttribute("name");
+						else if (e.getName().equals("modelExtension")) { //$NON-NLS-1$
+							String id = e.getAttribute("id"); //$NON-NLS-1$
+							String name = e.getAttribute("name"); //$NON-NLS-1$
 							ModelExtensionDescriptor me = new ModelExtensionDescriptor(id,name);
-							me.type = e.getAttribute("type");
-							me.description = e.getAttribute("description");
+							me.type = e.getAttribute("type"); //$NON-NLS-1$
+							me.description = e.getAttribute("description"); //$NON-NLS-1$
 							getModelExtensionProperties(me,e);
 							currentRuntime.addModelExtension(me);
 						}
-						else if (e.getName().equals("modelEnablement")) {
+						else if (e.getName().equals("modelEnablement")) { //$NON-NLS-1$
 							if (currentRuntime.getId().equals(TargetRuntime.DEFAULT_RUNTIME_ID)) {
 								// already done
 								continue;
 							}
 							ModelEnablementDescriptor me;
-							String type = e.getAttribute("type");
-							String profile = e.getAttribute("profile");
+							String type = e.getAttribute("type"); //$NON-NLS-1$
+							String profile = e.getAttribute("profile"); //$NON-NLS-1$
 							currentRuntime.addModelEnablements(me = new ModelEnablementDescriptor(currentRuntime));
 							me.setType(type);
 							me.setProfile(profile);
 							
-							if (e.getAttribute("override") != null) {
-								me.setOverride(new Boolean(e.getAttribute("override")));
+							if (e.getAttribute("override") != null) { //$NON-NLS-1$
+								me.setOverride(new Boolean(e.getAttribute("override"))); //$NON-NLS-1$
 							}
 							
 							for (IConfigurationElement c : e.getChildren()) {
-								String object = c.getAttribute("object");
-								String feature = c.getAttribute("feature");
-								if (c.getName().equals("enable")) {
+								String object = c.getAttribute("object"); //$NON-NLS-1$
+								String feature = c.getAttribute("feature"); //$NON-NLS-1$
+								if (c.getName().equals("enable")) { //$NON-NLS-1$
 									me.setEnabled(object, feature, true);
-								} else if (c.getName().equals("disable")) {
+								} else if (c.getName().equals("disable")) { //$NON-NLS-1$
 									me.setEnabled(object, feature, false);
 								}
 							}
 
 						}
-						else if (e.getName().equals("style")) {
-							String object = e.getAttribute("object");
-							String foreground = e.getAttribute("foreground");
-							String background = e.getAttribute("background");
-							String textColor = e.getAttribute("textColor");
-							String font = e.getAttribute("font");
+						else if (e.getName().equals("style")) { //$NON-NLS-1$
+							String object = e.getAttribute("object"); //$NON-NLS-1$
+							String foreground = e.getAttribute("foreground"); //$NON-NLS-1$
+							String background = e.getAttribute("background"); //$NON-NLS-1$
+							String textColor = e.getAttribute("textColor"); //$NON-NLS-1$
+							String font = e.getAttribute("font"); //$NON-NLS-1$
 							EClass eclass = (EClass)Bpmn2Package.eINSTANCE.getEClassifier(object);
 							ShapeStyle ss = new ShapeStyle(foreground, background, textColor, font);
 							currentRuntime.getShapeStyles().put(eclass.getInstanceClass(), ss);
 						}
-						else if (e.getName().equals("toolPalette")) {
+						else if (e.getName().equals("toolPalette")) { //$NON-NLS-1$
 							ToolPaletteDescriptor toolPalette = null;
-							String id = e.getAttribute("id");
+							String id = e.getAttribute("id"); //$NON-NLS-1$
 							for (ToolPaletteDescriptor tp : currentRuntime.getToolPalettes()) {
 								if (tp.id.equals(id)) {
 									toolPalette = tp;
@@ -414,26 +429,26 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 		ModelEnablementDescriptor me = null;
 		try {
 			for (IConfigurationElement e : config) {
-				if (e.getName().equals("modelEnablement")) {
-					String t = e.getAttribute("type");
-					String p = e.getAttribute("profile");
-					String id = e.getAttribute("runtimeId");
+				if (e.getName().equals("modelEnablement")) { //$NON-NLS-1$
+					String t = e.getAttribute("type"); //$NON-NLS-1$
+					String p = e.getAttribute("profile"); //$NON-NLS-1$
+					String id = e.getAttribute("runtimeId"); //$NON-NLS-1$
 					if (runtimeId.equals(id) && type.equals(t) && profile.equals(p)) {
 						TargetRuntime rt = getRuntime(id);
 						me = new ModelEnablementDescriptor(rt);
 						me.setType(t);
 						me.setProfile(p);
 						
-						if (e.getAttribute("override") != null) {
-							me.setOverride(new Boolean(e.getAttribute("override")));
+						if (e.getAttribute("override") != null) { //$NON-NLS-1$
+							me.setOverride(new Boolean(e.getAttribute("override"))); //$NON-NLS-1$
 						}
 						
 						for (IConfigurationElement c : e.getChildren()) {
-							String object = c.getAttribute("object");
-							String feature = c.getAttribute("feature");
-							if (c.getName().equals("enable")) {
+							String object = c.getAttribute("object"); //$NON-NLS-1$
+							String feature = c.getAttribute("feature"); //$NON-NLS-1$
+							if (c.getName().equals("enable")) { //$NON-NLS-1$
 								me.setEnabled(object, feature, true);
-							} else if (c.getName().equals("disable")) {
+							} else if (c.getName().equals("disable")) { //$NON-NLS-1$
 								me.setEnabled(object, feature, false);
 							}
 						}
@@ -450,8 +465,8 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 	private static Object getModelExtensionProperties(ModelExtensionDescriptor ct, IConfigurationElement e) {
 		
 		String elem = e.getName();
-		if ("value".equals(elem)) {
-			String id = e.getAttribute("id");
+		if ("value".equals(elem)) { //$NON-NLS-1$
+			String id = e.getAttribute("id"); //$NON-NLS-1$
 			Value val = new Value(id);
 			for (IConfigurationElement c : e.getChildren()) {
 				Object propValue = getModelExtensionProperties(null, c);
@@ -459,12 +474,12 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 			}
 			return val;
 		}
-		else if ("property".equals(elem)) {
-			String name = e.getAttribute("name");
-			String value = e.getAttribute("value");
-			String ref = e.getAttribute("ref");
-			String type = e.getAttribute("type");
-			String description = e.getAttribute("description");
+		else if ("property".equals(elem)) { //$NON-NLS-1$
+			String name = e.getAttribute("name"); //$NON-NLS-1$
+			String value = e.getAttribute("value"); //$NON-NLS-1$
+			String ref = e.getAttribute("ref"); //$NON-NLS-1$
+			String type = e.getAttribute("type"); //$NON-NLS-1$
+			String description = e.getAttribute("description"); //$NON-NLS-1$
 			Property prop = new Property(name,description);
 			prop.type = type;
 			if (value!=null)
@@ -490,7 +505,7 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 	}
 
 	private static TargetRuntime getRuntime(IConfigurationElement e) {
-		String runtimeId = e.getAttribute("runtimeId");
+		String runtimeId = e.getAttribute("runtimeId"); //$NON-NLS-1$
 		TargetRuntime rt = getRuntime(runtimeId);
 		if (rt==null)
 			return currentRuntime;
@@ -586,8 +601,8 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 			// The "type" name should be the BPMN2 element's interface definition;
 			// if it's an implementation class name, try to convert it to its
 			// interface name.
-			className = className.replaceFirst("\\.impl\\.", ".");
-			className = className.replaceFirst("Impl$", "");
+			className = className.replaceFirst("\\.impl\\.", "."); //$NON-NLS-1$ //$NON-NLS-2$
+			className = className.replaceFirst("Impl$", ""); //$NON-NLS-1$ //$NON-NLS-2$
 			if (className.equals(ped.type))
 				return ped;
 		}
@@ -616,8 +631,8 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 			// The "type" name should be the BPMN2 element's interface definition;
 			// if it's an implementation class name, try to convert it to its
 			// interface name.
-			className = className.replaceFirst("\\.impl\\.", ".");
-			className = className.replaceFirst("Impl$", "");
+			className = className.replaceFirst("\\.impl\\.", "."); //$NON-NLS-1$ //$NON-NLS-2$
+			className = className.replaceFirst("Impl$", ""); //$NON-NLS-1$ //$NON-NLS-2$
 			if (className.equals(fcd.type))
 				return fcd;
 		}
@@ -761,7 +776,7 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 		
 		getAllRuntimes();
 		String afterTab = tab.getAfterTab();
-		if (afterTab!=null && !afterTab.isEmpty() && !afterTab.equals("top")) {
+		if (afterTab!=null && !afterTab.isEmpty() && !afterTab.equals("top")) { //$NON-NLS-1$
 			String id = tab.getId();
 			for (TargetRuntime rt : targetRuntimes) {
 				for (Bpmn2TabDescriptor td : rt.getTabs()) {
@@ -850,5 +865,15 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 	    		}
 			}
 		}
+	}
+	
+	protected void setProblemMarkerId(String id) {
+		problemMarkerId = id;
+	}
+
+	public String getProblemMarkerId() {
+		if (problemMarkerId==null)
+			return BPMN2_MARKER_ID;
+		return problemMarkerId;
 	}
 }

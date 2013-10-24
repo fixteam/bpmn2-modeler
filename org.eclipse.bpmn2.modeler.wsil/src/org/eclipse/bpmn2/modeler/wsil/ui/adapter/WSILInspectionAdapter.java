@@ -68,9 +68,9 @@ public class WSILInspectionAdapter extends AbstractAdapter
 		
 		if (abs.size() > 0) {
 			TypeOfAbstract iwa = (TypeOfAbstract) abs.get(0);
-			return "Inspection - " + iwa.getValue();
+			return "Inspection - " + iwa.getValue(); //$NON-NLS-1$
 		}
-		return "Inspection " ;
+		return "Inspection " ; //$NON-NLS-1$
 	}	
 	
 }

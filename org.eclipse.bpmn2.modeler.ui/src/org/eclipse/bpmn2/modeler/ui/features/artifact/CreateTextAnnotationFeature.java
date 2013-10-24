@@ -25,15 +25,12 @@ public class CreateTextAnnotationFeature extends AbstractCreateArtifactFeature<T
 
 	public CreateTextAnnotationFeature(IFeatureProvider fp) {
 		super(fp, "注释", "Create "+"Annotation");
+		//super(fp, Messages.CreateTextAnnotationFeature_Name, Messages.CreateTextAnnotationFeature_Description);
 	}
 
 	@Override
 	public boolean canCreate(ICreateContext context) {
-		boolean intoDiagram = context.getTargetContainer().equals(getDiagram());
-		boolean intoLane = FeatureSupport.isTargetLane(context) && FeatureSupport.isTargetLaneOnTop(context);
-		boolean intoParticipant = FeatureSupport.isTargetParticipant(context);
-		
-		return intoDiagram || intoLane || intoParticipant;
+		return FeatureSupport.isValidArtifactTarget(context);
 	}
 
 	@Override

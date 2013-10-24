@@ -31,8 +31,8 @@ import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 // NOT USED YET
 public class ExpandFlowNodeFeature extends ShowDiagramPageFeature {
 
-	private final static String NAME = "Expand";
-	private final static String DESCRIPTION = "Expand the Activity and show contents";
+	private final static String NAME = Messages.ExpandFlowNodeFeature_Name;
+	private final static String DESCRIPTION = Messages.ExpandFlowNodeFeature_Description;
 	
 	private String name = NAME;
 	private String description = DESCRIPTION;

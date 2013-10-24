@@ -42,7 +42,7 @@ public class ThrowEventDetailComposite extends AbstractDetailComposite {
 	 */
 	@Override
 	public void createBindings(EObject be) {
-		bindList(be,"eventDefinitions");
-		bindList(be,"dataInputs");
+		bindList(be,"eventDefinitions"); //$NON-NLS-1$
+		bindList(be,"dataInputs"); //$NON-NLS-1$
 	}
 }

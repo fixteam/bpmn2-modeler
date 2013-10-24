@@ -30,12 +30,12 @@ import org.xml.sax.InputSource;
 
 public class DefaultBpmn2RuntimeExtension implements IBpmn2RuntimeExtension {
 
-	private static final String targetNamespace = "http://sample.bpmn2.org/bpmn2/sample";
+	private static final String targetNamespace = "http://sample.bpmn2.org/bpmn2/sample"; //$NON-NLS-1$
 	private static final String[] typeLanguages = new String[] {
-		"http://www.w3.org/2001/XMLSchema", "XML Schema",
+		"http://www.w3.org/2001/XMLSchema", "XML Schema", //$NON-NLS-1$ //$NON-NLS-2$
 	};
 	private static final String[] expressionLanguages = new String[] {
-		"http://www.w3.org/1999/XPath", "XPath",
+		"http://www.w3.org/1999/XPath", "XPath", //$NON-NLS-1$ //$NON-NLS-2$
 	};
 	
 	public DefaultBpmn2RuntimeExtension() {
@@ -48,16 +48,16 @@ public class DefaultBpmn2RuntimeExtension implements IBpmn2RuntimeExtension {
 
 	@Override
 	public String getTargetNamespace(Bpmn2DiagramType diagramType){
-		String type = "";
+		String type = ""; //$NON-NLS-1$
 		switch (diagramType) {
 		case PROCESS:
-			type = "/process";
+			type = "/process"; //$NON-NLS-1$
 			break;
 		case COLLABORATION:
-			type = "/collaboration";
+			type = "/collaboration"; //$NON-NLS-1$
 			break;
 		case CHOREOGRAPHY:
-			type = "/choreography";
+			type = "/choreography"; //$NON-NLS-1$
 			break;
 		}
 		return targetNamespace + type;
@@ -75,11 +75,6 @@ public class DefaultBpmn2RuntimeExtension implements IBpmn2RuntimeExtension {
 
 	@Override
 	public void initialize(DiagramEditor editor) {
-	}
-
-	@Override
-	public Composite getPreferencesComposite(Composite parent, Bpmn2Preferences preferences) {
-		return null;
 	}
 
 
@@ -121,8 +116,8 @@ public class DefaultBpmn2RuntimeExtension implements IBpmn2RuntimeExtension {
 			super.startElement(qName, attributes, augmentations);
 
 			// search the "definitions" for a namespace that matches the required namespace
-			if ("definitions".equals(qName.localpart)) {
-				String namespace = attributes.getValue("targetNamespace");
+			if ("definitions".equals(qName.localpart)) { //$NON-NLS-1$
+				String namespace = attributes.getValue("targetNamespace"); //$NON-NLS-1$
 				if (this.namespace.equals(namespace))
 					throw new AcceptedException(qName.localpart);
 				Enumeration<?> e = fNamespaceContext.getAllPrefixes();
@@ -151,11 +146,5 @@ public class DefaultBpmn2RuntimeExtension implements IBpmn2RuntimeExtension {
 
 	public static class RejectedException extends RuntimeException {
 		private static final long serialVersionUID = 1L;
-	}
-
-	@Override
-	public void modelObjectCreated(EObject object) {
-		// TODO Auto-generated method stub
-		
 	}
 }

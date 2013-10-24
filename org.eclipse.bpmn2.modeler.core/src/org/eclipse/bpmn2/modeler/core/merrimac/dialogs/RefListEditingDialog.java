@@ -14,7 +14,7 @@ import java.util.Hashtable;
 import java.util.Map.Entry;
 
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
-import org.eclipse.emf.ecore.EClass;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
@@ -65,7 +65,7 @@ public class RefListEditingDialog extends AbstractObjectEditingDialog {
 
 		buttons.setLayout(new FillLayout(SWT.VERTICAL));
 		addButton = new Button(buttons,SWT.PUSH);
-		addButton.setText("Add ->");
+		addButton.setText(Messages.RefListEditingDialog_Add);
 		addButton.addSelectionListener( new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -73,7 +73,7 @@ public class RefListEditingDialog extends AbstractObjectEditingDialog {
 			}
 		});
 		removeButton = new Button(buttons,SWT.PUSH);
-		removeButton.setText("<- Remove");
+		removeButton.setText(Messages.RefListEditingDialog_Remove);
 		removeButton.addSelectionListener( new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -81,7 +81,7 @@ public class RefListEditingDialog extends AbstractObjectEditingDialog {
 			}
 		});
 		addAllButton = new Button(buttons,SWT.PUSH);
-		addAllButton.setText("Add All ->>");
+		addAllButton.setText(Messages.RefListEditingDialog_Add_All);
 		addAllButton.addSelectionListener( new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -90,7 +90,7 @@ public class RefListEditingDialog extends AbstractObjectEditingDialog {
 			}
 		});
 		removeAllButton = new Button(buttons,SWT.PUSH);
-		removeAllButton.setText("<<- Remove All");
+		removeAllButton.setText(Messages.RefListEditingDialog_Remove_All);
 		removeAllButton.addSelectionListener( new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -99,7 +99,7 @@ public class RefListEditingDialog extends AbstractObjectEditingDialog {
 			}
 		});
 		moveUpButton = new Button(buttons,SWT.PUSH);
-		moveUpButton.setText("Move Up");
+		moveUpButton.setText(Messages.RefListEditingDialog_Move_Up);
 		moveUpButton.addSelectionListener( new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -107,7 +107,7 @@ public class RefListEditingDialog extends AbstractObjectEditingDialog {
 			}
 		});
 		moveDownButton = new Button(buttons,SWT.PUSH);
-		moveDownButton.setText("Move Down");
+		moveDownButton.setText(Messages.RefListEditingDialog_Move_Down);
 		moveDownButton.addSelectionListener( new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -126,7 +126,7 @@ public class RefListEditingDialog extends AbstractObjectEditingDialog {
 		
 		java.util.List<EObject> targets = (java.util.List<EObject>) object.eGet(feature);
 		for (EObject value : targets) {
-			String key = "" + targetList.getItemCount();
+			String key = "" + targetList.getItemCount(); //$NON-NLS-1$
 			targetList.add( ModelUtil.getDisplayName(value) );
 			targetList.setData(key, value);
 		}
@@ -134,12 +134,12 @@ public class RefListEditingDialog extends AbstractObjectEditingDialog {
 		Hashtable<String, Object> sources = ModelUtil.getChoiceOfValues(object, feature);
 		for (Entry<String, Object> entry : sources.entrySet()) {
 			if (!targets.contains(entry.getValue())) {
-				String key = "" + sourceList.getItemCount();
+				String key = "" + sourceList.getItemCount(); //$NON-NLS-1$
 				sourceList.add(entry.getKey());
 
 				Object value = entry.getValue();
 				// this can not be null!
-				assert(value instanceof EObject);
+				Assert.isTrue(value instanceof EObject);
 				sourceList.setData(key, value);
 			}
 		}
@@ -158,7 +158,7 @@ public class RefListEditingDialog extends AbstractObjectEditingDialog {
 		// compute result list
 		int size = targetList.getItemCount();
 		for (int i=0; i<size; ++i) {
-			String key = "" + i;
+			String key = "" + i; //$NON-NLS-1$
 			result.add((EObject)targetList.getData(key));
 		}
 		super.okPressed();
@@ -169,11 +169,11 @@ public class RefListEditingDialog extends AbstractObjectEditingDialog {
 		int[] targetIndex = new int[sourceIndex.length];
 		for (int i=0; i<sourceIndex.length; ++i) {
 			targetIndex[i] = targetList.getItemCount();
-			String key = "" + sourceIndex[i];
+			String key = "" + sourceIndex[i]; //$NON-NLS-1$
 			Object value = sourceList.getData(key);
 			String s = sourceList.getItem( sourceIndex[i] );
 			targetList.add(s);
-			key = "" + targetIndex[i];
+			key = "" + targetIndex[i]; //$NON-NLS-1$
 			targetList.setData(key,value);
 		}
 		sourceList.remove(sourceIndex);
@@ -183,22 +183,22 @@ public class RefListEditingDialog extends AbstractObjectEditingDialog {
 	
 	private void moveUp() {
 		int index = targetList.getSelectionIndex();
-		assert (index>0);
+		Assert.isTrue(index>0);
 		swap(index,index-1);
 	}
 	
 	private void moveDown() {
 		int index = targetList.getSelectionIndex();
 		int end = targetList.getItemCount() - 1; 
-		assert (index>0 && index<end);
+		Assert.isTrue(index>0 && index<end);
 		swap(index,index+1);
 	}
 	
 	private void swap(int index1, int index2) {
 		String item1 = targetList.getItem(index1);
-		String key1 = "" + index1;
+		String key1 = "" + index1; //$NON-NLS-1$
 		Object value1 = targetList.getData(key1);
-		String key2 = "" + index2;
+		String key2 = "" + index2; //$NON-NLS-1$
 		Object value2 = targetList.getData(key2);
 		targetList.remove(index1);
 		targetList.add(item1, index2);
@@ -227,7 +227,7 @@ public class RefListEditingDialog extends AbstractObjectEditingDialog {
 	
 	@Override
 	protected String getPreferenceKey() {
-		return object.eClass().getName() + "." + feature.getName();
+		return object.eClass().getName() + "." + feature.getName(); //$NON-NLS-1$
 	}
 
 }

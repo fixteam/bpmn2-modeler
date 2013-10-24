@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2011, 2012, 2013 Red Hat, Inc.
+ * All rights reserved.
+ * This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution,
+ * and is available at http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors:
+ * 	Red Hat, Inc. - initial API and implementation
+ ******************************************************************************/
 package org.eclipse.bpmn2.modeler.examples.customtask;
 
 import org.eclipse.bpmn2.modeler.core.IBpmn2RuntimeExtension;
@@ -47,18 +57,4 @@ public class MyRuntimeExtension implements IBpmn2RuntimeExtension {
 		// TODO Auto-generated method stub
 
 	}
-
-	@Override
-	public Composite getPreferencesComposite(Composite parent,
-			Bpmn2Preferences preferences) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void modelObjectCreated(EObject object) {
-		// TODO Auto-generated method stub
-
-	}
-
 }

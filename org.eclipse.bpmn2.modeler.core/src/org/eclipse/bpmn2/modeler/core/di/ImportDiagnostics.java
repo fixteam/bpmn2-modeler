@@ -1,19 +1,25 @@
+/*******************************************************************************
+ * Copyright (c) 2011, 2012, 2013 Red Hat, Inc.
+ * All rights reserved.
+ * This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution,
+ * and is available at http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors:
+ * 	Red Hat, Inc. - initial API and implementation
+ ******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.di;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.runtime.CustomTaskDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
-import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.dd.di.DiagramElement;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -70,12 +76,9 @@ public class ImportDiagnostics implements IStructuredContentProvider, ILabelProv
 				Activator.logStatus(new Status(d.severity, Activator.PLUGIN_ID, getText(d)));
 			}
 			dlg.setInput(entries);
-			dlg.setMessage(
-					"The following errors were detected while trying to load this file.\n"+
-					"Please see the Error Log for more information."
-			);
+			dlg.setMessage(Messages.ImportDiagnostics_Message);
 			dlg.setAddCancelButton(false);
-			dlg.setTitle("BPMN2 Modeler - Import Errors");
+			dlg.setTitle(Messages.ImportDiagnostics_Title);
 			dlg.open();
 		}
 	}
@@ -119,58 +122,57 @@ public class ImportDiagnostics implements IStructuredContentProvider, ILabelProv
 	@Override
 	public String getText(Object element) {
 		ImportDiagnostic d = (ImportDiagnostic)element;
-		String text = "";
-		String id = "";
-		String name = "";
+		String text = ""; //$NON-NLS-1$
+		String id = ""; //$NON-NLS-1$
 		if (d.element!=null)
 			text = getText(d.element);
 		else
-			text = "Unknown Type";
+			return d.message;
 		
-		text += ": " + d.message;
+		text += ": " + d.message; //$NON-NLS-1$
 		return text;
 	}
 
 	public String getText(EObject element) {
-		String text = "";
-		String type = "";
-		String id = "";
-		String name = "";
-		String customTaskId = "";
+		String text = ""; //$NON-NLS-1$
+		String type = ""; //$NON-NLS-1$
+		String id = ""; //$NON-NLS-1$
+		String name = ""; //$NON-NLS-1$
+		String customTaskId = ""; //$NON-NLS-1$
 		if (runtime!=null) {
 			for (CustomTaskDescriptor tc : runtime.getCustomTasks()) {
 				customTaskId = tc.getFeatureContainer().getId(element);
 				if (customTaskId==null)
-					customTaskId = "";
+					customTaskId = ""; //$NON-NLS-1$
 			}
 		}
 		
 		type = element.eClass().getName();
 		
-		EStructuralFeature f = element.eClass().getEStructuralFeature("id");
+		EStructuralFeature f = element.eClass().getEStructuralFeature("id"); //$NON-NLS-1$
 		if (f!=null) {
 			id = (String)element.eGet(f);
 			if (id==null)
-				id = "";
+				id = ""; //$NON-NLS-1$
 		}
 		if (id.isEmpty())
-			id = "unknown";
+			id = "unknown"; //$NON-NLS-1$
 		
-		f = element.eClass().getEStructuralFeature("name");
+		f = element.eClass().getEStructuralFeature("name"); //$NON-NLS-1$
 		if (f!=null) {
 			name = (String)element.eGet(f);
 			if (name==null)
-				name = "";
+				name = ""; //$NON-NLS-1$
 		}
 		if (!customTaskId.isEmpty())
-			text = type + " Custom Task " + customTaskId;
+			text = type + " Custom Task " + customTaskId; //$NON-NLS-1$
 		else
 			text = type;
 		
 		if (name.isEmpty())
-			text += " id=\"" + id + "\"";
+			text += " id=\"" + id + "\""; //$NON-NLS-1$ //$NON-NLS-2$
 		else
-			text += " \"" + name + "\"";
+			text += " \"" + name + "\""; //$NON-NLS-1$ //$NON-NLS-2$
 
 		return text;
 	}

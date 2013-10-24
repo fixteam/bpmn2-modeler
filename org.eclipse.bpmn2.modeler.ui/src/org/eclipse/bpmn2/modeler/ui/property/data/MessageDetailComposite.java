@@ -38,8 +38,8 @@ public class MessageDetailComposite extends DefaultDetailComposite {
 		if (propertiesProvider==null) {
 			propertiesProvider = new AbstractPropertiesProvider(object) {
 				String[] properties = new String[] {
-						"name",
-						"itemRef"
+						"name", //$NON-NLS-1$
+						"itemRef" //$NON-NLS-1$
 				};
 				
 				@Override

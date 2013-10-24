@@ -12,26 +12,19 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.features.event;
 
-import static org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil.EVENT_SIZE;
 import static org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil.createEventShape;
 
 import org.eclipse.bpmn2.Event;
-import org.eclipse.bpmn2.FlowElementsContainer;
 import org.eclipse.bpmn2.modeler.core.di.DIImport;
-import org.eclipse.bpmn2.modeler.core.features.AbstractAddBPMNShapeFeature;
-import org.eclipse.bpmn2.modeler.core.features.label.UpdateLabelFeature;
+import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2AddElementFeature;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
-import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IAddContext;
-import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.mm.algorithms.Ellipse;
 import org.eclipse.graphiti.mm.algorithms.Rectangle;
-import org.eclipse.graphiti.mm.algorithms.Text;
-import org.eclipse.graphiti.mm.algorithms.styles.Orientation;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
@@ -40,10 +33,10 @@ import org.eclipse.graphiti.services.IGaService;
 import org.eclipse.graphiti.services.IPeService;
 
 public class AddEventFeature<T extends Event>
-	extends AbstractAddBPMNShapeFeature<T> {
+	extends AbstractBpmn2AddElementFeature<T> {
 
-	public static final String EVENT_ELEMENT = "event.graphics.element";
-	public static final String EVENT_CIRCLE = "event.graphics.element.circle";
+	public static final String EVENT_ELEMENT = "event.graphics.element"; //$NON-NLS-1$
+	public static final String EVENT_CIRCLE = "event.graphics.element.circle"; //$NON-NLS-1$
 
 	public AddEventFeature(IFeatureProvider fp) {
 		super(fp);
@@ -51,12 +44,7 @@ public class AddEventFeature<T extends Event>
 
 	@Override
 	public boolean canAdd(IAddContext context) {
-		boolean intoDiagram = context.getTargetContainer().equals(getDiagram());
-		boolean intoLane = FeatureSupport.isTargetLane(context) && FeatureSupport.isTargetLaneOnTop(context);
-		boolean intoParticipant = FeatureSupport.isTargetParticipant(context);
-		boolean intoFlowELementContainer = BusinessObjectUtil.containsElementOfType(context.getTargetContainer(),
-		        FlowElementsContainer.class);
-		return intoDiagram || intoLane || intoParticipant || intoFlowELementContainer;
+		return FeatureSupport.isValidFlowElementTarget(context);
 	}
 
 	@Override

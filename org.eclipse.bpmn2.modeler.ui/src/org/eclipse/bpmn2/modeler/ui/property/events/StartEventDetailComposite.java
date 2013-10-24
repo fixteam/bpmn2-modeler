@@ -39,8 +39,8 @@ public class StartEventDetailComposite extends DefaultDetailComposite {
 		if (propertiesProvider == null) {
 			propertiesProvider = new AbstractPropertiesProvider(object) {
 				String[] properties = new String[] {
-						"isInterrupting",
-						"eventDefinitions",
+						"isInterrupting", //$NON-NLS-1$
+						"eventDefinitions", //$NON-NLS-1$
 				};
 				
 				@Override

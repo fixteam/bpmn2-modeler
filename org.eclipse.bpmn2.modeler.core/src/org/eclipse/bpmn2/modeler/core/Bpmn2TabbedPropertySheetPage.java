@@ -10,23 +10,17 @@
  *******************************************************************************/
 package org.eclipse.bpmn2.modeler.core;
 
-import java.util.ResourceBundle.Control;
-
-import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
-import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
-import org.eclipse.gef.editparts.AbstractEditPart;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.eclipse.ui.views.properties.tabbed.ITabbedPropertySheetPageContributor;
-import org.eclipse.ui.views.properties.tabbed.TabContents;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
+import org.eclipse.wst.sse.ui.StructuredTextEditor;
 
-public class Bpmn2TabbedPropertySheetPage extends TabbedPropertySheetPage {
+public class Bpmn2TabbedPropertySheetPage extends TabbedPropertySheetPage implements IAdaptable {
 
 	DiagramEditor diagramEditor;
 	private ISelection currentSelection;
@@ -44,15 +38,22 @@ public class Bpmn2TabbedPropertySheetPage extends TabbedPropertySheetPage {
 		// we can navigate from the selected IDOMNode to the BPMN2 model element and
 		// modify the selection here...
 		if (selection instanceof IStructuredSelection) {
-			IStructuredSelection ss = (IStructuredSelection)selection;
-			Object elem = ss.getFirstElement();
-			if (!(elem instanceof AbstractEditPart))
-				return;
+			// ugly hack to disable selection while source viewer is active
+			if (diagramEditor.getAdapter(StructuredTextEditor.class)!=null) {
+				selection = new StructuredSelection(""); //$NON-NLS-1$
+			}
 			super.selectionChanged(part, selection);
 		}
 	}
 	
 	public DiagramEditor getDiagramEditor() {
 		return diagramEditor;
+	}
+
+	@Override
+	public Object getAdapter(Class adapter) {
+		if (diagramEditor!=null)
+			return diagramEditor.getAdapter(adapter);
+		return null;
 	}
 }

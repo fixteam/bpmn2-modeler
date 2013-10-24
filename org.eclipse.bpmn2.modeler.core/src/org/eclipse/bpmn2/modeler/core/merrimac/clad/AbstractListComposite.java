@@ -27,6 +27,8 @@ import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.InternalEObject;
+import org.eclipse.emf.ecore.impl.ENotificationImpl;
 import org.eclipse.emf.ecore.util.BasicFeatureMap;
 import org.eclipse.emf.ecore.util.FeatureMap;
 import org.eclipse.emf.ecore.util.FeatureMap.Entry;
@@ -44,10 +46,16 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.forms.events.ExpansionEvent;
@@ -87,7 +95,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 	protected EStructuralFeature feature;
 	
 	// widgets
-	SashForm sashForm;
+	protected SashForm sashForm;
 	protected Section tableSection;
 	protected ToolBarManager tableToolBarManager;
 	protected Section detailSection;
@@ -97,12 +105,12 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 	protected TableViewer tableViewer;
 	protected AbstractDetailComposite detailComposite;
 	
-	boolean removeIsDelete = false;
-	Action addAction;
-	Action removeAction;
-	Action upAction;
-	Action downAction;
-	Action editAction;
+	protected boolean removeIsDelete = false;
+	protected Action addAction;
+	protected Action removeAction;
+	protected Action upAction;
+	protected Action downAction;
+	protected Action editAction;
 	
 	protected ListCompositeColumnProvider columnProvider;
 	protected ListCompositeContentProvider contentProvider;
@@ -163,12 +171,13 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 			columnProvider = new ListCompositeColumnProvider(this, canModify);
 			
 			// default is to include property name as the first column
-			EStructuralFeature nameAttribute = listItemClass.getEStructuralFeature("name");
+			EStructuralFeature nameAttribute = listItemClass.getEStructuralFeature("name"); //$NON-NLS-1$
+			EStructuralFeature idAttribute = listItemClass.getEStructuralFeature("id"); //$NON-NLS-1$
 			if (nameAttribute!=null)
 				columnProvider.add(object, listItemClass, nameAttribute);
 
 			for (EAttribute a1 : listItemClass.getEAllAttributes()) {
-				if ("anyAttribute".equals(a1.getName())) {
+				if ("anyAttribute".equals(a1.getName())) { //$NON-NLS-1$
 					List<EStructuralFeature> anyAttributes = new ArrayList<EStructuralFeature>();
 					// are there any actual "anyAttribute" instances we can look at
 					// to get the feature names and types from?
@@ -184,7 +193,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 									if (f1 instanceof EAttribute && !anyAttributes.contains(f1)) {
 										columnProvider.add(object, listItemClass, f1);
 										anyAttributes.add(f1);
-									}
+									} 
 								}
 							}
 						}
@@ -196,13 +205,16 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 						columnProvider.add(object, listItemClass, a1);
 				}
 				else {
-					if (a1!=nameAttribute)
-						columnProvider.add(object, listItemClass, a1);
+					
+					if (a1!=nameAttribute) {
+						if (a1!=idAttribute || getPreferences().getShowIdAttribute())
+							columnProvider.add(object, listItemClass, a1);
+					}
 				}
 			}
 			if (columnProvider.getColumns().size()==0) {
-				feature = listItemClass.getEStructuralFeature("id");
-				columnProvider.addRaw(object, feature);
+				if (idAttribute!=null && getPreferences().getShowIdAttribute())
+					columnProvider.addRaw(object, idAttribute);
 			}
 		}
 		return columnProvider;
@@ -335,7 +347,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 		else {
 			label = ModelUtil.getLabel(listItemClass);
 		}
-		final String prefName = "list."+listItemClass.getName()+".expanded";
+		final String prefName = "list."+listItemClass.getName()+".expanded"; //$NON-NLS-1$ //$NON-NLS-2$
 		
 		////////////////////////////////////////////////////////////
 		// Collect columns to be displayed and build column provider
@@ -376,22 +388,6 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 					}
 				});
 				
-				tableSection.addExpansionListener(new IExpansionListener() {
-	
-					@Override
-					public void expansionStateChanging(ExpansionEvent e) {
-						if (!e.getState() && detailSection!=null) {
-							detailSection.setVisible(false);
-						}
-					}
-	
-					@Override
-					public void expansionStateChanged(ExpansionEvent e) {
-						preferenceStore.setValue(prefName, e.getState());
-						redrawPage();
-					}
-				});
-			
 				sashForm.setWeights(new int[] { 50, 50 });
 			}					
 			else
@@ -400,6 +396,22 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 		else {
 			tableSection = createListSection(sashForm,label);
 		}
+		
+		tableSection.addExpansionListener(new IExpansionListener() {
+			
+			@Override
+			public void expansionStateChanging(ExpansionEvent e) {
+				if (!e.getState() && detailSection!=null) {
+					detailSection.setVisible(false);
+				}
+			}
+
+			@Override
+			public void expansionStateChanged(ExpansionEvent e) {
+				preferenceStore.setValue(prefName, e.getState());
+				redrawPage();
+			}
+		});
 		
 		////////////////////////////////////////////////////////////
 		// Create table viewer and cell editors
@@ -485,21 +497,31 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 					else {
 						label = ModelUtil.getLabel(o);
 					}
-					detailSection.setText(label+" Details");
+					detailSection.setText(label+Messages.AbstractListComposite_Details);
 					((AbstractDetailComposite)detailComposite).setBusinessObject(o);
 					enable = !detailComposite.isEmpty();
 					detailSection.setExpanded(enable);
 					if (!enable && editAction!=null)
 						editAction.setEnabled(enable);
 
+			    	Notification n = new ENotificationImpl((InternalEObject) o, 0, null, null, null, false);
+					this.validate(n);
 				}
 			}
+			
 			detailSection.setVisible(enable);
 			detailSection.setExpanded(enable);
 			if (editAction!=null)
 				editAction.setChecked(enable);
 
-			sashForm.setWeights(new int[] { 50, 50 });
+			sashForm.setWeights(new int[] { 40, 60 });
+			Control parent = getParent();
+			while (parent!=null) {
+				if (parent instanceof AbstractListComposite) {
+					((AbstractListComposite)parent).sashForm.setWeights(new int[] { 30, 70 });
+				}
+				parent = parent.getParent();
+			}
 
 			final EList<EObject> list = (EList<EObject>)businessObject.eGet(feature);
 			tableViewer.setInput(list);
@@ -521,7 +543,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 			List<TableColumn> removed = new ArrayList<TableColumn>();
 			for (TableColumn tc : (List<TableColumn>)columnProvider.getColumns()) {
 				if (tc.feature!=null) {
-					if (!"id".equals(tc.feature.getName())) {
+					if (!"id".equals(tc.feature.getName())) { //$NON-NLS-1$
 						if (!isModelObjectEnabled(listItemClass, tc.feature)) {
 							removed.add(tc);
 						}
@@ -537,31 +559,65 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 	}
 
 	private Section createListSection(Composite parent, String label) {
-		Section section = toolkit.createSection(parent,
+		final Section section = toolkit.createSection(parent,
 				ExpandableComposite.TWISTIE |
 				ExpandableComposite.COMPACT |
 				ExpandableComposite.TITLE_BAR);
-		section.setText(label+" List");
+		section.setText(label+Messages.AbstractListComposite_List);
 
-		Composite tableComposite = toolkit.createComposite(section, SWT.NONE);
+		final Composite tableComposite = toolkit.createComposite(section, SWT.NONE);
 		section.setClient(tableComposite);
 		tableComposite.setLayout(new GridLayout(1, false));
 		
 		table = toolkit.createTable(tableComposite, SWT.FULL_SELECTION | SWT.V_SCROLL);
-		GridData gridData = new GridData(SWT.FILL, SWT.TOP, true, true, 1, 1);
-		gridData.widthHint = 100;
+		final GridData gridData = new GridData(SWT.FILL, SWT.TOP, true, true, 1, 1);
 		gridData.heightHint = 100;
+		gridData.widthHint = 50;
 		table.setLayoutData(gridData);
 		table.setLinesVisible(true);
 		table.setHeaderVisible(true);
 
+		// make the table resizing behave a little better:
+		// adjust table columns so they are all equal width,
+		// grow and shrink table height based on number of rows
+		tableComposite.addControlListener(new ControlAdapter() {
+			public void controlResized(ControlEvent e) {
+				Rectangle area = tableComposite.getClientArea();
+				ScrollBar vBar = table.getVerticalBar();
+				int vBarSize = vBar.isVisible() ? vBar.getSize().x : 0;
+				ScrollBar hBar = table.getHorizontalBar();
+				int hBarSize = hBar.isVisible() ? hBar.getSize().y : 0;
+				Rectangle trim = table.computeTrim(0,0,0,0);
+				int width = area.width - trim.width - vBarSize;
+				int remainingWidth = width;
+				int columnCount = table.getColumnCount();
+				// adjust number of visible rows
+				int rowCount = table.getItemCount();
+				if (rowCount<2)
+					rowCount = 2;
+				if (rowCount>8)
+					rowCount = 8;
+				int height = trim.height + table.getHeaderHeight() + hBarSize + rowCount * table.getItemHeight();
+				gridData.heightHint = height;
+				gridData.widthHint = 50;
+				table.setSize(area.width, area.height);
+				for (int index=0; index<columnCount; ++index) {
+					org.eclipse.swt.widgets.TableColumn tc = table.getColumn(index);
+					if (index==columnCount-1)
+						tc.setWidth(remainingWidth + 7);
+					else
+						tc.setWidth(width/columnCount);
+					remainingWidth -= tc.getWidth();
+				}
+			}
+		});
 		
 	    tableToolBarManager = new ToolBarManager(SWT.FLAT);
 	    ToolBar toolbar = tableToolBarManager.createControl(section);
 
-	    ImageDescriptor id = AbstractUIPlugin.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "icons/20/add.png");
+	    ImageDescriptor id = AbstractUIPlugin.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "icons/20/add.png"); //$NON-NLS-1$
 		if ((style & ADD_BUTTON)!=0) {
-			addAction = new Action("Add", id) {
+			addAction = new Action(Messages.AbstractListComposite_Add, id) {
 				@Override
 				public void run() {
 					super.run();
@@ -586,12 +642,12 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 			
 			if ((style & DELETE_BUTTON)!=0) {
 				removeIsDelete = true;
-				id = AbstractUIPlugin.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "icons/20/delete.png");
+				id = AbstractUIPlugin.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "icons/20/delete.png"); //$NON-NLS-1$
 			}
 			else {
-				id = AbstractUIPlugin.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "icons/20/remove.png");
+				id = AbstractUIPlugin.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "icons/20/remove.png"); //$NON-NLS-1$
 			}
-			removeAction = new Action(removeIsDelete ? "Delete" : "Remove", id) {
+			removeAction = new Action(removeIsDelete ? Messages.AbstractListComposite_Delete : Messages.AbstractListComposite_Remove, id) {
 				@Override
 				public void run() {
 					super.run();
@@ -600,7 +656,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 						@Override
 						protected void doExecute() {
                             final EList<EObject> list = (EList<EObject>)businessObject.eGet(feature);
-							int i = list.indexOf(((IStructuredSelection)tableViewer.getSelection()).getFirstElement());
+                            int i = tableViewer.getTable().getSelectionIndex();
 							Object item;
 							if (removeIsDelete)
 								item = deleteListItem(businessObject,feature,i);
@@ -630,8 +686,8 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 		}
 		
 		if ((style & MOVE_BUTTONS)!=0) {
-			id = AbstractUIPlugin.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "icons/20/up.png");
-			upAction = new Action("Move Up", id) {
+			id = AbstractUIPlugin.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "icons/20/up.png"); //$NON-NLS-1$
+			upAction = new Action(Messages.AbstractListComposite_Move_Up, id) {
 				@Override
 				public void run() {
 					super.run();
@@ -639,7 +695,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 						@Override
 						protected void doExecute() {
                             final EList<EObject> list = (EList<EObject>)businessObject.eGet(feature);
-                            int i = list.indexOf(((IStructuredSelection)tableViewer.getSelection()).getFirstElement());
+                            int i = tableViewer.getTable().getSelectionIndex();
 							Object item = moveListItemUp(businessObject,feature,i);
 							tableViewer.setInput(list);
 							tableViewer.setSelection(new StructuredSelection(item));
@@ -650,8 +706,8 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 			tableToolBarManager.add(upAction);
 			upAction.setEnabled(false);
 	
-			id = AbstractUIPlugin.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "icons/20/down.png");
-			downAction = new Action("Move Down", id) {
+			id = AbstractUIPlugin.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "icons/20/down.png"); //$NON-NLS-1$
+			downAction = new Action(Messages.AbstractListComposite_Move_Down, id) {
 				@Override
 				public void run() {
 					super.run();
@@ -659,7 +715,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 						@Override
 						protected void doExecute() {
                             final EList<EObject> list = (EList<EObject>)businessObject.eGet(feature);
-                            int i = list.indexOf(((IStructuredSelection)tableViewer.getSelection()).getFirstElement());
+                            int i = tableViewer.getTable().getSelectionIndex();
 							Object item = moveListItemDown(businessObject,feature,i);
 							tableViewer.setInput(list);
 							tableViewer.setSelection(new StructuredSelection(item));
@@ -672,8 +728,8 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 		}
 		
 		if ((style & EDIT_BUTTON)!=0) {
-			id = AbstractUIPlugin.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "icons/20/edit.png");
-			editAction = new Action("Edit", id) {
+			id = AbstractUIPlugin.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "icons/20/edit.png"); //$NON-NLS-1$
+			editAction = new Action(Messages.AbstractListComposite_Edit, id) {
 				@Override
 				public void run() {
 					super.run();
@@ -717,13 +773,13 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 		Section section = toolkit.createSection(parent,
 				ExpandableComposite.EXPANDED |
 				ExpandableComposite.TITLE_BAR);
-		section.setText(label+" Details");
+		section.setText(label+Messages.AbstractListComposite_Details);
 		section.setVisible(false);
 
 	    detailToolBarManager = new ToolBarManager(SWT.FLAT);
 	    ToolBar toolbar = detailToolBarManager.createControl(section);
-	    ImageDescriptor id = AbstractUIPlugin.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "icons/20/close.png");
-	    detailToolBarManager.add( new Action("Close", id) {
+	    ImageDescriptor id = AbstractUIPlugin.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "icons/20/close.png"); //$NON-NLS-1$
+	    detailToolBarManager.add( new Action(Messages.AbstractListComposite_Close, id) {
 			@Override
 			public void run() {
 				super.run();
@@ -740,7 +796,9 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 	public void notifyChanged(Notification notification) {
 		EList<EObject> table = (EList<EObject>)businessObject.eGet(feature);
 		Object n = notification.getNotifier();
-		if (table.contains(n)) {
+		// if the table contains the notifier, or if this notification is coming from
+		// AbstractDetailComposite.refresh(), then set the new input into the table
+		if (table.contains(n) || notification.getEventType() == -1) {
 			tableViewer.setInput(table);
 			return; // quick exit before the exhaustive search that follows
 		}
@@ -796,7 +854,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 	}
 
 	private boolean refreshIfNeeded(EObject value, EList<EObject> table) {
-		if (table.contains(value)) {
+		if (table.contains(value) && tableViewer!=null) {
 			tableViewer.setInput(table);
 			return true;
 		}

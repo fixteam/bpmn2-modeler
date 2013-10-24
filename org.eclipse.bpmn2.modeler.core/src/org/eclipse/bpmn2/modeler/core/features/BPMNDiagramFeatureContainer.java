@@ -18,6 +18,7 @@ import org.eclipse.bpmn2.di.BPMNEdge;
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
+import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.dd.di.DiagramElement;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.graphiti.features.IAddFeature;
@@ -139,15 +140,15 @@ public class BPMNDiagramFeatureContainer extends BaseElementFeatureContainer {
 		@Override
 		public String getName() {
 			if (preferences.getEnableConnectionRouting())
-//				return "Disable automatic Connection Routing";
+//				return Messages.BPMNDiagramFeatureContainer_Disable_Name;
 				return "关闭自动连线";
-//			return "Enable automatic Connection Routing";
+//			return Messages.BPMNDiagramFeatureContainer_Enable_Name;
 			return "开启自动连线";
 		}
 
 		@Override
 		public String getDescription() {
-			return "";
+			return Messages.BPMNDiagramFeatureContainer_Disable_Enable_Description;
 		}
 
 		@Override
@@ -171,13 +172,13 @@ public class BPMNDiagramFeatureContainer extends BaseElementFeatureContainer {
 		
 		@Override
 		public String getName() {
-//			return "Re-route all Connections";
+//			return Messages.BPMNDiagramFeatureContainer_Reroute_All_Name;
 			return "重新连接所有线条(需开启自动连线)";
 		}
 
 		@Override
 		public String getDescription() {
-//			return "Re-route all connections in the current diagram using the selected routing strategy";
+//			return return Messages.BPMNDiagramFeatureContainer_Reroute_All_Description;
 			return "重新连接所有流程图中的线条";
 		}
 
@@ -209,7 +210,7 @@ public class BPMNDiagramFeatureContainer extends BaseElementFeatureContainer {
 					for (PictogramElement pe : Graphiti.getLinkService().getPictogramElements(diagram, be)) {
 						if (pe instanceof Connection) {
 							// force the default routing to happen
-							if (ConnectionFeatureContainer.updateConnection(getFeatureProvider(),
+							if (FeatureSupport.updateConnection(getFeatureProvider(),
 									(Connection)pe, true))
 								hasDoneChanges = true;
 						}

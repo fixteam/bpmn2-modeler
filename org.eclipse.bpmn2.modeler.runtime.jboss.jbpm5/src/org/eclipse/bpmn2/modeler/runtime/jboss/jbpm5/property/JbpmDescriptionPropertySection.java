@@ -19,6 +19,7 @@ import org.eclipse.bpmn2.Process;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.ExternalProcess;
 import org.eclipse.bpmn2.modeler.ui.property.DescriptionPropertySection;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.viewers.ISelection;
@@ -79,6 +80,11 @@ public class JbpmDescriptionPropertySection extends DescriptionPropertySection {
 				if (bpmnElement instanceof Process)
 					process = (Process)bpmnElement;
 			}
+			else if (be instanceof ExternalProcess) {
+				// TODO: hook into jBPM guvnor instance to fetch additional info maybe?
+				bindAttribute(be, "name"); //$NON-NLS-1$
+				return;
+			}
 			
 			if (process==null) {
 				// display the default Description tab
@@ -88,11 +94,11 @@ public class JbpmDescriptionPropertySection extends DescriptionPropertySection {
 				// create our own for Process
 				bindDescription(be);
 				
-				bindAttribute(process, "name");
+				bindAttribute(process, "name"); //$NON-NLS-1$
 //				bindAttribute(process, "id");
 //				bindAttribute(process, "anyAttribute");
 //				bindAttribute(process, "isExecutable");
-				bindList(process,"documentation");
+				bindList(process,"documentation"); //$NON-NLS-1$
 //				bindAttribute(process, "adHoc");
 //				bindList(process, "properties"); // this has moved to JbpmDataItemsDetailComposite
 //				bindList(process, "laneSets"); // don't need this

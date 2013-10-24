@@ -48,13 +48,14 @@ import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.preferences.ShapeStyle.RoutingStyle;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.core.internal.resources.ProjectPreferences;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
@@ -68,6 +69,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbench;
@@ -84,52 +86,54 @@ import com.founder.fix.designer.base.util.StyleConfigUtil;
 
 @SuppressWarnings("restriction")
 public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyChangeListener, IResourceChangeListener {
-	public final static String PROJECT_PREFERENCES_ID = "org.eclipse.bpmn2.modeler";
-	public final static String PREF_TARGET_RUNTIME = "target.runtime";
-	public final static String PREF_TARGET_RUNTIME_LABEL = "Target &Runtime";
-	public final static String PREF_SHOW_ADVANCED_PROPERTIES = "show.advanced.properties";
-	public final static String PREF_SHOW_ADVANCED_PROPERTIES_LABEL = "Show the &Advanced Properties Tab for BPMN2 Elements";
-	public final static String PREF_SHOW_DESCRIPTIONS = "show.descriptions";
-	public final static String PREF_SHOW_DESCRIPTIONS_LABEL = "Show &descriptions in Properties Tab for BPMN2 Elements";
-	public final static String PREF_OVERRIDE_MODEL_ENABLEMENTS = "override.model.enablements";
-	public final static String PREF_DEFAULT_MODEL_ENABLEMENT_PROFILE = "default.model.enablement.profile";
-	public final static String PREF_IS_HORIZONTAL = "is.horizontal";
-	public final static String PREF_IS_HORIZONTAL_LABEL = "&Horizontal layout of Pools, Lanes and diagram elements [isHorizontal]";
+	public final static String PROJECT_PREFERENCES_ID = "org.eclipse.bpmn2.modeler"; //$NON-NLS-1$
+	public final static String PREF_TARGET_RUNTIME = "target.runtime"; //$NON-NLS-1$
+	public final static String PREF_TARGET_RUNTIME_LABEL = Messages.Bpmn2Preferences_Target_Runtime;
+	public final static String PREF_SHOW_ADVANCED_PROPERTIES = "show.advanced.properties"; //$NON-NLS-1$
+	public final static String PREF_SHOW_ADVANCED_PROPERTIES_LABEL = Messages.Bpmn2Preferences_Show_Advanced_Properties;
+	public final static String PREF_SHOW_DESCRIPTIONS = "show.descriptions"; //$NON-NLS-1$
+	public final static String PREF_SHOW_DESCRIPTIONS_LABEL = Messages.Bpmn2Preferences_Show_Descriptions;
+	public final static String PREF_OVERRIDE_MODEL_ENABLEMENTS = "override.model.enablements"; //$NON-NLS-1$
+	public final static String PREF_DEFAULT_MODEL_ENABLEMENT_PROFILE = "default.model.enablement.profile"; //$NON-NLS-1$
+	public final static String PREF_IS_HORIZONTAL = "is.horizontal"; //$NON-NLS-1$
+	public final static String PREF_IS_HORIZONTAL_LABEL = Messages.Bpmn2Preferences_Horizontal;
 	
-	public final static String PREF_IS_EXPANDED = "is.expanded";
-	public final static String PREF_IS_EXPANDED_LABEL = "Expand activity containers (SubProcess, CallActivity, etc.) [isExpanded]";
-	public final static String PREF_IS_MESSAGE_VISIBLE = "is.message.visible";
-	public final static String PREF_IS_MESSAGE_VISIBLE_LABEL = "Show Participant Band Messages [isMessageVisible]";
-	public final static String PREF_IS_MARKER_VISIBLE = "is.marker.visible";
-	public final static String PREF_IS_MARKER_VISIBLE_LABEL = "Decorate Exclusive Gateway with \"X\" marker [isMarkerVisible]";
+	public final static String PREF_IS_EXPANDED = "is.expanded"; //$NON-NLS-1$
+	public final static String PREF_IS_EXPANDED_LABEL = Messages.Bpmn2Preferences_Expand;
+	public final static String PREF_IS_MESSAGE_VISIBLE = "is.message.visible"; //$NON-NLS-1$
+	public final static String PREF_IS_MESSAGE_VISIBLE_LABEL = Messages.Bpmn2Preferences_Message_Visible;
+	public final static String PREF_IS_MARKER_VISIBLE = "is.marker.visible"; //$NON-NLS-1$
+	public final static String PREF_IS_MARKER_VISIBLE_LABEL = Messages.Bpmn2Preferences_Marker_Visible;
 	
-	public final static String PREF_SHAPE_STYLE = "shape.style";
+	public final static String PREF_SHAPE_STYLE = "shape.style"; //$NON-NLS-1$
 
-	public final static String PREF_CONNECTION_TIMEOUT = "connection.timeout";
-	public final static String PREF_CONNECTION_TIMEOUT_LABEL = "Connection Timeout for resolving remote objects (milliseconds)";
+	public final static String PREF_CONNECTION_TIMEOUT = "connection.timeout"; //$NON-NLS-1$
+	public final static String PREF_CONNECTION_TIMEOUT_LABEL = Messages.Bpmn2Preferences_Timeout;
 
-	public final static String PREF_POPUP_CONFIG_DIALOG = "popup.config.dialog";
-	public final static String PREF_POPUP_CONFIG_DIALOG_LABEL = "Display element configuration popup dialog after DND of:";
+	public final static String PREF_POPUP_CONFIG_DIALOG = "popup.config.dialog"; //$NON-NLS-1$
+	public final static String PREF_POPUP_CONFIG_DIALOG_LABEL = Messages.Bpmn2Preferences_Config_Dialog;
 	
-	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_ACTIVITIES = "popup.config.dialog.for.activities";
-	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_ACTIVITIES_LABEL = "Activities";
-	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_GATEWAYS = "popup.config.dialog.for.gateways";
-	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_GATEWAYS_LABEL = "Gateways";
-	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_EVENTS = "popup.config.dialog.for.events";
-	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_EVENTS_LABEL = "Events";
-	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_EVENT_DEFS = "popup.config.dialog.for.event.defs";
-	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_EVENT_DEFS_LABEL = "Event Definitions";
-	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS = "popup.config.dialog.for.data.defs";
-	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS_LABEL = "Data Items";
-	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS = "popup.config.dialog.for.containers";
-	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS_LABEL = "Acitivity containers (Pools, SubProcess, Transaction, etc.)";
+	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_ACTIVITIES = "popup.config.dialog.for.activities"; //$NON-NLS-1$
+	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_ACTIVITIES_LABEL = Messages.Bpmn2Preferences_Activities;
+	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_GATEWAYS = "popup.config.dialog.for.gateways"; //$NON-NLS-1$
+	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_GATEWAYS_LABEL = Messages.Bpmn2Preferences_Gateways;
+	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_EVENTS = "popup.config.dialog.for.events"; //$NON-NLS-1$
+	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_EVENTS_LABEL = Messages.Bpmn2Preferences_Events;
+	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_EVENT_DEFS = "popup.config.dialog.for.event.defs"; //$NON-NLS-1$
+	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_EVENT_DEFS_LABEL = Messages.Bpmn2Preferences_Event_Definitions;
+	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS = "popup.config.dialog.for.data.defs"; //$NON-NLS-1$
+	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS_LABEL = Messages.Bpmn2Preferences_Data_Items;
+	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS = "popup.config.dialog.for.containers"; //$NON-NLS-1$
+	public final static String PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS_LABEL = Messages.Bpmn2Preferences_Containers;
 
-	public final static String PREF_SHOW_ID_ATTRIBUTE = "show.id.attribute";
-	public final static String PREF_SHOW_ID_ATTRIBUTE_LABEL = "Show ID attribute for BPMN2 Elements";
-	public final static String PREF_CHECK_PROJECT_NATURE = "check.project.nature";
-	public final static String PREF_CHECK_PROJECT_NATURE_LABEL = "Check if project is configured for BPMN2 Project Nature";
-	public final static String PREF_SIMPLIFY_LISTS = "simplify.lists";
-	public final static String PREF_SIMPLIFY_LISTS_LABEL = "Simplify Documentation lists";
+	public final static String PREF_SHOW_ID_ATTRIBUTE = "show.id.attribute"; //$NON-NLS-1$
+	public final static String PREF_SHOW_ID_ATTRIBUTE_LABEL = Messages.Bpmn2Preferences_Show_ID_Attribute;
+	public final static String PREF_CHECK_PROJECT_NATURE = "check.project.nature"; //$NON-NLS-1$
+	public final static String PREF_CHECK_PROJECT_NATURE_LABEL = Messages.Bpmn2Preferences_Check_Project_Nature;
+	public final static String PREF_SIMPLIFY_LISTS = "simplify.lists"; //$NON-NLS-1$
+	public final static String PREF_SIMPLIFY_LISTS_LABEL = Messages.Bpmn2Preferences_Simplify_Lists;
+	public final static String PREF_DO_CORE_VALIDATION = "do.core.validation"; //$NON-NLS-1$
+	public final static String PREF_DO_CORE_VALIDATION_LABEL = Messages.Bpmn2Preferences_Do_Core_Validation;
 
 	private static Hashtable<IProject,Bpmn2Preferences> instances = null;
 	private static IProject activeProject;
@@ -161,7 +165,8 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	private String connectionTimeout;
 	private int popupConfigDialog;
 	private boolean popupConfigDialogFor[] = new boolean[6];
-	private String defaultModelEnablementProfile;
+	private String defaultModelEnablementProfile = ""; //$NON-NLS-1$
+	private boolean doCoreValidation;
 
 	private HashMap<Class, ShapeStyle> shapeStyles = new HashMap<Class, ShapeStyle>();
 	
@@ -227,8 +232,17 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 		if (filename==null) {
 			return getInstance();
 		}
-		IProject project = ResourcesPlugin.getWorkspace().getRoot().findMember(filename).getProject();
+		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+		if (root==null) {
+			return getInstance();
+		}
+		IResource res = ResourcesPlugin.getWorkspace().getRoot().findMember(filename);
+		if (res==null) {
+			return getInstance();
+		}
+		IProject project = res.getProject();
 		return getInstance(project);
+			
 	}
 	
 	/**
@@ -282,11 +296,12 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 		globalPreferences.setDefault(PREF_POPUP_CONFIG_DIALOG_FOR_EVENT_DEFS, false);
 		globalPreferences.setDefault(PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS, false);
 		globalPreferences.setDefault(PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS, false);
+		globalPreferences.setDefault(PREF_DO_CORE_VALIDATION, true);
 
 		for (Class key : shapeStyles.keySet()) {
 			globalPreferences.setDefault(getShapeStyleId(key), IPreferenceStore.STRING_DEFAULT_DEFAULT);
 		}
-		globalPreferences.setDefault(PREF_CONNECTION_TIMEOUT, "1000");
+		globalPreferences.setDefault(PREF_CONNECTION_TIMEOUT, "1000"); //$NON-NLS-1$
 	}
 	
 	public void restoreDefaults(boolean resetProjectPreferences) {
@@ -310,6 +325,8 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 			projectPreferences.remove(PREF_POPUP_CONFIG_DIALOG_FOR_EVENT_DEFS);
 			projectPreferences.remove(PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS);
 			projectPreferences.remove(PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS);
+			projectPreferences.remove(PREF_DO_CORE_VALIDATION);
+
 			for (Class key : shapeStyles.keySet()) {
 				projectPreferences.remove(getShapeStyleId(key));
 			}
@@ -338,6 +355,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 		globalPreferences.setToDefault(PREF_POPUP_CONFIG_DIALOG_FOR_EVENT_DEFS);
 		globalPreferences.setToDefault(PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS);
 		globalPreferences.setToDefault(PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS);
+		globalPreferences.setToDefault(PREF_DO_CORE_VALIDATION);
 
 		List<Class> keys = new ArrayList<Class>();
 		keys.addAll(shapeStyles.keySet());
@@ -393,7 +411,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 			
 			if (projectPreferences!=null) {
 				overrideModelEnablementProfile = projectPreferences.getBoolean(PREF_OVERRIDE_MODEL_ENABLEMENTS, false);
-				defaultModelEnablementProfile = projectPreferences.get(PREF_DEFAULT_MODEL_ENABLEMENT_PROFILE, "");
+				defaultModelEnablementProfile = projectPreferences.get(PREF_DEFAULT_MODEL_ENABLEMENT_PROFILE, ""); //$NON-NLS-1$
 			}
 
 			String id = getString(PREF_TARGET_RUNTIME,TargetRuntime.getFirstNonDefaultId());
@@ -409,7 +427,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 			isExpanded = getBPMNDIAttributeDefault(PREF_IS_EXPANDED, BPMNDIAttributeDefault.USE_DI_VALUE);
 			isMessageVisible = getBPMNDIAttributeDefault(PREF_IS_MESSAGE_VISIBLE, BPMNDIAttributeDefault.USE_DI_VALUE);
 			isMarkerVisible = getBPMNDIAttributeDefault(PREF_IS_MARKER_VISIBLE, BPMNDIAttributeDefault.USE_DI_VALUE);
-			connectionTimeout = this.getString(PREF_CONNECTION_TIMEOUT, "60000");
+			connectionTimeout = this.getString(PREF_CONNECTION_TIMEOUT, "60000"); //$NON-NLS-1$
 			
 			popupConfigDialog = getInt(PREF_POPUP_CONFIG_DIALOG, 0); // tri-state checkbox
 			popupConfigDialogFor[0] = getBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_ACTIVITIES, false);
@@ -419,6 +437,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 			popupConfigDialogFor[4] = getBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS, false);
 			popupConfigDialogFor[5] = getBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS, false);
 
+			doCoreValidation = getBoolean(PREF_DO_CORE_VALIDATION, true);
 
 			loaded = true;
 		}
@@ -454,6 +473,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 			setBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_EVENT_DEFS, popupConfigDialogFor[3]);
 			setBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS, popupConfigDialogFor[4]);
 			setBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS, popupConfigDialogFor[5]);
+			setBoolean(PREF_DO_CORE_VALIDATION, doCoreValidation);
 		}
 		
 		for (Entry<Class, ShapeStyle> entry : shapeStyles.entrySet()) {
@@ -477,7 +497,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	}
 	
 	public static String getShapeStyleId(Class clazz) {
-		return clazz.getSimpleName() + "." + PREF_SHAPE_STYLE;
+		return clazz.getSimpleName() + "." + PREF_SHAPE_STYLE; //$NON-NLS-1$
 	}
 
 	public ShapeStyle getShapeStyle(EObject object) {
@@ -493,10 +513,20 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 /*	public ShapeStyle getShapeStyle(Class clazz) {
 		ShapeStyle ss = shapeStyles.get(clazz);
 		if (ss==null) {
+			// maybe the given class is a subclass of one that we know about?
+			for (Entry<Class, ShapeStyle> entry : shapeStyles.entrySet()) {
+				Class c = entry.getKey();
+				if (c.isAssignableFrom(clazz)) {
+					ss = entry.getValue();
+					break;
+				}
+			}
+		}
+		if (ss==null) {
 			String key = getShapeStyleId(clazz);
 			String value;
 			if (hasProjectPreference(key)) {
-				value = projectPreferences.get(key, "");
+				value = projectPreferences.get(key, ""); //$NON-NLS-1$
 			}
 			else {
 				value = globalPreferences.getString(key);
@@ -580,10 +610,13 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 
 					targetRuntime = TargetRuntime.getDefaultRuntime();
 					MessageDialog.openError(
-							Display.getDefault().getActiveShell(),
-							"Unsupported Target Runtime",
-							"The Target Runtime plugin for id '"+id+"'"+
-							"\ncould not be loaded, using "+targetRuntime.getDescription()+" instead."
+						Display.getDefault().getActiveShell(),
+						Messages.Bpmn2Preferences_No_Runtime_Plugin_Title,
+						NLS.bind(
+							Messages.Bpmn2Preferences_No_Runtime_Plugin_Message,
+							id,
+							targetRuntime.getDescription()
+						)
 					);
 				}
 				
@@ -595,7 +628,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 
 	public void setRuntime(TargetRuntime rt) {
 		
-		assert(rt!=null);
+		Assert.isTrue(rt!=null);
 		overrideGlobalString(PREF_TARGET_RUNTIME, rt.getId());
 		targetRuntime = rt;
 	}
@@ -726,6 +759,16 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	public void setShowPopupConfigDialog(Object context, boolean value) {
 		overrideGlobalInt(PREF_POPUP_CONFIG_DIALOG,  value ? 1 : 0);
 		popupConfigDialog = value ? 1 : 0;
+	}
+	
+	public boolean getDoCoreValidation() {
+		load();
+		return doCoreValidation;
+	}
+	
+	public void setDoCoreValidation(boolean enable) {
+		overrideGlobalBoolean(PREF_DO_CORE_VALIDATION, enable);
+		doCoreValidation = enable;
 	}
 
 	public boolean isHorizontalDefault() {
@@ -910,19 +953,19 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 		String[] choices = new String[values.length];
 		int i = 0;
 		for (BPMNDIAttributeDefault v : values) {
-			String text = "None";
+			String text = Messages.Bpmn2Preferences_None;
 			switch (v) {
 			case USE_DI_VALUE:
-				text = "False if not set";
+				text = Messages.Bpmn2Preferences_False_if_not_set;
 				break;
 			case DEFAULT_TRUE:
-				text = "True if not set";
+				text = Messages.Bpmn2Preferences_True_if_not_set;
 				break;
 			case ALWAYS_TRUE:
-				text = "Always true";
+				text = Messages.Bpmn2Preferences_Always_true;
 				break;
 			case ALWAYS_FALSE:
-				text = "Always false";
+				text = Messages.Bpmn2Preferences_Always_False;
 				break;
 			}
 			choices[i++] = text;
@@ -963,19 +1006,19 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 		if (attribs != null) {
 			for (Entry<String, String> entry : attribs.entrySet()) {
 				String name = entry.getKey();
-				if ("isHorizontal".equals(name)) {
+				if ("isHorizontal".equals(name)) { //$NON-NLS-1$
 					isHorizontalSet = true;
 				}
-				if ("isExpanded".equals(name)) {
+				if ("isExpanded".equals(name)) { //$NON-NLS-1$
 					isExpandedSet = true;
 				}
-				if ("isMessageVisible".equals(name)) {
+				if ("isMessageVisible".equals(name)) { //$NON-NLS-1$
 					isMessageVisibleSet = true;
 				}
-				if ("isMarkerVisible".equals(name)) {
+				if ("isMarkerVisible".equals(name)) { //$NON-NLS-1$
 					isMarkerVisibleSet = true;
 				}
-				if ("choreographyActivityShape".equals(name)) {
+				if ("choreographyActivityShape".equals(name)) { //$NON-NLS-1$
 					choreographyActivityShapeSet = true;
 				}
 			}

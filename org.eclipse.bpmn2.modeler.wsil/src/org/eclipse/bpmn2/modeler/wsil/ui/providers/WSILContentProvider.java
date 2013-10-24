@@ -102,7 +102,7 @@ public class WSILContentProvider implements ITreeContentProvider {
 			Resource resource = null;
 			
 			try {
-				resource = resourceSet.getResource(linkURI, true, "wsil");
+				resource = resourceSet.getResource(linkURI, true, "wsil"); //$NON-NLS-1$
 			} catch (Throwable t) {				
 				items.add(t);
 				return items.toArray();
@@ -119,7 +119,7 @@ public class WSILContentProvider implements ITreeContentProvider {
 					items.addAll( doc.getInspection().getLinks() );
 					items.addAll( doc.getInspection().getServices() );					
 				} else {
-					items.add( new Exception("Not a WSIL document") );
+					items.add( new Exception(Messages.WSILContentProvider_Not_A_WSIL) );
 				}
 			}			
 		}

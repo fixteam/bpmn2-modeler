@@ -65,10 +65,10 @@ public class WIDHandler {
 		}
 
 		StringBuilder text = new StringBuilder();
-	    String NL = System.getProperty("line.separator");
+	    String NL = System.getProperty("line.separator"); //$NON-NLS-1$
 	    Scanner scanner = null;
 	    try {
-	    	scanner = new Scanner(new FileInputStream(filepath), "UTF-8");
+	    	scanner = new Scanner(new FileInputStream(filepath), "UTF-8"); //$NON-NLS-1$
 	    	while (scanner.hasNextLine()){
 	    		text.append(scanner.nextLine() + NL);
 	    	}
@@ -119,11 +119,11 @@ public class WIDHandler {
         		  String[] nameValue = trim.split("[:]+"); //$NON-NLS-1$
         		  if (nameValue.length == 2) {
         			  String name = nameValue[0].replace('"', ' ').trim();
-        			  if (name.equalsIgnoreCase("parameters")) {
+        			  if (name.equalsIgnoreCase("parameters")) { //$NON-NLS-1$
 	    				  current = Section.PARAMETERS;
-	    			  } else if (name.equalsIgnoreCase("results")) {
+	    			  } else if (name.equalsIgnoreCase("results")) { //$NON-NLS-1$
 	    				  current = Section.RESULTS;
-	    			  } else if (name.equalsIgnoreCase("dependencies")) {
+	    			  } else if (name.equalsIgnoreCase("dependencies")) { //$NON-NLS-1$
 	    				  current = Section.DEPENDENCIES;
 	    			  }
         		  }
@@ -161,8 +161,8 @@ public class WIDHandler {
         					  currentWid.setEclipseCustomEditor(value);
         				  }
         			  } else if (openBrackets == 3 && value.trim().length() > 0) {
-        				  if (value.startsWith("new") && value.indexOf("(")>0) {
-        					  int index = value.indexOf("(");
+        				  if (value.startsWith("new") && value.indexOf("(")>0) { //$NON-NLS-1$ //$NON-NLS-2$
+        					  int index = value.indexOf("("); //$NON-NLS-1$
         					  value = value.substring(3,index).trim();
         				  }
         				  if (current == Section.PARAMETERS)

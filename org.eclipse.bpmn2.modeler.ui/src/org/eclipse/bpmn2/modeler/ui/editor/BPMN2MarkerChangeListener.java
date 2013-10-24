@@ -97,7 +97,7 @@ public class BPMN2MarkerChangeListener implements IResourceChangeListener {
                 // ...and property pages in case there are errors that
                 // do not appear as figure decorators on the canvas
         		IWorkbenchPage page = editor.getEditorSite().getPage();
-        		String viewID = "org.eclipse.ui.views.PropertySheet";
+        		String viewID = "org.eclipse.ui.views.PropertySheet"; //$NON-NLS-1$
         		try {
         			IViewReference[] views = page.getViewReferences();
         			for (IViewReference v : views) {

@@ -19,6 +19,7 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.jface.window.Window;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
@@ -58,12 +59,12 @@ public class ObjectEditingDialog extends AbstractObjectEditingDialog {
 	public int open() {
 		title = null;
 		if (object!=null)
-			title = "Edit " + ModelUtil.getLabel(object);
+			title = NLS.bind(Messages.ObjectEditingDialog_Edit, ModelUtil.getLabel(object));
 		create();
 		if (cancel)
 			return Window.CANCEL;
 		if (title==null)
-			title = "Create New " + ModelUtil.getLabel(object);
+			title = NLS.bind(Messages.ObjectEditingDialog_Create, ModelUtil.getLabel(object));
 		return super.open();
 	}
 }

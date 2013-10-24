@@ -32,6 +32,7 @@ import org.eclipse.graphiti.mm.algorithms.styles.LineStyle;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.services.Graphiti;
+import org.eclipse.osgi.util.NLS;
 
 public class UpdateExpandableActivityFeature extends AbstractUpdateFeature {
 
@@ -55,15 +56,16 @@ public class UpdateExpandableActivityFeature extends AbstractUpdateFeature {
 		try {
 			BPMNShape bpmnShape = DIUtils.findBPMNShape(subprocess);
 			if (expandedProperty != null && Boolean.parseBoolean(expandedProperty.getValue()) != bpmnShape.isIsExpanded()) {
-				return Reason.createTrueReason("Expanded property changed");
+				return Reason.createTrueReason(Messages.UpdateExpandableActivityFeature_Expand_Changed);
 			}
 			
 		} catch (Exception e) {
-			throw new IllegalStateException("Could not get DI shape for subprocess:"+subprocess);
+			throw new IllegalStateException(
+				NLS.bind(Messages.UpdateExpandableActivityFeature_No_DI_Element,subprocess));
 		}
 
 		if (triggerProperty != null && Boolean.parseBoolean(triggerProperty.getValue()) != subprocess.isTriggeredByEvent()) {
-			return Reason.createTrueReason("Trigger property changed");
+			return Reason.createTrueReason(Messages.UpdateExpandableActivityFeature_Trigger_Changed);
 		}
 			
 		return Reason.createFalseReason();

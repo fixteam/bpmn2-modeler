@@ -26,7 +26,7 @@ import org.eclipse.graphiti.services.Graphiti;
 
 public class UpdateBoundaryEventFeature extends AbstractUpdateEventFeature {
 
-	public static String BOUNDARY_EVENT_MARKER = "marker.boundary.event";
+	public static String BOUNDARY_EVENT_MARKER = "marker.boundary.event"; //$NON-NLS-1$
 
 	public UpdateBoundaryEventFeature(IFeatureProvider fp) {
 		super(fp);
@@ -41,7 +41,7 @@ public class UpdateBoundaryEventFeature extends AbstractUpdateEventFeature {
 		        BOUNDARY_EVENT_CANCEL);
 		BoundaryEvent event = (BoundaryEvent) getBusinessObjectForPictogramElement(context.getPictogramElement());
 		boolean changed = Boolean.parseBoolean(cancelProperty) != event.isCancelActivity();
-		IReason reason = changed ? Reason.createTrueReason("Boundary description changed") : Reason.createFalseReason();
+		IReason reason = changed ? Reason.createTrueReason(Messages.UpdateBoundaryEventFeature_Description_Changed) : Reason.createFalseReason();
 		return reason;
 	}
 

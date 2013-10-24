@@ -27,10 +27,7 @@ import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.emf.common.notify.Notification;
-import org.eclipse.emf.common.util.Enumerator;
 import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EEnum;
-import org.eclipse.emf.ecore.EEnumLiteral;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.util.EObjectEList;
@@ -64,11 +61,10 @@ import org.eclipse.swt.widgets.Control;
 public class ComboObjectEditor extends MultivalueObjectEditor {
 
 	protected ComboViewer comboViewer;
-	private Composite buttons = null;
-	private boolean ignoreComboSelections;
-	private boolean keyPressed = false;
-	private Button editButton = null;
-	private Button createButton = null;
+	protected Composite buttons = null;
+	protected boolean keyPressed = false;
+	protected Button editButton = null;
+	protected Button createButton = null;
 	
 	/**
 	 * @param parent
@@ -95,6 +91,12 @@ public class ComboObjectEditor extends MultivalueObjectEditor {
 		boolean canEdit = canEdit();
 		boolean canEditInline = canEditInline();
 		boolean canCreateNew = canCreateNew();
+		
+		if (style == SWT.READ_ONLY) {
+			canEdit = false;
+			canEditInline = false;
+			canCreateNew = false;
+		}
 		
 		if (!canEditInline)
 			style |= SWT.READ_ONLY;
@@ -204,7 +206,7 @@ public class ComboObjectEditor extends MultivalueObjectEditor {
 
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
-				if (!ignoreComboSelections) {
+				if (!isWidgetUpdating) {
 					ISelection selection = comboViewer.getSelection();
 					if (selection instanceof StructuredSelection) {
 						String firstElement = (String) ((StructuredSelection) selection).getFirstElement();
@@ -219,7 +221,7 @@ public class ComboObjectEditor extends MultivalueObjectEditor {
 							fillCombo();
 						}
 						if (editButton!=null)
-							editButton.setEnabled(firstElement!=null && !firstElement.isEmpty());
+							editButton.setEnabled(canEdit() && firstElement!=null && !firstElement.isEmpty());
 					}
 				}
 			}
@@ -245,20 +247,19 @@ public class ComboObjectEditor extends MultivalueObjectEditor {
 	}
 	
 	protected EObject createObject() throws Exception {
-		FeatureEditingDialog dialog = new FeatureEditingDialog(getDiagramEditor(), object, feature, null);
+		FeatureEditingDialog dialog = createFeatureEditingDialog(null);
 		dialog.setFeatureEType(featureEType);
 		if ( dialog.open() == Window.OK)
 			return dialog.getNewObject();
-		throw new OperationCanceledException("Dialog Cancelled");
+		throw new OperationCanceledException("Dialog Cancelled"); //$NON-NLS-1$
 	}
 	
 	protected EObject editObject(EObject value) throws Exception {
-		FeatureEditingDialog dialog = new FeatureEditingDialog(getDiagramEditor(),
-				object, feature, value);
+		FeatureEditingDialog dialog = createFeatureEditingDialog(value);
 		dialog.setFeatureEType(featureEType);
 		if ( dialog.open() == Window.OK)
 			return dialog.getNewObject();
-		throw new OperationCanceledException("Dialog Cancelled");
+		throw new OperationCanceledException("Dialog Cancelled"); //$NON-NLS-1$
 	}
 
 	@Override
@@ -281,50 +282,56 @@ public class ComboObjectEditor extends MultivalueObjectEditor {
 	}
 	
 	protected void fillCombo() {
-		if (comboViewer!=null) {
-			Object oldValue =  getValue();
+		try {
+			isWidgetUpdating = true;
+			if (comboViewer!=null) {
+				Object oldValue =  getValue();
+		
+				while (comboViewer.getElementAt(0) != null)
+					comboViewer.remove(comboViewer.getElementAt(0));
+				
+				Hashtable<String,Object> choices = getChoiceOfValues(object, feature);
+				if (canSetNull()) {
+					// selecting this one will set the target's value to null
+					comboViewer.add(""); //$NON-NLS-1$
+				}
+				
+				// add all other possible selections
+				ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(oldValue);
+				if (ModelUtil.isStringWrapper(oldValue))
+					oldValue = ModelUtil.getStringWrapperValue(oldValue);
 	
-			ignoreComboSelections = true;
-			while (comboViewer.getElementAt(0) != null)
-				comboViewer.remove(comboViewer.getElementAt(0));
-			ignoreComboSelections = false;
-			
-			Hashtable<String,Object> choices = getChoiceOfValues(object, feature);
-			if (canSetNull()) {
-				// selecting this one will set the target's value to null
-				comboViewer.add("");
-			}
-			
-			// add all other possible selections
-			ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(oldValue, ExtendedPropertiesAdapter.class);
-			if (ModelUtil.isStringWrapper(oldValue))
-				oldValue = ModelUtil.getStringWrapperValue(oldValue);
-
-			ArrayList<String> list = new ArrayList<String>(choices.keySet());
-			Collections.sort(list);
-			StructuredSelection currentSelection = null;
-			for (String key : list) {
-				comboViewer.add(key);
-				Object newValue = choices.get(key); 
-				if (newValue!=null) {
-					comboViewer.setData(key, newValue);
-					if (currentSelection==null) {
-						String oldValueString = oldValue==null ? null : oldValue.toString();
-						if (newValue.equals(oldValue) || key.equals(oldValue) || key.equals(oldValueString)) {
-							currentSelection = new StructuredSelection(key);
-						}
-						else if (adapter!=null) {
-							if (adapter.getObjectDescriptor().equals(newValue)) {
-								currentSelection = new StructuredSelection(key);
+				StructuredSelection currentSelection = null;
+				if (choices!=null) {
+					ArrayList<String> list = new ArrayList<String>(choices.keySet());
+					Collections.sort(list);
+					for (String key : list) {
+						comboViewer.add(key);
+						Object newValue = choices.get(key); 
+						if (newValue!=null) {
+							comboViewer.setData(key, newValue);
+							if (currentSelection==null) {
+								String oldValueString = oldValue==null ? null : oldValue.toString();
+								if (newValue.equals(oldValue) || key.equals(oldValue) || key.equals(oldValueString)) {
+									currentSelection = new StructuredSelection(key);
+								}
+								else if (adapter!=null) {
+									if (adapter.getObjectDescriptor().equals(newValue)) {
+										currentSelection = new StructuredSelection(key);
+									}
+								}
 							}
 						}
 					}
 				}
+				if (currentSelection!=null)
+					comboViewer.setSelection(currentSelection);
+				if (editButton!=null)
+					editButton.setEnabled(canEdit() && currentSelection!=null);
 			}
-			if (currentSelection!=null)
-				comboViewer.setSelection(currentSelection);
-			if (editButton!=null)
-				editButton.setEnabled(currentSelection!=null);
+		}
+		finally {
+			isWidgetUpdating = false;
 		}
 	}
 	
@@ -332,12 +339,10 @@ public class ComboObjectEditor extends MultivalueObjectEditor {
 		if (comboViewer==null)
 			return false;
 
-		Object currentValue =  getValue();
-		ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(currentValue, ExtendedPropertiesAdapter.class);
-		if (ModelUtil.isStringWrapper(currentValue))
-			currentValue = ModelUtil.getStringWrapperValue(currentValue);
+		Object newValue =  getValue();
+		ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(newValue);
 
-		ignoreComboSelections = false;
+		isWidgetUpdating = false;
 		Hashtable<String,Object> oldChoices = new Hashtable<String,Object>();
 		int index = 0;
 		while (comboViewer.getElementAt(index) != null) {
@@ -348,7 +353,7 @@ public class ComboObjectEditor extends MultivalueObjectEditor {
 			}
 			++index;
 		}
-		ignoreComboSelections = false;
+		isWidgetUpdating = false;
 		
 		Hashtable<String,Object> newChoices = getChoiceOfValues(object, feature);
 
@@ -356,47 +361,33 @@ public class ComboObjectEditor extends MultivalueObjectEditor {
 			return true;
 		
 		StructuredSelection oldSelection = (StructuredSelection)comboViewer.getSelection();
-		StructuredSelection newSelection = null;
+		Object oldValue = oldSelection.getFirstElement();
+		if (newValue==null) {
+			if (oldValue!=null)
+				return true;
+		}
+		else if (adapter!=null) {
+			if (!adapter.getObjectDescriptor().equals(oldValue))
+				return true;
+		}
+		else if (!newValue.equals(oldValue))
+			return true;
+
 		for (Entry<String, Object> entry : newChoices.entrySet()) {
-			Object oldValue = oldChoices.get(entry.getKey());
-			Object newValue = entry.getValue();
-			if (oldValue!=newValue) {
-				if (oldValue!=null && newValue!=null) {
-					if (!oldValue.equals(newValue))
-						return true;
-				}
-				else
+			oldValue = oldChoices.get(entry.getKey());
+			newValue = entry.getValue();
+			adapter = ExtendedPropertiesAdapter.adapt(newValue);
+			if (newValue==null) {
+				if (oldValue!=null)
 					return true;
 			}
-//			if (newValue!=null) {
-//				if (newSelection==null) {
-//					String oldValueString = currentValue==null ? null : currentValue.toString();
-//					if (newValue.equals(currentValue) || entry.getKey().equals(currentValue) || entry.getKey().equals(oldValueString)) {
-//						newSelection = new StructuredSelection(entry.getKey());
-//					}
-//					else if (adapter!=null) {
-//						if (adapter.getObjectDescriptor().equals(newValue)) {
-//							newSelection = new StructuredSelection(entry.getKey());
-//						}
-//					}
-//				}
-//			}
+			else if (adapter!=null) {
+				if (!adapter.getObjectDescriptor().equals(oldValue))
+					return true;
+			}
+			else if (!newValue.equals(oldValue))
+				return true;
 		}
-		
-//		if (oldSelection!=null) {
-//			if (newSelection!=null) {
-//				Object oldElement = oldSelection.getFirstElement();
-//				Object newElement = newSelection.getFirstElement();
-//				if (oldElement!=null && newElement!=null) {
-//					return !oldElement.equals(newElement);
-//				}
-//			}
-//			else
-//				return true;
-//		}
-//		else if (newSelection!=null)
-//			return true;
-
 		return false;
 	}
 
@@ -409,17 +400,9 @@ public class ComboObjectEditor extends MultivalueObjectEditor {
 	@Override
 	public void notifyChanged(Notification notification) {
 		super.notifyChanged(notification);
-		if (itemsChanged())
+		if (notification.getEventType() == -1 || itemsChanged()) {
 			fillCombo();
-//		for (String item : comboViewer.getCombo().getItems()) {
-//			if (!item.isEmpty()) {
-//				Object o = comboViewer.getData(item);
-//				if (o == notification.getNotifier() || o == notification.getOldValue()) {
-//					fillCombo();
-//					break;
-//				}
-//			}
-//		}
+		}
 	}
 	
 	public void setVisible(boolean visible) {

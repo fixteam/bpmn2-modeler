@@ -218,7 +218,7 @@ public class ModelEnablementDescriptor extends BaseRuntimeDescriptor {
 	}
 	
 	public void setEnabled(String className, String featureName, boolean enabled) {
-		if ("all".equals(className)) {
+		if ("all".equals(className)) { //$NON-NLS-1$
 			// enable all model objects
 			if (featureName==null)
 				setEnabledAll(enabled);
@@ -233,19 +233,19 @@ public class ModelEnablementDescriptor extends BaseRuntimeDescriptor {
 				}
 			}
 		}
-		else if ("default".equals(className)) {
+		else if ("default".equals(className)) { //$NON-NLS-1$
 			// select the set of enablements from the default runtime
 			// an optional featureName is used to specify a ModelEnablement type
 			initializeFromTargetRuntime(TargetRuntime.getDefaultRuntime(), featureName, enabled);
 		}
-		else if (className.contains(".")) {
+		else if (className.contains(".")) { //$NON-NLS-1$
 			// the "object=" attribute points to a Target Runtime ID,
 			// use this as the starting point for the current profile.
 			TargetRuntime rt = TargetRuntime.getRuntime(className);
 			initializeFromTargetRuntime(rt, featureName, enabled);
 		}
 		else if (featureName!=null && !featureName.isEmpty()) {
-			if ("all".equals(featureName)) {
+			if ("all".equals(featureName)) { //$NON-NLS-1$
 				if (enabled) {
 					setEnabled(className,true);
 				}
@@ -281,8 +281,8 @@ public class ModelEnablementDescriptor extends BaseRuntimeDescriptor {
 		String type = getType();
 		String profile = null;
 		if (featureName!=null) {
-			if (featureName.contains(".")) {
-				String[] a = featureName.split("\\.");
+			if (featureName.contains(".")) { //$NON-NLS-1$
+				String[] a = featureName.split("\\."); //$NON-NLS-1$
 				type = a[0];
 				profile = a[1];
 			}
@@ -306,14 +306,14 @@ public class ModelEnablementDescriptor extends BaseRuntimeDescriptor {
 
 	public boolean isEnabled(String className, String featureName) {
 		Bpmn2Preferences prefs = Bpmn2Preferences.getInstance();
-		if ("id".equals(featureName)) {
+		if ("id".equals(featureName)) { //$NON-NLS-1$
 			if (!prefs.getShowIdAttribute())
 				return false;
 		}
 		if (prefs.getOverrideModelEnablementProfile() && profile.equals(prefs.getDefaultModelEnablementProfile())) {
 			String name = className;
 			if (featureName!=null && !featureName.isEmpty())
-				name += "." + featureName;
+				name += "." + featureName; //$NON-NLS-1$
 			return getToolEnablementPreferences().isEnabled(name);
 		}
 		if (className==null)
@@ -360,7 +360,7 @@ public class ModelEnablementDescriptor extends BaseRuntimeDescriptor {
 			list.add(className);
 			HashSet<String> features = entry.getValue();
 			for (String featureName : features) {
-				list.add(className + "." + featureName);
+				list.add(className + "." + featureName); //$NON-NLS-1$
 			}
 		}
 		return list;

@@ -49,11 +49,11 @@ public class OperationDetailComposite extends DefaultDetailComposite {
 		if (propertiesProvider==null) {
 			propertiesProvider = new AbstractPropertiesProvider(object) {
 				String[] properties = new String[] {
-						"name",
-						"implementationRef",
-						"inMessageRef",
-						"outMessageRef",
-						"errorRefs"
+						"name", //$NON-NLS-1$
+						"implementationRef", //$NON-NLS-1$
+						"inMessageRef", //$NON-NLS-1$
+						"outMessageRef", //$NON-NLS-1$
+						"errorRefs" //$NON-NLS-1$
 				};
 				
 				@Override
@@ -67,7 +67,7 @@ public class OperationDetailComposite extends DefaultDetailComposite {
 
 	@Override
 	protected void bindReference(Composite parent, EObject object, EReference reference) {
-		if ("implementationRef".equals(reference.getName()) &&
+		if ("implementationRef".equals(reference.getName()) && //$NON-NLS-1$
 				isModelObjectEnabled(object.eClass(), reference)) {
 			
 			if (parent==null)

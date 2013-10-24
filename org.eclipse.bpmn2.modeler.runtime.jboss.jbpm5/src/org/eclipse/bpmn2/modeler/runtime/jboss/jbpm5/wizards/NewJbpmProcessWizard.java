@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2011, 2012, 2013 Red Hat, Inc.
+ * All rights reserved.
+ * This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution,
+ * and is available at http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors:
+ * 	Red Hat, Inc. - initial API and implementation
+ ******************************************************************************/
 package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wizards;
 
 import java.io.ByteArrayInputStream;
@@ -24,6 +34,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -99,7 +110,7 @@ public class NewJbpmProcessWizard extends Wizard implements INewWizard {
 			return false;
 		} catch (InvocationTargetException e) {
 			Throwable realException = e.getTargetException();
-			MessageDialog.openError(getShell(), "Error", realException.getMessage());
+			MessageDialog.openError(getShell(), Messages.NewJbpmProcessWizard_Error_Title, realException.getMessage());
 			Activator.logError(e);
 			return false;
 		}
@@ -118,11 +129,11 @@ public class NewJbpmProcessWizard extends Wizard implements INewWizard {
 		IProgressMonitor monitor)
 		throws CoreException {
 		// create a sample file
-		monitor.beginTask("Creating " + fileName, 2);
+		monitor.beginTask(NLS.bind(Messages.NewJbpmProcessWizard_Monitor_Title,fileName), 2);
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 		IResource resource = root.findMember(new Path(containerName));
 		if (!resource.exists() || !(resource instanceof IContainer)) {
-			throwCoreException("Container \"" + containerName + "\" does not exist.");
+			throwCoreException(NLS.bind(Messages.NewJbpmProcessWizard_Error_No_Container,containerName));
 		}
 		IContainer container = (IContainer) resource;
 		final IFile file = container.getFile(new Path(fileName));
@@ -138,7 +149,7 @@ public class NewJbpmProcessWizard extends Wizard implements INewWizard {
 		}
 		
 		if (isSetJbpmRuntime) {
-			monitor.setTaskName("Configuring project for jBPM Runtime...");
+			monitor.setTaskName(Messages.NewJbpmProcessWizard_Configuring_Project_Message);
 			Bpmn2Preferences prefs = Bpmn2Preferences.getInstance(container.getProject());
 			TargetRuntime rt = TargetRuntime.getRuntime(JBPM5RuntimeExtension.JBPM5_RUNTIME_ID);
 			prefs.setRuntime(rt);
@@ -149,7 +160,7 @@ public class NewJbpmProcessWizard extends Wizard implements INewWizard {
 			}
 		}
 		monitor.worked(1);
-		monitor.setTaskName("Opening file for editing...");
+		monitor.setTaskName(Messages.NewJbpmProcessWizard_Opening_File_Message);
 		getShell().getDisplay().asyncExec(new Runnable() {
 			public void run() {
 				IWorkbenchPage page =
@@ -169,47 +180,45 @@ public class NewJbpmProcessWizard extends Wizard implements INewWizard {
 
 	private InputStream openContentStream() {
 		String contents =
-			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+ 
-			"<definitions id=\"Definition\"\n"+
-			"             targetNamespace=\"http://www.jboss.org/drools\"\n"+
-			"             typeLanguage=\"http://www.java.com/javaTypes\"\n"+
-			"             expressionLanguage=\"http://www.mvel.org/2.0\"\n"+
-			"             xmlns=\"http://www.omg.org/spec/BPMN/20100524/MODEL\"\n"+
-			"             xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"+
-			"             xsi:schemaLocation=\"http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd"+
-			" http://www.jboss.org/drools drools.xsd"+
-			" http://www.bpsim.org/schemas/1.0 bpsim.xsd\"\n"+
-			"             xmlns:bpmndi=\"http://www.omg.org/spec/BPMN/20100524/DI\"\n"+
-			"             xmlns:dc=\"http://www.omg.org/spec/DD/20100524/DC\"\n"+
-			"             xmlns:di=\"http://www.omg.org/spec/DD/20100524/DI\"\n"+
-			"             xmlns:drools=\"http://www.jboss.org/drools\">\n"+
-			"             xmlns:bpsim=\"http://www.bpsim.org/schemas/1.0\">\n"+
-			"             xmlns:tns=\"http://www.jboss.org/drools\">\n"+
-			"\n"+
-			"  <process processType=\"Private\" isExecutable=\"true\""+
-			" id=\""+processId+"\""+
-			" name=\""+processName+"\""+
-			" tns:packageName=\""+packageName+"\""+
-			" >\n"+
-			"    <startEvent id=\"StartEvent_1\" name=\"StartProcess\" />\n"+
-			"  </process>\n"+
-			"\n"+
-			"  <bpmndi:BPMNDiagram>\n"+
-			"    <bpmndi:BPMNPlane bpmnElement=\""+processId+"\" >\n"+
-			"      <bpmndi:BPMNShape bpmnElement=\"StartEvent_1\" >\n"+
-			"        <dc:Bounds x=\"45\" y=\"45\" />\n"+
-			"      </bpmndi:BPMNShape>\n"+
-			"      </bpmndi:BPMNPlane>\n"+
-			"  </bpmndi:BPMNDiagram>\n"+
-			"\n"+
-			"</definitions>\n";
+			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+  //$NON-NLS-1$
+			"<bpmn2:definitions\n"+ //$NON-NLS-1$
+			"	xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"+ //$NON-NLS-1$
+			"	xmlns:bpmn2=\"http://www.omg.org/spec/BPMN/20100524/MODEL\"\n"+ //$NON-NLS-1$
+			"	xmlns:bpmndi=\"http://www.omg.org/spec/BPMN/20100524/DI\"\n"+ //$NON-NLS-1$
+			"	xmlns:dc=\"http://www.omg.org/spec/DD/20100524/DC\"\n"+ //$NON-NLS-1$
+			"	xmlns:di=\"http://www.omg.org/spec/DD/20100524/DI\"\n"+ //$NON-NLS-1$
+			"	xmlns:tns=\"http://www.jboss.org/drools\"\n"+ //$NON-NLS-1$
+			"	xmlns=\"http://www.jboss.org/drools\"\n"+ //$NON-NLS-1$
+			"	xsi:schemaLocation=\"http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd http://www.jboss.org/drools drools.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd\"\n"+ //$NON-NLS-1$
+			"	id=\"Definition\"\n"+ //$NON-NLS-1$
+			"	expressionLanguage=\"http://www.mvel.org/2.0\"\n"+ //$NON-NLS-1$
+			"	targetNamespace=\"http://www.jboss.org/drools\"\n"+ //$NON-NLS-1$
+			"	typeLanguage=\"http://www.java.com/javaTypes\">\n"+ //$NON-NLS-1$
+			"\n"+ //$NON-NLS-1$
+			"  <bpmn2:process processType=\"Private\" isExecutable=\"true\""+ //$NON-NLS-1$
+			" id=\""+processId+"\""+ //$NON-NLS-1$ //$NON-NLS-2$
+			" name=\""+processName+"\""+ //$NON-NLS-1$ //$NON-NLS-2$
+			" tns:packageName=\""+packageName+"\""+ //$NON-NLS-1$ //$NON-NLS-2$
+			" >\n"+ //$NON-NLS-1$
+			"    <bpmn2:startEvent id=\"StartEvent_1\" name=\"StartProcess\"/>\n"+ //$NON-NLS-1$
+			"  </bpmn2:process>\n"+ //$NON-NLS-1$
+			"\n"+ //$NON-NLS-1$
+			"  <bpmndi:BPMNDiagram>\n"+ //$NON-NLS-1$
+			"    <bpmndi:BPMNPlane bpmnElement=\""+processId+"\" >\n"+ //$NON-NLS-1$ //$NON-NLS-2$
+			"      <bpmndi:BPMNShape bpmnElement=\"StartEvent_1\" >\n"+ //$NON-NLS-1$
+			"        <dc:Bounds x=\"45\" y=\"45\" />\n"+ //$NON-NLS-1$
+			"      </bpmndi:BPMNShape>\n"+ //$NON-NLS-1$
+			"      </bpmndi:BPMNPlane>\n"+ //$NON-NLS-1$
+			"  </bpmndi:BPMNDiagram>\n"+ //$NON-NLS-1$
+			"\n"+ //$NON-NLS-1$
+			"</bpmn2:definitions>\n"; //$NON-NLS-1$
 		
 		return new ByteArrayInputStream(contents.getBytes());
 	}
 
 	private void throwCoreException(String message) throws CoreException {
 		IStatus status =
-			new Status(IStatus.ERROR, "org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5", IStatus.OK, message, null);
+			new Status(IStatus.ERROR, "org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5", IStatus.OK, message, null); //$NON-NLS-1$
 		throw new CoreException(status);
 	}
 

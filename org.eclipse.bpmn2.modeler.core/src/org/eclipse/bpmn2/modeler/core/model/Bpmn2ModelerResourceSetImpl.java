@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.model;
 
+import java.lang.reflect.InvocationTargetException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,7 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.emf.common.util.URI;
@@ -33,6 +36,14 @@ import org.eclipse.emf.ecore.resource.URIConverter;
 import org.eclipse.emf.ecore.resource.impl.ResourceFactoryRegistryImpl;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.XMLResource;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.custom.BusyIndicator;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.progress.IProgressService;
 
 
 /**
@@ -47,7 +58,8 @@ import org.eclipse.emf.ecore.xmi.XMLResource;
 public class Bpmn2ModelerResourceSetImpl extends ResourceSetImpl implements IResourceChangeListener {
 	// this ID identifies the BPMN file content type
 	public static final String BPMN2_CONTENT_TYPE = "org.eclipse.bpmn2.content-type.xml"; //$NON-NLS-1$
-	 
+	public static final String OPTION_PROGRESS_MONITOR = "PROGRESS_MONITOR"; //$NON-NLS-1$
+	
 	private String connectionTimeout;
 	private String readTimeout;
 
@@ -60,7 +72,7 @@ public class Bpmn2ModelerResourceSetImpl extends ResourceSetImpl implements IRes
 	/**
 	 * Used to force loading using the right resource loaders.
 	 */
-	static public final String SLIGHTLY_HACKED_KEY = "slightly.hacked.resource.set";
+	static public final String SLIGHTLY_HACKED_KEY = "slightly.hacked.resource.set"; //$NON-NLS-1$
 	
 	/* (non-Javadoc)
 	 * 
@@ -110,24 +122,24 @@ public class Bpmn2ModelerResourceSetImpl extends ResourceSetImpl implements IRes
 
 	private void saveTimeoutProperties() {
 		if (connectionTimeout==null) {
-			connectionTimeout = System.getProperty("sun.net.client.defaultConnectTimeout");
+			connectionTimeout = System.getProperty("sun.net.client.defaultConnectTimeout"); //$NON-NLS-1$
 			if (connectionTimeout==null)
-				connectionTimeout = "";
+				connectionTimeout = ""; //$NON-NLS-1$
 		}
 		if (readTimeout==null) {
-			readTimeout = System.getProperty("sun.net.client.defaultReadTimeout");
+			readTimeout = System.getProperty("sun.net.client.defaultReadTimeout"); //$NON-NLS-1$
 			if (readTimeout==null)
-				readTimeout = "";
+				readTimeout = ""; //$NON-NLS-1$
 		}
 	}
 	
 	private void restoreTimeoutProperties() {
 		if(connectionTimeout!=null) {
-			System.setProperty("sun.net.client.defaultConnectTimeout", connectionTimeout);
+			System.setProperty("sun.net.client.defaultConnectTimeout", connectionTimeout); //$NON-NLS-1$
 			connectionTimeout = null;
 		}
 		if (readTimeout!=null) {
-			System.setProperty("sun.net.client.defaultReadTimeout", readTimeout);
+			System.setProperty("sun.net.client.defaultReadTimeout", readTimeout); //$NON-NLS-1$
 			readTimeout = null;
 		}
 	}
@@ -135,8 +147,8 @@ public class Bpmn2ModelerResourceSetImpl extends ResourceSetImpl implements IRes
 	private void setDefaultTimeoutProperties() {
 		saveTimeoutProperties();
 		String timeout = Bpmn2Preferences.getInstance().getConnectionTimeout();
-		System.setProperty("sun.net.client.defaultConnectTimeout", timeout);
-		System.setProperty("sun.net.client.defaultReadTimeout", timeout);
+		System.setProperty("sun.net.client.defaultConnectTimeout", timeout); //$NON-NLS-1$
+		System.setProperty("sun.net.client.defaultReadTimeout", timeout); //$NON-NLS-1$
 	}
 
 	/**
@@ -206,8 +218,8 @@ public class Bpmn2ModelerResourceSetImpl extends ResourceSetImpl implements IRes
 		if (loadOnDemand) {
 			Resource resource = demandCreateResource(uri,kind);
 			if (resource == null) {
-				throw new RuntimeException("Cannot create a resource for '"
-						+ uri + "'; a registered resource factory is needed");
+				throw new RuntimeException("Cannot create a resource for '" //$NON-NLS-1$
+						+ uri + "'; a registered resource factory is needed"); //$NON-NLS-1$
 			}
 
 			demandLoadHelper(resource);
@@ -230,7 +242,8 @@ public class Bpmn2ModelerResourceSetImpl extends ResourceSetImpl implements IRes
 			// of imports or references to external Resources. We want to track
 			// changes to those and also make sure they don't get saved by Graphiti's
 			// EmfService class.
-			resource.setTrackingModification(true);
+			if (!resource.isTrackingModification())
+				resource.setTrackingModification(true);
 		}
 		return resource;
 	}
@@ -256,21 +269,21 @@ public class Bpmn2ModelerResourceSetImpl extends ResourceSetImpl implements IRes
 					final Map<String, Object> extensionToFactoryMap =
 						Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap();
 					
-					final Object wsilFactory = extensionToFactoryMap.get("wsil");
-					final Object wsdlFactory = extensionToFactoryMap.get("wsdl");
-					final Object xsdFactory = extensionToFactoryMap.get("xsd");
+					final Object wsilFactory = extensionToFactoryMap.get("wsil"); //$NON-NLS-1$
+					final Object wsdlFactory = extensionToFactoryMap.get("wsdl"); //$NON-NLS-1$
+					final Object xsdFactory = extensionToFactoryMap.get("xsd"); //$NON-NLS-1$
 					
 					final Map<String, Object> contentTypeToFactoryMap = 
 						Resource.Factory.Registry.INSTANCE.getContentTypeToFactoryMap();
 					
 					if (null != wsilFactory) {
-						contentTypeToFactoryMap.put("wsil", wsilFactory);
+						contentTypeToFactoryMap.put("wsil", wsilFactory); //$NON-NLS-1$
 					}
 					if (null != wsdlFactory) {
-						contentTypeToFactoryMap.put("wsdl", wsdlFactory);
+						contentTypeToFactoryMap.put("wsdl", wsdlFactory); //$NON-NLS-1$
 					}
 					if (null != xsdFactory) {
-						contentTypeToFactoryMap.put("xsd", xsdFactory);
+						contentTypeToFactoryMap.put("xsd", xsdFactory); //$NON-NLS-1$
 					}
 
 					return convert(getFactory(uri,
@@ -315,33 +328,77 @@ public class Bpmn2ModelerResourceSetImpl extends ResourceSetImpl implements IRes
 		}
 		return resourceFactoryRegistry;
 	}
-	
-	/**
-	 * Create the resource based on the kind.
-	 * @param uri
-	 * @param kind
-	 * @return the created resource
-	 */
-	
-	// TODO: ganymede [ this method apparently is already in the parent resource set ]
-	// we can strike it from this resourceset.
-	
-//	@SuppressWarnings("nls")
-//	public Resource createResource ( URI uri, String kind) {
-//		
-//		if (kind == null) {
-//			return super.createResource(uri);
-//		}
-//		
-//		Resource resource = createResource(URI.createURI("*." + kind)); 
-//		resource.setURI(uri);		
-//		return resource;
-//	}
 
+	protected void demandLoadHelper(final Resource resource) {
+		try {
+			setDefaultTimeoutProperties();
 
-	
-	
-	
+			// If there is a Progress Monitor in the ResourceSet load options
+			// use it instead of creating our own - this happens if we are being
+			// called from the background Project Validation builder thread.
+			Map<Object,Object> options = resource.getResourceSet().getLoadOptions();
+			Object o = options.get(Bpmn2ModelerResourceSetImpl.OPTION_PROGRESS_MONITOR);
+			if (o instanceof IProgressMonitor) {
+				IProgressMonitor monitor = (IProgressMonitor)o;
+				doLoad(resource, monitor);
+			}
+			else {
+				Display.getDefault().syncExec(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							IProgressService ps = PlatformUI.getWorkbench().getProgressService();
+							ps.busyCursorWhile(
+								new IRunnableWithProgress() {
+
+									@Override
+									public void run(IProgressMonitor monitor) throws InvocationTargetException,
+											InterruptedException {
+										doLoad(resource, monitor);
+									}
+								}
+							);
+						}
+						catch (Exception e) {
+						}
+					}
+				});
+			}
+		}
+		finally {
+			restoreTimeoutProperties();
+		}
+	}
+
+	private void doLoad(final Resource resource, IProgressMonitor monitor) {
+		try {
+			String taskName = NLS.bind(Messages.Bpmn2ModelerResourceSetImpl_Loading_Title, resource.getURI());
+			monitor.beginTask(taskName, IProgressMonitor.UNKNOWN);
+			Bpmn2ModelerResourceSetImpl.super.demandLoadHelper(resource);
+			if (!resource.isLoaded()) {
+				throw new Exception(Messages.Bpmn2ModelerResourceSetImpl_Loading_Resource_Not_Found);
+			}
+		}
+		catch (final Exception e) {
+			Display.getDefault().syncExec(new Runnable() {
+
+				@Override
+				public void run() {
+					String msg = e.getMessage();
+					if (e instanceof InvocationTargetException) {
+						msg = ((InvocationTargetException) e).getTargetException().getMessage();
+					}
+					MessageDialog.openError(Display.getDefault().getActiveShell(),
+						Messages.Bpmn2ModelerResourceSetImpl_Loading_Error,
+						NLS.bind(Messages.Bpmn2ModelerResourceSetImpl_Loading_Error_Message,resource.getURI(),msg));
+				}
+				
+			});
+		}
+		finally {
+			monitor.done();
+		}
+	}
 	
 	/**
 	 * @see org.eclipse.core.resources.IResourceChangeListener#resourceChanged(org.eclipse.core.resources.IResourceChangeEvent)

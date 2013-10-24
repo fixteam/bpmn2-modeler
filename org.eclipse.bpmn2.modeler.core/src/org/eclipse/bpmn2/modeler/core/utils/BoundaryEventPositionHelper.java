@@ -28,7 +28,7 @@ import org.eclipse.graphiti.services.IPeService;
 
 public class BoundaryEventPositionHelper {
 
-	public static final String BOUNDARY_EVENT_RELATIVE_POS = "boundary.event.relative.pos";
+	public static final String BOUNDARY_EVENT_RELATIVE_POS = "boundary.event.relative.pos"; //$NON-NLS-1$
 	
 	public static class PositionOnLine {
 
@@ -120,7 +120,7 @@ public class BoundaryEventPositionHelper {
 			if (s == null) {
 				return null;
 			}
-			String[] arr = s.split(":");
+			String[] arr = s.split(":"); //$NON-NLS-1$
 			if (!arr[0].equals(PositionOnLine.class.getSimpleName().toLowerCase())) {
 				return null;
 			}
@@ -133,7 +133,7 @@ public class BoundaryEventPositionHelper {
 			String prefix = PositionOnLine.class.getSimpleName().toLowerCase();
 			String lineType = this.lineType.toString();
 			String locationType = this.locationType.toString();
-			String colon = ":";
+			String colon = ":"; //$NON-NLS-1$
 			return new StringBuilder().append(prefix).append(colon).append(lineType).append(colon).append(locationType)
 			        .toString();
 		}
@@ -186,13 +186,7 @@ public class BoundaryEventPositionHelper {
 		ILocation activityLoc = peService.getLocationRelativeToDiagram(activityContainer);
 
 		if (!activityContainer.equals(context.getTargetContainer())) {
-			if (activityContainer.eContainer().equals(context.getTargetContainer())) {
-				ContainerShape parent = (ContainerShape)activityContainer.eContainer();
-				// FIXME: what's going on here?
-				if (parent instanceof Diagram) {
-					return false;
-				}
-			}
+			return false;
 		}
 
 		PositionOnLine pos = getPositionOnLine(x, y, eventGa.getWidth(), eventGa.getHeight(), activityLoc.getX(),

@@ -291,18 +291,20 @@ public class MoveFlowNodeFeature extends DefaultMoveBPMNShapeFeature {
 			return false;
 		}
 		
-		@Override
-		public void move(FlowNode node, Object source, Object target) {
-			try {
-				if (ModelHandler.getInstance(node).getInternalParticipant() == null){ // this is not a collaboration, don't move 
-					return;
-				}else{
-					super.move(node, source, target);
-				}
-			} catch (IOException e) {
-				Activator.logError(e);
-			}
-		}
+		// TODO: I have no idea what this was supposed to do.
+		// This is preventing the move of a shape out of a FlowElementsContainer 
+//		@Override
+//		public void move(FlowNode node, Object source, Object target) {
+//			try {
+//				if (ModelHandler.getInstance(node).getInternalParticipant() == null){ // this is not a collaboration, don't move 
+//					return;
+//				}else{
+//					super.move(node, source, target);
+//				}
+//			} catch (IOException e) {
+//				Activator.logError(e);
+//			}
+//		}
 	}
 
 	class FromFlowElementsContainerAlgorithm extends DefaultAlgorithm {

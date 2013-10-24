@@ -35,7 +35,7 @@ public class JavaProjectClassLoader {
 	public JavaProjectClassLoader(IJavaProject project) {
 		super();
 		if (project == null || !project.exists())
-			throw new IllegalArgumentException("Invalid javaProject");
+			throw new IllegalArgumentException("Invalid javaProject"); //$NON-NLS-1$
 		this.javaProject = project;
 	}
 
@@ -50,8 +50,8 @@ public class JavaProjectClassLoader {
 	
 	public List<IType> findClasses(String classNamePattern) {
 		final List<IType> results = new ArrayList<IType>();
-		if (classNamePattern.endsWith(".java")) {
-			classNamePattern = classNamePattern.substring(0,classNamePattern.lastIndexOf("."));
+		if (classNamePattern.endsWith(".java")) { //$NON-NLS-1$
+			classNamePattern = classNamePattern.substring(0,classNamePattern.lastIndexOf(".")); //$NON-NLS-1$
 		}
 		// find exact matches first
 		findClasses(classNamePattern, results);

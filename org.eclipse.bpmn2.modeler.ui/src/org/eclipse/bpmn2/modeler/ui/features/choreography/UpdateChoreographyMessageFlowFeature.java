@@ -71,10 +71,10 @@ public class UpdateChoreographyMessageFlowFeature extends AbstractUpdateFeature 
 						if (mf.getMessageRef()==message) {
 							String oldLabel = peService.getPropertyValue(pe, ChoreographyProperties.MESSAGE_NAME);
 							if (oldLabel==null || oldLabel.isEmpty())
-								oldLabel = "";
+								oldLabel = ""; //$NON-NLS-1$
 							String newLabel = ChoreographyUtil.getMessageFlowName(mf);
 							if (newLabel==null || newLabel.isEmpty())
-								newLabel = "";
+								newLabel = ""; //$NON-NLS-1$
 							if (!newLabel.equals(oldLabel))
 								return Reason.createTrueReason();
 						}

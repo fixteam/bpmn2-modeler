@@ -74,10 +74,10 @@ public class GraphicsUtil {
 
 	public static final int SHAPE_PADDING = 6;
 	public static final int TEXT_PADDING = 5;
-	public static final String LABEL_PROPERTY = "label";
+	public static final String LABEL_PROPERTY = "label"; //$NON-NLS-1$
 	
 	// TODO: Determine all cases to make a line break! The following implementation are the easy once.
-	private static final String LINE_BREAK = "\n";
+	private static final String LINE_BREAK = "\n"; //$NON-NLS-1$
 
 	public static class SizeTemplate{
 		
@@ -236,14 +236,14 @@ public class GraphicsUtil {
 		}
 		
 		public String toString() {
-			return "[" + start.getX() + "," + start.getY() +"]" +
-					" [" + end.getX() + "," + end.getY() +"]";
+			return "[" + start.getX() + "," + start.getY() +"]" + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+					" [" + end.getX() + "," + end.getY() +"]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		}
 	}
 	
 	/* GATEWAY */
 
-	private static final String DELETABLE_PROPERTY = "deletable";
+	private static final String DELETABLE_PROPERTY = "deletable"; //$NON-NLS-1$
 
 	public static final int GATEWAY_RADIUS = 25;
 	public static final int GATEWAY_TEXT_AREA = 15;
@@ -380,7 +380,7 @@ public class GraphicsUtil {
 							gatewayWidth / 2 - generateRatioPointValue(5, widthRatio), gatewayHeight / 2 + generateRatioPointValue(7, heightRatio),
 							gatewayWidth / 2 - generateRatioPointValue(8, widthRatio), gatewayHeight / 2 - generateRatioPointValue(2, heightRatio) });
 							
-		peService.setPropertyValue(pentagonShape, DELETABLE_PROPERTY, "true");
+		peService.setPropertyValue(pentagonShape, DELETABLE_PROPERTY, "true"); //$NON-NLS-1$
 		return pentagon;
 	}
 
@@ -404,7 +404,7 @@ public class GraphicsUtil {
 				 Math.round(width), Math.round(height));
 		ellipse.setFilled(false);
 		ellipse.setLineWidth(1);
-		peService.setPropertyValue(ellipse, DELETABLE_PROPERTY, "true");
+		peService.setPropertyValue(ellipse, DELETABLE_PROPERTY, "true"); //$NON-NLS-1$
 		return ellipse;
 	}
 
@@ -425,7 +425,7 @@ public class GraphicsUtil {
 				generateRatioPointValue(27, heightRatio));
 		ellipse.setFilled(false);
 		ellipse.setLineWidth(1);
-		peService.setPropertyValue(ellipseShape, DELETABLE_PROPERTY, "true");
+		peService.setPropertyValue(ellipseShape, DELETABLE_PROPERTY, "true"); //$NON-NLS-1$
 		return ellipse;
 	}
 
@@ -443,7 +443,7 @@ public class GraphicsUtil {
 				new int[] { generateRatioPointValue(24, widthRatio), generateRatioPointValue(7, heightRatio),
 							generateRatioPointValue(24, widthRatio), generateRatioPointValue(43, heightRatio) });
 		verticalLine.setLineWidth(3);
-		peService.setPropertyValue(verticalShape, DELETABLE_PROPERTY, "false");
+		peService.setPropertyValue(verticalShape, DELETABLE_PROPERTY, "false"); //$NON-NLS-1$
 
 		Shape horizontalShape = peService.createShape(container, false);
 		
@@ -453,7 +453,7 @@ public class GraphicsUtil {
 				new int[] { generateRatioPointValue(7, widthRatio), generateRatioPointValue(24, heightRatio),
 							generateRatioPointValue(43, widthRatio), generateRatioPointValue(24, heightRatio) });
 		horizontalLine.setLineWidth(3);
-		peService.setPropertyValue(horizontalShape, DELETABLE_PROPERTY, "false");
+		peService.setPropertyValue(horizontalShape, DELETABLE_PROPERTY, "false"); //$NON-NLS-1$
 
 		Cross cross = new Cross();
 		cross.vertical = verticalLine;
@@ -476,7 +476,7 @@ public class GraphicsUtil {
 				new int[] { generateRatioPointValue(14, widthRatio), generateRatioPointValue(14, heightRatio),
 							generateRatioPointValue(37, widthRatio), generateRatioPointValue(37, heightRatio) });
 		diagonalDesc.setLineWidth(3);
-		peService.setPropertyValue(diagonalDescShape, DELETABLE_PROPERTY, "true");
+		peService.setPropertyValue(diagonalDescShape, DELETABLE_PROPERTY, "true"); //$NON-NLS-1$
 
 		Shape diagonalAscShape = service.createShape(container, false);
 		
@@ -485,7 +485,7 @@ public class GraphicsUtil {
 				new int[] { generateRatioPointValue(37, widthRatio), generateRatioPointValue(14, heightRatio),
 							generateRatioPointValue(14, widthRatio), generateRatioPointValue(37, heightRatio) });
 		diagonalAsc.setLineWidth(3);
-		peService.setPropertyValue(diagonalAscShape, DELETABLE_PROPERTY, "true");
+		peService.setPropertyValue(diagonalAscShape, DELETABLE_PROPERTY, "true"); //$NON-NLS-1$
 
 		DiagonalCross diagonalCross = new DiagonalCross();
 		diagonalCross.diagonalDesc = diagonalDesc;
@@ -527,7 +527,7 @@ public class GraphicsUtil {
 		Polygon cross = gaService.createPolygon(crossShape, points);
 		cross.setFilled(false);
 		cross.setLineWidth(1);
-		peService.setPropertyValue(crossShape, DELETABLE_PROPERTY, "true");
+		peService.setPropertyValue(crossShape, DELETABLE_PROPERTY, "true"); //$NON-NLS-1$
 		return cross;
 	}
 
@@ -546,7 +546,7 @@ public class GraphicsUtil {
 				new int[] { generateRatioPointValue(24, widthRatio), generateRatioPointValue(7, heightRatio),
 							generateRatioPointValue(24, widthRatio), generateRatioPointValue(43, heightRatio) });
 		vertical.setLineWidth(3);
-		peService.setPropertyValue(verticalShape, DELETABLE_PROPERTY, "true");
+		peService.setPropertyValue(verticalShape, DELETABLE_PROPERTY, "true"); //$NON-NLS-1$
 
 		Shape horizontalShape = service.createShape(container, false);
 //		Polyline horizontal = gaService.createPolyline(horizontalShape, new int[] { 8, 24, 42, 24 });
@@ -554,7 +554,7 @@ public class GraphicsUtil {
 				new int[] { generateRatioPointValue(7, widthRatio), generateRatioPointValue(24, heightRatio),
 							generateRatioPointValue(43, widthRatio), generateRatioPointValue(24, heightRatio) });
 		horizontal.setLineWidth(3);
-		peService.setPropertyValue(horizontalShape, DELETABLE_PROPERTY, "true");
+		peService.setPropertyValue(horizontalShape, DELETABLE_PROPERTY, "true"); //$NON-NLS-1$
 
 		Shape diagonalDescShape = service.createShape(container, false);
 //		Polyline diagonalDesc = gaService.createPolyline(diagonalDescShape, new int[] { 13, 14, 37, 37 });
@@ -562,7 +562,7 @@ public class GraphicsUtil {
 				new int[] { generateRatioPointValue(14, widthRatio), generateRatioPointValue(14, heightRatio),
 							generateRatioPointValue(37, widthRatio), generateRatioPointValue(37, heightRatio) });
 		diagonalDesc.setLineWidth(3);
-		peService.setPropertyValue(diagonalDescShape, DELETABLE_PROPERTY, "true");
+		peService.setPropertyValue(diagonalDescShape, DELETABLE_PROPERTY, "true"); //$NON-NLS-1$
 
 		Shape diagonalAscShape = service.createShape(container, false);
 //		Polyline diagonalAsc = gaService.createPolyline(diagonalAscShape, new int[] { 37, 14, 13, 37 });
@@ -570,7 +570,7 @@ public class GraphicsUtil {
 				new int[] { generateRatioPointValue(37, widthRatio), generateRatioPointValue(14, heightRatio),
 							generateRatioPointValue(14, widthRatio), generateRatioPointValue(37, heightRatio) });
 		diagonalAsc.setLineWidth(3);
-		peService.setPropertyValue(diagonalAscShape, DELETABLE_PROPERTY, "true");
+		peService.setPropertyValue(diagonalAscShape, DELETABLE_PROPERTY, "true"); //$NON-NLS-1$
 
 		Asterisk a = new Asterisk();
 		a.horizontal = horizontal;
@@ -675,7 +675,7 @@ public class GraphicsUtil {
 		
 		final float heightRatio = calculateRatio(eventHeight, Float.valueOf(EVENT_SIZE));
 		final float widthRatio = calculateRatio(eventWidth, Float.valueOf(EVENT_SIZE));
-		
+
 		Polygon polygon = gaService.createPolygon(shape, 
 				new int[] { generateRatioPointValue(16, widthRatio), generateRatioPointValue(4, heightRatio),
 							generateRatioPointValue(28, widthRatio), generateRatioPointValue(26, heightRatio),
@@ -911,15 +911,15 @@ public class GraphicsUtil {
 	public static final int MARKER_WIDTH = 10;
 	public static final int MARKER_HEIGHT = 10;
 
-	private static final String ACTIVITY_MARKER_CONTAINER = "activity.marker.container";
-	public static final String ACTIVITY_MARKER_COMPENSATE = "activity.marker.compensate";
-	public static final String ACTIVITY_MARKER_LC_STANDARD = "activity.marker.lc.standard";
-	public static final String ACTIVITY_MARKER_LC_MULTI_SEQUENTIAL = "activity.marker.lc.multi.sequential";
-	public static final String ACTIVITY_MARKER_LC_MULTI_PARALLEL = "activity.marker.lc.multi.parallel";
-	public static final String ACTIVITY_MARKER_AD_HOC = "activity.marker.adhoc";
-	public static final String ACTIVITY_MARKER_EXPAND = "activity.marker.expand";
-	public static final String ACTIVITY_MARKER_OFFSET = "activity.marker.offset";
-	public static final String EVENT_MARKER_CONTAINER = "event.marker.container";
+	private static final String ACTIVITY_MARKER_CONTAINER = "activity.marker.container"; //$NON-NLS-1$
+	public static final String ACTIVITY_MARKER_COMPENSATE = "activity.marker.compensate"; //$NON-NLS-1$
+	public static final String ACTIVITY_MARKER_LC_STANDARD = "activity.marker.lc.standard"; //$NON-NLS-1$
+	public static final String ACTIVITY_MARKER_LC_MULTI_SEQUENTIAL = "activity.marker.lc.multi.sequential"; //$NON-NLS-1$
+	public static final String ACTIVITY_MARKER_LC_MULTI_PARALLEL = "activity.marker.lc.multi.parallel"; //$NON-NLS-1$
+	public static final String ACTIVITY_MARKER_AD_HOC = "activity.marker.adhoc"; //$NON-NLS-1$
+	public static final String ACTIVITY_MARKER_EXPAND = "activity.marker.expand"; //$NON-NLS-1$
+	public static final String ACTIVITY_MARKER_OFFSET = "activity.marker.offset"; //$NON-NLS-1$
+	public static final String EVENT_MARKER_CONTAINER = "event.marker.container"; //$NON-NLS-1$
 
 	private static GraphicsAlgorithmContainer createActivityMarkerCompensate(ContainerShape markerContainer) {
 		GraphicsAlgorithmContainer algorithmContainer = createActivityMarkerGaContainer(markerContainer,
@@ -1623,23 +1623,23 @@ public class GraphicsUtil {
 			if (debug) {
 				System.out.println(label);
 				for (ContainerShape shape : shapes)
-					dump(1, "",shape,0,0);
-				System.out.println("");
+					dump(1, "",shape,0,0); //$NON-NLS-1$
+				System.out.println(""); //$NON-NLS-1$
 			}
 		}
 	}
 	
 	public static void dump(String label, Anchor anchor) {
 		if (debug) {
-			System.out.print(label+" ");
+			System.out.print(label+" "); //$NON-NLS-1$
 			ILocation loc = peService.getLocationRelativeToDiagram(anchor);
-			System.out.print(" at "+loc.getX()+", "+loc.getY());
-			dump(" parent=", (ContainerShape)anchor.getParent());
+			System.out.print(" at "+loc.getX()+", "+loc.getY()); //$NON-NLS-1$ //$NON-NLS-2$
+			dump(" parent=", (ContainerShape)anchor.getParent()); //$NON-NLS-1$
 			if (AnchorUtil.isBoundaryAnchor(anchor)) {
 				String property = Graphiti.getPeService().getPropertyValue(
 						anchor, AnchorUtil.BOUNDARY_FIXPOINT_ANCHOR);
 				if (property != null && anchor instanceof FixPointAnchor) {
-					System.out.println(" location="+AnchorLocation.getLocation(property));
+					System.out.println(" location="+AnchorLocation.getLocation(property)); //$NON-NLS-1$
 				}
 			}
 		}
@@ -1657,23 +1657,23 @@ public class GraphicsUtil {
 		if (debug) {
 			String text = getDebugText(shape);
 			for (int i=0; i<level; ++i)
-				System.out.print("    ");
-			System.out.print(label+" "+text);
+				System.out.print("    "); //$NON-NLS-1$
+			System.out.print(label+" "+text); //$NON-NLS-1$
 			if (x>0 && y>0) {
-				System.out.println(" at "+x+", "+y);
+				System.out.println(" at "+x+", "+y); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 			else
-				System.out.println("");
+				System.out.println(""); //$NON-NLS-1$
 		}
 	}
 	
 	public static String getDebugText(ContainerShape shape) {
 		EObject be = BusinessObjectUtil.getBusinessObjectForPictogramElement(shape);
-		String id = "";
+		String id = ""; //$NON-NLS-1$
 		if (be instanceof BaseElement) {
-			id = " " + ((BaseElement)be).getId();
+			id = " " + ((BaseElement)be).getId(); //$NON-NLS-1$
 		}
-		String text = be.eClass().getName()+id+": "+ModelUtil.getDisplayName(be);
+		String text = be.eClass().getName()+id+": "+ModelUtil.getDisplayName(be); //$NON-NLS-1$
 		return text;
 	}
 	

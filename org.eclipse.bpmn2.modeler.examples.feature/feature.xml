@@ -2,7 +2,7 @@
 <feature
       id="org.eclipse.bpmn2.modeler.examples.feature"
       label="Example Runtime Extensions Feature"
-      version="0.2.5.qualifier"
+      version="1.0.0.qualifier"
       provider-name="Eclipse.org">
 
    <copyright url="http://www.example.com/copyright">

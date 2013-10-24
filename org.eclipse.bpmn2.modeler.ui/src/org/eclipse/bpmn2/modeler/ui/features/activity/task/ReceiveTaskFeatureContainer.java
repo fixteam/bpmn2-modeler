@@ -66,7 +66,7 @@ public class ReceiveTaskFeatureContainer extends AbstractTaskFeatureContainer {
 	public static class CreateReceiveTaskFeature extends AbstractCreateTaskFeature<ReceiveTask> {
 
 		public CreateReceiveTaskFeature(IFeatureProvider fp) {
-			super(fp, "Receive Task", "Create "+"Receive Task");
+			super(fp, Messages.ReceiveTaskFeatureContainer_Name, Messages.ReceiveTaskFeatureContainer_Description);
 		}
 
 		@Override

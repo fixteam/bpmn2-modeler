@@ -14,6 +14,7 @@ package org.eclipse.bpmn2.modeler.core.utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +30,7 @@ import org.eclipse.bpmn2.DocumentRoot;
 import org.eclipse.bpmn2.Event;
 import org.eclipse.bpmn2.EventDefinition;
 import org.eclipse.bpmn2.ExtensionAttributeValue;
+import org.eclipse.bpmn2.FormalExpression;
 import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.Process;
 import org.eclipse.bpmn2.RootElement;
@@ -37,7 +39,6 @@ import org.eclipse.bpmn2.SubProcess;
 import org.eclipse.bpmn2.Transaction;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.di.BPMNPlane;
-import org.eclipse.bpmn2.di.BpmnDiFactory;
 import org.eclipse.bpmn2.di.BpmnDiPackage;
 import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.adapters.AdapterRegistry;
@@ -47,6 +48,8 @@ import org.eclipse.bpmn2.modeler.core.adapters.INamespaceMap;
 import org.eclipse.bpmn2.modeler.core.adapters.InsertionAdapter;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerResourceSetImpl;
+import org.eclipse.bpmn2.util.Bpmn2Resource;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.dd.dc.DcPackage;
 import org.eclipse.dd.di.DiPackage;
 import org.eclipse.emf.common.notify.Adapter;
@@ -74,15 +77,18 @@ import org.eclipse.emf.ecore.util.ExtendedMetaData;
 import org.eclipse.emf.ecore.util.FeatureMap;
 import org.eclipse.emf.ecore.util.FeatureMap.Entry;
 import org.eclipse.emf.ecore.util.FeatureMapUtil;
+import org.eclipse.emf.ecore.xml.type.XMLTypePackage;
 import org.eclipse.emf.transaction.RecordingCommand;
 import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.emf.transaction.util.TransactionUtil;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
-import org.eclipse.graphiti.platform.IDiagramEditor;
+import org.eclipse.graphiti.mm.pictograms.Shape;
+import org.eclipse.graphiti.platform.IDiagramContainer;
 import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -102,8 +108,6 @@ public class ModelUtil {
 	public static HashMap<Object, Hashtable<String, EObject>> ids = new  HashMap<Object, Hashtable<String, EObject>>();
 	// Map of ID strings and sequential counters for each BPMN2 element description.
 	public static HashMap<String, Integer> defaultIds = new HashMap<String, Integer>();
-
-	protected static Hashtable<EClass,EObject> dummyObjects = new Hashtable<EClass,EObject>();
 
 	/**
 	 * Clear the IDs hashmap for the given EMF Resource. This should be called
@@ -127,10 +131,10 @@ public class ModelUtil {
 	 */
 	private static String getObjectName(EObject obj) {
 		String name;
-		EStructuralFeature feature = ((EObject)obj).eClass().getEStructuralFeature("bpmnElement");
+		EStructuralFeature feature = ((EObject)obj).eClass().getEStructuralFeature("bpmnElement"); //$NON-NLS-1$
 		if (feature!=null && obj.eGet(feature)!=null) {
 			EObject bpmnElement = (EObject) obj.eGet(feature);
-			name = obj.eClass().getName() + "_" + bpmnElement.eClass().getName();
+			name = obj.eClass().getName() + "_" + bpmnElement.eClass().getName(); //$NON-NLS-1$
 		}
 		else {
 			name = obj.eClass().getName();
@@ -144,12 +148,12 @@ public class ModelUtil {
 //			System.out.println("The object type "+obj.getClass().getName()+" is not contained in a Resource");
 			return null;
 		}
-		assert(obj!=null);
+		Assert.isTrue(obj!=null);
 		return getKey(resource);
 	}
 	
 	private static Object getKey(Resource res) {
-		assert(res!=null);
+		Assert.isTrue(res!=null);
 		return res.getResourceSet();
 	}
 	
@@ -170,7 +174,7 @@ public class ModelUtil {
 		value = Integer.valueOf( value.intValue() + 1 );
 		defaultIds.put(name, Integer.valueOf(value));
 		
-		return "_" + name + "_" + value;
+		return "_" + name + "_" + value; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	/**
@@ -198,7 +202,7 @@ public class ModelUtil {
 			String id = name;
 			if (name==null) {
 				name = getObjectName(obj);
-				id = name + "_" + 1;
+				id = name + "_" + 1; //$NON-NLS-1$
 			}
 			
 			for (int i=1;; ++i) {
@@ -206,10 +210,27 @@ public class ModelUtil {
 					tab.put(id, obj);
 					return id;
 				}
-				id = name + "_" + i;
+				id = name + "_" + i; //$NON-NLS-1$
 			}
 		}
 		return generateDefaultID(obj, name);
+	}
+	
+	public static void unsetID(EObject obj, Resource resource) {
+		EStructuralFeature feature = ((EObject)obj).eClass().getEStructuralFeature("id"); //$NON-NLS-1$
+		if (feature!=null) {
+			Object value = obj.eGet(feature);
+			if (value instanceof String) {
+				String id = (String)value;
+				Object key = getKey(resource);
+				if (key!=null) {
+					Hashtable<String, EObject> tab = ids.get(key);
+					if (tab!=null) {
+						tab.remove(id);
+					}
+				}
+			}
+		}
 	}
 	
 	/**
@@ -219,7 +240,7 @@ public class ModelUtil {
 	 * @param obj - the BPMN2 object
 	 */
 	public static void addID(EObject obj) {
-		EStructuralFeature feature = ((EObject)obj).eClass().getEStructuralFeature("id");
+		EStructuralFeature feature = ((EObject)obj).eClass().getEStructuralFeature("id"); //$NON-NLS-1$
 		if (feature!=null) {
 			Object value = obj.eGet(feature);
 			if (value!=null) {
@@ -245,7 +266,7 @@ public class ModelUtil {
 	public static void addID(EObject obj, String id) {
 		Object key = getKey(obj);
 		String name = getObjectName(obj);
-		if (key==null || id.startsWith("_" + name + "_")) {
+		if (key==null || id.startsWith("_" + name + "_")) { //$NON-NLS-1$ //$NON-NLS-2$
 			int newValue = 0;
 			try {
 				int i = id.lastIndexOf('_') + 1;
@@ -288,7 +309,7 @@ public class ModelUtil {
 	 */
 	public static String setID(EObject obj, Resource res) {
 		String id = null;
-		EStructuralFeature feature = ((EObject)obj).eClass().getEStructuralFeature("id");
+		EStructuralFeature feature = ((EObject)obj).eClass().getEStructuralFeature("id"); //$NON-NLS-1$
 		if (feature!=null) {
 			if (obj.eGet(feature)==null) {
 				id = generateID(obj,res);
@@ -299,16 +320,31 @@ public class ModelUtil {
 	}
 	
 	public static String getID(EObject obj) {
-		EStructuralFeature feature = ((EObject)obj).eClass().getEStructuralFeature("id");
+		EStructuralFeature feature = ((EObject)obj).eClass().getEStructuralFeature("id"); //$NON-NLS-1$
 		if (feature!=null) {
 			return (String)obj.eGet(feature);
 		}
 		return null;
 	}
+	
+	public static String generateUndefinedID(String base) {
+		String name = "undefined"; //$NON-NLS-1$
+		if (base.contains("_")) { //$NON-NLS-1$
+			return "<" + name + "_" + base.replaceFirst(".*_", "") + ">"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+		}
+		
+		Integer value = defaultIds.get(name);
+		if (value==null)
+			value = Integer.valueOf(1);
+		value = Integer.valueOf( value.intValue() + 1 );
+		defaultIds.put(name, Integer.valueOf(value));
+		
+		return "<" + name + "_" + value + ">"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	}
 
 	public static int getIDNumber(String id) {
 		try {
-			int i = id.lastIndexOf("_");
+			int i = id.lastIndexOf("_"); //$NON-NLS-1$
 			return Integer.parseInt(id.substring(i+1));
 		}
 		catch (Exception e) {
@@ -318,9 +354,9 @@ public class ModelUtil {
 
 	public static String getName(BaseElement element) {
 		if (element != null) {
-			EStructuralFeature feature = element.eClass().getEStructuralFeature("name");
+			EStructuralFeature feature = element.eClass().getEStructuralFeature("name"); //$NON-NLS-1$
 			if (feature==null)
-				feature = getAnyAttribute(element,"name");
+				feature = getAnyAttribute(element,"name"); //$NON-NLS-1$
 			if (feature!=null && element.eGet(feature) instanceof String)
 				return (String) element.eGet(feature);
 		}
@@ -328,9 +364,9 @@ public class ModelUtil {
 	}
 
 	public static boolean hasName(BaseElement obj) {
-		EStructuralFeature feature = obj.eClass().getEStructuralFeature("name");
+		EStructuralFeature feature = obj.eClass().getEStructuralFeature("name"); //$NON-NLS-1$
 		if (feature==null)
-			feature = getAnyAttribute(obj,"name");
+			feature = getAnyAttribute(obj,"name"); //$NON-NLS-1$
 		return feature!=null;
 	}
 /*	
@@ -342,15 +378,15 @@ public class ModelUtil {
 */	
 	public static String toDisplayName(String anyName) {
 		// get rid of the "Impl" java suffix
-		anyName = anyName.replaceAll("Impl$", "");
-		String displayName = "";
+		anyName = anyName.replaceAll("Impl$", ""); //$NON-NLS-1$ //$NON-NLS-2$
+		String displayName = ""; //$NON-NLS-1$
 		boolean first = true;
 		char[] chars = anyName.toCharArray();
 		for (int i=0; i<chars.length; ++i) {
 			char c = chars[i];
 			if (Character.isUpperCase(c)) {
 				if (displayName.length()>0 && i+1<chars.length && !Character.isUpperCase(chars[i+1]))
-					displayName += " ";
+					displayName += " "; //$NON-NLS-1$
 			}
 			if (first) {
 				c = Character.toUpperCase(c);
@@ -366,7 +402,7 @@ public class ModelUtil {
 	@SuppressWarnings("unchecked")
 	public static List<EventDefinition> getEventDefinitions(Event event) {
 		if (event!=null) {
-			EStructuralFeature feature = event.eClass().getEStructuralFeature("eventDefinitions");
+			EStructuralFeature feature = event.eClass().getEStructuralFeature("eventDefinitions"); //$NON-NLS-1$
 			if (feature!=null) {
 				return (List<EventDefinition>) event.eGet(feature);
 			}
@@ -468,7 +504,7 @@ public class ModelUtil {
 
 		if (eObject == null) {
 			throw new NullPointerException(
-					"eObject cannot be null in getNamespaceMap()");
+					"eObject cannot be null in getNamespaceMap()"); //$NON-NLS-1$
 		}
 
 		INamespaceMap<String, String> nsMap = null;
@@ -484,7 +520,7 @@ public class ModelUtil {
 		
 		if (nsMap == null) {
 			throw new IllegalStateException(
-					"INamespaceMap cannot be attached to an eObject");
+					"INamespaceMap cannot be attached to an eObject"); //$NON-NLS-1$
 		}
 
 		return nsMap;
@@ -598,20 +634,20 @@ public class ModelUtil {
 	public static String getDiagramTypeName(BPMNDiagram object) {
 		Bpmn2DiagramType type = getDiagramType((BPMNDiagram)object); 
 		if (type == Bpmn2DiagramType.CHOREOGRAPHY) {
-			return "Choreography Diagram";
+			return Messages.ModelUtil_Choreograpy_Diagram;
 		}
 		else if (type == Bpmn2DiagramType.COLLABORATION) {
-			return "Collaboration Diagram";
+			return Messages.ModelUtil_Collaboration_Diagram;
 		}
 		else if (type == Bpmn2DiagramType.PROCESS) {
-			return "Process Diagram";
+			return Messages.ModelUtil_Process_Diagram;
 		}
-		return "Unknown Diagram Type";
+		return Messages.ModelUtil_Unknown_Diagram_Type;
 	}
 	
 	public static List<EStructuralFeature> getAnyAttributes(EObject object) {
 		List<EStructuralFeature> list = new ArrayList<EStructuralFeature>();
-		EStructuralFeature anyAttribute = ((EObject)object).eClass().getEStructuralFeature("anyAttribute");
+		EStructuralFeature anyAttribute = ((EObject)object).eClass().getEStructuralFeature("anyAttribute"); //$NON-NLS-1$
 		if (anyAttribute!=null && object.eGet(anyAttribute) instanceof BasicFeatureMap) {
 			BasicFeatureMap map = (BasicFeatureMap)object.eGet(anyAttribute);
 			for (Entry entry : map) {
@@ -623,7 +659,7 @@ public class ModelUtil {
 	}
 	
 	public static EStructuralFeature getAnyAttribute(EObject object, String name) {
-		EStructuralFeature anyAttribute = ((EObject)object).eClass().getEStructuralFeature("anyAttribute");
+		EStructuralFeature anyAttribute = ((EObject)object).eClass().getEStructuralFeature("anyAttribute"); //$NON-NLS-1$
 		if (anyAttribute!=null && object.eGet(anyAttribute) instanceof BasicFeatureMap) {
 			BasicFeatureMap map = (BasicFeatureMap)object.eGet(anyAttribute);
 			for (Entry entry : map) {
@@ -638,7 +674,6 @@ public class ModelUtil {
 	/**
 	 * Removed "deprecated" annotation: ModelExtensionDescriptor.populateObject() needs this  
 	 */
-	@SuppressWarnings("unchecked")
 	public static EStructuralFeature addAnyAttribute(EObject childObject, String name, Object value) {
 		return addAnyAttribute(childObject, childObject.eClass().getEPackage().getNsURI(), name, value);
 	}
@@ -664,7 +699,7 @@ public class ModelUtil {
 		}
 		
 		// this featuremap can only hold attributes, not elements
-		String type = "E" + value.getClass().getSimpleName();
+		String type = "E" + value.getClass().getSimpleName(); //$NON-NLS-1$
 		EDataType eDataType = (EDataType)EcorePackage.eINSTANCE.getEClassifier(type);
 		if (eDataType!=null) {
 			if (attr==null) {
@@ -676,10 +711,16 @@ public class ModelUtil {
 				EClassifier dt = attr.getEType();
 				if (dt==null || !eDataType.getInstanceClass().isAssignableFrom(dt.getInstanceClass()))
 					throw new IllegalArgumentException(
-							"The attribute "+
-							childObject.eClass().getName()+"."+attr.getName()+
-							" of type "+attr.getEType().getName()+
-							" is not assignment compatible with value '"+value.toString()+"'");
+						NLS.bind(
+							Messages.ModelUtil_Illegal_Value,
+							new Object[] {
+								childObject.eClass().getName(),
+								attr.getName(),
+								attr.getEType().getName(),
+								value.toString()
+							}
+						)
+					);
 				anyMap.add( FeatureMapUtil.createEntry(attr, value) );
 			}
 		}
@@ -699,11 +740,11 @@ public class ModelUtil {
 	
 	public static EAttribute createDynamicAttribute(EPackage pkg, EObject object, String name, String type) {
 		if (isBpmnPackage(pkg)) {
-			throw new IllegalArgumentException("Can not add dynamic attribute to "+pkg.getName());
+			throw new IllegalArgumentException(NLS.bind(Messages.ModelUtil_Illegal_EPackage_For_Attribute, pkg.getName()));
 		}
 		EClass eClass = object instanceof EClass ? (EClass)object : object.eClass(); 
 		EAttribute attr = null;
-		EClass docRoot = (EClass)pkg.getEClassifier("DocumentRoot");
+		EClass docRoot = (EClass)pkg.getEClassifier("DocumentRoot"); //$NON-NLS-1$
 		if (docRoot==null) {
 			ExtendedMetaData.INSTANCE.demandPackage(pkg.getNsURI());
 			docRoot = ExtendedMetaData.INSTANCE.getDocumentRoot(pkg);
@@ -721,19 +762,24 @@ public class ModelUtil {
 		}
 		
 		if (type==null)
-			type = "EString";
+			type = "EString"; //$NON-NLS-1$
 		
 		EClassifier eClassifier = null;
 		if (type!=null) {
 			eClassifier = getEClassifierFromString(pkg,type);
 			if (eClassifier==null || !(eClassifier instanceof EDataType)) {
-				String message = "The model extension attribute '"+
-						name+"' for type '"+eClass.getName()+
-						"' can not be created because '"+
-						type+"' is not a known data type.";
+				String message =
+					NLS.bind(
+						Messages.ModelUtil_Unknown_Attribute_Data_Type,
+						new Object[] {
+							name,
+							eClass.getName(),
+							type
+						}
+					);
 	
 				MessageDialog.openError(Display.getDefault().getActiveShell(),
-						"Internal Error",
+						Messages.ModelUtil_Internal_Error,
 						message);
 				throw new IllegalArgumentException(message);
 			}
@@ -759,7 +805,7 @@ public class ModelUtil {
 	
 	public static EReference createDynamicReference(EPackage pkg, EObject object, String name, String type) {
 		if (isBpmnPackage(pkg)) {
-			throw new IllegalArgumentException("Can not add dynamic reference to "+pkg.getName());
+			throw new IllegalArgumentException(NLS.bind(Messages.ModelUtil_Illegal_EPackage_For_Reference,pkg.getName()));
 		}
 		EClass eClass = object instanceof EClass ? (EClass)object : object.eClass(); 
 		EReference ref = null;
@@ -768,7 +814,7 @@ public class ModelUtil {
 			ExtendedMetaData.INSTANCE.demandPackage(pkg.getNsURI());
 			docRoot = ExtendedMetaData.INSTANCE.getDocumentRoot(pkg);
 			if (docRoot==null) {
-				EClassifier e = pkg.getEClassifier("DocumentRoot");
+				EClassifier e = pkg.getEClassifier("DocumentRoot"); //$NON-NLS-1$
 				if (e instanceof EClass) {
 					docRoot = (EClass)e;
 				}
@@ -790,13 +836,18 @@ public class ModelUtil {
 		if (type!=null) {
 			eClassifier = getEClassifierFromString(pkg,type);
 			if (eClassifier==null || !(eClassifier instanceof EClass)) {
-				String message = "The model extension reference '"+
-						name+"' for object '"+eClass.getName()+
-						"' can not be created because '"+
-						type+"' is not a known object type.";
+				String message =
+					NLS.bind(
+						Messages.ModelUtil_Unknown_Reference_Object_Type,
+						new Object[] {
+							name,
+							eClass.getName(),
+							type
+						}
+					);
 	
 				MessageDialog.openError(Display.getDefault().getActiveShell(),
-						"Internal Error",
+						Messages.ModelUtil_Internal_Error,
 						message);
 				throw new IllegalArgumentException(message);
 			}
@@ -819,10 +870,10 @@ public class ModelUtil {
 	
 	public static boolean removeDynamicFeature(EPackage pkg, EObject object, String name) {
 		if (isBpmnPackage(pkg)) {
-			throw new IllegalArgumentException("Can not remove dynamic feature from "+pkg.getName());
+			throw new IllegalArgumentException("Can not remove dynamic feature from "+pkg.getName()); //$NON-NLS-1$
 		}
 		
-		EStructuralFeature anyAttribute = ((EObject)object).eClass().getEStructuralFeature("anyAttribute");
+		EStructuralFeature anyAttribute = ((EObject)object).eClass().getEStructuralFeature("anyAttribute"); //$NON-NLS-1$
 		if (anyAttribute!=null && object.eGet(anyAttribute) instanceof BasicFeatureMap) {
 			BasicFeatureMap map = (BasicFeatureMap)object.eGet(anyAttribute);
 			for (Entry entry : map) {
@@ -900,7 +951,7 @@ public class ModelUtil {
 		return wrapper instanceof DynamicEObjectImpl;
 	}
 	
-	public static boolean isElementSelected(IDiagramEditor editor, PictogramElement element) {
+	public static boolean isElementSelected(IDiagramContainer editor, PictogramElement element) {
 		for (PictogramElement search : editor.getSelectedPictogramElements()) {
 			if (search.equals(element)) {
 				return true;
@@ -911,27 +962,30 @@ public class ModelUtil {
 	
 	public static Resource getResource(EObject object) {
 		Resource resource = null;
-		if (object!=null) {
+		if (object instanceof Shape) {
+			ResourceSet rs = object.eResource().getResourceSet();
+			for (Resource r : rs.getResources()) {
+				if (r instanceof Bpmn2Resource) {
+					return r;
+				}
+			}
+		}
+		else  if (object!=null) {
 			resource = object.eResource();
 			if (resource==null) {
 				InsertionAdapter insertionAdapter = AdapterUtil.adapt(object, InsertionAdapter.class);
 				if (insertionAdapter!=null)
 					resource = insertionAdapter.getResource();
 				// TODO: can we use any of the referenced objects to find a Resource?
-//				if (resource==null) {
-//					EClass featureEType = object.eClass();
-//					for (EReference ref : featureEType.getEAllReferences()) {
-//						Object value = object.eGet(ref);
-//						if (value instanceof EObject) {
-//							resource = getResource((EObject) value);
-//							if (resource!=null)
-//								return resource;
-//						}
-//					}
-//				}
 			}
 		}
 		return resource;
+	}
+
+	public static Resource getResource(DiagramEditor editor) {
+		if (editor!=null)
+			return getResource(editor.getDiagramTypeProvider().getDiagram());
+		return null;
 	}
 	
 	public static EObject getContainer(EObject object) {
@@ -1013,9 +1067,11 @@ public class ModelUtil {
 	@SuppressWarnings("unchecked")
 	public static <T> List<T> getAllRootElements(Definitions definitions, final Class<T> class1) {
 		ArrayList<T> list = new ArrayList<T>();
-		for (RootElement re : definitions.getRootElements()) {
-			if (class1.isInstance(re)) {
-				list.add((T) re);
+		if (definitions!=null) {
+			for (RootElement re : definitions.getRootElements()) {
+				if (class1.isInstance(re)) {
+					list.add((T) re);
+				}
 			}
 		}
 		return list;
@@ -1033,6 +1089,7 @@ public class ModelUtil {
 		return v1.equals(v2);
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static EObject findNearestAncestor(EObject object, Class[] types) {
 		EObject ancestor = null;
 		if (object!=null) {
@@ -1049,10 +1106,12 @@ public class ModelUtil {
 		return ancestor;
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public static List<EObject> collectAncestorObjects(EObject object, String featureName, Class[] ancestorTypes) {
 		return collectAncestorObjects(object, featureName, ancestorTypes, null);
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static List<EObject> collectAncestorObjects(EObject object, String featureName, Class[] ancestorTypes, Class[] objectTypes) {
 		List<EObject> values = new ArrayList<EObject>();
 		EObject ancestor = ModelUtil.findNearestAncestor(object, ancestorTypes);
@@ -1077,17 +1136,19 @@ public class ModelUtil {
 		return values;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static <T> List<T> getAllExtensionAttributeValues(EObject object, Class<T> clazz) {
 		List<T> results = new ArrayList<T>();
 		
-		EStructuralFeature evf = object.eClass().getEStructuralFeature("extensionValues");
-		EList<ExtensionAttributeValue> list = (EList<ExtensionAttributeValue>)object.eGet(evf);
-		for (ExtensionAttributeValue eav : list) {
-			FeatureMap fm = eav.getValue();
-			for (Entry e : fm) {
-				EStructuralFeature sf = e.getEStructuralFeature();
-				if (clazz.isInstance(e.getValue())) {
-					results.add((T)e.getValue());
+		if (object!=null) {
+			EStructuralFeature evf = object.eClass().getEStructuralFeature("extensionValues"); //$NON-NLS-1$
+			EList<ExtensionAttributeValue> list = (EList<ExtensionAttributeValue>)object.eGet(evf);
+			for (ExtensionAttributeValue eav : list) {
+				FeatureMap fm = eav.getValue();
+				for (Entry e : fm) {
+					if (clazz.isInstance(e.getValue())) {
+						results.add((T)e.getValue());
+					}
 				}
 			}
 		}
@@ -1135,8 +1196,9 @@ public class ModelUtil {
 		return new ArrayList<ExtensionAttributeValue>();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static void addExtensionAttributeValue(EObject object, EStructuralFeature feature, Object value) {
-		EStructuralFeature evf = object.eClass().getEStructuralFeature("extensionValues");
+		EStructuralFeature evf = object.eClass().getEStructuralFeature("extensionValues"); //$NON-NLS-1$
 		EList<EObject> list = (EList<EObject>)object.eGet(evf);
 		
 		if (list.size()==0) {
@@ -1153,33 +1215,15 @@ public class ModelUtil {
 		}
 	}
 
-	/**
-	 * Dummy objects are constructed when needed for an ExtendedPropertiesAdapter. The adapter factory
-	 * (@see org.eclipse.bpmn2.modeler.ui.adapters.Bpmn2EditorItemProviderAdapterFactory) knows how to
-	 * construct an ExtendedPropertiesAdapter from an EClass, however the adapter itself needs an EObject.
-	 * This method constructs and caches these dummy objects as they are needed.
-	 * 
-	 * @param featureEType
-	 * @return
-	 */
-	public static EObject getDummyObject(EClass eclass) {
-		EObject object = dummyObjects.get(eclass);
-		if (object==null && eclass.eContainer() instanceof EPackage) {
-	    	EPackage pkg = (EPackage)eclass.eContainer();
-			object = pkg.getEFactoryInstance().create(eclass);
-			dummyObjects.put(eclass, object);
-		}
-		return object;
-	}
-
 	/*
 	 * Various model object and feature UI property methods
 	 */
+	@SuppressWarnings("rawtypes")
 	public static String getLabel(Object object) {
-		String label = "";
+		String label = ""; //$NON-NLS-1$
 		if (object instanceof EObject) {
 			EObject eObject = (EObject)object;
-			ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(eObject, ExtendedPropertiesAdapter.class);
+			ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(eObject);
 			if (adapter!=null)
 				label = adapter.getObjectDescriptor().getLabel(eObject);
 			else
@@ -1187,31 +1231,34 @@ public class ModelUtil {
 		}
 		else
 			label = object.toString();
-		label = label.replaceAll(" Ref$", "");
+		label = label.replaceAll(" Ref$", ""); //$NON-NLS-1$ //$NON-NLS-2$
 		return label;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public static void setLabel(EObject object, EStructuralFeature feature, String label) {
-		ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(object, ExtendedPropertiesAdapter.class);
+		ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object, feature);
 		if (adapter!=null)
 			adapter.getFeatureDescriptor(feature).setLabel(label);
 	}
 
+	@SuppressWarnings("rawtypes")
 	public static String getLabel(EObject object, EStructuralFeature feature) {
-		String label = "";
-		ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(object, ExtendedPropertiesAdapter.class);
+		String label = ""; //$NON-NLS-1$
+		ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object, feature);
 		if (adapter!=null)
 			label = adapter.getFeatureDescriptor(feature).getLabel(object);
 		else
 			label = toDisplayName( feature.getName() );
-		label = label.replaceAll(" Ref$", "");
+		label = label.replaceAll(" Ref$", ""); //$NON-NLS-1$ //$NON-NLS-2$
 		return label;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public static String getDisplayName(Object object) {
 		if (object instanceof EObject) {
 			EObject eObject = (EObject)object;
-			ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(eObject, ExtendedPropertiesAdapter.class);
+			ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(eObject);
 			if (adapter!=null) {
 				String text = adapter.getObjectDescriptor().getDisplayName(eObject);
 				if (text!=null && !text.isEmpty()) {
@@ -1223,18 +1270,20 @@ public class ModelUtil {
 		return object==null ? null : object.toString();
 	}
 
+	@SuppressWarnings("rawtypes")
 	public static String getDisplayName(EObject object, EStructuralFeature feature) {
 		if (feature==null)
 			return getDisplayName(object);
 		
-		ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(object, ExtendedPropertiesAdapter.class);
+		ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object, feature);
 		if (adapter!=null)
 			return adapter.getFeatureDescriptor(feature).getDisplayName(object);
 		return getLongDisplayName(object, feature);
 	}
 
+	@SuppressWarnings("rawtypes")
 	public static boolean setMultiLine(EObject object, EStructuralFeature feature, boolean multiLine) {
-		ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(object, ExtendedPropertiesAdapter.class);
+		ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object, feature);
 		if (adapter!=null) {
 			adapter.getFeatureDescriptor(feature).setMultiLine(multiLine);
 			return true;
@@ -1242,21 +1291,23 @@ public class ModelUtil {
 		return false;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public static boolean isMultiLine(EObject object, EStructuralFeature feature) {
 		if (feature==null)
 			return false;
 		
-		ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(object, ExtendedPropertiesAdapter.class);
+		ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object, feature);
 		if (adapter!=null)
 			return adapter.getFeatureDescriptor(feature).isMultiLine(object);
 		return false;
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static Hashtable<String, Object> getChoiceOfValues(EObject object, EStructuralFeature feature) {
 		if (feature==null)
 			return null;
 		
-		ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(object, ExtendedPropertiesAdapter.class);
+		ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object, feature);
 		if (adapter!=null)
 			return adapter.getFeatureDescriptor(feature).getChoiceOfValues(object);
 		
@@ -1271,112 +1322,73 @@ public class ModelUtil {
 		return null;
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static boolean setValue(TransactionalEditingDomain domain, final EObject object, final EStructuralFeature feature, Object value) {
-		ExtendedPropertiesAdapter adapter = AdapterUtil.adapt(object, ExtendedPropertiesAdapter.class);
-		Object oldValue = adapter==null ? object.eGet(feature) : adapter.getFeatureDescriptor(feature).getValue();
-		if (isStringWrapper(oldValue)) {
-			oldValue = getStringWrapperValue(oldValue);
-			if (value instanceof String)
-				value = ModelUtil.createStringWrapper((String)value);
-		}
-		final Object newValue = (feature instanceof EReference && !(value instanceof EObject)) ? null : value;
-		
-		boolean valueChanged = (newValue != oldValue);
-		if (newValue!=null && oldValue!=null)
-			valueChanged = !newValue.equals(oldValue);
-		if (!object.eIsSet(feature))
-			valueChanged = true;
-		
-		if (valueChanged) {
-			try {
-				InsertionAdapter.executeIfNeeded(object);
-				if (newValue instanceof EObject) {
-					// make sure the new object is added to its control first
-					// so that it inherits the control's Resource and EditingDomain
-					// before we try to change its value.
-					InsertionAdapter.executeIfNeeded((EObject)newValue);
+		ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object, feature);
+
+		try {
+			InsertionAdapter.executeIfNeeded(object);
+			if (value instanceof EObject) {
+				// make sure the new object is added to its control first
+				// so that it inherits the control's Resource and EditingDomain
+				// before we try to change its value.
+				InsertionAdapter.executeIfNeeded((EObject)value);
+			}
+			if (value instanceof String && ((String) value).isEmpty()) {
+				if (!(feature.getDefaultValue() instanceof String))
+					value = null;
+			}
+			
+			if (adapter!=null) {
+				if (!adapter.getFeatureDescriptor(feature).equals(value)) {
+					adapter.getFeatureDescriptor(feature).setValue(value);
 				}
-				
-				if (newValue==null){ // DO NOT use isEmpty() because this erases an object's anyAttribute feature!
-					adapter.getFeatureDescriptor(feature).unset();
-				}
-				else if (adapter!=null) { 			// use the Extended Properties adapter if there is one
-					adapter.getFeatureDescriptor(feature).setValue(newValue);
-				}
-				else {
-					// fallback is to set the new value here using good ol' EObject.eSet()
-					if (domain!=null) {
-						domain.getCommandStack().execute(new RecordingCommand(domain) {
-							@Override
-							protected void doExecute() {
-								if (object.eGet(feature) instanceof List) {
-									((List)object.eGet(feature)).add(newValue);
-								}
-								else
-									object.eSet(feature, newValue);
-							}
-						});
-					}
-					else {
+			}
+			else if (domain!=null) {
+				final Object v = value;
+				domain.getCommandStack().execute(new RecordingCommand(domain) {
+					@Override
+					protected void doExecute() {
 						if (object.eGet(feature) instanceof List) {
-							((List)object.eGet(feature)).add(newValue);
+							((List)object.eGet(feature)).add(v);
 						}
 						else
-							object.eSet(feature, newValue);
+							object.eSet(feature, v);
 					}
-				}
-			} catch (Exception e) {
-				ErrorUtils.showErrorMessage(e.getMessage());
-				return false;
+				});
 			}
+			else {
+				if (object.eGet(feature) instanceof List) {
+					((List)object.eGet(feature)).add(value);
+				}
+				else
+					object.eSet(feature, value);
+			}
+		} catch (Exception e) {
+			ErrorUtils.showErrorMessage(e.getMessage());
+			return false;
 		}
 		return true;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public static Object getValue(final EObject object, final EStructuralFeature feature) {
-		ExtendedPropertiesAdapter adapter = AdapterUtil.adapt(object, ExtendedPropertiesAdapter.class);
+		ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object, feature);
 		Object value = adapter==null ? object.eGet(feature) : adapter.getFeatureDescriptor(feature).getValue();
 		return value;
 	}
+
+	public static boolean compare(EObject object1, EObject object2, boolean similar) {
+		ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object1, null);
+		if (adapter!=null)
+			return adapter.getObjectDescriptor().compare(object1, object2, similar);
+		return object1.equals(object2);
+	}
 	
-	public static EObject createObject(Object object) {
-		if (object instanceof EObject)
-			return createObject(((EObject)object).eResource(),object);
-		return createObject(null,object);
-	}
-
-	public static EObject createObject(Resource resource, Object object) {
-		ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(object, ExtendedPropertiesAdapter.class);
-		if (adapter!=null)
-			return adapter.getObjectDescriptor().createObject(resource, object);
-		return null;
-	}
-
-	public static EObject createFeature(EObject object, EStructuralFeature feature) {
-		return createFeature(object, feature, null);
-	}
-
-	public static EObject createFeature(EObject object, EStructuralFeature feature, EClass eclass) {
-		return createFeature(object.eResource(), object, feature, eclass);
-	}
-
-	public static EObject createFeature(Resource resource, EObject object, EStructuralFeature feature, EClass eclass) {
-		ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(object, ExtendedPropertiesAdapter.class);
-		if (adapter!=null)
-			return adapter.getFeatureDescriptor(feature).createFeature(resource, object, eclass);
-		// There is no properties adapter registered for this class. This can only happen if the object to
-		// be created is in an external package. If this is the case, simply construct an object using the
-		// registered model factory.
-		EPackage pkg = eclass.getEPackage();
-		if (!isBpmnPackage(pkg)) {
-			return pkg.getEFactoryInstance().create(eclass);
-		}
-		return null;
-	}
-
+	@SuppressWarnings("rawtypes")
 	public static boolean canEdit(EObject object, EStructuralFeature feature) {
 		if (feature!=null && feature.getEType() instanceof EClass) {
-			ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(object, ExtendedPropertiesAdapter.class);
+			ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object, feature);
 			if (adapter!=null) {
 				Object result = adapter.getProperty(feature, ExtendedPropertiesAdapter.UI_CAN_EDIT);
 				if (result instanceof Boolean)
@@ -1394,9 +1406,10 @@ public class ModelUtil {
 		return false;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public static boolean canCreateNew(EObject object, EStructuralFeature feature) {
 		if (feature!=null && feature.getEType() instanceof EClass) {
-			ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(object, ExtendedPropertiesAdapter.class);
+			ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object, feature);
 			if (adapter!=null) {
 				Object result = adapter.getProperty(feature, ExtendedPropertiesAdapter.UI_CAN_CREATE_NEW);
 				if (result instanceof Boolean)
@@ -1414,9 +1427,10 @@ public class ModelUtil {
 		return false;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public static boolean canEditInline(EObject object, EStructuralFeature feature) {
 		if (feature!=null && feature.getEType() instanceof EClass) {
-			ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(object, ExtendedPropertiesAdapter.class);
+			ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object, feature);
 			if (adapter!=null) {
 				Object result = adapter.getProperty(feature, ExtendedPropertiesAdapter.UI_CAN_EDIT_INLINE);
 				if (result instanceof Boolean)
@@ -1426,9 +1440,10 @@ public class ModelUtil {
 		return false;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public static boolean canSetNull(EObject object, EStructuralFeature feature) {
 		if (feature!=null && feature.getEType() instanceof EClass) {
-			ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(object, ExtendedPropertiesAdapter.class);
+			ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object, feature);
 			if (adapter!=null) {
 				Object result = adapter.getProperty(feature, ExtendedPropertiesAdapter.UI_CAN_SET_NULL);
 				if (result instanceof Boolean)
@@ -1439,6 +1454,7 @@ public class ModelUtil {
 		return false;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public static boolean isMultiChoice(EObject object, EStructuralFeature feature) {
 		if (feature==null) {
 			return false;
@@ -1447,7 +1463,7 @@ public class ModelUtil {
 			return true;
 		}
 		
-		ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(object, ExtendedPropertiesAdapter.class);
+		ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object, feature);
 		if (adapter!=null) {
 			Object result = adapter.getProperty(feature, ExtendedPropertiesAdapter.UI_IS_MULTI_CHOICE);
 			if (result instanceof Boolean)
@@ -1465,33 +1481,37 @@ public class ModelUtil {
 		if (object instanceof BPMNDiagram) {
 			Bpmn2DiagramType type = getDiagramType((BPMNDiagram)object); 
 			if (type == Bpmn2DiagramType.CHOREOGRAPHY) {
-				objName = "Choreography Diagram";
+				objName = Messages.ModelUtil_Choreography_Diagram;
 			}
 			else if (type == Bpmn2DiagramType.COLLABORATION) {
-				objName = "Collaboration Diagram";
+				objName = Messages.ModelUtil_Collaboration_Diagram;
 			}
 			else if (type == Bpmn2DiagramType.PROCESS) {
-				objName = "Process Diagram";
+				objName = Messages.ModelUtil_Process_Diagram;
 			}
 		}
 		if (objName==null){
 			objName = toDisplayName( object.eClass().getName() );
 		}
-		EStructuralFeature feature = object.eClass().getEStructuralFeature("name");
+		EStructuralFeature feature = object.eClass().getEStructuralFeature("name"); //$NON-NLS-1$
 		if (feature!=null) {
 			String name = (String)object.eGet(feature);
 			if (name==null || name.isEmpty())
-				name = "Unnamed " + objName;
+				name = Messages.ModelUtil_Unnamed_Object + objName;
 			else
-				name = objName + " \"" + name + "\"";
+				name = objName + " \"" + name + "\""; //$NON-NLS-1$ //$NON-NLS-2$
 			return name;
 		}
-		feature = object.eClass().getEStructuralFeature("id");
+		feature = object.eClass().getEStructuralFeature("id"); //$NON-NLS-1$
 		if (feature!=null) {
-			if (object.eGet(feature)!=null)
-				objName = (String)object.eGet(feature);
+			String id = (String)object.eGet(feature);
+			if (id==null || id.isEmpty())
+				id = Messages.ModelUtil_Unknown_Object + objName;
+			else
+				id = objName + " \"" + id + "\""; //$NON-NLS-1$ //$NON-NLS-2$
+			return id;
 		}
-		feature = object.eClass().getEStructuralFeature("qName");
+		feature = object.eClass().getEStructuralFeature("qName"); //$NON-NLS-1$
 		if (feature!=null) {
 			Object qName = object.eGet(feature);
 			if (qName!=null) {
@@ -1504,7 +1524,7 @@ public class ModelUtil {
 	public static String getLongDisplayName(EObject object, EStructuralFeature feature) {
 		Object value = object.eGet(feature);
 		if (value==null)
-			return "";
+			return ""; //$NON-NLS-1$
 		return value.toString();
 	}
 
@@ -1517,13 +1537,16 @@ public class ModelUtil {
 	}
 
 	public static void disposeChildWidgets(Composite parent) {
+		int i = 0;
 		Control[] kids = parent.getChildren();
 		for (Control k : kids) {
 			if (k instanceof Composite) {
 				disposeChildWidgets((Composite)k);
 			}
 			k.dispose();
+			++i;
 		}
+		kids = parent.getChildren();
 	}
 
 	/**
@@ -1534,7 +1557,7 @@ public class ModelUtil {
 		Control[] kids = parent.getChildren();
 		for (Control k : kids) {
 			if (k.isDisposed())
-				Activator.logError(new SWTException("Widget is disposed."));
+				Activator.logError(new SWTException("Widget is disposed.")); //$NON-NLS-1$
 			if (k instanceof Composite) {
 				recursivelayout((Composite)k);
 				((Composite)k).layout(true);
@@ -1571,4 +1594,70 @@ public class ModelUtil {
 		}
 		return null;
 	}
+	
+	/**
+	 * This is a workaround to deal with FormalExpressions: if the "body" of an expression
+	 * is null, the default FormalExpression.getBody() method returns the string "null"
+	 * which is not exactly what we want! We need to know if the body is actually null,
+	 * or if it contains the string "null".
+	 * 
+	 * @param expression
+	 * @return
+	 */
+	public static String getExpressionBody(FormalExpression expression) {
+		String body = null;
+        if (expression.getMixed() != null && !expression.getMixed().isEmpty()) {
+            StringBuilder result = new StringBuilder();
+            boolean isNull = true;
+            for (FeatureMap.Entry cur : expression.getMixed()) {
+                switch (cur.getEStructuralFeature().getFeatureID()) {
+                case XMLTypePackage.XML_TYPE_DOCUMENT_ROOT__CDATA:
+                case XMLTypePackage.XML_TYPE_DOCUMENT_ROOT__TEXT:
+                	if (cur.getValue()!=null) {
+                		isNull = false;
+                		result.append(cur.getValue());
+                	}
+                    break;
+
+                default:
+                    break;
+                }
+            }
+            if (!isNull)
+            	body = result.toString();
+        }
+        return body;
+    }
+
+	public static List<Tuple<EObject,EObject>> findDuplicateIds(Resource resource) {
+		List<Tuple<EObject,EObject>> list = new ArrayList<Tuple<EObject,EObject>>();
+		Definitions definitions = ModelUtil.getDefinitions(resource);
+		TreeIterator<EObject> iter1 = definitions.eAllContents();
+		HashSet<EObject> map = new HashSet<EObject>();
+		while (iter1.hasNext()) {
+			EObject o1 = iter1.next();
+			EStructuralFeature id1Feature = o1.eClass().getEIDAttribute();
+			if (id1Feature!=null && !map.contains(o1)) {
+				TreeIterator<EObject> iter2 = definitions.eAllContents();
+				map.add(o1);
+				String id1 = (String)o1.eGet(id1Feature);
+				
+				while (iter2.hasNext()) {
+					EObject o2 = iter2.next();
+					EStructuralFeature id2Feature = o2.eClass().getEIDAttribute();
+					if (id2Feature!=null && o1!=o2 && !map.contains(o2)) {
+						String id2 = (String)o2.eGet(id2Feature);
+						if (id1!=null && !id1.isEmpty() && id2!=null && !id2.isEmpty()) {
+							if (id1.equals(id2)) {
+								list.add( new Tuple<EObject,EObject>(o1,o2) );
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		return list;
+	}
+	
 }

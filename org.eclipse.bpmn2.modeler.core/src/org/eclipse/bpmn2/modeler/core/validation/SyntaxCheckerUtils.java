@@ -38,7 +38,7 @@ public class SyntaxCheckerUtils {
 
 	public static final String toNCName(String name) {
 		if (name==null || name.isEmpty())
-			return "_";
+			return "_"; //$NON-NLS-1$
 		
 		StringBuffer ncname = new StringBuffer();
 		int nameLength = name.length();

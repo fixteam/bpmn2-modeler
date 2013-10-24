@@ -17,9 +17,9 @@ import org.eclipse.bpmn2.di.BPMNEdge;
 import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.di.DIUtils;
 import org.eclipse.bpmn2.modeler.core.features.BendpointConnectionRouter;
-import org.eclipse.bpmn2.modeler.core.features.ConnectionFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
+import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.dd.dc.Point;
 import org.eclipse.dd.di.DiagramElement;
 import org.eclipse.graphiti.features.IFeatureProvider;
@@ -41,24 +41,20 @@ public class MoveBendpointFeature extends DefaultMoveBendpointFeature {
 			FreeFormConnection connection = context.getConnection();
 			BaseElement element = (BaseElement) BusinessObjectUtil.getFirstElementOfType(connection, BaseElement.class);
 			BPMNEdge edge = DIUtils.findBPMNEdge(element);
-			int index = context.getBendpointIndex() + 1;
-			Point p = edge.getWaypoint().get(index);
-			p.setX(context.getX());
-			p.setY(context.getY());
-			
-			// also need to move the connection point if there is one at this bendpoint
-			Shape connectionPointShape = AnchorUtil.getConnectionPointAt(connection, context.getBendpoint());
-			if (connectionPointShape!=null)
-				AnchorUtil.setConnectionPointLocation(connectionPointShape, context.getX(), context.getY());
-			
-			if (index == 1) {
-				AnchorUtil.reConnect((DiagramElement) edge.getSourceElement(), getDiagram());
-			} else if (index == connection.getBendpoints().size()) {
-				AnchorUtil.reConnect((DiagramElement) edge.getTargetElement(), getDiagram());
+			if (edge!=null) {
+				int index = context.getBendpointIndex() + 1;
+				Point p = edge.getWaypoint().get(index);
+				p.setX(context.getX());
+				p.setY(context.getY());
+				
+				// also need to move the connection point if there is one at this bendpoint
+				Shape connectionPointShape = AnchorUtil.getConnectionPointAt(connection, context.getBendpoint());
+				if (connectionPointShape!=null)
+					AnchorUtil.setConnectionPointLocation(connectionPointShape, context.getX(), context.getY());
+	
+				BendpointConnectionRouter.setMovedBendpoint(connection, context.getBendpointIndex());
+				FeatureSupport.updateConnection(getFeatureProvider(), connection);
 			}
-
-			BendpointConnectionRouter.setMovedBendpoint(connection, context.getBendpointIndex());
-			ConnectionFeatureContainer.updateConnection(getFeatureProvider(), connection);
 			
 		} catch (Exception e) {
 			Activator.logError(e);

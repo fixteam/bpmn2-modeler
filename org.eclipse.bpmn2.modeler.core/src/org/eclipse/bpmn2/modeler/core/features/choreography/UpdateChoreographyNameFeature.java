@@ -47,7 +47,7 @@ public class UpdateChoreographyNameFeature extends AbstractUpdateFeature {
 		if (activity.getName().equals(getBodyText(context).getValue())) {
 			return Reason.createFalseReason();
 		} else {
-			return Reason.createTrueReason("Name is out of date");
+			return Reason.createTrueReason(Messages.UpdateChoreographyNameFeature_Name);
 		}
 	}
 

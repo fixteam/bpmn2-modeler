@@ -75,7 +75,7 @@ public class MessageFlowPropertiesAdapter extends ExtendedPropertiesAdapter<Mess
 			@Override
 			public String getDisplayName(Object context) {
 				final MessageFlow flow = adopt(context);
-				String text = "";
+				String text = ""; //$NON-NLS-1$
 				if (flow.getName()!=null)
 					text = flow.getName();
 				else {
@@ -84,12 +84,12 @@ public class MessageFlowPropertiesAdapter extends ExtendedPropertiesAdapter<Mess
 					}
 					
 					if (flow.getSourceRef() != null) {
-						text += "(" + ModelUtil.getDisplayName(flow.getSourceRef())+"->";
+						text += "(" + ModelUtil.getDisplayName(flow.getSourceRef())+"->"; //$NON-NLS-1$ //$NON-NLS-2$
 						
 						if (flow.getTargetRef() != null) {
 							text += ModelUtil.getDisplayName(flow.getTargetRef());
 						}
-						text += ")";
+						text += ")"; //$NON-NLS-1$
 					}
 				}
 				return text;

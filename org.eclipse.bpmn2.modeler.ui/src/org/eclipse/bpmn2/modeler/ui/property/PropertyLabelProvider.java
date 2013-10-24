@@ -16,22 +16,17 @@ package org.eclipse.bpmn2.modeler.ui.property;
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.Process;
 import org.eclipse.bpmn2.di.BPMNDiagram;
-import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2CreateFeature;
-import org.eclipse.bpmn2.modeler.core.features.flow.AbstractCreateFlowFeature;
+import org.eclipse.bpmn2.modeler.core.Bpmn2TabbedPropertySheetPage;
+import org.eclipse.bpmn2.modeler.core.runtime.CustomTaskDescriptor;
+import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
-import org.eclipse.bpmn2.modeler.ui.diagram.BPMNFeatureProvider;
-import org.eclipse.bpmn2.modeler.ui.editor.BPMN2Editor;
 import org.eclipse.bpmn2.modeler.ui.util.PropertyUtil;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.graphiti.features.IFeature;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
-import org.eclipse.graphiti.ui.internal.parts.ContainerShapeEditPart;
-import org.eclipse.graphiti.ui.services.GraphitiUi;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.graphics.Image;
 
 /**
@@ -42,28 +37,77 @@ public class PropertyLabelProvider extends LabelProvider {
 
 	@Override
 	public Image getImage(Object element) {
-		EObject o = BusinessObjectUtil.getBusinessObjectForSelection((ISelection)element);
-		if (o!=null)
-			return PropertyUtil.getImage(o);
-		return null;
+		EObject object = getBusinessObject(element);
+		if (object!=null) {
+			CustomTaskDescriptor ctd = getCustomTaskDescriptor(object); 
+			if (ctd!=null) {
+				return PropertyUtil.getImage("CustomTask"); //$NON-NLS-1$
+			}
+			return PropertyUtil.getImage(object);
+		}
+		return super.getImage(element);
 	}
 
 	@Override
 	public String getText(Object element) {
-		EObject be = BusinessObjectUtil.getBusinessObjectForSelection((ISelection)element);
-		if (be!=null) {
-			if (be instanceof BPMNDiagram) {
-				BaseElement bpmnElement = ((BPMNDiagram)be).getPlane().getBpmnElement();
+		EObject object = getBusinessObject(element);
+		if (object!=null) {
+			if (object instanceof BPMNDiagram) {
+				BaseElement bpmnElement = ((BPMNDiagram)object).getPlane().getBpmnElement();
 				if (bpmnElement instanceof Process) {
-					be = bpmnElement;
+					object = bpmnElement;
 				}
 			}
-			return ModelUtil.getDisplayName(be);
+			String text = ModelUtil.getDisplayName(object);
+			// check if this is a CustomTask
+			CustomTaskDescriptor ctd = getCustomTaskDescriptor(object); 
+			if (ctd!=null) {
+				// it is! build the property tab title from the CustomTask name
+				// and the object's name (which could be the same)
+				String name = ctd.getName();
+				if (!text.equals(name))
+					return name + ": " + text; //$NON-NLS-1$
+			}
+			return text;
 		}
-		PictogramElement pe = BusinessObjectUtil.getPictogramElementForSelection((ISelection)element);
-		if (pe!=null && pe.getGraphicsAlgorithm()!=null) {
-			return ModelUtil.getLabel( pe.getGraphicsAlgorithm() );
-		}
+//		PictogramElement pe = BusinessObjectUtil.getPictogramElementForSelection((ISelection)element);
+//		if (pe!=null && pe.getGraphicsAlgorithm()!=null) {
+//			return ModelUtil.getLabel( pe.getGraphicsAlgorithm() );
+//		}
 		return super.getText(element);
+	}
+	
+	private EObject getBusinessObject(Object element) {
+		if (element instanceof ISelection) {
+			return BusinessObjectUtil.getBusinessObjectForSelection((ISelection)element);
+		}
+		else if (element instanceof EObject) {
+			return (EObject) element;
+		}
+		return null;
+		
+	}
+	
+	private CustomTaskDescriptor getCustomTaskDescriptor(EObject object) {
+		TargetRuntime rt = getTargetRuntime(object);
+		if (rt!=null) {
+			for (CustomTaskDescriptor ctd : rt.getCustomTasks()) {
+				if (ctd.getFeatureContainer()!=null) {
+					String id = ctd.getFeatureContainer().getId(object);
+					if (id!=null) {
+						return ctd;
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
+	private TargetRuntime getTargetRuntime(EObject object) {
+		DiagramEditor editor = ModelUtil.getDiagramEditor(object);
+		if (editor!=null) {
+			return (TargetRuntime) editor.getAdapter(TargetRuntime.class);
+		}
+		return null;
 	}
 }

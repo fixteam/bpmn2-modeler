@@ -54,7 +54,7 @@ public class JbpmCustomTaskPropertySection extends JbpmTaskPropertySection imple
 				if (object.eClass() == Bpmn2Package.eINSTANCE.getTask() && isModelObjectEnabled(object)) {
 					List<EStructuralFeature> features = ModelUtil.getAnyAttributes(object);
 					for (EStructuralFeature f : features) {
-						if ("displayName".equals(f.getName()))
+						if ("displayName".equals(f.getName())) //$NON-NLS-1$
 							return true;
 					}
 				}

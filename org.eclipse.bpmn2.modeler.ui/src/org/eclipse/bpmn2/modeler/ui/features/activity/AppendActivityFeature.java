@@ -16,7 +16,7 @@ package org.eclipse.bpmn2.modeler.ui.features.activity;
 import org.eclipse.bpmn2.Activity;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.modeler.ui.ImageProvider;
-import org.eclipse.bpmn2.modeler.ui.features.AbstractAppendNodeNodeFeature;
+import org.eclipse.bpmn2.modeler.ui.features.AbstractAppendNodeFeature;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.graphiti.features.IFeatureProvider;
 
@@ -24,7 +24,7 @@ import org.eclipse.graphiti.features.IFeatureProvider;
  * @author Bob Brodt
  *
  */
-public class AppendActivityFeature extends AbstractAppendNodeNodeFeature<Activity> {
+public class AppendActivityFeature extends AbstractAppendNodeFeature<Activity> {
 
 	/**
 	 * @param fp
@@ -35,12 +35,12 @@ public class AppendActivityFeature extends AbstractAppendNodeNodeFeature<Activit
 
 	@Override
 	public String getName() {
-		return "Append Activity";
+		return Messages.AppendActivityFeature_Name;
 	}
 
 	@Override
 	public String getDescription() {
-		return "Create a new Activity and connect it to this item";
+		return Messages.AppendActivityFeature_Description;
 	}
 
 	@Override

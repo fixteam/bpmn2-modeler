@@ -39,7 +39,7 @@ public class MessageFlowDetailComposite extends DefaultDetailComposite {
 		if (propertiesProvider==null) {
 			propertiesProvider = new AbstractPropertiesProvider(object) {
 				String[] properties = new String[] {
-						"messageRef",
+						"messageRef", //$NON-NLS-1$
 				};
 				
 				@Override

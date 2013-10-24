@@ -44,7 +44,7 @@ public class OperationRefFeatureDescriptor<T extends BaseElement> extends Featur
 	public String getChoiceString(Object value) {
 		Operation op = (Operation)value;
 		Interface intf = (Interface)op.eContainer();
-		return intf.getName() + "/" + op.getName();
+		return intf.getName() + "/" + op.getName(); //$NON-NLS-1$
 	}
 
 	@Override

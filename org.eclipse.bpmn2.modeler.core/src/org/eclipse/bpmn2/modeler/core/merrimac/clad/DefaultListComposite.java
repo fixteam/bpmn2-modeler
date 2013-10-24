@@ -10,18 +10,33 @@
  *******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.merrimac.clad;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ModelSubclassSelectionDialog;
+import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
+import org.eclipse.dd.di.DiagramElement;
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.util.EObjectContainmentEList;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.Window;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.dialogs.ListDialog;
 
 public class DefaultListComposite extends AbstractListComposite {
 	protected EClass listItemClass;
@@ -49,11 +64,9 @@ public class DefaultListComposite extends AbstractListComposite {
 			// this is not a containment list so we can't add it
 			// because we don't know where the new object belongs
 			
-			MessageDialog.openError(getShell(), "Internal Error",
-					"Can not create a new " +
-					listItemClass.getName() +
-					" because the list is not a control. " +
-					"The default addListItem() method must be implemented."
+			MessageDialog.openError(getShell(), Messages.DefaultListComposite_Internal_Error_Title,
+				NLS.bind(Messages.DefaultListComposite_Error_Internal_Error_Message_No_List,
+					listItemClass.getName())
 			);
 			return null;
 		}
@@ -63,15 +76,14 @@ public class DefaultListComposite extends AbstractListComposite {
 				if (listItemClass==null)
 					return null; // user cancelled
 			}
-			newItem = ModelUtil.createFeature(object,feature,listItemClass);
+			newItem = Bpmn2ModelerFactory.createFeature(object,feature,listItemClass);
 			if (newItem==null) {
-				MessageDialog.openError(getShell(), "Internal Error",
-						"Can not create a new " +
-						listItemClass.getName() +
-						" because its Object Factory is unknown."
+				MessageDialog.openError(getShell(), Messages.DefaultListComposite_Internal_Error_Title,
+					NLS.bind(Messages.DefaultListComposite_Internal_Error_Message_No_Factory,
+						listItemClass.getName())
 				);
 			}
-			else
+			else if (!list.contains(newItem))
 				list.add(newItem);
 		}
 		return newItem;
@@ -105,10 +117,10 @@ public class DefaultListComposite extends AbstractListComposite {
 	 * @see org.eclipse.bpmn2.modeler.ui.property.AbstractListComposite#editListItem(org.eclipse.emf.ecore.EObject, org.eclipse.emf.ecore.EStructuralFeature)
 	 */
 	protected EObject editListItem(EObject object, EStructuralFeature feature) {
-		MessageDialog.openError(getShell(), "Internal Error",
-				"A List Item Editor has not been defined for "+
-				ModelUtil.getDisplayName(object, feature)
-				);
+		MessageDialog.openError(getShell(), Messages.DefaultListComposite_Internal_Error_Title,
+			NLS.bind(Messages.DefaultListComposite_Internal_Error_Message_No_Editor,
+				ModelUtil.getDisplayName(object, feature))
+		);
 		return null;
 	}
 	
@@ -118,6 +130,10 @@ public class DefaultListComposite extends AbstractListComposite {
 	protected Object removeListItem(EObject object, EStructuralFeature feature, int index) {
 		EList<EObject> list = (EList<EObject>)object.eGet(feature);
 		int[] map = buildIndexMap(object,feature);
+		if (list instanceof EObjectContainmentEList) {
+			if (!canDelete(list.get(map[index])))
+				return null;
+		}
 		EObject selected = null;
 		if (index<map.length-1)
 			selected = list.get(map[index+1]);
@@ -129,12 +145,22 @@ public class DefaultListComposite extends AbstractListComposite {
 		EList<EObject> list = (EList<EObject>)object.eGet(feature);
 		int[] map = buildIndexMap(object,feature);
 		EObject removed = list.get(map[index]);
+		if (list instanceof EObjectContainmentEList) {
+			if (!canDelete(removed))
+				return null;
+		}
 		EObject selected = null;
 		if (index<map.length-1)
 			selected = list.get(map[index+1]);
 		// this ensures that all references to this Interface are removed
 		EcoreUtil.delete(removed);
 		return selected;
+	}
+	
+	protected Object getListItem(EObject object, EStructuralFeature feature, int index) {
+		EList<EObject> list = (EList<EObject>)object.eGet(feature);
+		int[] map = buildIndexMap(object,feature);
+		return list.get(map[index]);
 	}
 	
 	protected Object moveListItemUp(EObject object, EStructuralFeature feature, int index) {
@@ -163,5 +189,119 @@ public class DefaultListComposite extends AbstractListComposite {
 	
 	public EClass getListItemClass(EObject object, EStructuralFeature feature) {
 		return listItemClass;
+	}
+	
+	protected boolean canDelete(EObject objectToDelete) {
+		// make sure this object is not being referenced
+		// anywhere else. If it is, we can't delete it!
+		List<EObject> allDeleted = new ArrayList<EObject>();
+		allDeleted.add(objectToDelete);
+		TreeIterator<EObject> iter = objectToDelete.eAllContents();
+		while (iter.hasNext()) {
+			EObject o = iter.next();
+			allDeleted.add(o);
+		}
+		
+		List<EObject> references = new ArrayList<EObject>();
+		Definitions definitions = ModelUtil.getDefinitions(objectToDelete);
+		iter = definitions.eAllContents();
+		while (iter.hasNext()) {
+			EObject o = iter.next();
+			for (EReference reference : o.eClass().getEAllReferences()) {
+				if (!reference.isContainment() && !(o instanceof DiagramElement)) {
+					if (reference.isMany()) {
+						List refList = (List)o.eGet(reference);
+						for (Object referencedObject : refList) {
+							if (allDeleted.contains(referencedObject)) {
+								references.add(o);
+								break;
+							}
+							
+						}
+					}
+					else {
+						Object referencedObject = o.eGet(reference);
+						if (allDeleted.contains(referencedObject)) {
+							references.add(o);
+						}
+					}
+				}
+			}
+		}
+		if (references.size()>0) {
+			ListDialog dlg = new ListDialog(getShell());
+			ReferencingObjectListProvider provider = new ReferencingObjectListProvider(references);
+			dlg.setContentProvider(provider);
+			dlg.setLabelProvider(provider);
+			dlg.setInput(references);
+			dlg.setMessage(
+				NLS.bind(Messages.DefaultListComposite_Cannot_Delete_Message,
+					ModelUtil.getLabel(objectToDelete))
+			);
+			dlg.setAddCancelButton(false);
+			dlg.setTitle(Messages.DefaultListComposite_Cannot_Delete_Title);
+
+			dlg.open();
+			return false;
+		}
+		return true;
+	}
+	
+	protected class ReferencingObjectListProvider implements IStructuredContentProvider, ILabelProvider {
+
+		List<EObject> references;
+		
+		public ReferencingObjectListProvider(List<EObject> references) {
+			this.references = references;
+		}
+
+		@Override
+		public void dispose() {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void addListener(ILabelProviderListener listener) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public boolean isLabelProperty(Object element, String property) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public void removeListener(ILabelProviderListener listener) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public Image getImage(Object element) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public String getText(Object element) {
+			String type = ModelUtil.getLabel(element);
+			String name = ModelUtil.getDisplayName(element);
+			return type + ": " + name; //$NON-NLS-1$
+		}
+
+		@Override
+		public Object[] getElements(Object inputElement) {
+			return references.toArray();
+		}
+		
 	}
 }

@@ -21,7 +21,7 @@ import org.eclipse.bpmn2.DataStore;
 import org.eclipse.bpmn2.DataStoreReference;
 import org.eclipse.bpmn2.modeler.core.ModelHandler;
 import org.eclipse.bpmn2.modeler.core.di.DIImport;
-import org.eclipse.bpmn2.modeler.core.features.AbstractAddBPMNShapeFeature;
+import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2AddElementFeature;
 import org.eclipse.bpmn2.modeler.core.features.AbstractCreateFlowElementFeature;
 import org.eclipse.bpmn2.modeler.core.features.BaseElementFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.features.DefaultMoveBPMNShapeFeature;
@@ -36,6 +36,7 @@ import org.eclipse.bpmn2.modeler.ui.features.LayoutBaseElementTextFeature;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.graphiti.features.IAddFeature;
 import org.eclipse.graphiti.features.ICreateFeature;
 import org.eclipse.graphiti.features.IDeleteFeature;
@@ -64,6 +65,7 @@ import org.eclipse.graphiti.services.IPeService;
 import org.eclipse.graphiti.ui.internal.util.ui.PopupMenu;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 
@@ -120,7 +122,7 @@ public class DataStoreReferenceFeatureContainer extends BaseElementFeatureContai
 		};
 	}
 
-	public class AddDataStoreReferenceFeature extends AbstractAddBPMNShapeFeature<DataStoreReference> {
+	public class AddDataStoreReferenceFeature extends AbstractBpmn2AddElementFeature<DataStoreReference> {
 		public AddDataStoreReferenceFeature(IFeatureProvider fp) {
 			super(fp);
 		}
@@ -218,7 +220,7 @@ public class DataStoreReferenceFeatureContainer extends BaseElementFeatureContai
 			public String getText(Object element) {
 				if (((DataStore) element).getId() == null)
 					return ((DataStore) element).getName();
-				return "Reference existing \"" + ((DataStore) element).getName() + "\"";
+				return NLS.bind(Messages.DataStoreReferenceFeatureContainer_Ref, ((DataStore) element).getName());
 			}
 
 			public Image getImage(Object element) {
@@ -228,13 +230,7 @@ public class DataStoreReferenceFeatureContainer extends BaseElementFeatureContai
 		};
 
 		public CreateDataStoreReferenceFeature(IFeatureProvider fp) {
-			super(
-					fp,
-					"Data Store",
-					"Reference to a Data Store instance."
-							+ " Data Stores provide a mechanism for Activities to persist data beyond the lifetime of the Process."
-							+ " The same Data Store instance can be visualized through a Data Store Reference in one or more"
-							+ " places in the Process.");
+			super(fp, Messages.DataStoreReferenceFeatureContainer_Name, Messages.DataStoreReferenceFeatureContainer_Description);
 		}
 
 		@Override
@@ -263,14 +259,16 @@ public class DataStoreReferenceFeatureContainer extends BaseElementFeatureContai
 			// it necessarily means that a DataStoreReference is created and added to the FlowElementContainer
 			// which is the target of the ICreateContext. In addition, if the new DataStoreReference refers
 			// to a new DataStore, one is created and added to Definitions.
-			// 
+			changesDone = true;
 			DataStoreReference bo = null;
 			try {
 				ModelHandler mh = ModelHandler.getInstance(getDiagram());
 				bo = Bpmn2ModelerFactory.create(DataStoreReference.class);
 
 				DataStore dataStore = Bpmn2ModelerFactory.create(DataStore.class);
-				dataStore.setName("Create a new Data Store");
+				String oldName = dataStore.getName();
+				dataStore.setName(Messages.DataStoreReferenceFeatureContainer_New);
+				dataStore.setId(null);
 
 				List<DataStore> dataStoreList = new ArrayList<DataStore>();
 				dataStoreList.add(dataStore);
@@ -284,23 +282,35 @@ public class DataStoreReferenceFeatureContainer extends BaseElementFeatureContai
 				DataStore result = dataStore;
 				if (dataStoreList.size() > 1) {
 					PopupMenu popupMenu = new PopupMenu(dataStoreList, labelProvider);
-					boolean b = popupMenu.show(Display.getCurrent().getActiveShell());
-					if (b) {
+					changesDone = popupMenu.show(Display.getCurrent().getActiveShell());
+					if (changesDone) {
 						result = (DataStore) popupMenu.getResult();
 					}
+					else {
+						EcoreUtil.delete(dataStore);
+						EcoreUtil.delete(bo);
+						bo = null;
+					}
 				}
-				if (result == dataStore) { // the new one
-					mh.addRootElement(dataStore);
-					ModelUtil.setID(dataStore);
-					dataStore.setName(ModelUtil.toDisplayName(dataStore.getId()));
-					bo.setName(dataStore.getName());
-				} else
-					bo.setName(result.getName() + " Ref");
-
-				bo.setDataStoreRef(result);
-				ModelUtil.setID(bo, mh.getResource());
-				putBusinessObject(context, bo);
-
+				if (changesDone) {
+					if (result == dataStore) { // the new one
+						mh.addRootElement(dataStore);
+						ModelUtil.setID(dataStore);
+						dataStore.setName(oldName);
+						bo.setName(dataStore.getName());
+					} else
+						bo.setName(
+							NLS.bind(
+								Messages.DataStoreReferenceFeatureContainer_Default_Name,
+								result.getName()
+							)
+						);
+	
+					bo.setDataStoreRef(result);
+					ModelUtil.setID(bo, mh.getResource());
+					putBusinessObject(context, bo);
+				}
+				
 			} catch (IOException e) {
 				Activator.showErrorWithLogging(e);
 			}

@@ -1,4 +1,4 @@
-package org.eclipse.bpmn2.modeler.ui.editor;
+/*package org.eclipse.bpmn2.modeler.ui.editor;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -61,7 +61,7 @@ public class FixFlowUiService extends UiService {
 		e.printStackTrace();
 	}
 
-	/**
+	*//**
 	 * Returns an IRunnableWithProgress, which saves the given contents to a
 	 * File with the given filename.
 	 * 
@@ -73,7 +73,7 @@ public class FixFlowUiService extends UiService {
 	 *            The contents to save into the file.
 	 * @throws Exception
 	 *             On any errors that occur.
-	 */
+	 *//*
 	private IRunnableWithProgress getSaveToFileOp(final Shell shell, final String filename, final byte contents[]) throws Exception {
 		IRunnableWithProgress operation = new IRunnableWithProgress() {
 			public void run(IProgressMonitor monitor) {
@@ -111,7 +111,7 @@ public class FixFlowUiService extends UiService {
 				GC gc = new GC(_imageAll);
 				SWTGraphics graphics = new SWTGraphics(gc);
 
-				/* move all figures into the positive region */
+				 move all figures into the positive region 
 				EditPart contents = graphicalViewer.getContents();
 				if (contents instanceof GraphicalEditPart) {
 					IFigure contentsFigure = ((GraphicalEditPart) contents).getFigure();
@@ -192,10 +192,10 @@ public class FixFlowUiService extends UiService {
 				// if the exporter is non-standard, i.e. registered via
 				// extension point, we need to call the registered exporter.
 //				if (diagramExporterTypes.containsKey(imageExtension)) {
-					/*final IDiagramsExporter exporter = ExtensionManager.getSingleton().getDiagramExporterForType("PNG");
+					final IDiagramsExporter exporter = ExtensionManager.getSingleton().getDiagramExporterForType("PNG");
 					Assert.isNotNull(exporter);
 					operation = getExportOp(METHOD, shell, _allFigure, file, im, exporter);
-					new ProgressMonitorDialog(shell).run(false, false, operation);*/
+					new ProgressMonitorDialog(shell).run(false, false, operation);
 
 				int imageFormat = saveAsImageDialog.getImageFormat();
 				image = createImage(im, 5);
@@ -243,3 +243,4 @@ public class FixFlowUiService extends UiService {
 		super.startSaveAsImageDialog(graphicalViewer);
 	}
 }
+*/

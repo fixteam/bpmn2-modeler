@@ -20,6 +20,7 @@ import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.ExtensionAttributeValue;
 import org.eclipse.bpmn2.modeler.core.adapters.AdapterUtil;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
+import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
@@ -38,6 +39,7 @@ import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.impl.EStructuralFeatureImpl.SimpleFeatureMapEntry;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.FeatureMap;
+import org.eclipse.osgi.util.NLS;
 
 /**
  * @author Bob Brodt
@@ -71,7 +73,7 @@ public class ModelExtensionDescriptor extends BaseRuntimeDescriptor {
 		}
 		
 		private void setDefaultId() {
-			id = "V-" + ID++;
+			id = "V-" + ID++; //$NON-NLS-1$
 		}
 	}
 	
@@ -84,7 +86,7 @@ public class ModelExtensionDescriptor extends BaseRuntimeDescriptor {
 		public String type;
 		
 		public Property() {
-			this.name = "unknown";
+			this.name = "unknown"; //$NON-NLS-1$
 		}
 		
 		public Property(String name, String description) {
@@ -134,6 +136,10 @@ public class ModelExtensionDescriptor extends BaseRuntimeDescriptor {
 		
 		public List<Property> getProperties(String path) {
 			return descriptor.getProperties(path);
+		}
+		
+		public ModelExtensionDescriptor getDescriptor() {
+			return descriptor;
 		}
 	}
 	
@@ -217,17 +223,25 @@ public class ModelExtensionDescriptor extends BaseRuntimeDescriptor {
 	 * @return an initialized EObject
 	 */
 	private EObject createObject(EClass eClass) {
-		EObject eObject = eClass.getEPackage().getEFactoryInstance().create(eClass);
+		EObject eObject = null;
+		EPackage pkg = eClass.getEPackage();
+		if (pkg==Bpmn2Package.eINSTANCE) {
+			eObject = Bpmn2ModelerFactory.create(containingResource, eClass);
+		}
+		else {
+			eObject = pkg.getEFactoryInstance().create(eClass);
+		}
 		
 		// if the object has an "id", assign it now.
 		String id = ModelUtil.setID(eObject,containingResource);
 		// also set a default name
-		EStructuralFeature feature = eObject.eClass().getEStructuralFeature("name");
+		EStructuralFeature feature = eObject.eClass().getEStructuralFeature("name"); //$NON-NLS-1$
 		if (feature!=null) {
 			if (id!=null)
 				eObject.eSet(feature, ModelUtil.toDisplayName(id));
 			else
-				eObject.eSet(feature, "New "+ModelUtil.toDisplayName(eObject.eClass().getName()));
+				eObject.eSet(feature, NLS.bind(Messages.ModelExtensionDescriptor_Create,
+					ModelUtil.toDisplayName(eObject.eClass().getName())));
 		}
 
 		return eObject;
@@ -263,7 +277,7 @@ public class ModelExtensionDescriptor extends BaseRuntimeDescriptor {
 		while (it.hasNext()) {
 			EObject o = it.next();
 			if (type.isInstance(o)) {
-				EStructuralFeature fName = o.eClass().getEStructuralFeature("name");
+				EStructuralFeature fName = o.eClass().getEStructuralFeature("name"); //$NON-NLS-1$
 				if (fName!=null && o.eGet(fName)!=null && o.eGet(fName).equals(name)) {
 					return (EStructuralFeature)o;
 				}
@@ -413,13 +427,13 @@ public class ModelExtensionDescriptor extends BaseRuntimeDescriptor {
 				if (property.ref!=null) {
 					// navigate down the newly created custom task to find the object reference
 					childObject = modelObject;
-					String[] segments = property.ref.split("/");
+					String[] segments = property.ref.split("/"); //$NON-NLS-1$
 					for (String s : segments) {
 						// is the feature an Elist?
 						int index = s.indexOf('#');
 						if (index>0) {
 							index = Integer.parseInt(s.substring(index+1));
-							s = s.split("#")[0];
+							s = s.split("#")[0]; //$NON-NLS-1$
 						}
 						childFeature = childObject.eClass().getEStructuralFeature(s);
 						childObject = (EObject)getValue(childObject, childFeature, index);
@@ -464,7 +478,7 @@ public class ModelExtensionDescriptor extends BaseRuntimeDescriptor {
 		List<Property> result = new ArrayList<Property>();
 		List<Property> props = new ArrayList<Property>();
 		props.addAll(getProperties());
-		String names[] = path.split("/");
+		String names[] = path.split("/"); //$NON-NLS-1$
 		getProperties(props,names,0,result);
 		return result;
 	}
@@ -529,7 +543,7 @@ public class ModelExtensionDescriptor extends BaseRuntimeDescriptor {
 	public void adaptObject(EObject object) {
 		addModelExtensionAdapter(object);
 		if (description!=null && !description.isEmpty()) {
-			ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(object, ExtendedPropertiesAdapter.class);
+			ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object);
 			if (adapter!=null) {
 				adapter.setProperty(ExtendedPropertiesAdapter.CUSTOM_DESCRIPTION, description);
 			}

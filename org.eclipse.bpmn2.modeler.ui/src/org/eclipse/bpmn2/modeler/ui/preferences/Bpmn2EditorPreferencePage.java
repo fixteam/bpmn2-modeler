@@ -14,7 +14,6 @@ package org.eclipse.bpmn2.modeler.ui.preferences;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -32,11 +31,9 @@ import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
@@ -84,6 +81,7 @@ public class Bpmn2EditorPreferencePage extends PreferencePage implements IWorkbe
 	Button defaultSize;
 	FontControl textFont;
 	ColorControl textColor;
+	Label routingStyleLabel;
 	Combo routingStyle;
 
 	
@@ -142,7 +140,7 @@ public class Bpmn2EditorPreferencePage extends PreferencePage implements IWorkbe
         styleEditors.setFont(parent.getFont());
         styleEditors.setVisible(false);
 
-		shapeBackground = new ColorControl("&Fill Color:",styleEditors);
+		shapeBackground = new ColorControl(Messages.Bpmn2EditorPreferencePage_Fill_Color_Label,styleEditors);
 		shapeBackground.addSelectionListener( new SelectionAdapter() {
 
 			@Override
@@ -159,13 +157,13 @@ public class Bpmn2EditorPreferencePage extends PreferencePage implements IWorkbe
 				}
 			}
     	});
-		shapeForeground = new ColorControl("&Foreground Color:",styleEditors);
-		shapePrimarySelectedColor = new ColorControl("&Selected Color:",styleEditors);
-		shapeSecondarySelectedColor = new ColorControl("&Multi-Selected Color:",styleEditors);
-		textColor = new ColorControl("&Label Color:",styleEditors);
-		textFont = new FontControl("Label &Font:",styleEditors);
+		shapeForeground = new ColorControl(Messages.Bpmn2EditorPreferencePage_Foreground_Color_Label,styleEditors);
+		shapePrimarySelectedColor = new ColorControl(Messages.Bpmn2EditorPreferencePage_Selected_Color_Label,styleEditors);
+		shapeSecondarySelectedColor = new ColorControl(Messages.Bpmn2EditorPreferencePage_MultiSelected_Color_Label,styleEditors);
+		textColor = new ColorControl(Messages.Bpmn2EditorPreferencePage_Label_Color_Label,styleEditors);
+		textFont = new FontControl(Messages.Bpmn2EditorPreferencePage_Label_Font_Label,styleEditors);
 		defaultSize = new Button(styleEditors, SWT.CHECK);
-		defaultSize.setText("Override shape size with default values");
+		defaultSize.setText(Messages.Bpmn2EditorPreferencePage_Override_Size_Label);
 		GridData gd = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
 		gd.horizontalIndent = 5;
 		gd.verticalIndent = 10;
@@ -176,8 +174,8 @@ public class Bpmn2EditorPreferencePage extends PreferencePage implements IWorkbe
         layout = new GridLayout(2,false);
         routingStyleComposite.setLayout(layout);
 
-        Label routingStyleLabel = new Label(routingStyleComposite, SWT.LEFT);
-		routingStyleLabel.setText("Routing Style:");
+        routingStyleLabel = new Label(routingStyleComposite, SWT.LEFT);
+		routingStyleLabel.setText(Messages.Bpmn2EditorPreferencePage_Routing_Style_Label);
 		routingStyleLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		routingStyle = new Combo(routingStyleComposite, SWT.READ_ONLY);
 		routingStyle.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false, 1, 1));
@@ -215,12 +213,12 @@ public class Bpmn2EditorPreferencePage extends PreferencePage implements IWorkbe
 			ShapeStyleList taskShapeStyles = new ShapeStyleList();
 			ShapeStyleList dataShapeStyles = new ShapeStyleList();
 			ShapeStyleList otherShapeStyles = new ShapeStyleList();
-			categories.put("Connections", connectorShapeStyles);
-			categories.put("Events", eventShapeStyles);
-			categories.put("Gateways", gatewayShapeStyles);
-			categories.put("Activities", taskShapeStyles);
-			categories.put("Data Elements", dataShapeStyles);
-			categories.put("Containers and Artifacts", otherShapeStyles);
+			categories.put(Messages.Bpmn2EditorPreferencePage_Connections, connectorShapeStyles);
+			categories.put(Messages.Bpmn2EditorPreferencePage_Events, eventShapeStyles);
+			categories.put(Messages.Bpmn2EditorPreferencePage_Gateways, gatewayShapeStyles);
+			categories.put(Messages.Bpmn2EditorPreferencePage_Activities, taskShapeStyles);
+			categories.put(Messages.Bpmn2EditorPreferencePage_Data_Elements, dataShapeStyles);
+			categories.put(Messages.Bpmn2EditorPreferencePage_Containers, otherShapeStyles);
 
 			allShapeStyles = new ShapeStyleList();
 			for (Class c : allElements) {
@@ -245,11 +243,11 @@ public class Bpmn2EditorPreferencePage extends PreferencePage implements IWorkbe
 					IColorConstant background = ss.getShapeBackground();
 					IColorConstant textColor = ss.getTextColor();
 					Font font = ss.getTextFont();
-					System.out.println("\t\t<style object=\"" + c.getSimpleName() + "\"" + " foreground=\""
-							+ ShapeStyle.colorToString(foreground) + "\"" + " background=\""
-							+ ShapeStyle.colorToString(background) + "\"" + " textColor=\""
-							+ ShapeStyle.colorToString(textColor) + "\"" + " font=\"" + ShapeStyle.fontToString(font)
-							+ "\"/>");
+					System.out.println("\t\t<style object=\"" + c.getSimpleName() + "\"" + " foreground=\"" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+							+ ShapeStyle.colorToString(foreground) + "\"" + " background=\"" //$NON-NLS-1$ //$NON-NLS-2$
+							+ ShapeStyle.colorToString(background) + "\"" + " textColor=\"" //$NON-NLS-1$ //$NON-NLS-2$
+							+ ShapeStyle.colorToString(textColor) + "\"" + " font=\"" + ShapeStyle.fontToString(font) //$NON-NLS-1$ //$NON-NLS-2$
+							+ "\"/>"); //$NON-NLS-1$
 				}
 			}
 
@@ -285,6 +283,8 @@ public class Bpmn2EditorPreferencePage extends PreferencePage implements IWorkbe
 			((GridData)defaultSize.getLayoutData()).exclude = !isShape;
 			routingStyle.setVisible(!isShape);
 			((GridData)routingStyle.getLayoutData()).exclude = isShape;
+			routingStyleLabel.setVisible(!isShape);
+			((GridData)routingStyleLabel.getLayoutData()).exclude = isShape;
 			if (!isShape) {
 				routingStyle.removeAll();
 				int i = 0;
@@ -558,7 +558,7 @@ public class Bpmn2EditorPreferencePage extends PreferencePage implements IWorkbe
 	    	
             changeFontButton = new Button(this, SWT.PUSH);
             changeFontButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-			changeFontButton.setText("Change");
+			changeFontButton.setText(Messages.Bpmn2EditorPreferencePage_Change_Button);
             changeFontButton.addSelectionListener(new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent event) {
                     FontDialog fontDialog = new FontDialog(changeFontButton

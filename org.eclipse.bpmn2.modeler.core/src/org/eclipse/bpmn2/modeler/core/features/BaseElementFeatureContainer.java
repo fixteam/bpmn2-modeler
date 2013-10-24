@@ -15,16 +15,18 @@ package org.eclipse.bpmn2.modeler.core.features;
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.modeler.core.features.label.RemoveLabelFeature;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
+import org.eclipse.graphiti.features.ICreateConnectionFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.IRemoveFeature;
 import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.features.context.IContext;
+import org.eclipse.graphiti.features.context.ICreateConnectionContext;
 import org.eclipse.graphiti.features.context.ICustomContext;
 import org.eclipse.graphiti.features.context.IPictogramElementContext;
 import org.eclipse.graphiti.features.custom.ICustomFeature;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 
-public abstract class BaseElementFeatureContainer implements FeatureContainer {
+public abstract class BaseElementFeatureContainer implements IShapeFeatureContainer {
 
 	@Override
 	public Object getApplyObject(IContext context) {
@@ -46,6 +48,14 @@ public abstract class BaseElementFeatureContainer implements FeatureContainer {
 	@Override
 	public boolean canApplyTo(Object o) {
 		return o instanceof BaseElement;
+	}
+	
+	public boolean canCreate(ICreateConnectionContext context) {
+		return false;
+	}
+
+	public BaseElement createBusinessObject(ICreateConnectionContext context) {
+		return null;
 	}
 
 	@Override

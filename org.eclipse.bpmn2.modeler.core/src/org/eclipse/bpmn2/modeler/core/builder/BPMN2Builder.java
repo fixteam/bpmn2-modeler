@@ -33,8 +33,8 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class BPMN2Builder extends IncrementalProjectBuilder {
 
-	public static final String BUILDER_ID = "org.eclipse.bpmn2.modeler.core.bpmn2Builder";
-	private static final String MARKER_TYPE = "org.eclipse.bpmn2.modeler.core.xmlProblem";
+	public static final String BUILDER_ID = "org.eclipse.bpmn2.modeler.core.bpmn2Builder"; //$NON-NLS-1$
+	private static final String MARKER_TYPE = "org.eclipse.bpmn2.modeler.core.xmlProblem"; //$NON-NLS-1$
 	private SAXParserFactory parserFactory;
 
 	

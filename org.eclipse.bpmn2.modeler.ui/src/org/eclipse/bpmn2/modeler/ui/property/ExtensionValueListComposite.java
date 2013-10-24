@@ -44,7 +44,7 @@ public abstract class ExtensionValueListComposite extends DefaultListComposite {
 		extensionValueFeature = feature;
 		if (feature.getEType() instanceof EClass)
 			listItemClass = (EClass)feature.getEType();
-		EStructuralFeature evf = object.eClass().getEStructuralFeature("extensionValues");
+		EStructuralFeature evf = object.eClass().getEStructuralFeature("extensionValues"); //$NON-NLS-1$
 		super.bindList(object,evf);
 	}
 	
@@ -56,6 +56,36 @@ public abstract class ExtensionValueListComposite extends DefaultListComposite {
 	@SuppressWarnings("unchecked")
 	protected void addExtensionValue(EObject value) {
 		ModelUtil.addExtensionAttributeValue(businessObject, extensionValueFeature, value);
+	}
+	
+	protected Object getListItem(EObject object, EStructuralFeature feature, int index) {
+		EList<EObject> list = (EList<EObject>)object.eGet(feature);
+		int i = 0;
+		int iGet = -1;
+		FeatureMap fmGet = null;
+		for (EObject o : list) {
+			ExtensionAttributeValue eav = (ExtensionAttributeValue)o;
+			FeatureMap fm = eav.getValue();
+			for (Entry e : fm) {
+				EStructuralFeature sf = e.getEStructuralFeature();
+				if (sf == extensionValueFeature) {
+					if (i==index) {
+						iGet = fm.indexOf(e);
+						fmGet = fm;
+					}
+					++i;
+				}
+			}
+		}
+		if (fmGet!=null) {
+			Entry entry = fmGet.get(iGet);
+			return entry.getValue();
+		}
+		return null;
+	}
+
+	protected Object deleteListItem(EObject object, EStructuralFeature feature, int index) {
+		return removeListItem(object, feature, index);
 	}
 	
 	protected Object removeListItem(EObject object, EStructuralFeature feature, int index) {
@@ -81,6 +111,12 @@ public abstract class ExtensionValueListComposite extends DefaultListComposite {
 			}
 		}
 		if (fmRemove!=null) {
+			Entry entry = fmRemove.get(iRemove);
+			Object o = entry.getValue();
+			if (o instanceof EObject) {
+				if (!canDelete((EObject)o))
+					return null;
+			}
 			fmRemove.remove(iRemove);
 		}
 		return result==null ? null : result.getValue();
@@ -208,4 +244,5 @@ public abstract class ExtensionValueListComposite extends DefaultListComposite {
 		}
 		return contentProvider;
 	}
+	
 }

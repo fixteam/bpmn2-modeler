@@ -74,11 +74,11 @@ public class JbpmActivityDetailComposite extends ActivityDetailComposite {
 //		onEntryScriptTable = new ScriptTableComposite(this);
 //		onEntryScriptTable.bindList(be, DroolsPackage.eINSTANCE.getDocumentRoot_OnEntryScript());
 //		onEntryScriptTable.setTitle("On Entry Scripts");
-		boolean enable = isModelObjectEnabled(be.eClass().getName(), "onEntryScript");
+		boolean enable = isModelObjectEnabled(be.eClass().getName(), "onEntryScript"); //$NON-NLS-1$
 		onEntryScriptEditor = new JbpmScriptTaskDetailComposite(this, SWT.NONE);
 		OnEntryScriptType onEntryScript = getOrCreateEntryExitScript((Activity)be, OnEntryScriptType.class);
 		onEntryScriptEditor.setBusinessObject(onEntryScript);
-		onEntryScriptEditor.setTitle("On Entry Script");
+		onEntryScriptEditor.setTitle(Messages.JbpmActivityDetailComposite_On_Entry_Script);
 		
 //		onExitScriptTable = new ScriptTableComposite(this);
 //		onExitScriptTable.bindList(be, DroolsPackage.eINSTANCE.getDocumentRoot_OnExitScript());
@@ -86,7 +86,7 @@ public class JbpmActivityDetailComposite extends ActivityDetailComposite {
 		onExitScriptEditor = new JbpmScriptTaskDetailComposite(this, SWT.NONE);
 		OnExitScriptType onExitScript = getOrCreateEntryExitScript((Activity)be, OnExitScriptType.class);
 		onExitScriptEditor.setBusinessObject(onExitScript);
-		onExitScriptEditor.setTitle("On Exit Script");
+		onExitScriptEditor.setTitle(Messages.JbpmActivityDetailComposite_On_Exit_Script);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -102,12 +102,12 @@ public class JbpmActivityDetailComposite extends ActivityDetailComposite {
 				protected void doExecute() {
 					EClass eclass = (EClass)DroolsPackage.eINSTANCE.getEClassifier(clazz.getSimpleName());
 					T script = (T) DroolsFactory.eINSTANCE.create(eclass);
-					EStructuralFeature f = script.eClass().getEStructuralFeature("script");
+					EStructuralFeature f = script.eClass().getEStructuralFeature("script"); //$NON-NLS-1$
 					if (f!=null)
-						script.eSet(f, "");
-					f = script.eClass().getEStructuralFeature("scriptFormat");
+						script.eSet(f, ""); //$NON-NLS-1$
+					f = script.eClass().getEStructuralFeature("scriptFormat"); //$NON-NLS-1$
 					if (f!=null)
-						script.eSet(f,"http://www.java.com/java");
+						script.eSet(f,"http://www.java.com/java"); //$NON-NLS-1$
 					if (clazz == OnEntryScriptType.class)
 						f = DroolsPackage.eINSTANCE.getDocumentRoot_OnEntryScript();
 					else
@@ -137,12 +137,12 @@ public class JbpmActivityDetailComposite extends ActivityDetailComposite {
 		@Override
 		protected EObject addListItem(EObject object, EStructuralFeature feature) {
 			EObject newScript = DroolsFactory.eINSTANCE.create(listItemClass);
-			EStructuralFeature f = newScript.eClass().getEStructuralFeature("script");
+			EStructuralFeature f = newScript.eClass().getEStructuralFeature("script"); //$NON-NLS-1$
 			if (f!=null)
-				newScript.eSet(f, "");
-			f = newScript.eClass().getEStructuralFeature("scriptFormat");
+				newScript.eSet(f, ""); //$NON-NLS-1$
+			f = newScript.eClass().getEStructuralFeature("scriptFormat"); //$NON-NLS-1$
 			if (f!=null)
-				newScript.eSet(f,"http://www.java.com/java");
+				newScript.eSet(f,"http://www.java.com/java"); //$NON-NLS-1$
 			addExtensionValue(newScript);
 			return newScript;
 		}
@@ -152,7 +152,7 @@ public class JbpmActivityDetailComposite extends ActivityDetailComposite {
 			return new JbpmScriptTaskDetailComposite(parent, SWT.NONE) {
 				@Override
 				public Composite getAttributesParent() {
-					((Section)parent).setText("Script Details");
+					((Section)parent).setText(Messages.JbpmActivityDetailComposite_Script_Details);
 					return (Composite) ((Section)parent).getClient();
 				}
 			};

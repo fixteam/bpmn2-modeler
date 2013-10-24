@@ -42,7 +42,7 @@ public class SampleCustomEditor extends EditBeanDialog<Work> implements WorkEdit
     private Map<String, Text> texts = new HashMap<String, Text>();
     
     public SampleCustomEditor(Shell parentShell) {
-        super(parentShell, "Custom Work Editor");
+        super(parentShell, "Custom Work Editor"); //$NON-NLS-1$
         setBlockOnOpen(true);
     }
     
@@ -55,26 +55,26 @@ public class SampleCustomEditor extends EditBeanDialog<Work> implements WorkEdit
         Work work = (Work) getValue();
         
         Label nameLabel = new Label(composite, SWT.NONE);
-        nameLabel.setText("Name: ");
+        nameLabel.setText("Name: "); //$NON-NLS-1$
         nameLabel.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 1, 1));
         
         Text nameText = new Text(composite, SWT.NONE);
         nameText.setEditable(false);
         nameText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 1, 1));
         String name = work.getName();
-        nameText.setText(name == null ? "" : name);
+        nameText.setText(name == null ? "" : name); //$NON-NLS-1$
         
         Set<ParameterDefinition> parameters = workDefinition.getParameters();
         for (ParameterDefinition param: parameters) {
             Label label = new Label(composite, SWT.NONE);
-            label.setText(param.getName() + ": ");
+            label.setText(param.getName() + ": "); //$NON-NLS-1$
             label.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 1, 1));
             
             Text text = new Text(composite, SWT.BORDER);
             text.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 1, 1));
             texts.put(param.getName(), text);
             Object value = work.getParameter(param.getName());
-            text.setText(value == null ? "" : value.toString());
+            text.setText(value == null ? "" : value.toString()); //$NON-NLS-1$
         }
         
         return composite;
@@ -92,12 +92,12 @@ public class SampleCustomEditor extends EditBeanDialog<Work> implements WorkEdit
             }
             catch (Exception e) {
             	throw new IllegalArgumentException(
-            			"The value \""+text+"\" "+
-            			"for parameter \""+entry.getKey()+"\" "+
-            			"does not conform to the "+pd.getType().getStringType()+" "+
-            			"data type.");
+            			"The value \""+text+"\" "+ //$NON-NLS-1$ //$NON-NLS-2$
+            			"for parameter \""+entry.getKey()+"\" "+ //$NON-NLS-1$ //$NON-NLS-2$
+            			"does not conform to the "+pd.getType().getStringType()+" "+ //$NON-NLS-1$ //$NON-NLS-2$
+            			"data type."); //$NON-NLS-1$
             }
-            work.setParameter(entry.getKey(), "".equals(text) ? null : text);
+            work.setParameter(entry.getKey(), "".equals(text) ? null : text); //$NON-NLS-1$
         }
         work.setParameterDefinitions(((Work) value).getParameterDefinitions());
         return work;

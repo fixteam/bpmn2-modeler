@@ -14,7 +14,7 @@ package org.eclipse.bpmn2.modeler.core.features.data;
 
 public interface Properties {
 	
-	public static final String COLLECTION_PROPERTY = "isCollection";
-	public static final String HIDEABLE_PROPERTY = "hideable";
+	public static final String COLLECTION_PROPERTY = "isCollection"; //$NON-NLS-1$
+	public static final String HIDEABLE_PROPERTY = "hideable"; //$NON-NLS-1$
 	
 }

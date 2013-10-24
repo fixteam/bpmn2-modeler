@@ -120,7 +120,7 @@ public class SimulationDetailComposite extends DefaultDetailComposite {
 
 	@Override
 	public void createBindings(EObject be) {
-		setTitle( ModelUtil.getLabel(be.eClass())+" Simulation Parameters");
+		setTitle( ModelUtil.getLabel(be.eClass())+Messages.SimulationDetailComposite_Title);
 		if (be instanceof BPMNDiagram)
 		{
 			BPSimDataType pad = JbpmModelUtil.getBPSimData(be);
@@ -128,13 +128,13 @@ public class SimulationDetailComposite extends DefaultDetailComposite {
 			scenario.getScenarioParameters().getBaseTimeUnit();
 			bindAttribute(getAttributesParent(), scenario,
 					BpsimPackage.eINSTANCE.getScenario_Name(),
-					"Scenario");
+					Messages.SimulationDetailComposite_Scenario);
 			bindAttribute(getAttributesParent(), scenario.getScenarioParameters(),
 					BpsimPackage.eINSTANCE.getScenarioParameters_BaseTimeUnit(),
-					"Base Time Units");
+					Messages.SimulationDetailComposite_Base_Time_Units);
 			bindAttribute(getAttributesParent(), scenario.getScenarioParameters(),
 					BpsimPackage.eINSTANCE.getScenarioParameters_BaseCurrencyUnit(),
-					"Base Currency Unit");
+					Messages.SimulationDetailComposite_Base_Currency_Units);
 		}
 		else if (be instanceof Task) {
 			ElementParameters elementParams = JbpmModelUtil.getElementParameters((BaseElement)be);
@@ -145,13 +145,13 @@ public class SimulationDetailComposite extends DefaultDetailComposite {
 				FloatingParameterType quantity = (FloatingParameterType) param.getParameterValue().get(0);
 				bindAttribute(getAttributesParent(), quantity,
 						BpsimPackage.eINSTANCE.getFloatingParameterType_Value(),
-						"Quantity");
+						Messages.SimulationDetailComposite_Quantity);
 
 				param = resourceParams.getAvailability();
 				FloatingParameterType workingHours = (FloatingParameterType) param.getParameterValue().get(0);
 				bindAttribute(getAttributesParent(), workingHours,
 						BpsimPackage.eINSTANCE.getFloatingParameterType_Value(),
-						"Availability");
+						Messages.SimulationDetailComposite_Availability);
 			}
 		}
 		else if (be instanceof CatchEvent) {
@@ -162,7 +162,7 @@ public class SimulationDetailComposite extends DefaultDetailComposite {
 			FloatingParameterType waitTime = (FloatingParameterType) param.getParameterValue().get(0);
 			bindAttribute(getAttributesParent(), waitTime,
 					BpsimPackage.eINSTANCE.getFloatingParameterType_Value(),
-					"Wait Time");
+					Messages.SimulationDetailComposite_Wait_Time);
 		}
 		else if (be instanceof ThrowEvent) {
 			// TimeParameters = distribution type
@@ -176,7 +176,7 @@ public class SimulationDetailComposite extends DefaultDetailComposite {
 			FloatingParameterType probability = (FloatingParameterType) param.getParameterValue().get(0);
 			bindAttribute(getAttributesParent(), probability,
 					BpsimPackage.eINSTANCE.getFloatingParameterType_Value(),
-					"Probability");
+					Messages.SimulationDetailComposite_Probability);
 		}
 	}
 	
@@ -205,7 +205,7 @@ public class SimulationDetailComposite extends DefaultDetailComposite {
 				}
 				
 			};
-			editor.createControl(getAttributesParent(),"Cost per Time Unit");
+			editor.createControl(getAttributesParent(),Messages.SimulationDetailComposite_Cost_Per_Time_Unit);
 		}
 		
 		editor = new ComboObjectEditor(this,
@@ -277,30 +277,30 @@ public class SimulationDetailComposite extends DefaultDetailComposite {
 					}
 			
 		};
-		editor.createControl(getAttributesParent(),"Distribution Type");
+		editor.createControl(getAttributesParent(),Messages.SimulationDetailComposite_Distribution_Type);
 		
 		param = timeParams.getProcessingTime();
 		value = param.getParameterValue().get(0);
 		if (value instanceof UniformDistributionType) {
 			bindAttribute(getAttributesParent(), value,
 					BpsimPackage.eINSTANCE.getUniformDistributionType_Min(),
-					"Processing time (min)");
+					Messages.SimulationDetailComposite_Processing_Time_Min);
 			bindAttribute(getAttributesParent(), value,
 					BpsimPackage.eINSTANCE.getUniformDistributionType_Max(),
-					"Processing time (max)");
+					Messages.SimulationDetailComposite_Processing_Time_Max);
 		}
 		else if (value instanceof NormalDistributionType) {
 			bindAttribute(getAttributesParent(), value,
 					BpsimPackage.eINSTANCE.getNormalDistributionType_Mean(),
-					"Processing time (mean)");
+					Messages.SimulationDetailComposite_Processing_Time_Mean);
 			bindAttribute(getAttributesParent(), value,
 					BpsimPackage.eINSTANCE.getNormalDistributionType_StandardDeviation(),
-					"Standard Deviation");
+					Messages.SimulationDetailComposite_Standard_Deviation);
 		}
 		else if (value instanceof PoissonDistributionType) {
 			bindAttribute(getAttributesParent(), value,
 					BpsimPackage.eINSTANCE.getPoissonDistributionType_Mean(),
-					"Processing time (mean)");
+					Messages.SimulationDetailComposite_Processing_Time_Mean);
 		}
 	}
 }

@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2011, 2012, 2013 Red Hat, Inc.
+ * All rights reserved.
+ * This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution,
+ * and is available at http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors:
+ * 	Red Hat, Inc. - initial API and implementation
+ ******************************************************************************/
 package org.eclipse.bpmn2.modeler.runtime.example.SampleModel;
 
 import org.eclipse.bpmn2.Bpmn2Package;
@@ -1345,15 +1355,15 @@ public interface SampleModelPackage extends EPackage {
 	EClass getDocumentRoot();
 
 	/**
-	 * Returns the meta object for the attribute '{@link org.eclipse.bpmn2.modeler.runtime.example.SampleModel.DocumentRoot#getSampleCustomTaskId <em>Sample Custom Task Id</em>}'.
+	 * Returns the meta object for the attribute '{@link org.eclipse.bpmn2.modeler.runtime.example.SampleModel.DocumentRoot#getelementId <em>Sample Custom Task Id</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the meta object for the attribute '<em>Sample Custom Task Id</em>'.
-	 * @see org.eclipse.bpmn2.modeler.runtime.example.SampleModel.DocumentRoot#getSampleCustomTaskId()
+	 * @see org.eclipse.bpmn2.modeler.runtime.example.SampleModel.DocumentRoot#getelementId()
 	 * @see #getDocumentRoot()
 	 * @generated
 	 */
-	EAttribute getDocumentRoot_SampleCustomTaskId();
+	EAttribute getDocumentRoot_elementId();
 
 	/**
 	 * Returns the meta object for the attribute '{@link org.eclipse.bpmn2.modeler.runtime.example.SampleModel.DocumentRoot#getSampleCustomFlowValue <em>Sample Custom Flow Value</em>}'.
@@ -1404,7 +1414,7 @@ public interface SampleModelPackage extends EPackage {
 		 * <!-- end-user-doc -->
 		 * @generated
 		 */
-		EAttribute DOCUMENT_ROOT__SAMPLE_CUSTOM_TASK_ID = eINSTANCE.getDocumentRoot_SampleCustomTaskId();
+		EAttribute DOCUMENT_ROOT__SAMPLE_CUSTOM_TASK_ID = eINSTANCE.getDocumentRoot_elementId();
 
 		/**
 		 * The meta object literal for the '<em><b>Sample Custom Flow Value</b></em>' attribute feature.

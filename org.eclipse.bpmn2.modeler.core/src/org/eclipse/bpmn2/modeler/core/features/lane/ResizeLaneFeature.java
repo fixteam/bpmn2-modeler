@@ -30,7 +30,7 @@ import org.eclipse.graphiti.services.Graphiti;
 
 public class ResizeLaneFeature extends DefaultResizeBPMNShapeFeature {
 
-	public static final String LANE_RESIZE_PROPERTY = "lane.resize";
+	public static final String LANE_RESIZE_PROPERTY = "lane.resize"; //$NON-NLS-1$
 
 	public ResizeLaneFeature(IFeatureProvider fp) {
 		super(fp);

@@ -84,6 +84,7 @@ public class DataOutputFeatureContainer extends AbstractDataFeatureContainer {
 
 		public CreateDataOutputFeature(IFeatureProvider fp) {
 			super(fp, "输出数据", "Create "+"Data Output");
+			//super(fp, Messages.DataOutputFeatureContainer_Name, Messages.DataOutputFeatureContainer_Description);
 		}
 
 		@Override

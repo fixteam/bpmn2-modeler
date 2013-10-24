@@ -63,10 +63,9 @@ public class ParticipantPropertiesAdapter extends ExtendedPropertiesAdapter<Part
 				
 				Definitions definitions = null;
 				if (resource!=null)
-					definitions = (Definitions) resource.getContents().get(0).eContents().get(0);
+					definitions = ModelUtil.getDefinitions(resource);
 				else {
 					definitions = ModelUtil.getDefinitions(participant);
-					resource = definitions.eResource();
 				}
 
 		        // create a Process for this Participant
@@ -81,13 +80,15 @@ public class ParticipantPropertiesAdapter extends ExtendedPropertiesAdapter<Part
 		        // TODO: when (and if) multipage editor allows additional Choreography or
 		        // Collaboration diagrams to be created, this will be the specific diagram
 		        // that is being rendered on the current page.
-		        List<RootElement> rootElements = definitions.getRootElements();
-		        for (RootElement element : rootElements) {
-		            if (element instanceof Collaboration || element instanceof Choreography) {
-		            	((Collaboration)element).getParticipants().add(participant);
-		                break;
-		            }
-		        }
+				if (definitions!=null) {
+			        List<RootElement> rootElements = definitions.getRootElements();
+			        for (RootElement element : rootElements) {
+			            if (element instanceof Collaboration || element instanceof Choreography) {
+			            	((Collaboration)element).getParticipants().add(participant);
+			                break;
+			            }
+			        }
+				}
 //				
 //		        BPMNDiagram bpmnDiagram = BpmnDiFactory.eINSTANCE.createBPMNDiagram();
 //				ModelUtil.setID(bpmnDiagram, resource);
@@ -115,7 +116,7 @@ public class ParticipantPropertiesAdapter extends ExtendedPropertiesAdapter<Part
 
 			@Override
 			public String getLabel(Object context) {
-				return "Multiplicity";
+				return Messages.ParticipantPropertiesAdapter_Multiplicity;
 			}
 
 			@Override
@@ -123,9 +124,9 @@ public class ParticipantPropertiesAdapter extends ExtendedPropertiesAdapter<Part
 				 Participant object = adopt(context);
 				 ParticipantMultiplicity pm = object.getParticipantMultiplicity();
 				 if (pm!=null) {
-					 return pm.getMinimum() + ".." + pm.getMaximum();
+					 return pm.getMinimum() + ".." + pm.getMaximum(); //$NON-NLS-1$
 				 }
-				 return "";
+				 return ""; //$NON-NLS-1$
 			}
 
     	});

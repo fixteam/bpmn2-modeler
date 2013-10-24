@@ -55,7 +55,7 @@ public class JbpmDataItemsPropertySection extends DataItemsPropertySection {
 		
 		@Override
 		protected void bindAttribute(Composite parent, EObject object, EAttribute attribute, String label) {
-			if ("type".equals(attribute.getName())) {
+			if ("type".equals(attribute.getName())) { //$NON-NLS-1$
 				ObjectEditor editor = new ComboObjectEditor(this,object,attribute) {
 					
 					@Override
@@ -68,10 +68,10 @@ public class JbpmDataItemsPropertySection extends DataItemsPropertySection {
 						if (type!=null) {
 							ImportType it = JbpmModelUtil.addImport(type, object);
 							if (it==null)
-								throw new OperationCanceledException("Import Already Exists");
+								throw new OperationCanceledException(Messages.JbpmDataItemsPropertySection_Duplicate_Import);
 							return it;
 						}
-						throw new OperationCanceledException("Dialog Cancelled");
+						throw new OperationCanceledException(Messages.JbpmDataItemsPropertySection_Dialog_Cancelled);
 					}
 				};
 				editor.createControl(parent,label);

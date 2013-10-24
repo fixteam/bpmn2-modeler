@@ -31,10 +31,10 @@ public class StandardLoopCharacteristicsDetailComposite extends DefaultDetailCom
 		if (propertiesProvider==null) {
 			propertiesProvider = new AbstractPropertiesProvider(object) {
 				String[] properties = new String[] {
-						"anyAttribute",
-						"testBefore",
-						"loopCondition",
-						"loopMaximum",
+						"anyAttribute", //$NON-NLS-1$
+						"testBefore", //$NON-NLS-1$
+						"loopCondition", //$NON-NLS-1$
+						"loopMaximum", //$NON-NLS-1$
 				};
 				
 				@Override

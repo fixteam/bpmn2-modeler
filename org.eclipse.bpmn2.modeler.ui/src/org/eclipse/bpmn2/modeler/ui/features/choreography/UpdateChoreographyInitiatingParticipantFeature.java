@@ -52,7 +52,7 @@ public class UpdateChoreographyInitiatingParticipantFeature extends AbstractUpda
 		String id = peService.getPropertyValue(context.getPictogramElement(), INITIATING_PARTICIPANT_REF);
 		Participant participant = choreography.getInitiatingParticipantRef();
 
-		if ((id == null || id.equals("null")) && participant == null) {
+		if ((id == null || id.equals("null")) && participant == null) { //$NON-NLS-1$
 			return Reason.createFalseReason();
 		}
 
@@ -84,7 +84,7 @@ public class UpdateChoreographyInitiatingParticipantFeature extends AbstractUpda
 		}
 
 		Participant initiatingParticipant = choreography.getInitiatingParticipantRef();
-		String id = initiatingParticipant == null ? "null" : initiatingParticipant.getId();
+		String id = initiatingParticipant == null ? "null" : initiatingParticipant.getId(); //$NON-NLS-1$
 		peService.setPropertyValue(context.getPictogramElement(), INITIATING_PARTICIPANT_REF, id);
 
 		return true;

@@ -53,10 +53,10 @@ public final class FloatDataType
 
     public String writeValue(Object value) {
         Float f = (Float) value;
-        return f == null ? "" : f.toString();
+        return f == null ? "" : f.toString(); //$NON-NLS-1$
     }
 
     public String getStringType() {
-        return "Float";
+        return "Float"; //$NON-NLS-1$
     }
 }

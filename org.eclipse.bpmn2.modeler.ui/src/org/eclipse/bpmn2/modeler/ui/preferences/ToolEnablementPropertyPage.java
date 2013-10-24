@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.preferences.ToolEnablement;
 import org.eclipse.bpmn2.modeler.core.preferences.ToolEnablementPreferences;
@@ -26,7 +25,6 @@ import org.eclipse.bpmn2.modeler.ui.Activator;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.emf.ecore.EClass;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
@@ -39,7 +37,6 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -80,7 +77,7 @@ public class ToolEnablementPropertyPage extends PropertyPage {
 	 * Create the property page.
 	 */
 	public ToolEnablementPropertyPage() {
-		setTitle("Tool Enablement");
+		setTitle(Messages.ToolEnablementPropertyPage_Title);
 	}
 
 	/**
@@ -97,20 +94,20 @@ public class ToolEnablementPropertyPage extends PropertyPage {
 		container.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false, 1, 1));
 
 		final Label lblProfile = new Label(container, SWT.NONE);
-		lblProfile.setText("Default Profile:");
+		lblProfile.setText(Messages.ToolEnablementPropertyPage_Default_Profile_Label);
 		lblProfile.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
 
 		cboProfile = new Combo(container, SWT.READ_ONLY);
 		cboProfile.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		currentProfile = bpmn2Preferences.getDefaultModelEnablementProfile();
-		int i = 1;
+		int i = 0;
 		int iSelected = -1;
-		cboProfile.add("");
+//		cboProfile.add("");
 		for (ModelEnablementDescriptor me : currentRuntime.getModelEnablements()) {
 			String profile = me.getProfile();
 			String text = profile;
 			if (text==null || text.isEmpty())
-				text = "Unnamed " + (i+1);
+				text = Messages.ToolEnablementPropertyPage_Unnamed + (i+1);
 			cboProfile.add(text);
 			cboProfile.setData(Integer.toString(i), me);
 			if (iSelected<0 && (currentProfile!=null && currentProfile.equals(profile)))
@@ -119,7 +116,7 @@ public class ToolEnablementPropertyPage extends PropertyPage {
 		}
 
 		btnOverride = new Button(container,SWT.CHECK);
-		btnOverride.setText("Override the Default Profile with these settings:");
+		btnOverride.setText(Messages.ToolEnablementPropertyPage_Overrid_Profile_Button);
 		btnOverride.setSelection(bpmn2Preferences.getOverrideModelEnablementProfile());
 		btnOverride.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false, 3, 1));
 
@@ -128,18 +125,18 @@ public class ToolEnablementPropertyPage extends PropertyPage {
 		treesContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 3, 1));
 		
 		// Create Checkbox Tree Viwers for standard BPMN 2.0 elements and any extension elements
-		bpmnTreeViewer = createCheckboxTreeViewer(treesContainer, "Standard BPMN Elements");
+		bpmnTreeViewer = createCheckboxTreeViewer(treesContainer, Messages.ToolEnablementPropertyPage_Standard_Elements_Label);
 		bpmnTree = bpmnTreeViewer.getTree();
 
-		extensionTreeViewer = createCheckboxTreeViewer(treesContainer, "Extension Elements");
+		extensionTreeViewer = createCheckboxTreeViewer(treesContainer, Messages.ToolEnablementPropertyPage_Extension_Elements_Label);
 		extensionTree = extensionTreeViewer.getTree();
 				
 		final Button btnCopy = new Button(container,SWT.FLAT);
 		btnCopy.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, false, false, 1, 1));
-		btnCopy.setText("Initialize");
+		btnCopy.setText(Messages.ToolEnablementPropertyPage_Initialize_Button);
 
 		final Label lblCopy = new Label(container, SWT.NONE);
-		lblCopy.setText("these Override Settings from this Profile:");
+		lblCopy.setText(Messages.ToolEnablementPropertyPage_Initialize_Label);
 		lblCopy.setLayoutData(new GridData(SWT.LEFT, SWT.BOTTOM, false, false, 1, 1));
 
 		final Combo cboCopy = new Combo(container, SWT.READ_ONLY);
@@ -154,9 +151,9 @@ public class ToolEnablementPropertyPage extends PropertyPage {
 				for (ModelEnablementDescriptor me : rt.getModelEnablements()) {
 					String text = rt.getName();
 					if (me.getType()!=null)
-						text += " - " + me.getType();
+						text += " - " + me.getType(); //$NON-NLS-1$
 					if (me.getProfile()!=null)
-						text += " (" + me.getProfile() + ")";
+						text += " (" + me.getProfile() + ")"; //$NON-NLS-1$ //$NON-NLS-2$
 					cboCopy.add(text);
 					cboCopy.setData(Integer.toString(i), me);
 					if (rt == currentRuntime && iSelected<0)
@@ -206,7 +203,7 @@ public class ToolEnablementPropertyPage extends PropertyPage {
 				}
 			}
 		});
-		btnImportProfile.setText("Import Profile ...");
+		btnImportProfile.setText(Messages.ToolEnablementPropertyPage_Import);
 
 		Button btnExportProfile = new Button(importExportButtons, SWT.NONE);
 		btnExportProfile.addSelectionListener(new SelectionAdapter() {
@@ -221,7 +218,7 @@ public class ToolEnablementPropertyPage extends PropertyPage {
 						String profile = null;
 						if (modelEnablements!=null) {
 							int i = cboCopy.getSelectionIndex();
-							ModelEnablementDescriptor me = (ModelEnablementDescriptor)cboCopy.getData(""+i);
+							ModelEnablementDescriptor me = (ModelEnablementDescriptor)cboCopy.getData(""+i); //$NON-NLS-1$
 							runtimeId = me.getRuntime().getId();
 							profile = me.getProfile();
 							type = me.getType();
@@ -233,7 +230,7 @@ public class ToolEnablementPropertyPage extends PropertyPage {
 				}
 			}
 		});
-		btnExportProfile.setText("Export Profile ...");
+		btnExportProfile.setText(Messages.ToolEnablementPropertyPage_Export);
 		initDataBindings(bpmnTreeViewer, bpmnTools);
 		initDataBindings(extensionTreeViewer, extensionTools);
 

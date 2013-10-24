@@ -1,17 +1,17 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: BPMN2 Editor Runtime extensions for JBoss jBPM5
+Bundle-Name: %pluginName
 Bundle-SymbolicName: org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5;singleton:=true
-Bundle-Version: 0.2.5.qualifier
+Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.Activator
-Bundle-Vendor: Eclipse.org
+Bundle-Vendor: %providerName
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.ui.ide,
- org.eclipse.graphiti;bundle-version="[0.8.2,0.10.0]",
- org.eclipse.graphiti.ui;bundle-version="[0.8.2,0.10.0]",
+ org.eclipse.graphiti;bundle-version="[0.10.0,0.11.0]",
+ org.eclipse.graphiti.ui;bundle-version="[0.10.0,0.11.0]",
  org.eclipse.bpmn2.modeler.core,
- org.eclipse.emf.transaction;bundle-version="1.4.0",
- org.eclipse.ui.views.properties.tabbed;bundle-version="3.5.100",
+ org.eclipse.emf.transaction,
+ org.eclipse.ui.views.properties.tabbed,
  org.eclipse.gef,
  org.eclipse.bpmn2.edit,
  org.eclipse.bpmn2.editor,
@@ -28,14 +28,15 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Export-Package: org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5,
  org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.features,
- org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools,
- org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.impl,
- org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.util,
  org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim,
  org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.impl,
  org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.util,
+ org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools,
+ org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.impl,
+ org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.util,
  org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property,
  org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.adapters,
+ org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.util,
  org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid
 Import-Package: org.eclipse.bpmn2.modeler.ui,
  org.eclipse.bpmn2.modeler.ui.editor,

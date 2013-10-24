@@ -45,12 +45,12 @@ public class RemoveChoreographyMessageFeature extends AbstractCustomFeature {
 	
 	@Override
 	public String getName() {
-	    return "Remove Message";
+	    return Messages.RemoveChoreographyMessageFeature_Name;
 	}
 	
 	@Override
 	public String getDescription() {
-	    return "Remove the Message definition from this Choreography Participant";
+	    return Messages.RemoveChoreographyMessageFeature_Description;
 	}
 
 	@Override

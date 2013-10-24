@@ -31,7 +31,7 @@ public interface BpsimPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	String eNAME = "bpsim";
+	String eNAME = "bpsim"; 
 
 	/**
 	 * The package namespace URI.
@@ -39,7 +39,7 @@ public interface BpsimPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	String eNS_URI = "http://www.bpsim.org/schemas/1.0";
+	String eNS_URI = "http://www.bpsim.org/schemas/1.0"; 
 
 	/**
 	 * The package namespace name.
@@ -47,7 +47,7 @@ public interface BpsimPackage extends EPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	String eNS_PREFIX = "bpsim";
+	String eNS_PREFIX = "bpsim"; 
 
 	/**
 	 * The singleton instance of the package.

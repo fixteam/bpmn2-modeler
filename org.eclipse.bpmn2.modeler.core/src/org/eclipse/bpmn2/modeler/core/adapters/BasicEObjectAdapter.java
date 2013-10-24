@@ -166,7 +166,7 @@ implements IProperty<String, Object>, INamespaceMap<String, String> {
 			Element element = ((WSDLElement) getTarget()).getElement();
 			// Element could be null (for instance, on load)
 			if (element != null) {
-				String attr = key.equals("") ? "xmlns" : "xmlns:" + key;
+				String attr = key.equals("") ? "xmlns" : "xmlns:" + key; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				// We only need to update attribute if something really has been changed
 				// because it causes hard reconcile process
 				if ((oldValue == null && value != null) || (oldValue != null && !oldValue.equals(value))) {

@@ -42,7 +42,7 @@ public class JavaTypeTreeNode extends TreeNode {
 	@Override
 	public String getLabel() {
 		IType c = (IType)modelObject;
-		return c.getElementName() + " - " + c.getFullyQualifiedName('.');
+		return c.getElementName() + " - " + c.getFullyQualifiedName('.'); //$NON-NLS-1$
 	}
 
 	@Override

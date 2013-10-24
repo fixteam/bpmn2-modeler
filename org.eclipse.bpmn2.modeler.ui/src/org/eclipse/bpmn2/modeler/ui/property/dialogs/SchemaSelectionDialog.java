@@ -46,6 +46,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.window.Window;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -91,7 +92,7 @@ public class SchemaSelectionDialog extends SelectionStatusDialog {
 	@Override
 	protected void configureShell(Shell shell) {
 		super.configureShell(shell);
-		shell.setText("Schema Selection");
+		shell.setText(Messages.SchemaSelectionDialog_TItle);
 	}
 
 	@Override
@@ -116,11 +117,11 @@ public class SchemaSelectionDialog extends SelectionStatusDialog {
 
 	protected Object createImportList(Composite parent) {
 		Label label = new Label(parent, SWT.NONE);
-		label.setText("Imports");
+		label.setText(Messages.SchemaSelectionDialog_Imports);
 		label.setLayoutData(new GridData(SWT.FILL,SWT.FILL,true,true,1,1));
 		
 		Button addImport = new Button(parent, SWT.PUSH);
-		addImport.setText("Add new Import");
+		addImport.setText(Messages.SchemaSelectionDialog_Add_Import);
 		addImport.setLayoutData(new GridData(SWT.RIGHT,SWT.FILL,true,true,1,1));
 		addImport.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -133,11 +134,12 @@ public class SchemaSelectionDialog extends SelectionStatusDialog {
 						domain.getCommandStack().execute(new RecordingCommand(domain) {
 							@Override
 							protected void doExecute() {
-								Import imp = ImportUtil.addImport(bpmn2Editor.getModelHandler().getResource(), result[0]);
+								ImportUtil importer = new ImportUtil();
+								Import imp = importer.addImport(bpmn2Editor.getModelHandler().getResource(), result[0]);
 								if (imp!=null) {
 									int index = importList.getItemCount();
 									importList.add(imp.getLocation());
-									importList.setData(""+index,imp);
+									importList.setData(""+index,imp); //$NON-NLS-1$
 								}
 							}
 						});
@@ -155,13 +157,13 @@ public class SchemaSelectionDialog extends SelectionStatusDialog {
 		int index = 0;
 		for (Import imp : getImports()) {
 			importList.add(imp.getLocation());
-			importList.setData(""+index++, imp);
+			importList.setData(""+index++, imp); //$NON-NLS-1$
 		}
 		importList.addSelectionListener( new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				int index = importList.getSelectionIndex();
-				Import imp = (Import)importList.getData(""+index);
+				Import imp = (Import)importList.getData(""+index); //$NON-NLS-1$
 				importType = getImportType(imp);
 				importLocation = imp.getLocation();
 				
@@ -175,7 +177,7 @@ public class SchemaSelectionDialog extends SelectionStatusDialog {
 	protected Object createImportStructure(Composite parent) {
 
 		Label label = new Label(parent, SWT.NONE);
-		label.setText("Structure");
+		label.setText(Messages.SchemaSelectionDialog_Structure);
 
 		// Tree viewer for variable structure
 		tree = new Tree(parent, SWT.BORDER | SWT.SINGLE);
@@ -208,7 +210,7 @@ public class SchemaSelectionDialog extends SelectionStatusDialog {
 	}
 	
 	private String buildSelectionPath(TreeItem sel) {
-		String path = "";
+		String path = ""; //$NON-NLS-1$
 		TreeItem parent = sel.getParentItem();
 		if (parent!=null) {
 			path += buildSelectionPath(parent);
@@ -216,11 +218,11 @@ public class SchemaSelectionDialog extends SelectionStatusDialog {
 			Object data = sel.getData();
 			if (data instanceof TreeNode) {
 				TreeNode tn = (TreeNode)data;
-				path += "/" + tn.getLabel();
+				path += "/" + tn.getLabel(); //$NON-NLS-1$
 			}
 		}
 		else
-			path = ""; // this is the tree root
+			path = ""; // this is the tree root //$NON-NLS-1$
 		
 		return path;
 	}
@@ -254,16 +256,16 @@ public class SchemaSelectionDialog extends SelectionStatusDialog {
 
 	void attemptLoad() {
 		String path = null;
-		if ("xsd".equals(importType) || "xml".equals(importType)) {
+		if ("xsd".equals(importType) || "xml".equals(importType)) { //$NON-NLS-1$ //$NON-NLS-2$
 			treeContentProvider = new VariableTypeTreeContentProvider(true, true);
 			path = importLocation;
-		} else if ("wsdl".equals(importType)) {
+		} else if ("wsdl".equals(importType)) { //$NON-NLS-1$
 			treeContentProvider = new ServiceTreeContentProvider(true);
 			path = importLocation;
-		} else if ("bpmn".equals(importType)) {
+		} else if ("bpmn".equals(importType)) { //$NON-NLS-1$
 			treeContentProvider = new BPMN2DefinitionsTreeContentProvider(true);
 			path = importLocation;
-		} else if ("java".equals(importType)) {
+		} else if ("java".equals(importType)) { //$NON-NLS-1$
 			treeContentProvider = new JavaTreeContentProvider(true);
 			path = importLocation;
 		} else {
@@ -294,11 +296,11 @@ public class SchemaSelectionDialog extends SelectionStatusDialog {
 		if (uri.isRelative()) {
 			// construct absolute path
 			String basePath = bpmn2Editor.getModelFile().getLocation().removeLastSegments(1).toString();
-			uri = URI.createFileURI( basePath + "/" + path );
+			uri = URI.createFileURI( basePath + "/" + path ); //$NON-NLS-1$
 		}
 
 		final URI loadUri = uri;
-		loaderJob = new Job("") {
+		loaderJob = new Job("") { //$NON-NLS-1$
 
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
@@ -323,7 +325,7 @@ public class SchemaSelectionDialog extends SelectionStatusDialog {
 
 	Object attemptLoad(URI uri, String kind) {
 
-		if ("java".equals(kind)) {
+		if ("java".equals(kind)) { //$NON-NLS-1$
 			final String fileName = uri.lastSegment();
 			final ArrayList<IType> results = new ArrayList<IType>();
 			IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
@@ -359,7 +361,7 @@ public class SchemaSelectionDialog extends SelectionStatusDialog {
 
 		if (input == null || input instanceof Exception) {
 			updateStatus(new Status(IStatus.ERROR, Activator.getDefault().PLUGIN_ID, 0,
-					"Cannot load "+importLocation, (Throwable)input));
+					NLS.bind(Messages.SchemaSelectionDialog_Cannot_Load,importLocation), (Throwable)input));
 //			treeViewer.setInput(null);
 			input = null;
 
@@ -368,7 +370,7 @@ public class SchemaSelectionDialog extends SelectionStatusDialog {
 			treeViewer.setInput(input);
 			tree.getVerticalBar().setSelection(0);
 			updateStatus(new Status(IStatus.OK, Activator.getDefault().PLUGIN_ID, 0,
-					"Loaded "+importLocation, null));
+					NLS.bind(Messages.SchemaSelectionDialog_Loaded,importLocation), null));
 			updateOK(false);
 		}
 	}
@@ -391,15 +393,15 @@ public class SchemaSelectionDialog extends SelectionStatusDialog {
 	String getImportType(Import imp) {
 		if (imp != null) {
 			String type = imp.getImportType();
-			if ("http://schemas.xmlsoap.org/wsdl/".equals(type))
-				return "wsdl";
-			if ("http://www.w3.org/2001/XMLSchema".equals(type))
-				return "xsd";
-			if ("http://www.omg.org/spec/BPMN/20100524/MODEL".equals(type))
-				return "bpmn";
-			if ("http://www.java.com/javaTypes".equals(type))
-				return "java";
-			return "xml";
+			if ("http://schemas.xmlsoap.org/wsdl/".equals(type)) //$NON-NLS-1$
+				return "wsdl"; //$NON-NLS-1$
+			if ("http://www.w3.org/2001/XMLSchema".equals(type)) //$NON-NLS-1$
+				return "xsd"; //$NON-NLS-1$
+			if ("http://www.omg.org/spec/BPMN/20100524/MODEL".equals(type)) //$NON-NLS-1$
+				return "bpmn"; //$NON-NLS-1$
+			if ("http://www.java.com/javaTypes".equals(type)) //$NON-NLS-1$
+				return "java"; //$NON-NLS-1$
+			return "xml"; //$NON-NLS-1$
 		}
 		return null;
 	}

@@ -51,6 +51,9 @@ public class UpdateChoreographyMessageLinkFeature extends AbstractUpdateFeature 
 	@Override
 	public boolean update(IUpdateContext context) {
 
+		if (!canUpdate(context))
+			return false;
+		
 		ChoreographyUtil.drawMessageLinks(getFeatureProvider(), (ContainerShape) context.getPictogramElement().eContainer());
 
 		BPMNShape bpmnShape = BusinessObjectUtil.getFirstElementOfType(context.getPictogramElement(), BPMNShape.class);

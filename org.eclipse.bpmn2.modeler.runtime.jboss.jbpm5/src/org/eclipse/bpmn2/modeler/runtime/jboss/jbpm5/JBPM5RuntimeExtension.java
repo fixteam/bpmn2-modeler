@@ -28,6 +28,7 @@ import org.eclipse.bpmn2.DataObject;
 import org.eclipse.bpmn2.DataOutput;
 import org.eclipse.bpmn2.Event;
 import org.eclipse.bpmn2.Gateway;
+import org.eclipse.bpmn2.Interface;
 import org.eclipse.bpmn2.ItemDefinition;
 import org.eclipse.bpmn2.ManualTask;
 import org.eclipse.bpmn2.Message;
@@ -42,10 +43,11 @@ import org.eclipse.bpmn2.modeler.core.IBpmn2RuntimeExtension;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.PropertiesCompositeFactory;
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.runtime.CustomTaskDescriptor;
+import org.eclipse.bpmn2.modeler.core.runtime.CustomTaskImageProvider;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor.Property;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
+import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil.Bpmn2DiagramType;
-import org.eclipse.bpmn2.modeler.core.validation.SyntaxCheckerUtils;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.features.JbpmCustomTaskFeatureContainer;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.GlobalType;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.ImportType;
@@ -57,6 +59,8 @@ import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmDefinitionsPro
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmDefinitionsPropertySection.JbpmMessageListComposite;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmGatewayDetailComposite;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmImportTypeDetailComposite;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmInterfaceDetailComposite;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmItemDefinitionDetailComposite;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmItemDefinitionListComposite;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmManualTaskDetailComposite;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmMultiInstanceDetailComposite;
@@ -69,6 +73,8 @@ import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WIDException;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WIDHandler;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wid.WorkItemDefinition;
 import org.eclipse.bpmn2.modeler.ui.DefaultBpmn2RuntimeExtension.RootElementParser;
+import org.eclipse.bpmn2.modeler.ui.property.data.InterfaceDetailComposite;
+import org.eclipse.bpmn2.modeler.ui.property.diagrams.ItemDefinitionDetailComposite;
 import org.eclipse.bpmn2.modeler.ui.wizards.FileService;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -76,11 +82,15 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
-import org.eclipse.emf.common.notify.Notifier;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.transaction.NotificationFilter;
+import org.eclipse.emf.transaction.ResourceSetChangeEvent;
+import org.eclipse.emf.transaction.ResourceSetListener;
+import org.eclipse.emf.transaction.RollbackException;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.graphiti.ui.internal.GraphitiUIPlugin;
@@ -95,18 +105,18 @@ import org.eclipse.ui.IEditorInput;
 import org.xml.sax.InputSource;
 
 @SuppressWarnings("restriction")
-public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
+public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension, ResourceSetListener {
 	
-	public final static String JBPM5_RUNTIME_ID = "org.jboss.runtime.jbpm5";
+	public final static String JBPM5_RUNTIME_ID = "org.jboss.runtime.jbpm5"; //$NON-NLS-1$
 	
-	private static final String DROOLS_NAMESPACE = "http://www.jboss.org/drools";
+	private static final String DROOLS_NAMESPACE = "http://www.jboss.org/drools"; //$NON-NLS-1$
 	private static final String[] typeLanguages = new String[] {
-		"http://www.java.com/javaTypes", "Java",
+		"http://www.java.com/javaTypes", "Java", //$NON-NLS-1$ //$NON-NLS-2$
 	};
 	private static final String [] expressionLanguages = new String[] {
-		"http://www.mvel.org/2.0", "mvel",
-		"http://www.java.com/java", "java",
-		"http://www.jboss.org/drools/rule", "Rule",
+		"http://www.mvel.org/2.0", "mvel", //$NON-NLS-1$ //$NON-NLS-2$
+		"http://www.java.com/java", "java", //$NON-NLS-1$ //$NON-NLS-2$
+		"http://www.jboss.org/drools/rule", "Rule", //$NON-NLS-1$ //$NON-NLS-2$
 	};
 	private List<WorkItemDefinition> workItemDefinitions;
 	private static boolean initialized = false;
@@ -179,10 +189,11 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 	        PropertiesCompositeFactory.register(SendTask.class, JbpmSendTaskDetailComposite.class);
 	        PropertiesCompositeFactory.register(SequenceFlow.class, JbpmSequenceFlowDetailComposite.class);
 	        PropertiesCompositeFactory.register(Task.class, JbpmTaskDetailComposite.class);
+			PropertiesCompositeFactory.register(ItemDefinition.class, JbpmItemDefinitionDetailComposite.class);
+			PropertiesCompositeFactory.register(Interface.class, JbpmInterfaceDetailComposite.class);
 	        initialized = true;
 		}
 		
-		Diagram diagram = editor.getDiagramTypeProvider().getDiagram();
 		ISelection sel = editor.getEditorSite().getWorkbenchWindow().getSelectionService().getSelection();
 		if (sel instanceof IStructuredSelection) {
 			Object o = ((IStructuredSelection)sel).getFirstElement();
@@ -226,13 +237,13 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 									@Override
 									public void run() {
 										MessageDialog.openError(Display.getDefault().getActiveShell(),
-												"Duplicate Custom Task",
-												"A Custom Task with id '"+
+												Messages.JBPM5RuntimeExtension_Duplicate_Task_Title,
+												Messages.JBPM5RuntimeExtension_Duplicate_Task_Message+
 												ctd.getId()+
-												"' was already defined.\n"+
-												"The new Custom Task defined in the file: "+
-												wid.getDefinitionFile().getFullPath().toString()+"\n"+
-												"will be ignored.");
+												"' was already defined.\n"+ //$NON-NLS-1$
+												"The new Custom Task defined in the file: "+ //$NON-NLS-1$
+												wid.getDefinitionFile().getFullPath().toString()+"\n"+ //$NON-NLS-1$
+												"will be ignored."); //$NON-NLS-1$
 									}
 								});
 							}
@@ -247,6 +258,8 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 				e.printStackTrace();
 			}
 		}
+		
+		editor.getEditingDomain().addResourceSetListener(this);
 	}
 	
 	/*
@@ -259,7 +272,7 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 			String id = wid.getName();
 			String name = wid.getName();
 			CustomTaskDescriptor ct = new CustomTaskDescriptor(id,name);
-			ct.setType("Task");
+			ct.setType("Task"); //$NON-NLS-1$
 			ct.setDescription(wid.getName());
 			ct.setFeatureContainer(new JbpmCustomTaskFeatureContainer());
 			ct.getFeatureContainer().setCustomTaskDescriptor(ct);
@@ -270,7 +283,7 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 			
 			// push the icon into the image registry
 			IProject project = Bpmn2Preferences.getActiveProject();
-			String iconPath = getWIDPropertyValue("icon", wid);
+			String iconPath = getWIDPropertyValue("icon", wid); //$NON-NLS-1$
 			if (iconPath != null) {
 				Path tempPath = new Path(iconPath);
 				String iconName = tempPath.lastSegment();
@@ -282,10 +295,7 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 						IResource icon = icons.get(0);
 						URL url = icon.getLocationURI().toURL();
 						ImageDescriptor image = ImageDescriptor.createFromURL(url);
-	
-						ImageRegistry imageRegistry = GraphitiUIPlugin.getDefault().getImageRegistry();
-						if (imageRegistry.get(iconPath) == null)
-							imageRegistry.put(iconPath, image);
+						CustomTaskImageProvider.registerImage(iconPath, image);
 					}
 				} catch (CoreException e1) {
 					e1.printStackTrace();
@@ -310,19 +320,19 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 	 * @return
 	 */
 	private String getWIDPropertyValue ( String propName, WorkItemDefinition wid) {
-		if (propName.equalsIgnoreCase("taskname")) {
+		if (propName.equalsIgnoreCase("taskname")) { //$NON-NLS-1$
 			return wid.getName();
 		}
-		if (propName.equalsIgnoreCase("displayName")) {
+		if (propName.equalsIgnoreCase("displayName")) { //$NON-NLS-1$
 			return wid.getDisplayName();
 		}
-		if (propName.equalsIgnoreCase("icon")) {
+		if (propName.equalsIgnoreCase("icon")) { //$NON-NLS-1$
 			return wid.getIcon();
 		}
-		if (propName.equalsIgnoreCase("customEditor")) {
+		if (propName.equalsIgnoreCase("customEditor")) { //$NON-NLS-1$
 			return wid.getCustomEditor();
 		}
-		if (propName.equalsIgnoreCase("eclipse:customEditor")) {
+		if (propName.equalsIgnoreCase("eclipse:customEditor")) { //$NON-NLS-1$
 			return wid.getEclipseCustomEditor();
 		}
 		return null;
@@ -338,11 +348,11 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 		String name = propName;
 		String value = getWIDPropertyValue(propName, wid);
 		String description = null;
-		String type = "EString";
+		String type = "EString"; //$NON-NLS-1$
 		Property prop = new Property(name, description);
 		prop.type = type;
-		if (value == null && propName.equalsIgnoreCase("icon")) {
-			value = "task.png";
+		if (value == null && propName.equalsIgnoreCase("icon")) { //$NON-NLS-1$
+			value = "task.png"; //$NON-NLS-1$
 		}
 		if (value!=null)
 			prop.getValues().add(value);
@@ -361,11 +371,11 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 		for (int i = 0; i < values.length; i++) {
 			if (values[i] instanceof Property) {
 				Property prop = (Property) values[i];
-				if (prop.name.equals("dataInputs")) {
+				if (prop.name.equals("dataInputs")) { //$NON-NLS-1$
 					inputCounter++;
-					Property dataInputAssociations = new Property ( "dataInputAssociations", null);
-					Property targetRef = new Property ("targetRef", null);
-					targetRef.ref = "ioSpecification/dataInputs#" + inputCounter;
+					Property dataInputAssociations = new Property ( "dataInputAssociations", null); //$NON-NLS-1$
+					Property targetRef = new Property ("targetRef", null); //$NON-NLS-1$
+					targetRef.ref = "ioSpecification/dataInputs#" + inputCounter; //$NON-NLS-1$
 					dataInputAssociations.getValues().add(targetRef);
 					ct.getProperties().add(dataInputAssociations);
 				}
@@ -390,11 +400,11 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 	 * @param wid
 	 */
 	private Property createIOSpecificationSection ( CustomTaskDescriptor ct, WorkItemDefinition wid ) {
-		Property ioSpecification = new Property ( "ioSpecification", null);
+		Property ioSpecification = new Property ( "ioSpecification", null); //$NON-NLS-1$
 		
 		for (Entry<String, String> entry : wid.getParameters().entrySet()) {
-			Property dataInputs = new Property("dataInputs", null);
-			Property dataInputsName = new Property("name", null);
+			Property dataInputs = new Property("dataInputs", null); //$NON-NLS-1$
+			Property dataInputsName = new Property("name", null); //$NON-NLS-1$
 			dataInputsName.getValues().add(entry.getKey());
 			dataInputs.getValues().add(dataInputsName);
 			ioSpecification.getValues().add(dataInputs);
@@ -410,8 +420,8 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 //			ioSpecification.getValues().add(dataOutputs);
 //		} else {
 			for (Entry<String, String> entry : wid.getResults().entrySet()) {
-				Property dataOutputs = new Property("dataOutputs", null);
-				Property dataOutputsName = new Property("name", null);
+				Property dataOutputs = new Property("dataOutputs", null); //$NON-NLS-1$
+				Property dataOutputsName = new Property("name", null); //$NON-NLS-1$
 				dataOutputsName.getValues().add(entry.getKey());
 				dataOutputs.getValues().add(dataOutputsName);
 				ioSpecification.getValues().add(dataOutputs);
@@ -421,20 +431,20 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 		Object[] values = ioSpecification.getValues().toArray();
 		int inputCounter = -1;
 		int outputCounter = -1;
-		Property inputSets = new Property("inputSets", null);
-		Property outputSets = new Property("outputSets", null);
+		Property inputSets = new Property("inputSets", null); //$NON-NLS-1$
+		Property outputSets = new Property("outputSets", null); //$NON-NLS-1$
 		for (int i = 0; i < values.length; i++) {
 			if (values[i] instanceof Property) {
 				Property prop = (Property) values[i];
-				if (prop.name.equals("dataInputs")) {
+				if (prop.name.equals("dataInputs")) { //$NON-NLS-1$
 					inputCounter++;
-					Property inputSetsRef = new Property ("dataInputRefs", null);
-					inputSetsRef.ref = "ioSpecification/dataInputs#" + inputCounter;
+					Property inputSetsRef = new Property ("dataInputRefs", null); //$NON-NLS-1$
+					inputSetsRef.ref = "ioSpecification/dataInputs#" + inputCounter; //$NON-NLS-1$
 					inputSets.getValues().add(inputSetsRef);
-				} else 	if (prop.name.equals("dataOutputs")) {
+				} else 	if (prop.name.equals("dataOutputs")) { //$NON-NLS-1$
 					outputCounter++;
-					Property outputSetsRef = new Property ("dataOutputRefs", null);
-					outputSetsRef.ref = "ioSpecification/dataOutputs#" + outputCounter;
+					Property outputSetsRef = new Property ("dataOutputRefs", null); //$NON-NLS-1$
+					outputSetsRef.ref = "ioSpecification/dataOutputs#" + outputCounter; //$NON-NLS-1$
 					outputSets.getValues().add(outputSetsRef);
 				}
 			}
@@ -454,7 +464,7 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 	 * @param wid
 	 */
 	private void setBasicProps ( CustomTaskDescriptor ct, WorkItemDefinition wid) {
-		String[] basicProps = new String[] { "taskName", "displayName", "icon" };
+		String[] basicProps = new String[] { "taskName", "displayName", "icon" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		for (int i = 0; i < basicProps.length; i++) {
 			Property prop = getPropertyFromWID(basicProps[i], wid);
 			ct.getProperties().add(prop);
@@ -472,8 +482,8 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 		
 		public boolean visit (IResource resource) throws CoreException {
 			if (resource.getType() == IResource.FILE) {
-				if ("conf".equalsIgnoreCase(((IFile)resource).getFileExtension()) ||
-						"wid".equalsIgnoreCase(((IFile)resource).getFileExtension())) {
+				if ("conf".equalsIgnoreCase(((IFile)resource).getFileExtension()) || //$NON-NLS-1$
+						"wid".equalsIgnoreCase(((IFile)resource).getFileExtension())) { //$NON-NLS-1$
 					widFiles.add((IFile)resource);
 					return true;
 				}
@@ -481,7 +491,7 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 			else if (resource.getType() == IResource.FOLDER) {
 				// skip over "bin" and "target" folders
 				String name = resource.getName();
-				if ("bin".equals(name) || "target".equals(name))
+				if ("bin".equals(name) || "target".equals(name)) //$NON-NLS-1$ //$NON-NLS-2$
 					return false;
 			}
 			return true;
@@ -522,85 +532,61 @@ public class JBPM5RuntimeExtension implements IBpmn2RuntimeExtension {
 	}
 
 	@Override
-	public Composite getPreferencesComposite(Composite parent, Bpmn2Preferences preferences) {
+	public NotificationFilter getFilter() {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override 
-	public void modelObjectCreated(final EObject object) {
-		if (object instanceof org.eclipse.bpmn2.Property ||
-				object instanceof DataObject ||
-				object instanceof Message) {
-			object.eAdapters().add(new Adapter() {
-				@Override
-				public void notifyChanged(Notification notification) {
-					
-		            if (notification.getEventType()==Notification.SET) {
-						Object o = notification.getFeature();
-						if (o instanceof EStructuralFeature) {
-							EStructuralFeature feature = (EStructuralFeature)o;
-	                        if ("name".equals(feature.getName())) {
-								Object newValue = notification.getNewValue();
-								Object oldValue = notification.getOldValue();
-								if (newValue!=oldValue && newValue!=null && !newValue.equals(oldValue))
-								{
-									EStructuralFeature id = object.eClass().getEStructuralFeature("id");
-									if (id!=null) {
-										newValue = SyntaxCheckerUtils.toNCName((String)newValue);
-										boolean deliver = object.eDeliver();
-										if (deliver)
-											object.eSetDeliver(false);
-										object.eSet(id, newValue);
-										if (deliver)
-											object.eSetDeliver(true);
-									}
-								}
-							}
-	                        else if ("id".equals(feature.getName())) {
-								Object newValue = notification.getNewValue();
-								Object oldValue = notification.getOldValue();
-								if (newValue!=oldValue && newValue!=null && !newValue.equals(oldValue)) 
-								{
-									EStructuralFeature name = object.eClass().getEStructuralFeature("name");
-									if (name!=null) {
-										boolean deliver = object.eDeliver();
-										if (deliver)
-											object.eSetDeliver(false);
-										object.eSet(name, newValue);
-										if (deliver)
-											object.eSetDeliver(true);
-									}
-								}
+	@Override
+	public Command transactionAboutToCommit(ResourceSetChangeEvent event) throws RollbackException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void resourceSetChanged(ResourceSetChangeEvent event) {
+		for (Notification n : event.getNotifications()) {
+			if (n.getEventType() == Notification.ADD) {
+				if (n.getNewValue() instanceof EObject) {
+					EObject object = (EObject)n.getNewValue();
+					if (object instanceof org.eclipse.bpmn2.Property ||
+							object instanceof DataObject ||
+							object instanceof Message ||
+							object instanceof GlobalType) {
+						boolean found = false;
+						for (Adapter a : ((EObject)object).eAdapters()) {
+							if (a instanceof ProcessVariableNameChangeAdapter) {
+								found = true;
+								break;
 							}
 						}
-		            }
+						if (!found) {
+							ProcessVariableNameChangeAdapter a = new ProcessVariableNameChangeAdapter();
+							object.eAdapters().add(a);
+						}
+					}
 				}
-
-				@Override
-				public Notifier getTarget() {
-					return null;
-				}
-
-				@Override
-				public void setTarget(Notifier newTarget) {
-				}
-
-				@Override
-				public boolean isAdapterForType(Object type) {
-					return false;
-				}
-				
-			});
-		}
-		else if (object instanceof Gateway ||
-				object instanceof CatchEvent ||
-				object instanceof ThrowEvent) {
-			// these objects should not be assigned names when initially created
-			EStructuralFeature feature = object.eClass().getEStructuralFeature("name");
-			if (feature!=null && !object.eIsSet(feature)) {
-				object.eSet(feature, "");
 			}
 		}
+		
+	}
+
+	@Override
+	public boolean isAggregatePrecommitListener() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isPrecommitOnly() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isPostcommitOnly() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

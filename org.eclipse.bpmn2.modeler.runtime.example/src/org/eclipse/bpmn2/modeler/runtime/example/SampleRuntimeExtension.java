@@ -79,16 +79,4 @@ public class SampleRuntimeExtension implements IBpmn2RuntimeExtension {
 		// method must return FALSE.
 		return false;
 	}
-
-	@Override
-	public Composite getPreferencesComposite(Composite parent,
-			Bpmn2Preferences preferences) {
-		return null;
-	}
-
-	@Override
-	public void modelObjectCreated(EObject object) {
-		// TODO Auto-generated method stub
-		
-	}
 }

@@ -64,7 +64,7 @@ public class InclusiveGatewayFeatureContainer extends AbstractGatewayFeatureCont
 	public static class CreateInclusiveGatewayFeature extends AbstractCreateGatewayFeature<InclusiveGateway> {
 
 		public CreateInclusiveGatewayFeature(IFeatureProvider fp) {
-			super(fp, "Inclusive Gateway", "Create "+"Inclusive Gateway");
+			super(fp, Messages.InclusiveGatewayFeatureContainer_Name, Messages.InclusiveGatewayFeatureContainer_Description);
 		}
 
 		@Override

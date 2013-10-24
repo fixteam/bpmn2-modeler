@@ -14,6 +14,7 @@ package org.eclipse.bpmn2.modeler.core.features.data;
 
 import org.eclipse.bpmn2.RootElement;
 import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2CreateFeature;
+import org.eclipse.emf.ecore.EClass;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.ICreateContext;
 
@@ -31,10 +32,19 @@ public abstract class AbstractCreateRootElementFeature<T extends RootElement> ex
 	@Override
     public Object[] create(ICreateContext context) {
 		RootElement element = createBusinessObject(context);
-		addGraphicalRepresentation(context, element);
+		if (element!=null) {
+			addGraphicalRepresentation(context, element);
+		}
+
 		return new Object[] { element };
     }
 	
+	@Override
+	public EClass getBusinessObjectClass() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	protected abstract String getStencilImageId();
 	
 	@Override

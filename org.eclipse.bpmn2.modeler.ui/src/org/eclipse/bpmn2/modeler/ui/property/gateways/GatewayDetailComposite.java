@@ -66,11 +66,11 @@ public class GatewayDetailComposite extends DefaultDetailComposite {
 				// if a gateway doesn't have one of the attributes listed here,
 				// it simply won't be displayed.
 				String[] properties = new String[] {
-						"gatewayDirection",
-						"instantiate",
-						"activationCondition",
-						"eventGatewayType",
-						"outgoing"
+						"gatewayDirection", //$NON-NLS-1$
+						"instantiate", //$NON-NLS-1$
+						"activationCondition", //$NON-NLS-1$
+						"eventGatewayType", //$NON-NLS-1$
+						"outgoing" //$NON-NLS-1$
 						// note: "default" sequence flow is already being displayed in the SequenceFlow tab
 						// so, no need to show it here
 				};
@@ -101,7 +101,7 @@ public class GatewayDetailComposite extends DefaultDetailComposite {
 	}
 	
 	protected void bindReference(Composite parent, EObject object, EReference reference) {
-		if (!reference.getName().equals("outgoing")) {
+		if (!reference.getName().equals("outgoing")) { //$NON-NLS-1$
 			// we'll take of this one ourselves using a SequenceFlowsListComposite
 			super.bindReference(parent, object, reference);
 		}
@@ -158,7 +158,7 @@ public class GatewayDetailComposite extends DefaultDetailComposite {
 						Diagram diagram = getDiagramEditor().getDiagramTypeProvider().getDiagram();
 						List<PictogramElement> pes = Graphiti.getLinkService().getPictogramElements(diagram, object);
 						getDiagramEditor().setPictogramElementForSelection(pes.get(0));
-						getDiagramEditor().refresh();
+						getDiagramEditor().getDiagramBehavior().getRefreshBehavior().refresh();
 					}
 				});
 			}
@@ -195,7 +195,7 @@ public class GatewayDetailComposite extends DefaultDetailComposite {
 			// add 2 or 3 columns, depending on gateway type
 			add(new SequenceFlowListColumn(object,1)); // identifier (from -> to)
 			add(new SequenceFlowListColumn(object,2)); // Condition (expression)
-			if (object.eClass().getEStructuralFeature("default")!=null) {
+			if (object.eClass().getEStructuralFeature("default")!=null) { //$NON-NLS-1$
 				add(new SequenceFlowListColumn(object,3)); // Is Default (boolean)
 			}
 		}
@@ -230,37 +230,37 @@ public class GatewayDetailComposite extends DefaultDetailComposite {
 		public String getHeaderText() {
 			switch (columnIndex) {
 			case 1:
-				return "Sequence Flow";
+				return Messages.GatewayDetailComposite_Sequence_Flow_Header;
 			case 2:
-				return "Condition";
+				return Messages.GatewayDetailComposite_Condition_Header;
 			case 3:
-				return "Is Default";
+				return Messages.GatewayDetailComposite_Is_Default_Header;
 			}
-			return "header " + columnIndex;
+			return "header " + columnIndex; //$NON-NLS-1$
 		}
 
 		@Override
 		public String getText(Object element) {
 			SequenceFlow flow = (SequenceFlow)element;
 			Gateway gateway = (Gateway)object;
-			String text = "";
+			String text = ""; //$NON-NLS-1$
 			switch (columnIndex) {
 			case 1:
 				text = flow.getName();
 				if (text==null || text.isEmpty()) {
 					text = ModelUtil.getDisplayName(flow.getSourceRef());
-					text += " -> ";
+					text += " -> "; //$NON-NLS-1$
 					text += ModelUtil.getDisplayName(flow.getTargetRef());
 				}
 				break;
 			case 2:
 				text = ModelUtil.getDisplayName(flow.getConditionExpression());
 				if (text==null)
-					text = "";
+					text = ""; //$NON-NLS-1$
 				break;
 			case 3:
 				{
-					EStructuralFeature f = gateway.eClass().getEStructuralFeature("default");
+					EStructuralFeature f = gateway.eClass().getEStructuralFeature("default"); //$NON-NLS-1$
 					Object defaultFlow = gateway.eGet(f);
 					text += (flow == defaultFlow);
 				}
@@ -276,7 +276,7 @@ public class GatewayDetailComposite extends DefaultDetailComposite {
 
 		@Override
 		public String getProperty() {
-			return "column " + columnIndex;
+			return "column " + columnIndex; //$NON-NLS-1$
 		}
 	}
 }

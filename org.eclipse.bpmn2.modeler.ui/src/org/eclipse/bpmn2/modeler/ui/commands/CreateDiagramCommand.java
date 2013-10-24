@@ -36,24 +36,23 @@ import org.eclipse.gef.EditPart;
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.window.Window;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 
 public class CreateDiagramCommand extends AbstractHandler {
 
-	public final static String ID_CREATE_PROCESS = "org.eclipse.bpmn2.modeler.command.createProcess";
-	public final static String ID_CREATE_CHOREOGRAPHY = "org.eclipse.bpmn2.modeler.command.createChoreography";
-	public final static String ID_CREATE_COLLABORATION = "org.eclipse.bpmn2.modeler.command.createCollaboration";
+	public final static String ID_CREATE_PROCESS = "org.eclipse.bpmn2.modeler.command.createProcess"; //$NON-NLS-1$
+	public final static String ID_CREATE_CHOREOGRAPHY = "org.eclipse.bpmn2.modeler.command.createChoreography"; //$NON-NLS-1$
+	public final static String ID_CREATE_COLLABORATION = "org.eclipse.bpmn2.modeler.command.createCollaboration"; //$NON-NLS-1$
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IEvaluationContext ctx = (IEvaluationContext)event.getApplicationContext();
 		Object var = ctx.getDefaultVariable();
-		Object model = null;
 		BPMN2Editor editor = BPMN2Editor.getActiveEditor();
 		if (var instanceof List) {
 			for (Object e : (List)var) {
 				if ( e instanceof EditPart) {
-					model = ((EditPart)e).getModel();
 					break;
 				}
 			}
@@ -62,13 +61,13 @@ public class CreateDiagramCommand extends AbstractHandler {
 		InputDialog dlg = null;
 		final String id = event.getCommand().getId();
 		if (ID_CREATE_PROCESS.equals(id)) {
-			dlg = new NewDiagramNameDialog(editor, "Process");
+			dlg = new NewDiagramNameDialog(editor, Messages.CreateDiagramCommand_Process);
 		}
 		else if (ID_CREATE_CHOREOGRAPHY.equals(id)) {
-			dlg = new NewDiagramNameDialog(editor, "Choreography");
+			dlg = new NewDiagramNameDialog(editor, Messages.CreateDiagramCommand_Choreography);
 		}
 		else if (ID_CREATE_COLLABORATION.equals(id)) {
-			dlg = new NewDiagramNameDialog(editor, "Collaboration");
+			dlg = new NewDiagramNameDialog(editor, Messages.CreateDiagramCommand_Collaboration);
 		}
 		if (dlg!=null) {
 			if (dlg.open()==Window.OK) {
@@ -89,7 +88,7 @@ public class CreateDiagramCommand extends AbstractHandler {
 							clazz = Collaboration.class;
 						}
 						RootElement bpmnElement = Bpmn2ModelerFactory.create(clazz);
-						EStructuralFeature f = bpmnElement.eClass().getEStructuralFeature("name");
+						EStructuralFeature f = bpmnElement.eClass().getEStructuralFeature("name"); //$NON-NLS-1$
 						bpmnElement.eSet(f, name);
 						definitions.getRootElements().add(bpmnElement);
 
@@ -115,13 +114,15 @@ public class CreateDiagramCommand extends AbstractHandler {
 	private static class NewDiagramNameDialog extends InputDialog {
 		
 		public NewDiagramNameDialog(final BPMN2Editor editor, final String type) {
-			super(editor.getSite().getShell(), "New "+type+" Diagram",
-				"Enter "+type+" name", "",
+			super(editor.getSite().getShell(),
+				NLS.bind(Messages.CreateDiagramCommand_Title,type),
+				NLS.bind(Messages.CreateDiagramCommand_Message,type),
+				"", //$NON-NLS-1$
 				new IInputValidator() {
 					@Override
 					public String isValid(String newText) {
 						if (newText==null || newText.isEmpty())
-							return "Name must not be empty";
+							return Messages.CreateDiagramCommand_Invalid_Empty;
 						for (RootElement re : getDefinitions(editor).getRootElements()) {
 							String name = null;
 							if (re instanceof Process) {
@@ -134,7 +135,7 @@ public class CreateDiagramCommand extends AbstractHandler {
 								name = ((Choreography)re).getName();
 							}
 							if (newText.equals(name))
-								return "The "+type+" '"+name+"' already exists.";
+								return NLS.bind(Messages.CreateDiagramCommand_Invalid_Duplicate,type);
 						}
 						
 						return null;

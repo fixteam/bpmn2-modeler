@@ -19,6 +19,7 @@ import java.util.List;
 import org.eclipse.bpmn2.Assignment;
 import org.eclipse.bpmn2.DataAssociation;
 import org.eclipse.bpmn2.DataInput;
+import org.eclipse.bpmn2.DataInputAssociation;
 import org.eclipse.bpmn2.Expression;
 import org.eclipse.bpmn2.FormalExpression;
 import org.eclipse.bpmn2.InputOutputSpecification;
@@ -48,7 +49,6 @@ import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.swt.widgets.Composite;
 
 /**
@@ -75,7 +75,7 @@ public class JbpmTaskDetailComposite extends JbpmActivityDetailComposite {
 
 	@Override
 	protected boolean isModelObjectEnabled(String className, String featureName) {
-		if ("DataInput".equals(className))
+		if ("DataInput".equals(className)) //$NON-NLS-1$
 			return true;
 		return super.isModelObjectEnabled(className, featureName);
 	}
@@ -100,17 +100,15 @@ public class JbpmTaskDetailComposite extends JbpmActivityDetailComposite {
 		
 		ModelExtensionAdapter adapter = ModelExtensionDescriptor.getModelExtensionAdapter(task);
 		if (adapter != null) {
-			Resource resource = task.eResource();
-			
 			// This Task object has <modelExtension> properties defined in the plugin.xml
 			// check if any of the <property> elements extend the DataInputs or DataOutputs
 			// (i.e. the I/O Parameter mappings) and create Object Editors for them.
 			// If the Task does not define these parameter mappings, create temporary objects
 			// for the editors (these will go away if they are not touched by the user)
-			List<Property> props = adapter.getProperties("ioSpecification/dataInputs/name");
+			List<Property> props = adapter.getProperties("ioSpecification/dataInputs/name"); //$NON-NLS-1$
 			InputOutputSpecification ioSpec = task.getIoSpecification();
 			if (ioSpec==null) {
-				ioSpec = FACTORY.createInputOutputSpecification();
+				ioSpec = createModelObject(InputOutputSpecification.class);
 				InsertionAdapter.add(task,
 						PACKAGE.getActivity_IoSpecification(),
 						ioSpec);
@@ -139,8 +137,7 @@ public class JbpmTaskDetailComposite extends JbpmActivityDetailComposite {
 				
 				// create the DataInput element (the parameter) if needed
 				if (parameter==null) {
-					parameter = FACTORY.createDataInput();
-					ModelUtil.setID(parameter, resource);
+					parameter = createModelObject(DataInput.class);
 					parameter.setName(name);
 					InsertionAdapter.add(ioSpec,
 							PACKAGE.getInputOutputSpecification_DataInputs(),
@@ -149,7 +146,7 @@ public class JbpmTaskDetailComposite extends JbpmActivityDetailComposite {
 					// create the InputSet if needed
 					InputSet inputSet = null;
 					if (ioSpec.getInputSets().size()==0) {
-						inputSet = FACTORY.createInputSet();
+						inputSet = createModelObject(InputSet.class);
 						InsertionAdapter.add(ioSpec,
 								PACKAGE.getInputOutputSpecification_InputSets(),
 								inputSet);
@@ -164,7 +161,7 @@ public class JbpmTaskDetailComposite extends JbpmActivityDetailComposite {
 				
 				// create the DataInputAssociation if needed
 				if (association == null) {
-					association = FACTORY.createDataInputAssociation();
+					association = createModelObject(DataInputAssociation.class);
 					association.setTargetRef(parameter);
 					InsertionAdapter.add(task,
 							PACKAGE.getActivity_DataInputAssociations(),
@@ -181,14 +178,14 @@ public class JbpmTaskDetailComposite extends JbpmActivityDetailComposite {
 					fromExpression = (FormalExpression) assignment.getFrom();
 				}
 				if (assignment==null) {
-					assignment = FACTORY.createAssignment();
-					FormalExpression toExpression = FACTORY.createFormalExpression();
+					assignment = createModelObject(Assignment.class);
+					FormalExpression toExpression = createModelObject(FormalExpression.class);
 					toExpression.setBody(parameter.getId());
 					assignment.setTo(toExpression);
 					InsertionAdapter.add(association, PACKAGE.getDataAssociation_Assignment(), assignment);
 				}
 				if (fromExpression==null) {
-					fromExpression = FACTORY.createFormalExpression();
+					fromExpression = createModelObject(FormalExpression.class);
 					InsertionAdapter.add(assignment, PACKAGE.getAssignment_From(), fromExpression);
 				}
 				
@@ -197,13 +194,13 @@ public class JbpmTaskDetailComposite extends JbpmActivityDetailComposite {
 				EAttribute attribute = PACKAGE.getFormalExpression_Body();
 				String dataType = property.type;
 				ObjectEditor editor = null;
-				if ("EInt".equals(dataType)) {
+				if ("EInt".equals(dataType)) { //$NON-NLS-1$
 					editor = new IntObjectEditor(this,fromExpression,attribute);
 				}
-				else if ("EBoolean".equals(dataType)) {
+				else if ("EBoolean".equals(dataType)) { //$NON-NLS-1$
 					editor = new BooleanObjectEditor(this,fromExpression,attribute);
 				}
-				else if ("ID".equals(dataType)) {
+				else if ("ID".equals(dataType)) { //$NON-NLS-1$
 					editor = new NCNameObjectEditor(this,fromExpression,attribute);
 				}
 				else {
@@ -217,11 +214,11 @@ public class JbpmTaskDetailComposite extends JbpmActivityDetailComposite {
 
 	@Override
 	protected AbstractListComposite bindList(EObject object, EStructuralFeature feature, EClass listItemClass) {
-		if (feature.getName().equals("resources")) {
+		if (feature.getName().equals("resources")) { //$NON-NLS-1$
 			if (isModelObjectEnabled(object.eClass(), feature)) {
 				ActorsListComposite actors = new ActorsListComposite(this);
 				actors.bindList(object, feature);
-				actors.setTitle("Actors");
+				actors.setTitle(Messages.JbpmTaskDetailComposite_Actors_Title);
 				return actors;
 			}
 			return null;
@@ -233,7 +230,7 @@ public class JbpmTaskDetailComposite extends JbpmActivityDetailComposite {
 	public class ActorsNameTableColumn extends TableColumn {
 		public ActorsNameTableColumn(EObject object) {
 			super(object, PACKAGE.getFormalExpression_Body());
-			setHeaderText("Name");
+			setHeaderText(Messages.JbpmTaskDetailComposite_Actors_Name_Column);
 			setEditable(true);
 		}
 	}
@@ -241,7 +238,7 @@ public class JbpmTaskDetailComposite extends JbpmActivityDetailComposite {
 	public class ActorsListComposite extends DefaultListComposite {
 
 		public ActorsListComposite(Composite parent) {
-			super(parent, AbstractListComposite.COMPACT_STYLE);
+			super(parent, AbstractListComposite.DEFAULT_STYLE);
 		}
 		
 		public EClass getListItemClass(EObject object, EStructuralFeature feature) {
@@ -282,19 +279,16 @@ public class JbpmTaskDetailComposite extends JbpmActivityDetailComposite {
 
 		protected EObject addListItem(EObject object, EStructuralFeature feature) {
 			Task task = (Task)object;
-			FormalExpression expression = FACTORY.createFormalExpression();
-			ResourceAssignmentExpression resourceAssignment = FACTORY.createResourceAssignmentExpression();
+			
+			FormalExpression expression = createModelObject(FormalExpression.class);
+
+			ResourceAssignmentExpression resourceAssignment = createModelObject(ResourceAssignmentExpression.class);
 			resourceAssignment.setExpression(expression);
-			PotentialOwner owner = FACTORY.createPotentialOwner();
+			PotentialOwner owner = createModelObject(PotentialOwner.class);
 			owner.setResourceAssignmentExpression(resourceAssignment);
 			task.getResources().add(owner);
 
-			ModelUtil.setID(expression);
-			expression.setBody("New Actor");
-
-			ModelUtil.setID(resourceAssignment);
-			ModelUtil.setID(owner);
-			
+			expression.setBody(Messages.JbpmTaskDetailComposite_Actors_Label);
 			
 			return expression;
 		}

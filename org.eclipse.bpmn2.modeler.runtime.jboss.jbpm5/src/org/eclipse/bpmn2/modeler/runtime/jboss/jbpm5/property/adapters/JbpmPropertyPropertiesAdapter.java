@@ -18,9 +18,10 @@ import java.util.Hashtable;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.Property;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.util.JbpmModelUtil;
-import org.eclipse.bpmn2.modeler.ui.adapters.properties.ItemAwareElementFeatureDescriptor;
+import org.eclipse.bpmn2.modeler.ui.adapters.properties.ItemDefinitionRefFeatureDescriptor;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.PropertyPropertiesAdapter;
 import org.eclipse.emf.common.notify.AdapterFactory;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.transaction.RecordingCommand;
 import org.eclipse.emf.transaction.TransactionalEditingDomain;
@@ -44,19 +45,24 @@ public class JbpmPropertyPropertiesAdapter extends PropertyPropertiesAdapter {
 		setProperty(feature, UI_IS_MULTI_CHOICE, Boolean.TRUE);
 		
     	setFeatureDescriptor(feature,
-			new ItemAwareElementFeatureDescriptor<Property>(adapterFactory,object,feature) {
+			new ItemDefinitionRefFeatureDescriptor<Property>(adapterFactory,object,feature) {
 				
 				@Override
 				public void setValue(Object context, final Object value) {
 					final Property property = adopt(context);
 
 					TransactionalEditingDomain domain = getEditingDomain(object);
-					domain.getCommandStack().execute(new RecordingCommand(domain) {
-						@Override
-						protected void doExecute() {
-							property.setItemSubjectRef(JbpmModelUtil.getDataType(property, value));
-						}
-					});
+					if (domain==null && value instanceof EObject) {
+						domain = getEditingDomain(value);
+					}
+					if (domain!=null) {
+						domain.getCommandStack().execute(new RecordingCommand(domain) {
+							@Override
+							protected void doExecute() {
+								property.setItemSubjectRef(JbpmModelUtil.getDataType(property, value));
+							}
+						});
+					}
 				}
 				
 				@Override

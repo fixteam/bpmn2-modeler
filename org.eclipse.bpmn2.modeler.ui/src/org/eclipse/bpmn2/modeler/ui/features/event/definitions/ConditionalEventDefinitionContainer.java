@@ -15,12 +15,10 @@ package org.eclipse.bpmn2.modeler.ui.features.event.definitions;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.ConditionalEventDefinition;
 import org.eclipse.bpmn2.Event;
-import org.eclipse.bpmn2.EventDefinition;
 import org.eclipse.bpmn2.ThrowEvent;
 import org.eclipse.bpmn2.modeler.core.features.event.definitions.AbstractEventDefinitionFeatureContainer;
-import org.eclipse.bpmn2.modeler.core.features.event.definitions.CreateEventDefinition;
+import org.eclipse.bpmn2.modeler.core.features.event.definitions.AbstractCreateEventDefinitionFeature;
 import org.eclipse.bpmn2.modeler.core.features.event.definitions.DecorationAlgorithm;
-import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.ui.ImageProvider;
 import org.eclipse.emf.ecore.EClass;
@@ -74,24 +72,10 @@ public class ConditionalEventDefinitionContainer extends AbstractEventDefinition
 		return conditionShape;
 	}
 
-	public static class CreateConditionalEventDefinition extends CreateEventDefinition<ConditionalEventDefinition> {
-
-		@Override
-		public boolean canCreate(ICreateContext context) {
-			if (!super.canCreate(context)) {
-				return false;
-			}
-
-			Event e = (Event) getBusinessObjectForPictogramElement(context.getTargetContainer());
-			if (e instanceof ThrowEvent) {
-				return false;
-			}
-
-			return true;
-		}
+	public static class CreateConditionalEventDefinition extends AbstractCreateEventDefinitionFeature<ConditionalEventDefinition> {
 
 		public CreateConditionalEventDefinition(IFeatureProvider fp) {
-			super(fp, "Conditional Event Definition", "Create "+"Conditional Event Definition");
+			super(fp, Messages.ConditionalEventDefinitionContainer_Name, Messages.ConditionalEventDefinitionContainer_Description);
 		}
 
 		@Override

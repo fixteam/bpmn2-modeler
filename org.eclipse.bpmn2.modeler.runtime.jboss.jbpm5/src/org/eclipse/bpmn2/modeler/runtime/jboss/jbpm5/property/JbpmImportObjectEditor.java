@@ -33,7 +33,7 @@ public class JbpmImportObjectEditor extends TextAndButtonObjectEditor {
 		text.setEditable(true);
 		// and change the "Edit" button to a "Browse" to make it clear that
 		// an XML type can be selected from the imports 
-		defaultButton.setText("Browse Types...");
+		defaultButton.setText(Messages.JbpmImportObjectEditor_Browse);
 		return text;
 	}
 

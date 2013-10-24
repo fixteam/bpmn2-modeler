@@ -16,14 +16,16 @@ package org.eclipse.bpmn2.modeler.runtime.example;
 import java.util.List;
 
 import org.eclipse.bpmn2.TextAnnotation;
-import org.eclipse.bpmn2.modeler.core.features.FeatureContainer;
+import org.eclipse.bpmn2.modeler.core.features.IShapeFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.features.artifact.AddTextAnnotationFeature;
 import org.eclipse.bpmn2.modeler.core.features.artifact.UpdateTextAnnotationFeature;
 import org.eclipse.bpmn2.modeler.core.preferences.ShapeStyle;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
-import org.eclipse.bpmn2.modeler.ui.features.activity.task.CustomTaskFeatureContainer;
+import org.eclipse.bpmn2.modeler.runtime.example.SampleImageProvider.IconSize;
+import org.eclipse.bpmn2.modeler.runtime.example.SampleModel.SampleModelPackage;
+import org.eclipse.bpmn2.modeler.ui.features.activity.task.CustomShapeFeatureContainer;
 import org.eclipse.bpmn2.modeler.ui.features.artifact.CreateTextAnnotationFeature;
 import org.eclipse.bpmn2.modeler.ui.features.artifact.TextAnnotationFeatureContainer;
 import org.eclipse.emf.ecore.EObject;
@@ -36,34 +38,28 @@ import org.eclipse.graphiti.features.IReason;
 import org.eclipse.graphiti.features.IResizeShapeFeature;
 import org.eclipse.graphiti.features.IUpdateFeature;
 import org.eclipse.graphiti.features.context.IAddContext;
-import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.ICreateContext;
 import org.eclipse.graphiti.features.context.IUpdateContext;
 import org.eclipse.graphiti.features.impl.Reason;
-import org.eclipse.graphiti.mm.GraphicsAlgorithmContainer;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.Image;
 import org.eclipse.graphiti.mm.algorithms.MultiText;
 import org.eclipse.graphiti.mm.algorithms.Rectangle;
 import org.eclipse.graphiti.mm.algorithms.RoundedRectangle;
-import org.eclipse.graphiti.mm.algorithms.styles.Color;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
-import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.services.IGaService;
 import org.eclipse.graphiti.services.IPeService;
 import org.eclipse.graphiti.util.IColorConstant;
-import org.eclipse.bpmn2.modeler.runtime.example.SampleImageProvider.IconSize;
-import org.eclipse.bpmn2.modeler.runtime.example.SampleModel.SampleModelPackage;
 
 /**
- * Example implementation of a Custom Task feature container. The main things to consider
+ * Example implementation of a Custom Shape feature container. The main things to consider
  * here are:
  * 
  * createFeatureContainer() - creates the Feature Container that is responsible for
- *   building the "custom task". This can be a subclass of an existing Feature Container
+ *   building the "custom shape". This can be a subclass of an existing Feature Container
  *   from the editor core, or a new one. Typically, this should be a subclass of the
  *   Feature Container for the type of bpmn2 element defined in the "type" attribute
  *   of this Custom Task extension point.
@@ -79,17 +75,20 @@ import org.eclipse.bpmn2.modeler.runtime.example.SampleModel.SampleModelPackage;
  *   provide your own images for the tool palette by overriding getCreateImageId() and
  *   getCreateLargeImageId() in your Create Feature.
  * 
+ * For example, if you are extending a TextAnnotation object, you should use the core editor's
+ * TextAnnotationFeatureContainer and then override the getCreateFeature() and getAddFeature()
+ * methods so they return subclasses of CreateTextAnnotationFeature and AddTextAnnotationFeature
+ * 
  * @author Bob Brodt
  */
-public class SampleCustomTaskFeatureContainer extends CustomTaskFeatureContainer {
+public class SampleCustomTaskFeatureContainer extends CustomShapeFeatureContainer {
 	
 	@Override
-	protected FeatureContainer createFeatureContainer(IFeatureProvider fp) {
+	protected IShapeFeatureContainer createFeatureContainer(IFeatureProvider fp) {
 		return new TextAnnotationFeatureContainer() {
 
 			@Override
 			public IAddFeature getAddFeature(IFeatureProvider fp) {
-					
 				return new AddTextAnnotationFeature(fp) {
 
 					/* (non-Javadoc)
@@ -276,9 +275,11 @@ public class SampleCustomTaskFeatureContainer extends CustomTaskFeatureContainer
 			return null;
 		List<EStructuralFeature> features = ModelUtil.getAnyAttributes(object);
 		for (EStructuralFeature f : features) {
-			if ("sampleCustomTaskId".equals(f.getName())) {
+			if ("elementId".equals(f.getName())) {
 				Object attrValue = object.eGet(f);
-				return (String)attrValue;
+				if ("org.eclipse.bpmn2.modeler.runtime.example.risk".equals(attrValue) ||
+						"org.eclipse.bpmn2.modeler.runtime.example.mitigation".equals(attrValue))
+					return attrValue.toString();
 			}
 		}
 		return null;

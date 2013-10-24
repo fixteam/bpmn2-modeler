@@ -25,7 +25,7 @@ public class BPMNShapeTreeEditPart extends AbstractGraphicsTreeEditPart {
 	}
 
 	public BPMNShape getBPMNShape() {
-		return (BPMNShape) getBpmnModel();
+		return (BPMNShape) getModel();
 	}
 
 	// ======================= overwriteable behaviour ========================

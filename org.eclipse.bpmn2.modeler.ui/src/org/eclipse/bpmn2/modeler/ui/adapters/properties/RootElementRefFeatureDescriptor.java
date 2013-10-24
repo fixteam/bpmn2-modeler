@@ -22,6 +22,7 @@ import org.eclipse.bpmn2.RootElement;
 import org.eclipse.bpmn2.modeler.core.adapters.AdapterUtil;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.adapters.FeatureDescriptor;
+import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.common.util.EList;
@@ -29,6 +30,7 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.core.runtime.Assert;
 
 /**
  * @author Bob Brodt
@@ -45,31 +47,30 @@ public class RootElementRefFeatureDescriptor<T extends BaseElement> extends Feat
 		super(adapterFactory, object, feature);
 		// I found a couple of instances where this class was used for references that were NOT
 		// RootElements - just check to make sure here...
-		assert RootElement.class.isInstance( feature.eClass().getInstanceClass() );
+		Assert.isTrue( RootElement.class.isAssignableFrom(feature.getEType().getInstanceClass()) );
 	}
 	
 	@Override
 	public EObject createFeature(Resource resource, Object context, EClass eClass) {
 		final T object = adopt(context);
 
+		if (resource==null && object.eResource()!=null)
+			resource = object.eResource();
+		
 		EObject rootElement = null;
 		if (eClass==null)
 			eClass = (EClass)feature.getEType();
 		else if (feature.getEType() != eClass) {
-			ExtendedPropertiesAdapter<T> adapter = (ExtendedPropertiesAdapter<T>) AdapterUtil.adapt(eClass, ExtendedPropertiesAdapter.class);
+			ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(eClass);
 			if (adapter!=null) {
 				rootElement = adapter.getObjectDescriptor().createObject(resource, eClass);
 			}
 		}
 		
 		if (rootElement==null) {
-			rootElement = this.createObject(resource, eClass);
+			rootElement = Bpmn2ModelerFactory.create(resource, eClass);
 		}
 		
-		Definitions definitions = ModelUtil.getDefinitions(object);
-		if (definitions==null)
-			definitions = (Definitions) resource.getContents().get(0).eContents().get(0);
-		definitions.getRootElements().add((RootElement)rootElement);
 		return rootElement;
 	}
 	

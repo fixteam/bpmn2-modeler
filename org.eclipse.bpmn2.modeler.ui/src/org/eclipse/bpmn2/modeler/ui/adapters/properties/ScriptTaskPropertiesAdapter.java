@@ -47,7 +47,7 @@ public class ScriptTaskPropertiesAdapter extends TaskPropertiesAdapter<ScriptTas
 	    		public String getDisplayName(Object context) {
 	    			ScriptTask task = adopt(context);
 					if (task.getScript()==null)
-						return "";
+						return ""; //$NON-NLS-1$
 					return task.getScript();
 	    		}
     	});
@@ -60,7 +60,7 @@ public class ScriptTaskPropertiesAdapter extends TaskPropertiesAdapter<ScriptTas
 	    		public String getDisplayName(Object context) {
 	    			ScriptTask task = adopt(context);
 					if (task.getScriptFormat()==null)
-						return "text/xml"; // TODO: is there a default mime-type?
+						return ""; // TODO: is there a default mime-type? //$NON-NLS-1$
 					return task.getScriptFormat();
 	    		}
     	});

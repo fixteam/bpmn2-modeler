@@ -74,7 +74,7 @@ public class DataStoreReferencePropertySection extends DefaultPropertySection {
 			if (object instanceof DataState) {
 				if (dataStatePropertiesProvider == null) {
 					dataStatePropertiesProvider = new AbstractPropertiesProvider(object) {
-						String[] properties = new String[] { "id", "name" };
+						String[] properties = new String[] { "id", "name" }; //$NON-NLS-1$ //$NON-NLS-2$
 						
 						@Override
 						public String[] getProperties() {
@@ -87,7 +87,7 @@ public class DataStoreReferencePropertySection extends DefaultPropertySection {
 			else if (object instanceof DataStoreReference) {
 				if (dataStoreReferencePropertiesProvider == null) {
 					dataStoreReferencePropertiesProvider = new AbstractPropertiesProvider(object) {
-						String[] properties = new String[] { "id", "name", "dataState" };
+						String[] properties = new String[] { "id", "name", "dataState" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	
 						@Override
 						public String[] getProperties() {

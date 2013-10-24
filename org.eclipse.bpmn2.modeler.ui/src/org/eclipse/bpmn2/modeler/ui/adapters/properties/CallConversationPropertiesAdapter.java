@@ -59,7 +59,7 @@ public class CallConversationPropertiesAdapter extends ExtendedPropertiesAdapter
 					// first add all local Collaborations
 					List<Collaboration> localCollaborations = ModelUtil.getAllRootElements(defs, Collaboration.class);
 					for (Collaboration elem : localCollaborations) {
-						label = ModelUtil.getDisplayName(elem) + " (" + elem.getId() + ")";
+						label = ModelUtil.getDisplayName(elem) + " (" + elem.getId() + ")"; //$NON-NLS-1$ //$NON-NLS-2$
 						choices.put(label, elem);
 					}
 					
@@ -74,7 +74,7 @@ public class CallConversationPropertiesAdapter extends ExtendedPropertiesAdapter
 								Definitions importDefs = ((DocumentRoot)object).getDefinitions();
 								for (RootElement elem : importDefs.getRootElements()) {
 									if (elem instanceof Collaboration) {
-										label = ModelUtil.getDisplayName(elem) + " (" + imp.getLocation() + ")";
+										label = ModelUtil.getDisplayName(elem) + " (" + imp.getLocation() + ")"; //$NON-NLS-1$ //$NON-NLS-2$
 										choices.put(label, elem);
 									}
 								}

@@ -21,7 +21,7 @@ import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 
 public class UpdateActivityCompensateMarkerFeature extends AbstractUpdateMarkerFeature<Activity> {
 	
-	public static String IS_COMPENSATE_PROPERTY = "marker.compensate";
+	public static String IS_COMPENSATE_PROPERTY = "marker.compensate"; //$NON-NLS-1$
 	
 	public UpdateActivityCompensateMarkerFeature(IFeatureProvider fp) {
 	    super(fp);

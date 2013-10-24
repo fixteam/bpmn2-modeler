@@ -54,7 +54,7 @@ public class BaseRuntimeDescriptor {
 	}
 
 	public EStructuralFeature getFeature(String className, String featureName) {
-		return getFeature(className + "." + featureName);
+		return getFeature(className + "." + featureName); //$NON-NLS-1$
 	}
 	
 	/**
@@ -66,7 +66,7 @@ public class BaseRuntimeDescriptor {
 	 * @return
 	 */
 	public EStructuralFeature getFeature(String name) {
-		String[] parts = name.split("\\.");
+		String[] parts = name.split("\\."); //$NON-NLS-1$
 		EClass eClass = (EClass)getEPackage().getEClassifier(parts[0]);
 		if (eClass==null) {
 			eClass = (EClass)Bpmn2Package.eINSTANCE.getEClassifier(parts[0]);

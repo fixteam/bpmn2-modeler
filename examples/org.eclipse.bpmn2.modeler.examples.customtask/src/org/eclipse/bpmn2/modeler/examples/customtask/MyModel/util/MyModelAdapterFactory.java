@@ -2,6 +2,9 @@
  */
 package org.eclipse.bpmn2.modeler.examples.customtask.MyModel.util;
 
+import org.eclipse.bpmn2.BaseElement;
+import org.eclipse.bpmn2.EventDefinition;
+import org.eclipse.bpmn2.RootElement;
 import org.eclipse.bpmn2.modeler.examples.customtask.MyModel.*;
 
 import org.eclipse.emf.common.notify.Adapter;
@@ -80,6 +83,22 @@ public class MyModelAdapterFactory extends AdapterFactoryImpl {
 				return createTaskConfigAdapter();
 			}
 			@Override
+			public Adapter caseMyEventDefinition(MyEventDefinition object) {
+				return createMyEventDefinitionAdapter();
+			}
+			@Override
+			public Adapter caseBaseElement(BaseElement object) {
+				return createBaseElementAdapter();
+			}
+			@Override
+			public Adapter caseRootElement(RootElement object) {
+				return createRootElementAdapter();
+			}
+			@Override
+			public Adapter caseEventDefinition(EventDefinition object) {
+				return createEventDefinitionAdapter();
+			}
+			@Override
 			public Adapter defaultCase(EObject object) {
 				return createEObjectAdapter();
 			}
@@ -138,6 +157,62 @@ public class MyModelAdapterFactory extends AdapterFactoryImpl {
 	 * @generated
 	 */
 	public Adapter createTaskConfigAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link org.eclipse.bpmn2.modeler.examples.customtask.MyModel.MyEventDefinition <em>My Event Definition</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see org.eclipse.bpmn2.modeler.examples.customtask.MyModel.MyEventDefinition
+	 * @generated
+	 */
+	public Adapter createMyEventDefinitionAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link org.eclipse.bpmn2.BaseElement <em>Base Element</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see org.eclipse.bpmn2.BaseElement
+	 * @generated
+	 */
+	public Adapter createBaseElementAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link org.eclipse.bpmn2.RootElement <em>Root Element</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see org.eclipse.bpmn2.RootElement
+	 * @generated
+	 */
+	public Adapter createRootElementAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link org.eclipse.bpmn2.EventDefinition <em>Event Definition</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see org.eclipse.bpmn2.EventDefinition
+	 * @generated
+	 */
+	public Adapter createEventDefinitionAdapter() {
 		return null;
 	}
 

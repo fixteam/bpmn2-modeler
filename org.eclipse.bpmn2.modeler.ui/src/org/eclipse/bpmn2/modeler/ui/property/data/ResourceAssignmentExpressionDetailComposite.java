@@ -14,6 +14,7 @@
 package org.eclipse.bpmn2.modeler.ui.property.data;
 
 import org.eclipse.bpmn2.Expression;
+import org.eclipse.bpmn2.FormalExpression;
 import org.eclipse.bpmn2.ResourceAssignmentExpression;
 import org.eclipse.bpmn2.modeler.core.adapters.InsertionAdapter;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
@@ -56,7 +57,7 @@ public class ResourceAssignmentExpressionDetailComposite extends ExpressionDetai
 			// an Assignment is not really valid without both a From and To
 			Expression expr = rae.getExpression();
 			if (expr==null) {
-				expr = FACTORY.createFormalExpression();
+				expr = createModelObject(FormalExpression.class);
 				InsertionAdapter.add(rae, PACKAGE.getResourceAssignmentExpression_Expression(), expr);
 			}
 			
@@ -65,7 +66,7 @@ public class ResourceAssignmentExpressionDetailComposite extends ExpressionDetai
 						Expression.class, this, SWT.NONE);
 			}
 			exprDetails.setBusinessObject(expr);
-			exprDetails.setTitle("Resource Assignment Expression");
+			exprDetails.setTitle(Messages.ResourceAssignmentExpressionDetailComposite_Title);
 		}
 	}
 }

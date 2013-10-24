@@ -50,11 +50,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.graphiti.datatypes.IDimension;
 import org.eclipse.graphiti.datatypes.ILocation;
 import org.eclipse.graphiti.features.IFeatureProvider;
-import org.eclipse.graphiti.features.context.IContext;
-import org.eclipse.graphiti.features.context.IMoveContext;
-import org.eclipse.graphiti.features.context.IMoveShapeContext;
 import org.eclipse.graphiti.features.context.IPictogramElementContext;
-import org.eclipse.graphiti.features.context.IResizeShapeContext;
 import org.eclipse.graphiti.mm.PropertyContainer;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.Polyline;
@@ -203,7 +199,6 @@ public class ChoreographyUtil implements ChoreographyProperties {
 			resizeParticipantBandChildren(container, w);
 			DIUtils.updateDIShape(container);
 			AnchorUtil.relocateFixPointAnchors(container, w, (int) bounds.getHeight());
-			AnchorUtil.reConnect(bpmnShape, diagram);
 		}
 
 		Collections.reverse(bottom); // start from bottom towards center
@@ -216,7 +211,6 @@ public class ChoreographyUtil implements ChoreographyProperties {
 			resizeParticipantBandChildren(container, w);
 			DIUtils.updateDIShape(container);
 			AnchorUtil.relocateFixPointAnchors(container, w, (int) bounds.getHeight());
-			AnchorUtil.reConnect(bpmnShape, diagram);
 		}
 	}
 
@@ -236,7 +230,7 @@ public class ChoreographyUtil implements ChoreographyProperties {
 			return new String();
 		}
 		Iterator<Participant> iterator = choreography.getParticipantRefs().iterator();
-		String delim = ":";
+		String delim = ":"; //$NON-NLS-1$
 		StringBuilder sb = new StringBuilder();
 		while (iterator.hasNext()) {
 			Participant participant = iterator.next();
@@ -253,7 +247,7 @@ public class ChoreographyUtil implements ChoreographyProperties {
 			return new String();
 		}
 		Iterator<MessageFlow> iterator = choreography.getMessageFlowRef().iterator();
-		String delim = ":";
+		String delim = ":"; //$NON-NLS-1$
 		StringBuilder sb = new StringBuilder();
 		while (iterator.hasNext()) {
 			MessageFlow message = iterator.next();
@@ -765,7 +759,7 @@ public class ChoreographyUtil implements ChoreographyProperties {
 		if (flow!=null) {
 			if (flow.getMessageRef()==null && create) {
 				Message msg = Bpmn2ModelerFactory.create(Message.class);
-				msg.setName("Undefined Message");
+				msg.setName(Messages.ChoreographyUtil_Undefined_Message);
 				ModelUtil.getDefinitions(flow).getRootElements().add(msg);
 				flow.setMessageRef(msg);
 				ModelUtil.setID(msg);
@@ -786,7 +780,7 @@ public class ChoreographyUtil implements ChoreographyProperties {
 			String itemDefinitionName = ModelUtil.getDisplayName(flow.getMessageRef().getItemRef());
 			String text = itemDefinitionName;
 			if (messageName!=null && !messageName.isEmpty())
-				text += "/" + messageName;
+				text += "/" + messageName; //$NON-NLS-1$
 			text = messageName;
 			return text;
 		}
@@ -799,7 +793,7 @@ public class ChoreographyUtil implements ChoreographyProperties {
 				return mesg.getId();
 			return mesg.getName();
 		} else {
-			String type = "(" + ModelUtil.getDisplayName(mesg.getItemRef()) +")";
+			String type = "(" + ModelUtil.getDisplayName(mesg.getItemRef()) +")"; //$NON-NLS-1$ //$NON-NLS-2$
 			if (mesg.getName()==null)
 				return type; 
 			return mesg.getName() + type;

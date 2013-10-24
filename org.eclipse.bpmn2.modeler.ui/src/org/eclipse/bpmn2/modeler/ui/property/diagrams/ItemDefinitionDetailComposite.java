@@ -44,9 +44,9 @@ public class ItemDefinitionDetailComposite extends DefaultDetailComposite {
 		if (propertiesProvider==null) {
 			propertiesProvider = new AbstractPropertiesProvider(object) {
 				String[] properties = new String[] {
-						"itemKind",
-						"isCollection",
-						"structureRef",
+						"itemKind", //$NON-NLS-1$
+						"isCollection", //$NON-NLS-1$
+						"structureRef", //$NON-NLS-1$
 						// this thing is transient so it won't be serialized; no point in allowing user to set it
 						// "import"
 				};
@@ -62,7 +62,7 @@ public class ItemDefinitionDetailComposite extends DefaultDetailComposite {
 	
 	protected void bindAttribute(Composite parent, EObject object, EAttribute attribute, String label) {
 
-		if ("itemKind".equals(attribute.getName())) {
+		if ("itemKind".equals(attribute.getName())) { //$NON-NLS-1$
 			if (isModelObjectEnabled(object.eClass(), attribute)) {
 
 				if (parent==null)
@@ -93,7 +93,7 @@ public class ItemDefinitionDetailComposite extends DefaultDetailComposite {
 	
 	@Override
 	protected void bindReference(Composite parent, EObject object, EReference reference) {
-		if ("structureRef".equals(reference.getName()) &&
+		if ("structureRef".equals(reference.getName()) && //$NON-NLS-1$
 				isModelObjectEnabled(object.eClass(), reference)) {
 			
 			if (parent==null)

@@ -68,20 +68,26 @@ public class InsertionAdapter extends EContentAdapter {
 	}
 	
 	public static EObject add(Resource resource, EObject object, EStructuralFeature feature, EObject value) {
-		value.eAdapters().add(
-				new InsertionAdapter(resource, object, feature, value));
+		if (object!=null) {
+			value.eAdapters().add(
+					new InsertionAdapter(resource, object, feature, value));
+		}
 		return value;
 	}
 
 	public static EObject add(EObject object, EStructuralFeature feature, EObject value) {
-		value.eAdapters().add(
-				new InsertionAdapter(object, feature, value));
+		if (object!=null) {
+			value.eAdapters().add(
+					new InsertionAdapter(object, feature, value));
+		}
 		return value;
 	}
 	
 	public static EObject add(EObject object, String featureName, EObject value) {
-		value.eAdapters().add(
-				new InsertionAdapter(object, featureName, value));
+		if (object!=null) {
+			value.eAdapters().add(
+					new InsertionAdapter(object, featureName, value));
+		}
 		return value;
 	}
 
@@ -186,7 +192,7 @@ public class InsertionAdapter extends EContentAdapter {
 				domain.getCommandStack().execute(new RecordingCommand(domain) {
 					@Override
 					protected void doExecute() {
-						ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(object, ExtendedPropertiesAdapter.class);
+						ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object);
 						if (adapter!=null) {
 							adapter.getFeatureDescriptor(feature).setValue(value);
 						}

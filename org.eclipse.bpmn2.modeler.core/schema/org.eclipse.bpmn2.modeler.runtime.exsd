@@ -68,6 +68,9 @@
                <documentation>
                   Descriptive name for this Runtime implementation. This will be displayed in the BPMN2 Modeler Preference Page under &quot;Runtimes&quot;.
                </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="versions" type="string">
@@ -89,6 +92,9 @@
                <documentation>
                   Tooltip text displayed for this runtime name.
                </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="class" type="string" use="required">
@@ -164,6 +170,9 @@
                <documentation>
                   A label to be displayed on the tab.
                </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="category" type="string">
@@ -216,11 +225,8 @@ This may also be set to the string &quot;default&quot; to indicate that the Defa
          <attribute name="type" type="string">
             <annotation>
                <documentation>
-                  The BPMN2 element class or interface that, when its graphical element is selected, will enable the display of this property sheet tab. This must be a fully qualified class name, e.g. &quot;org.eclipse.bpmn2.SequenceFlow&quot;.
+                  A space-delimited list of BPMN2 element classes or interfaces that will enable the display of this property sheet tab. These must be fully qualified class names, e.g. &quot;org.eclipse.bpmn2.di.BPMNDiagram org.eclipse.bpmn2.Process&quot;
                </documentation>
-               <appinfo>
-                  <meta.attribute kind="java"/>
-               </appinfo>
             </annotation>
          </attribute>
          <attribute name="popup" type="boolean">
@@ -269,6 +275,9 @@ This may also be set to the string &quot;default&quot; to indicate that the Defa
                <documentation>
                   Descriptive name for this Custom Task. This will be displayed in the Tool Palette.
                </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="description" type="string">
@@ -351,6 +360,9 @@ This may also be set to the string &quot;default&quot; to indicate that the Defa
                <documentation>
                   Description used in dialogs and tooltips.
                </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="ref" type="string">
@@ -416,6 +428,9 @@ rootFeature/childFeature_1/childFeature_2#0
                <documentation>
                   Descriptive name for this Custom Task. This will be displayed in the Tool Palette.
                </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="description" type="string">
@@ -423,6 +438,9 @@ rootFeature/childFeature_1/childFeature_2#0
                <documentation>
                   Description used in dialogs and tooltips.
                </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="type" type="string" use="required">
@@ -724,11 +742,14 @@ The value &quot;default&quot; is used by contributing plugins to refer to enable
                </documentation>
             </annotation>
          </attribute>
-         <attribute name="name" type="string" use="required">
+         <attribute name="name" type="string">
             <annotation>
                <documentation>
                   Toolpalette &quot;drawer&quot; label.
                </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="description" type="string">
@@ -736,6 +757,9 @@ The value &quot;default&quot; is used by contributing plugins to refer to enable
                <documentation>
                   Description used in dialogs and tooltips.
                </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="icon" type="string">
@@ -759,19 +783,36 @@ The value &quot;default&quot; is used by contributing plugins to refer to enable
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="fromPalette" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 
    <element name="tool">
       <complexType>
          <choice>
-            <element ref="composite" minOccurs="0" maxOccurs="1"/>
+            <element ref="object" minOccurs="0" maxOccurs="unbounded"/>
          </choice>
+         <attribute name="id" type="string">
+            <annotation>
+               <documentation>
+                  Unique ID used to identify the Tool
+               </documentation>
+            </annotation>
+         </attribute>
          <attribute name="name" type="string" use="required">
             <annotation>
                <documentation>
                   Tool label
                </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="description" type="string">
@@ -779,6 +820,9 @@ The value &quot;default&quot; is used by contributing plugins to refer to enable
                <documentation>
                   Description used in dialogs and tooltips.
                </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="icon" type="string">
@@ -788,10 +832,17 @@ The value &quot;default&quot; is used by contributing plugins to refer to enable
                </documentation>
             </annotation>
          </attribute>
-         <attribute name="object" type="string" use="required">
+         <attribute name="object" type="string">
             <annotation>
                <documentation>
                   Name of the BPMN2 element that this tool will create.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="fromPalette" type="string">
+            <annotation>
+               <documentation>
+                  
                </documentation>
             </annotation>
          </attribute>
@@ -805,9 +856,6 @@ The value &quot;default&quot; is used by contributing plugins to refer to enable
          </documentation>
       </annotation>
       <complexType>
-         <choice>
-            <element ref="object" minOccurs="0" maxOccurs="unbounded"/>
-         </choice>
          <attribute name="type" type="string" use="required">
             <annotation>
                <documentation>
@@ -815,82 +863,17 @@ The value &quot;default&quot; is used by contributing plugins to refer to enable
                </documentation>
             </annotation>
          </attribute>
-         <attribute name="id" type="string" use="required">
+         <attribute name="id" type="string">
             <annotation>
                <documentation>
                   Object ID
                </documentation>
             </annotation>
          </attribute>
-         <attribute name="name" type="string">
+         <attribute name="optional" type="boolean">
             <annotation>
                <documentation>
-                  Object label
-               </documentation>
-            </annotation>
-         </attribute>
-      </complexType>
-   </element>
-
-   <element name="connection">
-      <annotation>
-         <documentation>
-            Connects two objects in the composite tool.
-         </documentation>
-      </annotation>
-      <complexType>
-         <choice>
-            <element ref="object" minOccurs="0" maxOccurs="unbounded"/>
-         </choice>
-         <attribute name="type" type="string" use="required">
-            <annotation>
-               <documentation>
-                  Optional diagram type name: either Process, Collaboration or Choreography.
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="id" type="string" use="required">
-            <annotation>
-               <documentation>
-                  Unique ID used to identify the Tool Palette.
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="source" type="string" use="required">
-            <annotation>
-               <documentation>
-                  ID of the source object.
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="target" type="string" use="required">
-            <annotation>
-               <documentation>
-                  ID of the target object.
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="name" type="string">
-            <annotation>
-               <documentation>
-                  Connection label.
-               </documentation>
-            </annotation>
-         </attribute>
-      </complexType>
-   </element>
-
-   <element name="composite">
-      <complexType>
-         <choice>
-            <element ref="connection" minOccurs="0" maxOccurs="unbounded"/>
-            <element ref="object" minOccurs="1" maxOccurs="unbounded"/>
-            <element ref="composite" minOccurs="0" maxOccurs="unbounded"/>
-         </choice>
-         <attribute name="id" type="string" use="required">
-            <annotation>
-               <documentation>
-                  Composite ID
+                  
                </documentation>
             </annotation>
          </attribute>

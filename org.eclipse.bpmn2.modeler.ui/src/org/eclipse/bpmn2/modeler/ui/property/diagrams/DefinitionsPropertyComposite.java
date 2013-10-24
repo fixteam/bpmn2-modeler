@@ -47,6 +47,7 @@ import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.window.Window;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -72,26 +73,26 @@ public class DefinitionsPropertyComposite extends DefaultDetailComposite  {
 		if (propertiesProvider==null) {
 			propertiesProvider = new AbstractPropertiesProvider(object) {
 				String[] properties = new String[] {
-						"imports",
-						"name",
-						"targetNamespace",
-						"typeLanguage",
-						"expressionLanguage",
-						"exporter",
-						"exporterVersion",
-						"rootElements#ItemDefinition",
-						"relationships",
-						"rootElements#PartnerEntity",
-						"rootElements#PartnerRole",
-						"rootElements#EndPoint",
-						"rootElements#Resource",
-						"rootElements#DataStore",
-						"rootElements#Message",
-						"rootElements#Error",
-						"rootElements#Escalation",
-						"rootElements#Signal",
-						"rootElements#CorrelationProperty",
-						"rootElements#Category",
+						"imports", //$NON-NLS-1$
+						"name", //$NON-NLS-1$
+						"targetNamespace", //$NON-NLS-1$
+						"typeLanguage", //$NON-NLS-1$
+						"expressionLanguage", //$NON-NLS-1$
+						"exporter", //$NON-NLS-1$
+						"exporterVersion", //$NON-NLS-1$
+						"rootElements#ItemDefinition", //$NON-NLS-1$
+						"relationships", //$NON-NLS-1$
+						"rootElements#PartnerEntity", //$NON-NLS-1$
+						"rootElements#PartnerRole", //$NON-NLS-1$
+						"rootElements#EndPoint", //$NON-NLS-1$
+						"rootElements#Resource", //$NON-NLS-1$
+						"rootElements#DataStore", //$NON-NLS-1$
+						"rootElements#Message", //$NON-NLS-1$
+						"rootElements#Error", //$NON-NLS-1$
+						"rootElements#Escalation", //$NON-NLS-1$
+						"rootElements#Signal", //$NON-NLS-1$
+						"rootElements#CorrelationProperty", //$NON-NLS-1$
+						"rootElements#Category", //$NON-NLS-1$
 				};
 				
 				@Override
@@ -117,18 +118,18 @@ public class DefinitionsPropertyComposite extends DefaultDetailComposite  {
 		DefinitionsImpl definitions = (DefinitionsImpl)getBusinessObject();
 		DocumentRoot root = (DocumentRoot) definitions.eContainer();
 		namespacesTable.bindList(root, Bpmn2Package.eINSTANCE.getDocumentRoot_XMLNSPrefixMap());
-		namespacesTable.setTitle("Namespaces");
+		namespacesTable.setTitle("Namespaces"); //$NON-NLS-1$
 	}
 
 	@Override
 	protected AbstractListComposite bindList(EObject object, EStructuralFeature feature, EClass listItemClass) {
-		if ("imports".equals(feature.getName())) {
+		if ("imports".equals(feature.getName())) { //$NON-NLS-1$
 			ImportListComposite importsTable = new ImportListComposite(getPropertySection());
-			EStructuralFeature importsFeature = object.eClass().getEStructuralFeature("imports");
+			EStructuralFeature importsFeature = object.eClass().getEStructuralFeature("imports"); //$NON-NLS-1$
 			importsTable.bindList(object, importsFeature);
 			return importsTable;
 		}
-		else if ("relationships".equals(feature.getName())) {
+		else if ("relationships".equals(feature.getName())) { //$NON-NLS-1$
 			DefaultListComposite table = new DefaultListComposite(getPropertySection());
 			table.bindList(getBusinessObject(), feature);
 			return table;
@@ -149,7 +150,8 @@ public class DefinitionsPropertyComposite extends DefaultDetailComposite  {
 		protected EObject addListItem(EObject object, EStructuralFeature feature) {
 			DocumentRoot root = (DocumentRoot)object;
 			Map<String,String> map = root.getXMLNSPrefixMap();
-			NamespacesEditingDialog dialog = new NamespacesEditingDialog(getShell(), "Create New Namespace", map, "","");
+			NamespacesEditingDialog dialog = new NamespacesEditingDialog(getShell(),
+				Messages.DefinitionsPropertyComposite_Create_Namespace_Title, map, "",""); //$NON-NLS-1$ //$NON-NLS-2$
 			if (dialog.open() == Window.OK) {
 				map.put(dialog.getPrefix(), dialog.getNamespace());
 			}
@@ -171,12 +173,12 @@ public class DefinitionsPropertyComposite extends DefaultDetailComposite  {
 
 		@Override
 		public AbstractDetailComposite createDetailComposite(final Composite parent, Class eClass) {
-			detailSection.setText("Namespace Details");
+			detailSection.setText(Messages.DefinitionsPropertyComposite_Namespace_Details_Title);
 			AbstractDetailComposite composite = new DefaultDetailComposite(parent, SWT.NONE) {
 				
 				@Override
 				protected void bindAttribute(Composite parent, EObject object, EAttribute attribute, String label) {
-					if (attribute.getName().equals("key")) {
+					if (attribute.getName().equals("key")) { //$NON-NLS-1$
 						ObjectEditor editor = new TextAndButtonObjectEditor(this,businessObject,attribute) {
 
 							@Override
@@ -184,7 +186,7 @@ public class DefinitionsPropertyComposite extends DefaultDetailComposite  {
 								Map.Entry<String, String> entry = (Map.Entry<String, String>)object;
 								DocumentRoot root = (DocumentRoot)object.eContainer();
 								Map<String, String> map = (Map<String, String>)root.getXMLNSPrefixMap();
-								NamespacesEditingDialog dialog = new NamespacesEditingDialog(getShell(), "Change Namespace Prefix", map, entry.getKey(),null);
+								NamespacesEditingDialog dialog = new NamespacesEditingDialog(getShell(), Messages.DefinitionsPropertyComposite_Change_Namespace_Title, map, entry.getKey(),null);
 								if (dialog.open() == Window.OK) {
 									setValue(dialog.getPrefix());
 								}
@@ -213,11 +215,11 @@ public class DefinitionsPropertyComposite extends DefaultDetailComposite  {
 								return false;
 							}
 						};
-						editor.createControl(parent,"Prefix");
+						editor.createControl(parent,"Prefix"); //$NON-NLS-1$
 					}
 					else {
 						ObjectEditor editor = new TextObjectEditor(this,businessObject,attribute);
-						editor.createControl(parent,"Namespace");
+						editor.createControl(parent,Messages.DefinitionsPropertyComposite_Namespace_Label);
 					}
 				}
 			};
@@ -279,8 +281,8 @@ public class DefinitionsPropertyComposite extends DefaultDetailComposite  {
 			@Override
 			public String getHeaderText() {
 				if (columnIndex==0)
-					return "Prefix";
-				return "Namespace";
+					return Messages.DefinitionsPropertyComposite_Prefix_Label;
+				return Messages.DefinitionsPropertyComposite_Namespace_Label;
 			}
 
 			@Override
@@ -312,7 +314,7 @@ public class DefinitionsPropertyComposite extends DefaultDetailComposite  {
 				TableColumn tableColumn = new TableColumn(object,(EStructuralFeature)null) {
 					@Override
 					public String getHeaderText() {
-						return "Namespace Prefix";
+						return Messages.DefinitionsPropertyComposite_Prefix_Label;
 					}
 	
 					@Override
@@ -321,7 +323,7 @@ public class DefinitionsPropertyComposite extends DefaultDetailComposite  {
 						String prefix = NamespaceUtil.getPrefixForNamespace(imp.eResource(), imp.getNamespace());
 						if (prefix!=null)
 							return prefix;
-						return "";
+						return ""; //$NON-NLS-1$
 					}
 
 					@Override
@@ -362,7 +364,8 @@ public class DefinitionsPropertyComposite extends DefaultDetailComposite  {
 			if (dialog.open() == Window.OK) {
 				Object result[] = dialog.getResult();
 				if (result.length == 1) {
-					return ImportUtil.addImport(object, result[0]);
+					ImportUtil importer = new ImportUtil();
+					return importer.addImport(object, result[0]);
 				}
 			}
 			return null;
@@ -395,7 +398,7 @@ public class DefinitionsPropertyComposite extends DefaultDetailComposite  {
 			EStructuralFeature feature;
 			
 			feature = null;
-			label = "Namespace Prefix";
+			label = Messages.DefinitionsPropertyComposite_Prefix_Label;
 			editor = new TextAndButtonObjectEditor(this,be,feature) {
 
 				@Override
@@ -407,15 +410,17 @@ public class DefinitionsPropertyComposite extends DefaultDetailComposite  {
 							String ns = NamespaceUtil.getNamespaceForPrefix(imp.eResource(), newText);
 							if (ns==null)
 								return null;
-							return "Prefix "+newText+" is already used for namespace\n"+ns;
+							return NLS.bind(
+								Messages.DefinitionsPropertyComposite_Invalid_Duplicate,
+								newText,ns);
 						}
 						
 					};
 					String initialValue = getText();
 					InputDialog dialog = new InputDialog(
 							getShell(),
-							"Namespace Prefix",
-							"Enter a namespace prefix",
+							Messages.DefinitionsPropertyComposite_Prefix_Label,
+							Messages.DefinitionsPropertyComposite_Prefix_Message,
 							initialValue,
 							validator);
 					if (dialog.open()==Window.OK){
@@ -462,7 +467,7 @@ public class DefinitionsPropertyComposite extends DefaultDetailComposite  {
 			Import imp = (Import)businessObject;
 			String prefix = NamespaceUtil.getPrefixForNamespace(imp.eResource(), imp.getNamespace());
 			if (prefix==null)
-				prefix = "";
+				prefix = ""; //$NON-NLS-1$
 			return prefix;
 		}
 	}

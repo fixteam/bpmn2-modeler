@@ -49,10 +49,10 @@ public class ResourceRoleDetailComposite extends DefaultDetailComposite {
 		if (propertiesProvider==null) {
 			propertiesProvider = new AbstractPropertiesProvider(object) {
 				String[] properties = new String[] {
-						"name",
-						"resourceRef",
-						"resourceAssignmentExpression",
-						"resourceParameterBindings",
+						"name", //$NON-NLS-1$
+						"resourceRef", //$NON-NLS-1$
+						"resourceAssignmentExpression", //$NON-NLS-1$
+						"resourceParameterBindings", //$NON-NLS-1$
 				};
 				
 				@Override
@@ -66,7 +66,7 @@ public class ResourceRoleDetailComposite extends DefaultDetailComposite {
 	
 	@Override
 	protected void bindReference(Composite parent, EObject object, EReference reference) {
-		if ("resourceAssignmentExpression".equals(reference.getName()) &&
+		if ("resourceAssignmentExpression".equals(reference.getName()) && //$NON-NLS-1$
 				isModelObjectEnabled(object.eClass(), reference)) {
 			
 			ResourceAssignmentExpressionDetailComposite composite =

@@ -17,6 +17,7 @@ import java.util.List;
 
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.Bpmn2Package;
+import org.eclipse.bpmn2.Collaboration;
 import org.eclipse.bpmn2.Conversation;
 import org.eclipse.bpmn2.ConversationLink;
 import org.eclipse.bpmn2.EndEvent;
@@ -28,6 +29,7 @@ import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.StartEvent;
 import org.eclipse.bpmn2.modeler.core.ModelHandler;
 import org.eclipse.bpmn2.modeler.core.features.BaseElementConnectionFeatureContainer;
+import org.eclipse.bpmn2.modeler.core.features.DefaultDeleteBPMNShapeFeature;
 import org.eclipse.bpmn2.modeler.core.features.flow.AbstractAddFlowFeature;
 import org.eclipse.bpmn2.modeler.core.features.flow.AbstractCreateFlowFeature;
 import org.eclipse.bpmn2.modeler.core.features.flow.AbstractReconnectFlowFeature;
@@ -35,8 +37,10 @@ import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.ui.ImageProvider;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.graphiti.features.IAddFeature;
 import org.eclipse.graphiti.features.ICreateConnectionFeature;
+import org.eclipse.graphiti.features.IDeleteFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.IReconnectionFeature;
 import org.eclipse.graphiti.features.context.IContext;
@@ -68,6 +72,29 @@ public class ConversationLinkFeatureContainer extends BaseElementConnectionFeatu
 		return new ReconnectConversationLinkFeature(fp);
 	}
 
+	@Override
+	public IDeleteFeature getDeleteFeature(IFeatureProvider fp) {
+		return new DefaultDeleteBPMNShapeFeature(fp) {
+			@Override
+			protected void deleteBusinessObject(Object bo) {
+				// the default implementation of this deletes the Conversation Link
+				// using Ecore.delete() - this causes a class cast exception when it
+				// tries to remove the object from the InteractionNode's eOpposite
+				// outgoingConversationLinks and incomingConversationLinks lists.
+				// So, we'll do this the hard way...
+				if (bo instanceof ConversationLink) {
+					ConversationLink cl = (ConversationLink) bo;
+					if (cl.eContainer() instanceof Collaboration) {
+						Collaboration co = (Collaboration)cl.eContainer();
+						co.getConversationLinks().remove(cl);
+					}
+				}
+				else
+					super.deleteBusinessObject(bo);
+			}
+		};
+	}
+
 	public class AddConversationLinkFeature extends AbstractAddFlowFeature<ConversationLink> {
 		public AddConversationLinkFeature(IFeatureProvider fp) {
 			super(fp);
@@ -76,7 +103,7 @@ public class ConversationLinkFeatureContainer extends BaseElementConnectionFeatu
 		@Override
 		protected Polyline createConnectionLine(Connection connection) {
 			Polyline connectionLine = super.createConnectionLine(connection);
-			connectionLine.setLineWidth(3);
+			connectionLine.setLineWidth(4);
 			return connectionLine;
 		}
 
@@ -88,7 +115,7 @@ public class ConversationLinkFeatureContainer extends BaseElementConnectionFeatu
 	public static class CreateConversationLinkFeature extends AbstractCreateFlowFeature<ConversationLink, Participant, Conversation> {
 
 		public CreateConversationLinkFeature(IFeatureProvider fp) {
-			super(fp, "Conversation Link", "Create "+"Conversation Link");
+			super(fp, Messages.ConversationLinkFeatureContainer_Name, Messages.ConversationLinkFeatureContainer_Description);
 		}
 
 		@Override
@@ -119,23 +146,6 @@ public class ConversationLinkFeatureContainer extends BaseElementConnectionFeatu
 		@Override
 		public EClass getBusinessObjectClass() {
 			return Bpmn2Package.eINSTANCE.getConversationLink();
-		}
-
-		@Override
-		public ConversationLink createBusinessObject(ICreateConnectionContext context) {
-			ConversationLink bo = null;
-			try {
-				ModelHandler mh = ModelHandler.getInstance(getDiagram());
-				Participant source = getSourceBo(context);
-				Conversation target = getTargetBo(context);
-				bo = mh.createConversationLink(source, target);
-				bo.setName("Conversation Link");
-				putBusinessObject(context, bo);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return bo;
 		}
 	}
 	public static class ReconnectConversationLinkFeature extends AbstractReconnectFlowFeature {

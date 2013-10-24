@@ -43,14 +43,14 @@ public class ToolEnablement extends AbstractPropertyChangeListenerProvider {
 	public String getName() {
 		if (tool!=null)
 			return tool.getName();
-		return name==null ? "" : name;
+		return name==null ? "" : name; //$NON-NLS-1$
 	}
 
 	public String getPreferenceName() {
 		if (parent == null || parent.getTool()==null) {
 			return getName();
 		} else {
-			return parent.getPreferenceName() + "." + getName();
+			return parent.getPreferenceName() + "." + getName(); //$NON-NLS-1$
 		}
 	}
 
@@ -126,8 +126,8 @@ public class ToolEnablement extends AbstractPropertyChangeListenerProvider {
 
 	@Override
 	public String toString() {
-		return "ToolEnablement [tool=" + getName() + ", enabled=" + enabled + ", children=" + children + ", parent="
-				+ (parent == null ? "null" : parent.getName()) + "]";
+		return "ToolEnablement [tool=" + getName() + ", enabled=" + enabled + ", children=" + children + ", parent=" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+				+ (parent == null ? "null" : parent.getName()) + "]"; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	public boolean hasChildren() {

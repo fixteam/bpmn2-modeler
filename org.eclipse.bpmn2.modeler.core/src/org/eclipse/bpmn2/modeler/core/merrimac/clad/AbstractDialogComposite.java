@@ -14,7 +14,6 @@ package org.eclipse.bpmn2.modeler.core.merrimac.clad;
 
 
 import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.swt.widgets.Composite;
 
 public abstract class AbstractDialogComposite extends Composite {

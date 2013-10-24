@@ -31,16 +31,16 @@ public class BusinessRuleTaskConstraint extends AbstractModelConstraint {
 			boolean foundRuleflowGroup = false;
 			while (biter.hasNext()) {
 				FeatureMap.Entry entry = biter.next();
-				if (entry.getEStructuralFeature().getName().equals("ruleFlowGroup")) {
+				if (entry.getEStructuralFeature().getName().equals("ruleFlowGroup")) { //$NON-NLS-1$
 					foundRuleflowGroup = true;
 					String ruleflowGroup = (String) entry.getValue();
 					if (ruleflowGroup==null || ruleflowGroup.isEmpty()) {
-						return ctx.createFailureStatus("Business Rule Task has no ruleflow group");
+						return ctx.createFailureStatus(Messages.BusinessRuleTaskConstraint_No_Ruleflow_Group);
 					}
 				}
 			}
 			if (!foundRuleflowGroup) {
-				return ctx.createFailureStatus("Business Rule Task has no ruleflow group");
+				return ctx.createFailureStatus(Messages.BusinessRuleTaskConstraint_No_Ruleflow_Group);
 			}
 		}	
 		return ctx.createSuccessStatus();

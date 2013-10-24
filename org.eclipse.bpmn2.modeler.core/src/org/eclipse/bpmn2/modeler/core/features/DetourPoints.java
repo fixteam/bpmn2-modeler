@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2011, 2012, 2013 Red Hat, Inc.
+ * All rights reserved.
+ * This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution,
+ * and is available at http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors:
+ * 	Red Hat, Inc. - initial API and implementation
+ ******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.features;
 
 import java.util.ArrayList;
@@ -151,7 +161,7 @@ public class DetourPoints {
 		if (TLY+m<py && py<=BLY)
 			return 2;
 		
-		throw new IllegalArgumentException("Logic error in getSector()");
+		throw new IllegalArgumentException("Logic error in getSector()"); //$NON-NLS-1$
 	}
 	
 	public List<Point> calculateDetour(Point p1, Point p2) {

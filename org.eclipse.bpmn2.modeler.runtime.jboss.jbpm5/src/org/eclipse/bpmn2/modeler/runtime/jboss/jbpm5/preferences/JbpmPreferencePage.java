@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2011, 2012, 2013 Red Hat, Inc.
+ * All rights reserved.
+ * This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution,
+ * and is available at http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors:
+ * 	Red Hat, Inc. - initial API and implementation
+ ******************************************************************************/
 package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.preferences;
 
 import org.eclipse.bpmn2.modeler.core.Activator;
@@ -8,13 +18,13 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 
 public class JbpmPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 	
-	public final static String PREF_ENABLE_SIMULATION_PARAMS = "enable.simulation.params";
-	public final static String PREF_ENABLE_SIMULATION_PARAMS_LABEL = "Enable Simulation Parameters";
+	public final static String PREF_ENABLE_SIMULATION_PARAMS = "enable.simulation.params"; //$NON-NLS-1$
+	public final static String PREF_ENABLE_SIMULATION_PARAMS_LABEL = Messages.JbpmPreferencePage_Enable_Simulation;
 
 	public JbpmPreferencePage() {
 		super(GRID);
 		setPreferenceStore(Activator.getDefault().getPreferenceStore());
-		setDescription("jBPM Runtime-specific Settings");
+		setDescription(Messages.JbpmPreferencePage_JBPM_Settings);
 	}
 
 	@Override

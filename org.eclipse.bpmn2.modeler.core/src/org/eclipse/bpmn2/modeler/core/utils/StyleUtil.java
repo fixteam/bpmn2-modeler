@@ -39,8 +39,8 @@ import org.eclipse.graphiti.util.IPredefinedRenderingStyle;
 
 public class StyleUtil {
 	
-	private static final String CLASS_ID = "E-CLASS";
-	private static final String FILL_STYLE = "fill.style";
+	private static final String CLASS_ID = "E-CLASS"; //$NON-NLS-1$
+	private static final String FILL_STYLE = "fill.style"; //$NON-NLS-1$
 	
 	public enum FillStyle {
 		FILL_STYLE_NONE,

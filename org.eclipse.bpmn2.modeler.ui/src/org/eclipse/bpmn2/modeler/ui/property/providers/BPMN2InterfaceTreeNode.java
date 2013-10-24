@@ -56,7 +56,7 @@ public class BPMN2InterfaceTreeNode extends TreeNode {
 		Interface intf = (Interface)modelObject;
 		String label = intf.getName();
 		if (label==null || label.isEmpty())
-			label = "Unnamed Interface";
+			label = Messages.BPMN2InterfaceTreeNode_Unnamed;
 		return label;
 	}
 }

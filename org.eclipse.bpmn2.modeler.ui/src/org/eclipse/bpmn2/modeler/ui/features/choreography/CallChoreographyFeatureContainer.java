@@ -62,7 +62,7 @@ public class CallChoreographyFeatureContainer extends AbstractChoreographyFeatur
 	public static class CreateCallChoreographyFeature extends AbstractCreateFlowElementFeature<CallChoreography> {
 
 		public CreateCallChoreographyFeature(IFeatureProvider fp) {
-			super(fp, "Call Choreography", "Create "+"Call Choreography");
+			super(fp, Messages.CallChoreographyFeatureContainer_Name, Messages.CallChoreographyFeatureContainer_Description);
 		}
 
 		@Override

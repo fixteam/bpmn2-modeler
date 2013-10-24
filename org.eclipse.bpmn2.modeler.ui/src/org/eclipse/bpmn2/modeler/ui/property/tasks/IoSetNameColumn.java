@@ -75,13 +75,13 @@ public class IoSetNameColumn extends TableColumn {
 					if (text==null)
 						text = n;
 					else
-						text += ", " + n;
+						text += ", " + n; //$NON-NLS-1$
 
 				}
 			}
 		}
 		if (text==null)
-			return "";
+			return ""; //$NON-NLS-1$
 		return text;
 	}
 }

@@ -50,12 +50,11 @@ public class DataOutputsListComposite extends DefaultListComposite {
 	protected EObject addListItem(EObject object, EStructuralFeature feature) {
 		OutputSet outputSet = catchEvent.getOutputSet();
 		if (outputSet==null) {
-			outputSet = FACTORY.createOutputSet();
+			outputSet = createModelObject(OutputSet.class);
 			catchEvent.setOutputSet(outputSet);
-			ModelUtil.setID(outputSet);
 		}
 		// generate a unique parameter name
-		String base = "outParam";
+		String base = "outParam"; //$NON-NLS-1$
 		int suffix = 1;
 		String name = base + suffix;
 		for (;;) {
@@ -78,11 +77,10 @@ public class DataOutputsListComposite extends DefaultListComposite {
 
 		
 		// create a Data OutputAssociation
-		DataOutputAssociation outputAssociation = FACTORY.createDataOutputAssociation();
+		DataOutputAssociation outputAssociation = createModelObject(DataOutputAssociation.class);
 		catchEvent.getDataOutputAssociation().add(outputAssociation);
 		outputAssociation.getSourceRef().clear();
 		outputAssociation.getSourceRef().add( param);
-		ModelUtil.setID(outputAssociation);
 
 		return param;
 	}

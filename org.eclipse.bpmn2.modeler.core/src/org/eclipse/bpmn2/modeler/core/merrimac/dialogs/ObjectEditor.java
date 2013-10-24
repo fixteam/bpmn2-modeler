@@ -13,9 +13,13 @@
 
 package org.eclipse.bpmn2.modeler.core.merrimac.dialogs;
 
+import java.lang.reflect.Field;
+
+import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.merrimac.IConstants;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
 import org.eclipse.bpmn2.modeler.core.utils.ErrorUtils;
+import org.eclipse.bpmn2.modeler.core.utils.JavaReflectionUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.validation.ValidationStatusAdapter;
 import org.eclipse.core.runtime.IStatus;
@@ -29,6 +33,7 @@ import org.eclipse.emf.validation.model.ConstraintStatus;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -53,12 +58,15 @@ public abstract class ObjectEditor implements INotifyChangedListener {
 	private Label label;
 	protected ControlDecoration decoration;
 	protected int style;
-	
+	protected Class messages;
+	protected boolean isWidgetUpdating = false;
+
 	public ObjectEditor(AbstractDetailComposite parent, EObject object, EStructuralFeature feature) {
 		this.parent = parent;
 		this.object = object;
 		this.feature = feature;
 		this.style = SWT.NONE;
+    	messages = JavaReflectionUtil.findClass(parent, "Messages"); //$NON-NLS-1$
 	}
 	
 	/**
@@ -72,6 +80,10 @@ public abstract class ObjectEditor implements INotifyChangedListener {
 	 * @return the control created by the ObjectEditor subclasses (e.g. a Text, or Combo)
 	 */
 	protected abstract Control createControl(Composite composite, String label, int style);
+	
+	public void setStyle(int style) {
+		this.style = style;
+	}
 	
 	public Control createControl(Composite composite, String label) {
 		Control c = createControl(composite,label,style);
@@ -137,7 +149,57 @@ public abstract class ObjectEditor implements INotifyChangedListener {
         return false;
 	}
 	
+	protected FeatureEditingDialog createFeatureEditingDialog(EObject value) {
+		return new FeatureEditingDialog(getDiagramEditor(), object, feature, value);
+	}
+
+	/**
+	 * Returns a descriptive text string for use as a tooltip on the Label for this editor.
+	 * The default implementation constructs a key from the object and feature name owned by this
+	 * editor, and looks up the description text in the messages resource of the parent plugin.
+	 * 
+	 * @return
+	 */
+	protected String getToolTipText() {
+		String fieldName;
+		Field field;
+		String text = ""; //$NON-NLS-1$
+    	if (messages!=null) {
+    		try {
+    			// fetch the description for this EClass and feature
+	    		fieldName = "UI_" + object.eClass().getName() + "_" + feature.getName() + "_description"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+//				text += "\n" + fieldName + "\n";
+	    		field = messages.getField(fieldName);
+	    		text += (String)field.get(null);
+    		}
+    		catch (Exception e) {
+	    		try {
+	    			// if a description is not found for this EClass, try "Any"
+		    		fieldName = "UI_Any_" + feature.getName() + "_description"; //$NON-NLS-1$ //$NON-NLS-2$
+//	    			text += "\n" + fieldName + "\n";
+		    		field = messages.getField(fieldName);
+		    		text += (String)field.get(null);
+	    		}
+	    		catch (Exception e2) {
+	    		}
+    		}
+    		if (text==null || text.isEmpty())
+    			text = NLS.bind(Messages.ObjectEditor_No_Description, label.getText());
+    	}
+    	return text;
+	}
+	
+	/**
+	 * Updates the error decorators and tooltips of this editor's Label widget.
+	 */
 	protected void updateLabelDecorator() {
+		String tooltip = label.getToolTipText();
+		
+		if (tooltip==null && object!=null && feature!=null) {
+   			label.setToolTipText(getToolTipText());
+		}
+		
+		
 		boolean applies = false;
     	String image = null;
     	String text = null;
@@ -196,9 +258,15 @@ public abstract class ObjectEditor implements INotifyChangedListener {
 		boolean success = ModelUtil.setValue(domain, object, feature, result);
 		if (!success) {
 			ErrorUtils.showErrorMessage(
-					"Can't set '"+ModelUtil.getDisplayName(object)+
-					"' "+ModelUtil.getLabel(object,feature)+
-					" with value '"+ModelUtil.getDisplayName(result)+"'");
+				NLS.bind(
+					Messages.ObjectEditor_Set_Error_Message,
+					new Object[] {
+						ModelUtil.getDisplayName(object),
+						ModelUtil.getLabel(object,feature),
+						ModelUtil.getDisplayName(result)
+					}
+				)
+			);
 			return false;
 		}
 		return true;

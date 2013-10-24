@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2011, 2012, 2013 Red Hat, Inc.
+ * All rights reserved.
+ * This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution,
+ * and is available at http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors:
+ * 	Red Hat, Inc. - initial API and implementation
+ ******************************************************************************/
 package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property;
 
 import org.eclipse.bpmn2.Definitions;
@@ -5,9 +15,10 @@ import org.eclipse.bpmn2.Interface;
 import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
-import org.eclipse.bpmn2.modeler.core.utils.ImportUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.util.JbpmImportDialog;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.util.JbpmModelUtil;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.util.JbpmModelUtil.ImportHandler;
 import org.eclipse.bpmn2.modeler.ui.property.data.InterfacePropertySection;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
@@ -58,9 +69,12 @@ public class JbpmInterfacePropertySection extends InterfacePropertySection {
 
         @Override
         public void bindList(EObject theobject) {
+        	// TODO: push this up to super
+        	// this also requires that the JbpmImportDialog is moved to the core plugin
+        	// also JbpmModelUtil.ImportHandler
             super.bindList(theobject);
-            ImageDescriptor id = AbstractUIPlugin.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "icons/20/import.png");
-            Action importAction = new Action("Import", id) {
+            ImageDescriptor id = AbstractUIPlugin.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "icons/20/import.png"); //$NON-NLS-1$
+            Action importAction = new Action(Messages.JbpmInterfacePropertySection_Import_Action, id) {
                 @Override
                 public void run() {
                     super.run();
@@ -83,12 +97,21 @@ public class JbpmInterfacePropertySection extends InterfacePropertySection {
         }
 
         protected EObject importListItem(EObject object, EStructuralFeature feature) {
-            final IType selectedType = JbpmModelUtil.showImportDialog(object);
+        	final JbpmImportDialog dialog = new JbpmImportDialog();
+        	dialog.open();
+            final IType selectedType = dialog.getIType();
             final Definitions definitions = ModelUtil.getDefinitions(object);
             if (selectedType == null || definitions==null) {
                 return null;
             }
-            final Interface iface = ImportUtil.createInterface(definitions, null, selectedType);
+            
+            // add this IType to the list of <import> extension elements
+    		JbpmModelUtil.addImport(selectedType, object, false, dialog.isCreateVariables());
+
+    		ImportHandler importer = new ImportHandler();
+    		importer.setCreateVariables( dialog.isCreateVariables() );
+    		
+    		final Interface iface = importer.createInterface(definitions, null, selectedType);
             EList<EObject> list = (EList<EObject>) object.eGet(feature);
             list.add(iface);
             return iface;

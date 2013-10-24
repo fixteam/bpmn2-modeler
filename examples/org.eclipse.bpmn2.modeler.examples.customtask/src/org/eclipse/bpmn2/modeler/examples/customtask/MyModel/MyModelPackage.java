@@ -152,6 +152,80 @@ public interface MyModelPackage extends EPackage {
 
 
 	/**
+	 * The meta object id for the '{@link org.eclipse.bpmn2.modeler.examples.customtask.MyModel.impl.MyEventDefinitionImpl <em>My Event Definition</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see org.eclipse.bpmn2.modeler.examples.customtask.MyModel.impl.MyEventDefinitionImpl
+	 * @see org.eclipse.bpmn2.modeler.examples.customtask.MyModel.impl.MyModelPackageImpl#getMyEventDefinition()
+	 * @generated
+	 */
+	int MY_EVENT_DEFINITION = 3;
+
+	/**
+	 * The feature id for the '<em><b>Extension Values</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int MY_EVENT_DEFINITION__EXTENSION_VALUES = Bpmn2Package.EVENT_DEFINITION__EXTENSION_VALUES;
+
+	/**
+	 * The feature id for the '<em><b>Documentation</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int MY_EVENT_DEFINITION__DOCUMENTATION = Bpmn2Package.EVENT_DEFINITION__DOCUMENTATION;
+
+	/**
+	 * The feature id for the '<em><b>Extension Definitions</b></em>' reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int MY_EVENT_DEFINITION__EXTENSION_DEFINITIONS = Bpmn2Package.EVENT_DEFINITION__EXTENSION_DEFINITIONS;
+
+	/**
+	 * The feature id for the '<em><b>Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int MY_EVENT_DEFINITION__ID = Bpmn2Package.EVENT_DEFINITION__ID;
+
+	/**
+	 * The feature id for the '<em><b>Any Attribute</b></em>' attribute list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int MY_EVENT_DEFINITION__ANY_ATTRIBUTE = Bpmn2Package.EVENT_DEFINITION__ANY_ATTRIBUTE;
+
+	/**
+	 * The feature id for the '<em><b>Value</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int MY_EVENT_DEFINITION__VALUE = Bpmn2Package.EVENT_DEFINITION_FEATURE_COUNT + 0;
+
+	/**
+	 * The number of structural features of the '<em>My Event Definition</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int MY_EVENT_DEFINITION_FEATURE_COUNT = Bpmn2Package.EVENT_DEFINITION_FEATURE_COUNT + 1;
+
+
+	/**
 	 * Returns the meta object for class '{@link org.eclipse.bpmn2.modeler.examples.customtask.MyModel.DocumentRoot <em>Document Root</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -224,6 +298,27 @@ public interface MyModelPackage extends EPackage {
 	 * @generated
 	 */
 	EReference getTaskConfig_Parameters();
+
+	/**
+	 * Returns the meta object for class '{@link org.eclipse.bpmn2.modeler.examples.customtask.MyModel.MyEventDefinition <em>My Event Definition</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>My Event Definition</em>'.
+	 * @see org.eclipse.bpmn2.modeler.examples.customtask.MyModel.MyEventDefinition
+	 * @generated
+	 */
+	EClass getMyEventDefinition();
+
+	/**
+	 * Returns the meta object for the attribute '{@link org.eclipse.bpmn2.modeler.examples.customtask.MyModel.MyEventDefinition#getValue <em>Value</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Value</em>'.
+	 * @see org.eclipse.bpmn2.modeler.examples.customtask.MyModel.MyEventDefinition#getValue()
+	 * @see #getMyEventDefinition()
+	 * @generated
+	 */
+	EAttribute getMyEventDefinition_Value();
 
 	/**
 	 * Returns the factory that creates the instances of the model.
@@ -308,6 +403,24 @@ public interface MyModelPackage extends EPackage {
 		 * @generated
 		 */
 		EReference TASK_CONFIG__PARAMETERS = eINSTANCE.getTaskConfig_Parameters();
+
+		/**
+		 * The meta object literal for the '{@link org.eclipse.bpmn2.modeler.examples.customtask.MyModel.impl.MyEventDefinitionImpl <em>My Event Definition</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see org.eclipse.bpmn2.modeler.examples.customtask.MyModel.impl.MyEventDefinitionImpl
+		 * @see org.eclipse.bpmn2.modeler.examples.customtask.MyModel.impl.MyModelPackageImpl#getMyEventDefinition()
+		 * @generated
+		 */
+		EClass MY_EVENT_DEFINITION = eINSTANCE.getMyEventDefinition();
+
+		/**
+		 * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute MY_EVENT_DEFINITION__VALUE = eINSTANCE.getMyEventDefinition_Value();
 
 	}
 

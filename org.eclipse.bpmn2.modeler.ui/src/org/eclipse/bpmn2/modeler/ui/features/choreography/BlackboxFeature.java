@@ -46,12 +46,12 @@ public class BlackboxFeature extends AbstractCustomFeature {
 	
 	@Override
 	public String getName() {
-	    return "Blackbox";
+	    return Messages.BlackboxFeature_Name;
 	}
 	
 	@Override
 	public String getDescription() {
-	    return "Unlink the Process Diagram from this Participant Band";
+	    return Messages.BlackboxFeature_Description;
 	}
 
 	@Override

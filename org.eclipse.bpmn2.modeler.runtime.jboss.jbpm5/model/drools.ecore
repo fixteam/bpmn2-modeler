@@ -244,4 +244,5 @@
     </eAnnotations>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="BPSimDataType" eSuperTypes="bpsim.ecore#//BPSimDataType"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ExternalProcess" eSuperTypes="../../org.eclipse.bpmn2/model/BPMN20.ecore#//CallableElement"/>
 </ecore:EPackage>

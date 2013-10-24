@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2011, 2012, 2013 Red Hat, Inc.
+ * All rights reserved.
+ * This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution,
+ * and is available at http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors:
+ * 	Red Hat, Inc. - initial API and implementation
+ ******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.features;
 
 import java.util.ArrayList;
@@ -9,6 +19,7 @@ import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
+import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.services.IGaService;
 import org.eclipse.graphiti.services.IPeService;
@@ -24,8 +35,8 @@ public class RouteSolver {
 
 	IFeatureProvider fp;
 	List<ContainerShape> allShapes;
-	ContainerShape source; 
-	ContainerShape target;
+	Shape source; 
+	Shape target;
 	int top, left, bottom, right;
 	RoutingNet verticalNet;
 	RoutingNet horizontalNet;
@@ -44,26 +55,31 @@ public class RouteSolver {
 		initialize();
 	}
 	
-	public boolean solve(ContainerShape source, ContainerShape target) {
+	public boolean solve(Shape source, Shape target) {
 		this.source = source;
 		this.target = target;
-		List< List<RoutingLane> > solutions;
+		List< List<RoutingLane> > verticalSolutions;
+		List< List<RoutingLane> > horizontalSolutions;
 		
 		verticalNet.eraseLanes();
 		horizontalNet.eraseLanes();
 		
-		solutions = verticalNet.findSolutions(source, target);
+		verticalSolutions = verticalNet.findSolutions(source, target);
 		verticalNet.drawLanes();
-//		verticalNet.drawConnections();
-		if (solutions.size()>0) {
-			verticalNet.drawSolution(solutions.get(0));
-		}
+		verticalNet.drawConnections();
+//		if (verticalSolutions.size()>0) {
+//			for (int i=0; i<verticalSolutions.size(); ++i) {
+//				verticalNet.drawSolution(verticalSolutions.get(i), i);
+//				if (i>16)
+//					break;
+//			}
+//		}
 		
-		solutions = horizontalNet.findSolutions(source, target);
+//		horizontalSolutions = horizontalNet.findSolutions(source, target);
 //		horizontalNet.drawLanes();
 //		horizontalNet.drawConnections();
-//		if (solutions.size()>0) {
-//			horizontalNet.drawSolution(solutions.get(1));
+//		if (horizontalSolutions.size()>0) {
+//			horizontalNet.drawSolution(horizontalSolutions.get(0));
 //		}
 		return true;
 	}
@@ -138,7 +154,7 @@ public class RouteSolver {
 		net.add(left, top, leftMargin, bottom-top);
 		for (int i=0; i<allShapes.size(); ++i) {
 			ContainerShape shape = allShapes.get(i);
-			if (GraphicsUtil.getDebugText(shape).contains("Task_1")) {
+			if (GraphicsUtil.getDebugText(shape).contains("Task_1")) { //$NON-NLS-1$
 				GraphicsUtil.debug = true;
 			}
 			else

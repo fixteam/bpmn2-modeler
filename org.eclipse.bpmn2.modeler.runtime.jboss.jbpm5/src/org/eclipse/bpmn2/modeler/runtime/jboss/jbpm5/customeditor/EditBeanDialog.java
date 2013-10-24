@@ -61,6 +61,6 @@ public abstract class EditBeanDialog<T> extends Dialog {
     }
     
     protected void showError(String error) {
-        MessageDialog.openError(getShell(), "Error", error);
+        MessageDialog.openError(getShell(), "Error", error); //$NON-NLS-1$
     }
 }

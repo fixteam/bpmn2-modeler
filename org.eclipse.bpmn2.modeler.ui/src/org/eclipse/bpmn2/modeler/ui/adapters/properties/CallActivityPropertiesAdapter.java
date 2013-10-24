@@ -54,7 +54,7 @@ public class CallActivityPropertiesAdapter extends ActivityPropertiesAdapter<Cal
 			new RootElementRefFeatureDescriptor<CallActivity>(adapterFactory,object,ce) {
 				@Override
 				public String getLabel(Object context) {
-					return "Called Activity";
+					return Messages.CallActivityPropertiesAdapter_Called_Activity;
 				}
 				
 				@Override
@@ -80,7 +80,7 @@ public class CallActivityPropertiesAdapter extends ActivityPropertiesAdapter<Cal
 					// first add all local processes and global whatnots
 					List<CallableElement> localProcesses = ModelUtil.getAllRootElements(defs, CallableElement.class);
 					for (CallableElement elem : localProcesses) {
-						label = ModelUtil.getDisplayName(elem) + " (" + elem.getId() + ")";
+						label = ModelUtil.getDisplayName(elem) + " (" + elem.getId() + ")"; //$NON-NLS-1$ //$NON-NLS-2$
 						choices.put(label, elem);
 					}
 					
@@ -95,7 +95,7 @@ public class CallActivityPropertiesAdapter extends ActivityPropertiesAdapter<Cal
 								Definitions importDefs = ((DocumentRoot)object).getDefinitions();
 								for (RootElement elem : importDefs.getRootElements()) {
 									if (elem instanceof CallableElement) {
-										label = ModelUtil.getDisplayName(elem) + " (" + imp.getLocation() + ")";
+										label = ModelUtil.getDisplayName(elem) + " (" + imp.getLocation() + ")"; //$NON-NLS-1$ //$NON-NLS-2$
 										choices.put(label, elem);
 									}
 								}

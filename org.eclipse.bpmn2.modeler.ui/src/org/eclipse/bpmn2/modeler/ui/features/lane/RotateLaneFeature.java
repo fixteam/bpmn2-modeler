@@ -31,11 +31,11 @@ public class RotateLaneFeature extends AbstractRotateContainerFeature {
 	
 	@Override
 	public String getName() {
-	    return "Change Lane Orientation";
+	    return Messages.RotateLaneFeature_Name;
 	}
 	
 	@Override
 	public String getDescription() {
-	    return "Switch the orientation of this Lane between horizontal and vertical";
+	    return Messages.RotateLaneFeature_Description;
 	}
 }

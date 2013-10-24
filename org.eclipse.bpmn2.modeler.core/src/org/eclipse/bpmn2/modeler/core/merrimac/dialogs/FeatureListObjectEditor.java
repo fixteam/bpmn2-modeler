@@ -80,7 +80,7 @@ public class FeatureListObjectEditor extends MultivalueObjectEditor {
 	protected Control createControl(Composite composite, String label, int style) {
 		createLabel(composite, label);
 
-		text = getToolkit().createText(composite, "");
+		text = getToolkit().createText(composite, ""); //$NON-NLS-1$
 		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		text.setEditable(false);
 
@@ -102,7 +102,7 @@ public class FeatureListObjectEditor extends MultivalueObjectEditor {
 				createButton.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(SelectionEvent e) {
 						// create a new target object
-						FeatureEditingDialog dialog = new FeatureEditingDialog(getDiagramEditor(), object, feature, null);							
+						FeatureEditingDialog dialog = createFeatureEditingDialog(null);							
 						if ( dialog.open() == Window.OK) {
 							updateEObject(dialog.getNewObject());
 							updateTextField();
@@ -121,7 +121,7 @@ public class FeatureListObjectEditor extends MultivalueObjectEditor {
 						values.addAll(choices.values());
 
 						FeatureEditorDialog featureEditorDialog = new FeatureEditorDialog(parent.getShell(),
-								AdapterRegistry.getLabelProvider(), object, feature, "Select elements", values) {
+								AdapterRegistry.getLabelProvider(), object, feature, Messages.FeatureListObjectEditor_Title, values) {
 
 							protected Control createContents(Composite parent) {
 								Composite control = (Composite)super.createContents(parent);
@@ -136,21 +136,21 @@ public class FeatureListObjectEditor extends MultivalueObjectEditor {
 							}
 
 							public void setDialogSize(final Control parent) {
-								final String key = featureEType.getName() + ".list";
+								final String key = featureEType.getName() + ".list"; //$NON-NLS-1$
 								Point p = getShell().getSize();
-								int width = preferenceStore.getInt("dialog."+key+".width");
+								int width = preferenceStore.getInt("dialog."+key+".width"); //$NON-NLS-1$ //$NON-NLS-2$
 								if (width==0)
 									width = p.x;
-								int height = preferenceStore.getInt("dialog."+key+".height");
+								int height = preferenceStore.getInt("dialog."+key+".height"); //$NON-NLS-1$ //$NON-NLS-2$
 								if (height==0)
 									height = p.y;
 								getShell().setSize(width,height);
 								
 								p = getShell().getLocation();
-								int x = preferenceStore.getInt("dialog."+key+".x");
+								int x = preferenceStore.getInt("dialog."+key+".x"); //$NON-NLS-1$ //$NON-NLS-2$
 								if (x==0)
 									x = p.x;
-								int y = preferenceStore.getInt("dialog."+key+".y");
+								int y = preferenceStore.getInt("dialog."+key+".y"); //$NON-NLS-1$ //$NON-NLS-2$
 								if (y==0)
 									y = p.y;
 								getShell().setLocation(x,y);
@@ -159,15 +159,15 @@ public class FeatureListObjectEditor extends MultivalueObjectEditor {
 									public void controlMoved(ControlEvent e)
 									{
 										Point p = getShell().getLocation();
-										preferenceStore.setValue("dialog."+key+".x", p.x);
-										preferenceStore.setValue("dialog."+key+".y", p.y);
+										preferenceStore.setValue("dialog."+key+".x", p.x); //$NON-NLS-1$ //$NON-NLS-2$
+										preferenceStore.setValue("dialog."+key+".y", p.y); //$NON-NLS-1$ //$NON-NLS-2$
 									}
 									
 									public void controlResized(ControlEvent e)
 									{
 										Point p = getShell().getSize();
-										preferenceStore.setValue("dialog."+key+".width", p.x);
-										preferenceStore.setValue("dialog."+key+".height", p.y);
+										preferenceStore.setValue("dialog."+key+".width", p.x); //$NON-NLS-1$ //$NON-NLS-2$
+										preferenceStore.setValue("dialog."+key+".height", p.y); //$NON-NLS-1$ //$NON-NLS-2$
 									}
 							
 								});
@@ -232,10 +232,10 @@ public class FeatureListObjectEditor extends MultivalueObjectEditor {
 	}
 
 	private void updateTextField() {
-		String listText = "";
+		String listText = ""; //$NON-NLS-1$
 		if (references != null) {
 			for (int i = 0; i < references.size() - 1; i++) {
-				listText += AdapterRegistry.getLabelProvider().getText(references.get(i)) + ", ";
+				listText += AdapterRegistry.getLabelProvider().getText(references.get(i)) + ", "; //$NON-NLS-1$
 			}
 			if (references.size() > 0) {
 				listText += AdapterRegistry.getLabelProvider().getText(references.get(references.size() - 1));
@@ -250,8 +250,8 @@ public class FeatureListObjectEditor extends MultivalueObjectEditor {
 	
 	@Override
 	public void notifyChanged(Notification notification) {
-		if (this.object == notification.getNotifier() &&
-				this.feature == notification.getFeature()) {
+		if ( notification.getEventType() == -1 ||
+				(object == notification.getNotifier() && feature == notification.getFeature())) {
 			super.notifyChanged(notification);
 			updateTextField();
 		}

@@ -41,14 +41,14 @@ public class JbpmSequenceFlowDetailComposite extends SequenceFlowDetailComposite
 	
 	@Override
 	public void createBindings(EObject be) {
-		bindAttribute(getAttributesParent(), be, "priority");
+		bindAttribute(getAttributesParent(), be, "priority"); //$NON-NLS-1$
 		super.createBindings(be);
 	}
 	
 	@Override
 	protected boolean isModelObjectEnabled(String className, String featureName) {
 		if (super.isModelObjectEnabled(className, featureName)) {
-			if ("conditionExpression".equals(featureName)) {
+			if ("conditionExpression".equals(featureName)) { //$NON-NLS-1$
 				// Condition Expressions can only appear on SequenceFlows leaving
 				// an Exclusive or Inclusive Gateway.
 				FlowNode source = ((SequenceFlow)getBusinessObject()).getSourceRef();

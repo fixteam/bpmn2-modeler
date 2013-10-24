@@ -64,7 +64,7 @@ public class BPMN2OperationTreeNode extends TreeNode {
 		Operation op = (Operation)modelObject;
 		String label = op.getName();
 		if (label==null || label.isEmpty())
-			label = "Unnamed Operation";
+			label = Messages.BPMN2OperationTreeNode_Unnamed;
 		return label;
 	}
 }

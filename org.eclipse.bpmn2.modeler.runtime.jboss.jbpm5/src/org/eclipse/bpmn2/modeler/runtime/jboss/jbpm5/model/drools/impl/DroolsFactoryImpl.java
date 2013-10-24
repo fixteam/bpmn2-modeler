@@ -75,6 +75,7 @@ public class DroolsFactoryImpl extends EFactoryImpl implements DroolsFactory {
 			case DroolsPackage.ON_ENTRY_SCRIPT_TYPE: return createOnEntryScriptType();
 			case DroolsPackage.ON_EXIT_SCRIPT_TYPE: return createOnExitScriptType();
 			case DroolsPackage.BP_SIM_DATA_TYPE: return createBPSimDataType();
+			case DroolsPackage.EXTERNAL_PROCESS: return createExternalProcess();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
 		}
@@ -204,6 +205,16 @@ public class DroolsFactoryImpl extends EFactoryImpl implements DroolsFactory {
 	public BPSimDataType createBPSimDataType() {
 		BPSimDataTypeImpl bpSimDataType = new BPSimDataTypeImpl();
 		return bpSimDataType;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public ExternalProcess createExternalProcess() {
+		ExternalProcessImpl callableElementProxy = new ExternalProcessImpl();
+		return callableElementProxy;
 	}
 
 	/**

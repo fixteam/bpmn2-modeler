@@ -27,7 +27,7 @@ import org.eclipse.swt.widgets.Label;
 public class PropertyUtil {
 
 	public static String deCamelCase(String string) {
-		return string.replaceAll("([A-Z][a-z])", " $0").substring(1);
+		return string.replaceAll("([A-Z][a-z])", " $0").substring(1); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	public static void layoutAllParents(Composite child) {
@@ -42,7 +42,7 @@ public class PropertyUtil {
 	public static void check(Control control) {
 		String name = control.getClass().getSimpleName();
 		if (control.isDisposed()) {
-			System.err.println(name+" disposed!");
+			System.err.println(name+" disposed!"); //$NON-NLS-1$
 			return;
 		}
 //		if (control instanceof Composite) {
@@ -57,7 +57,7 @@ public class PropertyUtil {
 	public static void dump(Composite parent, String comment) {
 		System.out.println(comment);
 		int i = 1;
-		System.out.println("parent="+parent.hashCode());
+		System.out.println("parent="+parent.hashCode()); //$NON-NLS-1$
 		check(parent);
 
 		Composite p = parent.getParent();
@@ -73,16 +73,16 @@ public class PropertyUtil {
 		Control[] kids = parent.getChildren();
 		for (Control k : kids) {
 			for (int i=0; i<indent; ++i)
-				System.out.print("|");
-			System.out.print(" "+k+" layoutData="+k.getLayoutData());
+				System.out.print("|"); //$NON-NLS-1$
+			System.out.print(" "+k+" layoutData="+k.getLayoutData()); //$NON-NLS-1$ //$NON-NLS-2$
 			if (k instanceof Composite)
-				System.out.print(" layout="+((Composite)k).getLayout());
+				System.out.print(" layout="+((Composite)k).getLayout()); //$NON-NLS-1$
 			check(k);
 			
 			if (k instanceof Label) {
 				System.out.print(((Label)k).getText());
 			}
-			System.out.println("");
+			System.out.println(""); //$NON-NLS-1$
 			if (k instanceof Composite) {
 				dump((Composite)k, indent+1);
 			}
@@ -90,7 +90,11 @@ public class PropertyUtil {
 	}
 	
 	public static Image getImage(EObject element) {
-		String field = "ICON_" + element.eClass().getName().toUpperCase();
+		return getImage(element.eClass().getName());
+	}
+	
+	public static Image getImage(String name) {
+		String field = "ICON_" + name.toUpperCase(); //$NON-NLS-1$
 		Field f;
 		try {
 			f = IConstants.class.getField(field);

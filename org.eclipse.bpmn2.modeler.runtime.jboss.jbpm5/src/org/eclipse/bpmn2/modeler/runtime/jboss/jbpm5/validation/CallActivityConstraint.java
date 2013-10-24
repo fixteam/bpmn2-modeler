@@ -19,10 +19,11 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.validation.AbstractModelConstraint;
 import org.eclipse.emf.validation.IValidationContext;
+import org.eclipse.osgi.util.NLS;
 
 public class CallActivityConstraint extends AbstractModelConstraint {
 	private IDiagramProfile profile;
-	private String uuid = "uuid";
+	private String uuid = "uuid"; //$NON-NLS-1$
 
 	@Override
 	public IStatus validate(IValidationContext ctx) {
@@ -30,7 +31,7 @@ public class CallActivityConstraint extends AbstractModelConstraint {
 		if (eObj instanceof CallActivity) {
 			CallActivity ca = (CallActivity) eObj;
 			if (ca.getCalledElementRef() == null) {
-				ctx.createFailureStatus("Reusable Subprocess has no called element specified.");
+				ctx.createFailureStatus(Messages.CallActivityConstraint_No_Called_Element);
 			} else {
 				String[] packageAssetInfo = ServletUtil.findPackageAndAssetInfo(uuid, profile);
 				String packageName = packageAssetInfo[0];
@@ -38,7 +39,7 @@ public class CallActivityConstraint extends AbstractModelConstraint {
 				boolean foundCalledElementProcess = false;
 				for (String p : allProcessesInPackage) {
 					String processContent = ServletUtil.getProcessSourceContent(packageName, p, profile);
-					Pattern pattern = Pattern.compile("<\\S*process[\\s\\S]*id=\"" + ca.getCalledElementRef() + "\"",
+					Pattern pattern = Pattern.compile("<\\S*process[\\s\\S]*id=\"" + ca.getCalledElementRef() + "\"", //$NON-NLS-1$ //$NON-NLS-2$
 							Pattern.MULTILINE);
 					Matcher m = pattern.matcher(processContent);
 					if (m.find()) {
@@ -48,8 +49,12 @@ public class CallActivityConstraint extends AbstractModelConstraint {
 				}
 				foundCalledElementProcess = true; // TODO: remove this
 				if (!foundCalledElementProcess) {
-					ctx.createFailureStatus("No existing process with id=" + ca.getCalledElementRef()
-							+ " could be found.");
+					ctx.createFailureStatus(
+						NLS.bind(
+							Messages.CallActivityConstraint_No_Process,
+							ca.getCalledElementRef()
+						)
+					);
 				}
 			}
 		}

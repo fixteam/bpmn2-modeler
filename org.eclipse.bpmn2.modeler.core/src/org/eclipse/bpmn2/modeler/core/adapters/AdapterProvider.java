@@ -81,7 +81,7 @@ public final class AdapterProvider {
 		}
 						
 		for(String packageName : packageList) {
-			Class<? extends Adapter> adapterClazz = classFor( packageName + "." + name );
+			Class<? extends Adapter> adapterClazz = classFor( packageName + "." + name ); //$NON-NLS-1$
 			if (adapterClazz != null) {
 				return getAdapter(adapterClazz);
 			}

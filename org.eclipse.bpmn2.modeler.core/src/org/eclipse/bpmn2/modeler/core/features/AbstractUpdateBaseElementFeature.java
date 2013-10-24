@@ -35,15 +35,15 @@ public abstract class AbstractUpdateBaseElementFeature extends AbstractUpdateFea
 		if (pe instanceof ContainerShape) {
 			String shapeValue = FeatureSupport.getShapeValue(context);
 			if (shapeValue==null)
-				shapeValue = "";
+				shapeValue = ""; //$NON-NLS-1$
 			String businessValue = FeatureSupport.getBusinessValue(context);
 			if (businessValue==null)
-				businessValue = "";
+				businessValue = ""; //$NON-NLS-1$
 	
 			boolean updateNeeded = !shapeValue.equals(businessValue);
 			
 			if (updateNeeded) {
-				return Reason.createTrueReason("Name out of date");
+				return Reason.createTrueReason(Messages.AbstractUpdateBaseElementFeature_Name);
 			}
 		}
 		
@@ -62,7 +62,7 @@ public abstract class AbstractUpdateBaseElementFeature extends AbstractUpdateFea
 					AbstractText text = (AbstractText) shape.getGraphicsAlgorithm();
 					String value = FeatureSupport.getBusinessValue(context);
 					if (value == null) {
-						value = "";
+						value = ""; //$NON-NLS-1$
 					}
 					text.setValue(value);
 					return true;

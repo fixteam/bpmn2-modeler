@@ -52,7 +52,7 @@ public class ManualTaskFeatureContainer extends AbstractTaskFeatureContainer {
 	public static class CreateManualTaskFeature extends AbstractCreateTaskFeature<ManualTask> {
 
 		public CreateManualTaskFeature(IFeatureProvider fp) {
-			super(fp, "Manual Task", "Create "+"Manual Task");
+			super(fp, Messages.ManualTaskFeatureContainer_Name, Messages.ManualTaskFeatureContainer_Description);
 		}
 
 		@Override

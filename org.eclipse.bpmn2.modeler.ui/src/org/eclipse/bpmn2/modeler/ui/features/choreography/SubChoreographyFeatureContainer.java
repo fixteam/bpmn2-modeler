@@ -78,7 +78,7 @@ public class SubChoreographyFeatureContainer extends AbstractChoreographyFeature
 	public static class CreateSubChoreographyFeature extends AbstractCreateExpandableFlowNodeFeature<SubChoreography> {
 
 		public CreateSubChoreographyFeature(IFeatureProvider fp) {
-			super(fp, "Sub-Choreography", "Create "+"Sub-Choreography");
+			super(fp, Messages.SubChoreographyFeatureContainer_Name, Messages.SubChoreographyFeatureContainer_Description);
 		}
 
 		@Override

@@ -30,6 +30,10 @@ public class Messages extends NLS {
 	public static String SchemaImportDialog_16;
 	public static String SchemaImportDialog_26;
 	
+	public static String SchemaImportDialogWithWSIL_Message;
+
+	public static String SchemaImportDialogWithWSIL_Title;
+
 	public static String WSILPreferencePage_WSIL_1;
 	public static String WSILPreferencePage_WSIL_2;
 	public static String WSILPreferencePage_WSIL_Description;

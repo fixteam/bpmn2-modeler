@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension-point id="org.eclipse.bpmn2.modeler.runtime" name="BPMN2 Modeler Runtime Specialization" schema="schema/org.eclipse.bpmn2.modeler.runtime.exsd"/>
+   <extension-point id="org.eclipse.bpmn2.modeler.runtime" name="%extension-point.name" schema="schema/org.eclipse.bpmn2.modeler.runtime.exsd"/>
    
 	<!-- EMF Extensions -->
    
@@ -16,7 +16,7 @@
    <extension
          point="org.eclipse.emf.validation.constraintProviders">
       <category
-            name="Core BPMN 2.0 Constraints"
+            name="%category.name"
             id="org.eclipse.bpmn2.modeler.core.validation"/>
       <constraintProvider cache="true">
          <package namespaceUri="http://www.omg.org/spec/BPMN/20100524/MODEL-XMI"/>
@@ -24,16 +24,16 @@
             <constraint
                   lang="Java"
                   class="org.eclipse.bpmn2.modeler.core.validation.ValidIdConstraint"
-                  severity="CANCEL"
+                  severity="WARNING"
                   mode="Batch"
-                  name="Valid IDs"
+                  name="%constraint.name"
                   id="org.eclipse.bpmn2.modeler.core.validation.ValidId"
                   statusCode="1">
                <description>
-                  IDs must be valid.
+                  %constraint.description
                </description>
                <message>
-                  The {0} ID must be a valid ID.
+                  %constraint.message
                </message>
                <target class="BaseElement">
                   <event name="Set">
@@ -46,13 +46,13 @@
             </constraint>
             <constraint
 			        lang="OCL"
-			         severity="CANCEL"
+			         severity="ERROR"
 			         mode="Live"
-			         name="StartEventIncoming"
+			         name="%constraint.name.0"
 			         id="org.eclipse.bpmn2.modeler.core.validation.StartEvent.incoming"
 			         statusCode="2" isEnabledByDefault="true">
-			      <description>Start Event must not have incoming flows</description>
-			      <message>Start Event must not have incoming sequence flows.</message>
+			      <description>%constraint.description.0</description>
+			      <message>%constraint.message.0</message>
 			      <target class="StartEvent" />
 			      <![CDATA[
 			      	self.incoming->isEmpty()
@@ -60,13 +60,13 @@
 			</constraint>
 			<constraint
 			        lang="OCL"
-			         severity="CANCEL"
+			         severity="ERROR"
 			         mode="Live"
-			         name="EndEventOutgoing"
+			         name="%constraint.name.1"
 			         id="org.eclipse.bpmn2.modeler.core.validation.EndEvent.outgoing"
 			         statusCode="3" isEnabledByDefault="true">
-			      <description>End Event must not have outgoing flows</description>
-			      <message>End Event must not have outgoing sequence flows.</message>
+			      <description>%constraint.description.1</description>
+			      <message>%constraint.message.1</message>
 			      <target class="EndEvent" />
 			      <![CDATA[
 			         self.outgoing->isEmpty()
@@ -76,43 +76,56 @@
 			        lang="OCL"
 			         severity="WARNING"
 			         mode="Live"
-			         name="UniqueId"
+			         name="%constraint.name.2"
 			         id="org.eclipse.bpmn2.modeler.core.validation.BaseElement.id"
 			         statusCode="3" isEnabledByDefault="true">
-			      <description>ID needs to be unique.</description>
-			      <message>ID needs to be unqiue.</message>
+			      <description>%constraint.description.2</description>
+			      <message>%constraint.message.2</message>
 			      <target class="BaseElement" />
 					<![CDATA[
 						self.id->notEmpty() implies bpmn2::BaseElement.allInstances()->select(s | s.id = self.id)->size() <= 1
 					]]>
 			</constraint>
 			<constraint
-					class="org.eclipse.bpmn2.modeler.core.validation.BPMN2BatchValidationConstraint"
+					class="org.eclipse.bpmn2.modeler.core.validation.BPMN2ValidationConstraints"
 					id="org.eclipse.bpmn2.modeler.core.validation.error"
 					isEnabledByDefault="true"
 					lang="Java"
 					mode="Batch"
-					name="Errors"
+					name="%constraint.name.3"
 					severity="ERROR"
 					statusCode="1">
-				<message>{0}</message>
-				<description>Diagram Validation Errors</description>
-				<target class="BPMNDiagram"/>
+				<message>%constraint.message.3</message>
+				<description>%constraint.description.3</description>
 				<target class="Definitions"/>
 				<target class="BaseElement"/>
 			</constraint>
  			<constraint
-					class="org.eclipse.bpmn2.modeler.core.validation.BPMN2BatchValidationConstraint"
+					class="org.eclipse.bpmn2.modeler.core.validation.BPMN2ValidationConstraints"
 					id="org.eclipse.bpmn2.modeler.core.validation.warning"
 					isEnabledByDefault="true"
 					lang="Java"
 					mode="Batch"
-					name="Warnings"
+					name="%constraint.name.4"
 					severity="WARNING"
 					statusCode="1">
-				<message>{0}</message>
-				<description>Diagram Validation Warnings</description>
-				<target class="BPMNDiagram"/>
+				<message>%constraint.message.4</message>
+				<description>%constraint.description.4</description>
+				<target class="Definitions"/>
+				<target class="BaseElement"/>
+			</constraint>
+			<!-- Live validation constraints for user feedback during editing -->
+			<constraint
+					class="org.eclipse.bpmn2.modeler.core.validation.BPMN2ValidationConstraints"
+					id="org.eclipse.bpmn2.modeler.core.validation.live.error"
+					isEnabledByDefault="true"
+					lang="Java"
+					mode="Live"
+					name="%constraint.name.5"
+					severity="INFO"
+					statusCode="1">
+				<message>%constraint.message.5</message>
+				<description>%constraint.description.5</description>
 				<target class="Definitions"/>
 				<target class="BaseElement"/>
 			</constraint>
@@ -121,14 +134,14 @@
 		         id="org.eclipse.bpmn2.modeler.core.validation.TaskEmptyNameConstraint"
 		         lang="java"
 		         mode="Batch"
-		         name="TaskEmptyNameConstraint"
+		         name="%constraint.name.6"
 		         severity="ERROR"
 		         statusCode="1">
 		      <message>
-		         The {0} Name must not be empty
+		         %constraint.message.6
 		      </message>
 		      <description>
-		         Name must not be empty
+		         %constraint.description.6
 		      </description>
 		      <target
 		            class="Task">
@@ -139,14 +152,14 @@
 		         id="org.eclipse.bpmn2.modeler.core.validation.FormalExpressionConstraint"
 		         lang="java"
 		         mode="Batch"
-		         name="FormalExpressionConstraint"
-		         severity="ERROR"
+		         name="%constraint.name.7"
+		         severity="WARNING"
 		         statusCode="1">
 		      <message>
-		         Expression and Language must not be blank
+		         %constraint.message.7
 		      </message>
 		      <description>
-		         Expression and Language must not be blank
+		         %constraint.description.7
 		      </description>
 		      <target
 		            class="FormalExpression">
@@ -162,7 +175,16 @@
       <clientContext
             default="false"
             id="org.eclipse.bpmn2.modeler.core.validationContext">
-         <selector class="org.eclipse.bpmn2.modeler.core.validation.ValidationDelegateClientSelector"/>
+         <enablement>
+            <or>
+	         	<test
+	                property="org.eclipse.bpmn2.modeler.property.targetRuntimeId"
+	                value="org.eclipse.bpmn2.modeler.runtime.none"/>
+	         	<test
+	                property="org.eclipse.bpmn2.modeler.property.doCoreValidation"
+	                value="true"/>
+            </or>
+         </enablement>
       </clientContext>
       <binding
             context="org.eclipse.bpmn2.modeler.core.validationContext"
@@ -170,14 +192,14 @@
    </extension>
 	
 	<extension point="org.eclipse.emf.validation.validationListeners">
-		<listener class="org.eclipse.bpmn2.modeler.core.validation.ProblemsReporter">
+		<listener class="org.eclipse.bpmn2.modeler.core.validation.LiveValidationListener">
 			<clientContext id="org.eclipse.bpmn2.modeler.core.validationContext"/>
 		</listener>
 	</extension>
 
   <extension
-        id="projectValidator"
-        name="BPMN 2.0 Project Validator"
+        id="org.eclipse.bpmn2.modeler.core.projectValidator"
+        name="%extension.name"
         point="org.eclipse.wst.validation.validatorV2">
      <validator
            class="org.eclipse.bpmn2.modeler.core.validation.BPMN2ProjectValidator"
@@ -209,7 +231,7 @@
   
   <extension
         id="org.eclipse.bpmn2.modeler.core.problemMarker"
-        name="BPMN 2.0 Modeler"
+        name="%extension.name.0"
         point="org.eclipse.core.resources.markers">
      <persistent
            value="true">
@@ -218,9 +240,10 @@
            type="org.eclipse.emf.validation.problem">
      </super>
   </extension>
+  
   <extension
         id="org.eclipse.bpmn2.modeler.core.bpmn2Builder"
-        name="BPMN2 Validation Builder"
+        name="%extension.name.1"
         point="org.eclipse.core.resources.builders">
      <builder
            hasNature="true">
@@ -231,7 +254,7 @@
   </extension>
   <extension
         id="org.eclipse.bpmn2.modeler.core.bpmn2Nature"
-        name="BPMN2 Project Nature"
+        name="%extension.name.2"
         point="org.eclipse.core.resources.natures">
      <runtime>
         <run
@@ -244,7 +267,7 @@
   </extension>
   <extension
         id="xmlProblem"
-        name="XML Problem"
+        name="%extension.name.3"
         point="org.eclipse.core.resources.markers">
      <super
            type="org.eclipse.core.resources.problemmarker">
@@ -252,5 +275,15 @@
      <persistent
            value="true">
      </persistent>
+  </extension>
+  <extension
+        point="org.eclipse.core.expressions.propertyTesters">
+     <propertyTester
+           class="org.eclipse.bpmn2.modeler.core.validation.ResourcePropertyTester"
+           id="org.eclipse.bpmn2.modeler.core.targetRuntimePropertyTester"
+           namespace="org.eclipse.bpmn2.modeler.property"
+           properties="targetRuntimeId,toolPaletteProfile,doCoreValidation"
+           type="org.eclipse.emf.ecore.EObject">
+     </propertyTester>
   </extension>
 </plugin>

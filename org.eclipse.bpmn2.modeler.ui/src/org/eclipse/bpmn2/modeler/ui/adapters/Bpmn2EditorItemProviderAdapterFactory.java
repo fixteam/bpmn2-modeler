@@ -13,15 +13,14 @@
 
 package org.eclipse.bpmn2.modeler.ui.adapters;
 
-import java.util.Hashtable;
-
 import org.eclipse.bpmn2.Activity;
-import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.CallActivity;
 import org.eclipse.bpmn2.CallChoreography;
 import org.eclipse.bpmn2.CallConversation;
+import org.eclipse.bpmn2.CatchEvent;
 import org.eclipse.bpmn2.CompensateEventDefinition;
 import org.eclipse.bpmn2.CorrelationKey;
+import org.eclipse.bpmn2.CorrelationProperty;
 import org.eclipse.bpmn2.CorrelationPropertyBinding;
 import org.eclipse.bpmn2.CorrelationPropertyRetrievalExpression;
 import org.eclipse.bpmn2.DataAssociation;
@@ -36,7 +35,9 @@ import org.eclipse.bpmn2.EscalationEventDefinition;
 import org.eclipse.bpmn2.EventDefinition;
 import org.eclipse.bpmn2.FlowElement;
 import org.eclipse.bpmn2.FormalExpression;
+import org.eclipse.bpmn2.GlobalScriptTask;
 import org.eclipse.bpmn2.Import;
+import org.eclipse.bpmn2.InputOutputSpecification;
 import org.eclipse.bpmn2.InputSet;
 import org.eclipse.bpmn2.Interface;
 import org.eclipse.bpmn2.ItemAwareElement;
@@ -53,6 +54,7 @@ import org.eclipse.bpmn2.Process;
 import org.eclipse.bpmn2.Property;
 import org.eclipse.bpmn2.ReceiveTask;
 import org.eclipse.bpmn2.ResourceAssignmentExpression;
+import org.eclipse.bpmn2.ResourceParameter;
 import org.eclipse.bpmn2.ResourceParameterBinding;
 import org.eclipse.bpmn2.ResourceRole;
 import org.eclipse.bpmn2.RootElement;
@@ -63,19 +65,23 @@ import org.eclipse.bpmn2.ServiceTask;
 import org.eclipse.bpmn2.Signal;
 import org.eclipse.bpmn2.SignalEventDefinition;
 import org.eclipse.bpmn2.Task;
+import org.eclipse.bpmn2.ThrowEvent;
 import org.eclipse.bpmn2.modeler.core.adapters.AdapterRegistry;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.adapters.ObjectDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.PropertyExtensionDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
+import org.eclipse.bpmn2.modeler.ui.Messages;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.ActivityPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.CallActivityPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.CallChoreographyPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.CallConversationPropertiesAdapter;
+import org.eclipse.bpmn2.modeler.ui.adapters.properties.CatchEventPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.CompensateEventDefinitionPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.CorrelationKeyPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.CorrelationPropertyBindingPropertiesAdapter;
+import org.eclipse.bpmn2.modeler.ui.adapters.properties.CorrelationPropertyPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.CorrelationPropertyRetrievalExpressionPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.DataAssociationPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.DataInputPropertiesAdapter;
@@ -89,9 +95,11 @@ import org.eclipse.bpmn2.modeler.ui.adapters.properties.EscalationPropertiesAdap
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.EventDefinitionPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.FlowElementPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.FormalExpressionPropertiesAdapter;
+import org.eclipse.bpmn2.modeler.ui.adapters.properties.GlobalScriptTaskPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.ImportPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.InputSetPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.InterfacePropertiesAdapter;
+import org.eclipse.bpmn2.modeler.ui.adapters.properties.IoSpecificationPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.ItemAwareElementPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.ItemDefinitionPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.LinkEventDefinitionPropertiesAdapter;
@@ -107,6 +115,7 @@ import org.eclipse.bpmn2.modeler.ui.adapters.properties.PropertyPropertiesAdapte
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.ReceiveTaskPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.ResourceAssignmentExpressionPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.ResourceParameterBindingPropertiesAdapter;
+import org.eclipse.bpmn2.modeler.ui.adapters.properties.ResourceParameterPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.ResourceRolePropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.RootElementPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.ScriptTaskPropertiesAdapter;
@@ -116,6 +125,7 @@ import org.eclipse.bpmn2.modeler.ui.adapters.properties.ServiceTaskPropertiesAda
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.SignalEventDefinitionPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.SignalPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.TaskPropertiesAdapter;
+import org.eclipse.bpmn2.modeler.ui.adapters.properties.ThrowEventPropertiesAdapter;
 import org.eclipse.bpmn2.provider.Bpmn2ItemProviderAdapterFactory;
 import org.eclipse.bpmn2.util.Bpmn2Switch;
 import org.eclipse.emf.common.notify.Adapter;
@@ -123,9 +133,6 @@ import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.common.notify.Notifier;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 
 /**
  * This class adds a name-value map to the Bpmn2ItemProviderAdapterFactory.
@@ -200,7 +207,7 @@ public class Bpmn2EditorItemProviderAdapterFactory extends Bpmn2ItemProviderAdap
         	    adapter = getTargetRuntimeAdapter((EClass)object);
         	    if (adapter==null) {
         	    	// if none is found, create a dummy EObject and cache it
-   		    		object = ModelUtil.getDummyObject((EClass)object);
+   		    		object = ExtendedPropertiesAdapter.getDummyObject((EClass)object);
    		    		adapter = doSwitch(object);
         	    }
         	}
@@ -216,7 +223,7 @@ public class Bpmn2EditorItemProviderAdapterFactory extends Bpmn2ItemProviderAdap
 						if (context instanceof EObject)
 							object = (EObject)context;
 						if (ModelUtil.isStringWrapper(object)) {
-							return "Item Type";
+							return Messages.CommonLabels_Data_Type;
 						}
 						return super.getLabel(context);
 					}
@@ -609,7 +616,30 @@ public class Bpmn2EditorItemProviderAdapterFactory extends Bpmn2ItemProviderAdap
 				return adapter;
         	return new LinkEventDefinitionPropertiesAdapter(adapterFactory,object);
 		}
-//
+
+		@Override
+		public ExtendedPropertiesAdapter caseInputOutputSpecification(InputOutputSpecification object) {
+			ExtendedPropertiesAdapter adapter = getTargetRuntimeAdapter(object);
+			if (adapter!=null)
+				return adapter;
+        	return new IoSpecificationPropertiesAdapter(adapterFactory,object);
+		}
+
+		@Override
+		public ExtendedPropertiesAdapter caseThrowEvent(ThrowEvent object) {
+			ExtendedPropertiesAdapter adapter = getTargetRuntimeAdapter(object);
+			if (adapter!=null)
+				return adapter;
+        	return new ThrowEventPropertiesAdapter(adapterFactory,object);
+		}
+
+		@Override
+		public ExtendedPropertiesAdapter caseCatchEvent(CatchEvent object) {
+			ExtendedPropertiesAdapter adapter = getTargetRuntimeAdapter(object);
+			if (adapter!=null)
+				return adapter;
+        	return new CatchEventPropertiesAdapter(adapterFactory,object);
+		}
 
 		@Override
 		public ExtendedPropertiesAdapter caseInputSet(InputSet object) {
@@ -634,6 +664,31 @@ public class Bpmn2EditorItemProviderAdapterFactory extends Bpmn2ItemProviderAdap
 				return adapter;
         	return new DefinitionsPropertiesAdapter(adapterFactory,object);
 		}
+        
+		@Override
+        public ExtendedPropertiesAdapter caseGlobalScriptTask(GlobalScriptTask object) {
+			ExtendedPropertiesAdapter adapter = getTargetRuntimeAdapter(object);
+			if (adapter!=null)
+				return adapter;
+			return new GlobalScriptTaskPropertiesAdapter(adapterFactory,object);
+        }
+//
+        
+		@Override
+        public ExtendedPropertiesAdapter caseResourceParameter(ResourceParameter object) {
+			ExtendedPropertiesAdapter adapter = getTargetRuntimeAdapter(object);
+			if (adapter!=null)
+				return adapter;
+			return new ResourceParameterPropertiesAdapter(adapterFactory,object);
+        }
+
+		@Override
+        public ExtendedPropertiesAdapter caseCorrelationProperty(CorrelationProperty object) {
+			ExtendedPropertiesAdapter adapter = getTargetRuntimeAdapter(object);
+			if (adapter!=null)
+				return adapter;
+			return new CorrelationPropertyPropertiesAdapter(adapterFactory,object);
+        }
 
     };
 }

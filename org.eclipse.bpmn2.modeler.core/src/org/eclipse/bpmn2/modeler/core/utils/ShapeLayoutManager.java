@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2011, 2012, 2013 Red Hat, Inc.
+ * All rights reserved.
+ * This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution,
+ * and is available at http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors:
+ * 	Red Hat, Inc. - initial API and implementation
+ ******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.utils;
 
 import java.util.ArrayList;
@@ -11,7 +21,6 @@ import org.eclipse.bpmn2.Lane;
 import org.eclipse.bpmn2.SequenceFlow;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.di.DIUtils;
-import org.eclipse.bpmn2.modeler.core.features.ConnectionFeatureContainer;
 import org.eclipse.graphiti.datatypes.IDimension;
 import org.eclipse.graphiti.datatypes.ILocation;
 import org.eclipse.graphiti.features.IMoveShapeFeature;
@@ -53,7 +62,7 @@ public class ShapeLayoutManager {
 	
 	private void layout(ContainerShape container, int level) {
 
-		GraphicsUtil.dump(level, "layout", container);
+		GraphicsUtil.dump(level, "layout", container); //$NON-NLS-1$
 		if (container==null)
 			return;
 		
@@ -175,7 +184,7 @@ public class ShapeLayoutManager {
 
 		// TODO: remove this temporary hack to fix Manhattan Router issue
 		for (ContainerShape child : childShapes) {
-			ConnectionFeatureContainer.updateConnections(editor.getDiagramTypeProvider().getFeatureProvider(), child);
+			FeatureSupport.updateConnections(editor.getDiagramTypeProvider().getFeatureProvider(), child);
 		}
 	}
 
@@ -390,9 +399,9 @@ public class ShapeLayoutManager {
 		Diagram diagram = null;
 		BPMNDiagram bpmnDiagram = DIUtils.findBPMNDiagram(be, true);
 		if (bpmnDiagram != null) {
-			diagram = DIUtils.findDiagram(editor, bpmnDiagram);
+			diagram = DIUtils.findDiagram(editor.getDiagramBehavior(), bpmnDiagram);
 			if (diagram==null) {
-				System.out.println("Diagram is null");
+				System.out.println("Diagram is null"); //$NON-NLS-1$
 			}
 		}
 		if (diagram!=null) {
@@ -408,7 +417,7 @@ public class ShapeLayoutManager {
 			if (bpmnDiagram.getPlane().getBpmnElement() == be)
 				return diagram;
 		}
-		System.out.println("Container is null!");
+		System.out.println("Container is null!"); //$NON-NLS-1$
 		return null;
 	}
 

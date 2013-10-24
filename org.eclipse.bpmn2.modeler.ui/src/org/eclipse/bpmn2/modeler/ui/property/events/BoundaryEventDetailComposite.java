@@ -41,6 +41,6 @@ public class BoundaryEventDetailComposite extends AbstractDetailComposite {
 	 */
 	@Override
 	public void createBindings(EObject be) {
-		bindAttribute(be,"isCancelActivity");
+		bindAttribute(be,"isCancelActivity"); //$NON-NLS-1$
 	}
 }

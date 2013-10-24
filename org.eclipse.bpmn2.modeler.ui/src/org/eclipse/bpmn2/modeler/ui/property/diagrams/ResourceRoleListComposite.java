@@ -38,7 +38,7 @@ public class ResourceRoleListComposite extends DefaultListComposite {
 	@Override
 	public void bindList(EObject theobject, EStructuralFeature thefeature) {
 		super.bindList(theobject, thefeature);
-		ModelUtil.setLabel(theobject, thefeature, "Roles");
+		ModelUtil.setLabel(theobject, thefeature, Messages.ResourceRoleListComposite_Roles_Label);
 	}
 	
 	public ListCompositeColumnProvider getColumnProvider(EObject object, EStructuralFeature feature) {

@@ -55,7 +55,7 @@ public class NCNameObjectEditor extends TextObjectEditor {
 	protected Control createControl(Composite composite, String label, int style) {
 		createLabel(composite,label);
 
-		text = getToolkit().createText(composite, "");
+		text = getToolkit().createText(composite, ""); //$NON-NLS-1$
 		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 		text.addVerifyListener(new VerifyListener() {
 

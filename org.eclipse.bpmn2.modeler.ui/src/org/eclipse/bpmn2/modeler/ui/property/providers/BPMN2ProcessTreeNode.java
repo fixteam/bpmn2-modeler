@@ -56,7 +56,7 @@ public class BPMN2ProcessTreeNode extends TreeNode {
 		Process process = (Process)modelObject;
 		String label = process.getName();
 		if (label==null || label.isEmpty())
-			label = "Unnamed Process";
+			label = Messages.BPMN2ProcessTreeNode_Unnamed;
 		return label;
 	}
 }

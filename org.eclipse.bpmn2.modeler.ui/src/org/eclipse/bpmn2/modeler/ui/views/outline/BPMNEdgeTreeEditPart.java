@@ -23,7 +23,7 @@ public class BPMNEdgeTreeEditPart extends AbstractGraphicsTreeEditPart {
 	}
 
 	public BPMNEdge getBPMNEdge() {
-		return (BPMNEdge) getBpmnModel();
+		return (BPMNEdge) getModel();
 	}
 
 	// ======================= overwriteable behaviour ========================

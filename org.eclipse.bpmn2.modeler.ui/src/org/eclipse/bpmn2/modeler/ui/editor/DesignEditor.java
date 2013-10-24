@@ -53,6 +53,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -179,9 +180,11 @@ public class DesignEditor extends BPMN2Editor {
 	}
 	
 	public void selectBpmnDiagram(BPMNDiagram bpmnDiagram) {
-		Diagram diagram = DIUtils.findDiagram(DesignEditor.this, bpmnDiagram);
-		if (diagram != null)
+		Diagram diagram = DIUtils.findDiagram(DesignEditor.this.getDiagramBehavior(), bpmnDiagram);
+		if (diagram != null) {
 			selectPictogramElements(new PictogramElement[] {(PictogramElement)diagram});
+			getDiagramBehavior().refreshContent();
+		}
 	}
 
 	public void showDesignPage(final BPMNDiagram bpmnDiagram) {
@@ -310,7 +313,7 @@ public class DesignEditor extends BPMN2Editor {
 			container = new Composite(tabFolder, SWT.NONE);
 			container.setLayout(new FillLayout());
 			CTabItem item = new CTabItem(tabFolder, SWT.NONE, 0);
-			item.setText("Diagram");
+			item.setText(Messages.DesignEditor_Diagram_Tab);
 			item.setControl(container);
 			item.setData(getBpmnDiagram());
 
@@ -347,12 +350,12 @@ public class DesignEditor extends BPMN2Editor {
 			@Override
 			protected void init() {
 				super.init();
-				setId("show.or.hide.source.view");
+				setId("show.or.hide.source.view"); //$NON-NLS-1$
 			}
 
 			@Override
 			public String getText() {
-//				return multipageEditor.getSourceViewer() == null ? "Show Source View" : "Hide Source View";
+//				return multipageEditor.getSourceViewer() == null ? Messages.DesignEditor_Show_Source_View_Action : Messages.DesignEditor_Hide_Source_View_Action;
 				return multipageEditor.getSourceViewer() == null ? "显示源码" : "隐藏源码";
 			}
 
@@ -376,13 +379,13 @@ public class DesignEditor extends BPMN2Editor {
 			@Override
 			protected void init() {
 				super.init();
-				setId("delete.page");
+				setId("delete.page"); //$NON-NLS-1$
 			}
 
 			@Override
 			public String getText() {
 				int pageIndex = multipageEditor.getActivePage();
-				return "Delete Diagram \"" + multipageEditor.getTabItem(pageIndex).getText() + "\"";
+				return NLS.bind(Messages.DesignEditor_Delete_Diagram_Action, multipageEditor.getTabItem(pageIndex).getText());
 			}
 
 			@Override
@@ -406,10 +409,12 @@ public class DesignEditor extends BPMN2Editor {
 			public void run() {
 				int pageIndex = multipageEditor.getActivePage();
 				boolean result = MessageDialog.openQuestion(getSite().getShell(),
-						"Delete Page",
-						"Are you sure you want to delete the page \""
-						+ multipageEditor.getTabItem(pageIndex).getText()
-						+ "\"?");
+					Messages.DesignEditor_Delete_Page_Title,
+					NLS.bind(
+						Messages.DesignEditor_DeletePage_Message,
+						multipageEditor.getTabItem(pageIndex).getText()
+					)
+				);
 				if (result) {
 					final BPMNDiagram bpmnDiagram = getBpmnDiagram();
 					TransactionalEditingDomain domain = TransactionUtil.getEditingDomain(bpmnDiagram);
@@ -421,7 +426,7 @@ public class DesignEditor extends BPMN2Editor {
 							protected void doExecute() {
 								BPMNPlane plane = bpmnDiagram.getPlane();
 								BaseElement process = plane.getBpmnElement();
-								DIUtils.deleteDiagram(DesignEditor.this, bpmnDiagram);
+								DIUtils.deleteDiagram(DesignEditor.this.getDiagramBehavior(), bpmnDiagram);
 								EcoreUtil.delete(process);
 							}
 						});
@@ -430,28 +435,6 @@ public class DesignEditor extends BPMN2Editor {
 			}
 		};
 		registry.registerAction(action);
-	}
-
-	@Override
-	protected ContextMenuProvider createContextMenuProvider() {
-		return new DiagramEditorContextMenuProvider(getGraphicalViewer(), getActionRegistry(), getDiagramTypeProvider()) {
-			@Override
-			public void buildContextMenu(IMenuManager manager) {
-				super.buildContextMenu(manager);
-				IAction action = getActionRegistry().getAction("show.or.hide.source.view");
-				action.setText(action.getText());
-				manager.add(action);
-
-				int pageIndex = multipageEditor.getActivePage();
-				int lastPage = multipageEditor.getDesignPageCount();
-				if (pageIndex > 0 && pageIndex < lastPage) {
-					action = getActionRegistry().getAction("delete.page");
-					action.setText(action.getText());
-					action.setEnabled(action.isEnabled());
-					manager.add(action);
-				}
-			}
-		};
 	}
 
 	public class AddRemoveDiagramListener implements ResourceSetListener {
@@ -478,20 +461,20 @@ public class DesignEditor extends BPMN2Editor {
 
 				if (debug) {
 					if (et == Notification.ADD || et == Notification.REMOVE || et == Notification.SET) {
-						System.out.print("event: " + et + "\t");
+						System.out.print("event: " + et + "\t"); //$NON-NLS-1$ //$NON-NLS-2$
 						if (notifier instanceof EObject) {
-							System.out.print("notifier: $" + ((EObject) notifier).eClass().getName());
+							System.out.print("notifier: $" + ((EObject) notifier).eClass().getName()); //$NON-NLS-1$
 						} else
-							System.out.print("notifier: " + notifier);
+							System.out.print("notifier: " + notifier); //$NON-NLS-1$
 					}
 				}
 
 				if (et == Notification.ADD) {
 					if (debug) {
 						if (newValue instanceof EObject) {
-							System.out.println("\t\tvalue:    " + ((EObject) newValue).eClass().getName());
+							System.out.println("\t\tvalue:    " + ((EObject) newValue).eClass().getName()); //$NON-NLS-1$
 						} else
-							System.out.println("\t\tvalue:    " + newValue);
+							System.out.println("\t\tvalue:    " + newValue); //$NON-NLS-1$
 					}
 
 					if (notifier instanceof Definitions
@@ -508,9 +491,9 @@ public class DesignEditor extends BPMN2Editor {
 				} else if (et == Notification.REMOVE) {
 					if (debug) {
 						if (oldValue instanceof EObject) {
-							System.out.println("\t\tvalue:    " + ((EObject) oldValue).eClass().getName());
+							System.out.println("\t\tvalue:    " + ((EObject) oldValue).eClass().getName()); //$NON-NLS-1$
 						} else
-							System.out.println("\t\tvalue:    " + oldValue);
+							System.out.println("\t\tvalue:    " + oldValue); //$NON-NLS-1$
 					}
 
 					if (notifier instanceof Definitions
@@ -527,13 +510,16 @@ public class DesignEditor extends BPMN2Editor {
 				} else if (et == Notification.SET) {
 					// check if we need to change the tab names
 					if (n.getFeature() instanceof EStructuralFeature &&
-							((EStructuralFeature)n.getFeature()).getName().equals("name")) {
+							((EStructuralFeature)n.getFeature()).getName().equals("name")) { //$NON-NLS-1$
 						for (int i=1; i<tabFolder.getItemCount(); ++i) {
 							CTabItem item = tabFolder.getItem(i);
 							BPMNDiagram bpmnDiagram = (BPMNDiagram)item.getData();
 							if (bpmnDiagram!=null) {
 								if (bpmnDiagram==notifier || bpmnDiagram.getPlane().getBpmnElement() == notifier) {
-									item.setText(n.getNewStringValue());
+									String text = n.getNewStringValue();
+									if (text==null || text.isEmpty())
+										text = "Unnamed"; //$NON-NLS-1$
+									item.setText(text);
 								}
 							}
 						}
@@ -541,7 +527,10 @@ public class DesignEditor extends BPMN2Editor {
 							BPMNDiagram bpmnDiagram = multipageEditor.getBpmnDiagram(i);
 							if (bpmnDiagram == notifier) {
 								CTabItem item = multipageEditor.getTabItem(i);
-								item.setText(n.getNewStringValue());
+								String text = n.getNewStringValue();
+								if (text==null || text.isEmpty())
+									text = "Unnamed"; //$NON-NLS-1$
+								item.setText(text);
 							}
 						}
 					}

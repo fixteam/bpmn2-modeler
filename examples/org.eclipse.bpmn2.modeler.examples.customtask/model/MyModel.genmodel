@@ -3,7 +3,7 @@
     xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/org.eclipse.bpmn2.modeler.examples.customtask/src"
     modelPluginID="org.eclipse.bpmn2.modeler.examples.customtask" templateDirectory=""
     redirection="" forceOverwrite="true" modelName="MyModel" importerID="org.eclipse.emf.importer.ecore"
-    complianceLevel="7.0" copyrightFields="false">
+    complianceLevel="7.0" copyrightFields="false" usedGenPackages="../../org.eclipse.bpmn2/model/BPMN20.genmodel#//bpmn2 ../../org.eclipse.bpmn2/model/BPMN20.genmodel#//di ../../org.eclipse.bpmn2/model/BPMN20.genmodel#//di.1 ../../org.eclipse.bpmn2/model/BPMN20.genmodel#//dc">
   <foreignModel>MyModel.ecore</foreignModel>
   <genPackages prefix="MyModel" basePackage="org.eclipse.bpmn2.modeler.examples.customtask"
       resource="XML" disposableProviderFactory="true" fileExtensions="bpmn" ecorePackage="MyModel.ecore#/">
@@ -16,6 +16,9 @@
     </genClasses>
     <genClasses ecoreClass="MyModel.ecore#//TaskConfig">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference MyModel.ecore#//TaskConfig/parameters"/>
+    </genClasses>
+    <genClasses ecoreClass="MyModel.ecore#//MyEventDefinition">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute MyModel.ecore#//MyEventDefinition/value"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

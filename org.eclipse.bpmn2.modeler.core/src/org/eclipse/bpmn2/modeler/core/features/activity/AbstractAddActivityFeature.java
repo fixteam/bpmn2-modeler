@@ -16,10 +16,8 @@ import static org.eclipse.bpmn2.modeler.core.features.activity.UpdateActivityCom
 import static org.eclipse.bpmn2.modeler.core.features.activity.UpdateActivityLoopAndMultiInstanceMarkerFeature.IS_LOOP_OR_MULTI_INSTANCE;
 
 import org.eclipse.bpmn2.Activity;
-import org.eclipse.bpmn2.FlowElementsContainer;
-import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.modeler.core.di.DIImport;
-import org.eclipse.bpmn2.modeler.core.features.AbstractAddBPMNShapeFeature;
+import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2AddElementFeature;
 import org.eclipse.bpmn2.modeler.core.features.activity.UpdateActivityLoopAndMultiInstanceMarkerFeature.LoopCharacteristicType;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
@@ -31,7 +29,6 @@ import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.Rectangle;
 import org.eclipse.graphiti.mm.algorithms.RoundedRectangle;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
-import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
@@ -39,10 +36,10 @@ import org.eclipse.graphiti.services.IGaService;
 import org.eclipse.graphiti.services.IPeService;
 
 public abstract class AbstractAddActivityFeature<T extends Activity>
-	extends AbstractAddBPMNShapeFeature<T> {
+	extends AbstractBpmn2AddElementFeature<T> {
 
-	public static final String ACTIVITY_DECORATOR = "activity-decorator";
-	public static final String IS_ACTIVITY = "activity";
+	public static final String ACTIVITY_DECORATOR = "activity-decorator"; //$NON-NLS-1$
+	public static final String IS_ACTIVITY = "activity"; //$NON-NLS-1$
 
 	protected final IGaService gaService = Graphiti.getGaService();
 	protected final IPeService peService = Graphiti.getPeService();
@@ -53,10 +50,6 @@ public abstract class AbstractAddActivityFeature<T extends Activity>
 
 	@Override
 	public boolean canAdd(IAddContext context) {
-		boolean intoDiagram = context.getTargetContainer().equals(getDiagram());
-		boolean intoLane = FeatureSupport.isTargetLane(context) && FeatureSupport.isTargetLaneOnTop(context);
-		boolean intoParticipant = FeatureSupport.isTargetParticipant(context);
-		boolean intoFlowElementContainer = FeatureSupport.isTargetFlowElementsContainer(context);
 		/*
 		 * TODO: rethink this: it's causing all kinds of DI import problems
 		 * also see AbstractCreateFlowElementFeature
@@ -75,7 +68,7 @@ public abstract class AbstractAddActivityFeature<T extends Activity>
 				return false;
 		}
 		*/
-		return intoDiagram || intoLane || intoParticipant || intoFlowElementContainer;
+		return FeatureSupport.isValidFlowElementTarget(context);
 	}
 
 	@Override
@@ -117,7 +110,7 @@ public abstract class AbstractAddActivityFeature<T extends Activity>
 
 		// set a property on the decorators so we can distinguish them from the real children (i.e. tasks, etc.)
 		for (PictogramElement pe : containerShape.getChildren()) {
-			Graphiti.getPeService().setPropertyValue(pe, ACTIVITY_DECORATOR, "true");
+			Graphiti.getPeService().setPropertyValue(pe, ACTIVITY_DECORATOR, "true"); //$NON-NLS-1$
 		}
 
 		// hook for subclasses to inject extra code
@@ -130,7 +123,7 @@ public abstract class AbstractAddActivityFeature<T extends Activity>
 
 		// set a property on the decorators so we can distinguish them from the real children (i.e. tasks, etc.)
 		for (PictogramElement pe : containerShape.getChildren()) {
-			Graphiti.getPeService().setPropertyValue(pe, ACTIVITY_DECORATOR, "true");
+			Graphiti.getPeService().setPropertyValue(pe, ACTIVITY_DECORATOR, "true"); //$NON-NLS-1$
 		}
 
 		splitConnection(context, containerShape);

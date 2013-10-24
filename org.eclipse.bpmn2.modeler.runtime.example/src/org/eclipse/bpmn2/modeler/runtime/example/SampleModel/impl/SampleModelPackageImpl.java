@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2011, 2012, 2013 Red Hat, Inc.
+ * All rights reserved.
+ * This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution,
+ * and is available at http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors:
+ * 	Red Hat, Inc. - initial API and implementation
+ ******************************************************************************/
 package org.eclipse.bpmn2.modeler.runtime.example.SampleModel.impl;
 
 import org.eclipse.bpmn2.Bpmn2Package;
@@ -113,7 +123,7 @@ public class SampleModelPackageImpl extends EPackageImpl implements SampleModelP
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EAttribute getDocumentRoot_SampleCustomTaskId() {
+	public EAttribute getDocumentRoot_elementId() {
 		return (EAttribute)documentRootEClass.getEStructuralFeatures().get(0);
 	}
 
@@ -194,7 +204,7 @@ public class SampleModelPackageImpl extends EPackageImpl implements SampleModelP
 
 		// Initialize classes and features; add operations and parameters
 		initEClass(documentRootEClass, DocumentRoot.class, "DocumentRoot", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-		initEAttribute(getDocumentRoot_SampleCustomTaskId(), ecorePackage.getEString(), "sampleCustomTaskId", null, 0, 1, null, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getDocumentRoot_elementId(), ecorePackage.getEString(), "elementId", null, 0, 1, null, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getDocumentRoot_SampleCustomFlowValue(), ecorePackage.getEString(), "sampleCustomFlowValue", null, 0, 1, null, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		// Create resource
@@ -222,11 +232,11 @@ public class SampleModelPackageImpl extends EPackageImpl implements SampleModelP
 			 "namespace", "##targetNamespace"
 		   });		
 		addAnnotation
-		  (getDocumentRoot_SampleCustomTaskId(), 
+		  (getDocumentRoot_elementId(), 
 		   source, 
 		   new String[] {
 			 "kind", "attribute",
-			 "name", "taskId",
+			 "name", "elementId",
 			 "namespace", "##targetNamespace"
 		   });		
 		addAnnotation

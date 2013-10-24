@@ -13,18 +13,17 @@
 
 package org.eclipse.bpmn2.modeler.ui.adapters.properties;
 
-import org.eclipse.bpmn2.Activity;
+import java.util.List;
+
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.DataOutput;
-import org.eclipse.bpmn2.Participant;
-import org.eclipse.bpmn2.Process;
-import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.adapters.FeatureDescriptor;
 import org.eclipse.bpmn2.modeler.core.adapters.ObjectDescriptor;
+import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.emf.common.notify.AdapterFactory;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.resource.Resource;
 
 /**
  * @author Bob Brodt
@@ -43,7 +42,7 @@ public class DataOutputPropertiesAdapter extends ItemAwareElementPropertiesAdapt
 
 			@Override
 			public void setDisplayName(String text) {
-				int i = text.lastIndexOf("/");
+				int i = text.lastIndexOf("/"); //$NON-NLS-1$
 				if (i>=0)
 					text = text.substring(i+1);
 				text = text.trim();
@@ -59,10 +58,10 @@ public class DataOutputPropertiesAdapter extends ItemAwareElementPropertiesAdapt
 
 				if (text!=null) {
 					if (dataOutput.isIsCollection())
-						text += "[]";
+						text += "[]"; //$NON-NLS-1$
 					String type = ModelUtil.getDisplayName(dataOutput.getItemSubjectRef());
 					if (type!=null)
-						text += " (" + type + ")";
+						text += " (" + type + ")"; //$NON-NLS-1$ //$NON-NLS-2$
 				}
 				return text;
 			}
@@ -83,6 +82,31 @@ public class DataOutputPropertiesAdapter extends ItemAwareElementPropertiesAdapt
 				return fd.getChoiceString(context);
 			}
 		});
+	}
+
+	public static DataOutput createDataOutput(Resource resource, List<DataOutput> dataOutputs) {
+	
+		String base = "output"; //$NON-NLS-1$
+		int suffix = 1;
+		String name = base + suffix;
+		for (;;) {
+			boolean found = false;
+			for (DataOutput p : dataOutputs) {
+				if (name.equals(p.getName())) {
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+				break;
+			name = base + ++suffix;
+		}
+		
+		DataOutput dataOutput = Bpmn2ModelerFactory.create(resource,DataOutput.class);
+		dataOutput.setName(name);
+		dataOutputs.add(dataOutput);
+	
+		return dataOutput;
 	}
 
 }

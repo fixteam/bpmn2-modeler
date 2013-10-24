@@ -1,17 +1,30 @@
+/*******************************************************************************
+ * Copyright (c) 2011, 2012, 2013 Red Hat, Inc.
+ * All rights reserved.
+ * This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution,
+ * and is available at http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors:
+ * 	Red Hat, Inc. - initial API and implementation
+ ******************************************************************************/
 package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wizards;
 
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
+import org.eclipse.bpmn2.modeler.core.validation.SyntaxCheckerUtils;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.JBPM5RuntimeExtension;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -46,9 +59,9 @@ public class NewJbpmProcessWizardPage1 extends WizardPage {
 	 * @param pageName
 	 */
 	public NewJbpmProcessWizardPage1(ISelection selection) {
-		super("wizardPage");
-		setTitle("JBPM Process Editor File");
-		setDescription("This wizard creates a new JBPM Process file.");
+		super("wizardPage"); //$NON-NLS-1$
+		setTitle(Messages.NewJbpmProcessWizardPage1_Title);
+		setDescription(Messages.NewJbpmProcessWizardPage1_Description);
 		this.selection = selection;
 	}
 
@@ -61,12 +74,54 @@ public class NewJbpmProcessWizardPage1 extends WizardPage {
 		container.setLayout(layout);
 		layout.numColumns = 3;
 		layout.verticalSpacing = 9;
-		Label label = new Label(container, SWT.NULL);
-		label.setText("&Container:");
+		Label label;
+		GridData gridData;
+		
+		label = new Label(container, SWT.NULL);
+		label.setText(Messages.NewJbpmProcessWizardPage1_Process_Name);
+		nameText = new Text(container, SWT.BORDER | SWT.SINGLE);
+		gridData = new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1);
+		nameText.setLayoutData(gridData);
+		nameText.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				fileText.setText(nameText.getText() + ".bpmn2"); //$NON-NLS-1$
+				String processid = packageText.getText() + "." + nameText.getText(); //$NON-NLS-1$
+				processid = SyntaxCheckerUtils.toNCName(processid.replaceAll(" ", "_")); //$NON-NLS-1$ //$NON-NLS-2$
+				processIdText.setText(processid);
+				dialogChanged();
+			}
+		});
 
+		label = new Label(container, SWT.NULL);
+		label.setText(Messages.NewJbpmProcessWizardPage1_Package);
+		packageText = new Text(container, SWT.BORDER | SWT.SINGLE);
+		gridData = new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1);
+		packageText.setLayoutData(gridData);
+		packageText.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				String processid = packageText.getText() + "." + nameText.getText(); //$NON-NLS-1$
+				processid = SyntaxCheckerUtils.toNCName(processid.replaceAll(" ", "_")); //$NON-NLS-1$ //$NON-NLS-2$
+				processIdText.setText(processid);
+				dialogChanged();
+			}
+		});
+
+		label = new Label(container, SWT.NULL);
+		label.setText(Messages.NewJbpmProcessWizardPage1_Process_ID);
+		processIdText = new Text(container, SWT.BORDER | SWT.SINGLE);
+		gridData = new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1);
+		processIdText.setLayoutData(gridData);
+		processIdText.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				dialogChanged();
+			}
+		});
+		
+		label = new Label(container, SWT.NULL);
+		label.setText(Messages.NewJbpmProcessWizardPage1_Container);
 		containerText = new Text(container, SWT.BORDER | SWT.SINGLE);
-		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-		containerText.setLayoutData(gd);
+		gridData = new GridData(GridData.FILL_HORIZONTAL);
+		containerText.setLayoutData(gridData);
 		containerText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				dialogChanged();
@@ -74,66 +129,33 @@ public class NewJbpmProcessWizardPage1 extends WizardPage {
 		});
 
 		Button button = new Button(container, SWT.PUSH);
-		button.setText("Browse...");
+		button.setText(Messages.NewJbpmProcessWizardPage1_Browse);
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				handleBrowse();
 			}
 		});
 		label = new Label(container, SWT.NULL);
-		label.setText("&File name:");
+		label.setText(Messages.NewJbpmProcessWizardPage1_File_Name);
 
 		fileText = new Text(container, SWT.BORDER | SWT.SINGLE);
-		gd = new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1);
-		fileText.setLayoutData(gd);
+		gridData = new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1);
+		fileText.setLayoutData(gridData);
 		fileText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				dialogChanged();
 			}
 		});
 		
-		label = new Label(container, SWT.NULL);
-		label.setText("Process &name:");
-		nameText = new Text(container, SWT.BORDER | SWT.SINGLE);
-		gd = new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1);
-		nameText.setLayoutData(gd);
-		nameText.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				dialogChanged();
-			}
-		});
-
-		label = new Label(container, SWT.NULL);
-		label.setText("Process &ID:");
-		processIdText = new Text(container, SWT.BORDER | SWT.SINGLE);
-		gd = new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1);
-		processIdText.setLayoutData(gd);
-		processIdText.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				dialogChanged();
-			}
-		});
-
-		label = new Label(container, SWT.NULL);
-		label.setText("&Package:");
-		packageText = new Text(container, SWT.BORDER | SWT.SINGLE);
-		gd = new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1);
-		packageText.setLayoutData(gd);
-		packageText.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				dialogChanged();
-			}
-		});
-		
 		isJbpmRuntimeCheckbox = new Button(container, SWT.CHECK);
-		isJbpmRuntimeCheckbox.setText("Set jBPM5 Runtime as the default for this project.");
+		isJbpmRuntimeCheckbox.setText(Messages.NewJbpmProcessWizardPage1_Set_JBPM_Default);
 		isJbpmRuntimeCheckbox.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				dialogChanged();
 			}
 		});
-		gd = new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 3, 1);
-		isJbpmRuntimeCheckbox.setLayoutData(gd);
+		gridData = new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 3, 1);
+		isJbpmRuntimeCheckbox.setLayoutData(gridData);
 
 		initialize();
 		dialogChanged();
@@ -152,6 +174,10 @@ public class NewJbpmProcessWizardPage1 extends WizardPage {
 			if (ssel.size() > 1)
 				return;
 			Object obj = ssel.getFirstElement();
+			// The selected TreeElement could be a JavaProject, which is adaptable
+			if (!(obj instanceof IResource) && obj instanceof IAdaptable) {
+				obj = ((IAdaptable)obj).getAdapter(IResource.class);
+			}
 			if (obj instanceof IResource) {
 				if (obj instanceof IContainer)
 					container = (IContainer) obj;
@@ -160,19 +186,19 @@ public class NewJbpmProcessWizardPage1 extends WizardPage {
 				containerText.setText(container.getFullPath().toString());
 			}
 		}
-		String basename = "new_process";
-		String filename = basename + ".bpmn";
+		String basename = Messages.NewJbpmProcessWizardPage1_Default_File_Name;
+		String filename = basename + Messages.NewJbpmProcessWizardPage1_BPMN_File_Extension;
 		if (container!=null) {
 			int i = 1;
 			while (container.findMember(filename)!=null) {
-				filename = basename + "_" + i + ".bpmn";
+				filename = basename + "_" + i + Messages.NewJbpmProcessWizardPage1_BPMN_File_Extension; //$NON-NLS-1$
 				++i;
 			}
 		}
 		fileText.setText(filename);
-		nameText.setText("New Process");
-		processIdText.setText("com.sample.bpmn");
-		packageText.setText("defaultPackage");
+		nameText.setText(Messages.NewJbpmProcessWizardPage1_Default_Process_Name);
+		processIdText.setText(Messages.NewJbpmProcessWizardPage1_Default_Process_ID);
+		packageText.setText(Messages.NewJbpmProcessWizardPage1_Default_Package);
 	}
 
 	/**
@@ -183,7 +209,7 @@ public class NewJbpmProcessWizardPage1 extends WizardPage {
 	private void handleBrowse() {
 		ContainerSelectionDialog dialog = new ContainerSelectionDialog(
 				getShell(), ResourcesPlugin.getWorkspace().getRoot(), false,
-				"Select new file container");
+				Messages.NewJbpmProcessWizardPage1_Browse_Title);
 		if (dialog.open() == ContainerSelectionDialog.OK) {
 			Object[] result = dialog.getResult();
 			if (result.length == 1) {
@@ -202,46 +228,46 @@ public class NewJbpmProcessWizardPage1 extends WizardPage {
 		String fileName = getFileName();
 
 		if (getContainerName().length() == 0) {
-			updateStatus("File container must be specified");
+			updateStatus(Messages.NewJbpmProcessWizardPage1_Error_No_Container);
 			return;
 		}
 		if (container == null
 				|| (container.getType() & (IResource.PROJECT | IResource.FOLDER)) == 0) {
-			updateStatus("File container must exist");
+			updateStatus(Messages.NewJbpmProcessWizardPage1_Error_Invalid_Container);
 			return;
 		}
 		if (!container.isAccessible()) {
-			updateStatus("Project must be writable");
+			updateStatus(Messages.NewJbpmProcessWizardPage1_Error_Project_Readonly);
 			return;
 		}
 		if (fileName.length() == 0) {
-			updateStatus("File name must be specified");
+			updateStatus(Messages.NewJbpmProcessWizardPage1_Error_No_File_Name);
 			return;
 		}
 		if (fileName.replace('\\', '/').indexOf('/', 1) > 0) {
-			updateStatus("File name must be valid");
+			updateStatus(Messages.NewJbpmProcessWizardPage1_Error_Invalid_File_Name);
 			return;
 		}
 		int dotLoc = fileName.lastIndexOf('.');
 		if (dotLoc != -1) {
 			String ext = fileName.substring(dotLoc + 1);
-			if (!ext.equalsIgnoreCase("bpmn") && !ext.equalsIgnoreCase("bpmn2")) {
-				updateStatus("File extension must be \"bpmn\" or \"bpmn2\"");
+			if (!ext.equalsIgnoreCase("bpmn") && !ext.equalsIgnoreCase("bpmn2")) { //$NON-NLS-1$ //$NON-NLS-2$
+				updateStatus(Messages.NewJbpmProcessWizardPage1_Error_Invalid_File_Extension);
 				return;
 			}
 			if ( ((IContainer)container).findMember(fileName)!=null ) {
-				updateStatus("File \""+fileName+"\"already exists");
+				updateStatus(NLS.bind(Messages.NewJbpmProcessWizardPage1_Error_File_Exists, fileName));
 				return;
 			}
 		}
 		String packageName = packageText.getText();
 		if (!isValidPackageName(packageName)) {
-			updateStatus("Package name is not valid");
+			updateStatus(Messages.NewJbpmProcessWizardPage1_Error_Package_Invalid);
 			return;
 		}
 		String processId = processIdText.getText();
 		if (!isValidPackageName(processId)) {
-			updateStatus("Process ID is not valid");
+			updateStatus(Messages.NewJbpmProcessWizardPage1_Error_Process_ID_Invalid);
 			return;
 		}
 		

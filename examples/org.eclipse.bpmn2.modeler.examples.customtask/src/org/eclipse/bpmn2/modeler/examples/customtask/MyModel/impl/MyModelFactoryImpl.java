@@ -27,7 +27,7 @@ public class MyModelFactoryImpl extends EFactoryImpl implements MyModelFactory {
 	 */
 	public static MyModelFactory init() {
 		try {
-			MyModelFactory theMyModelFactory = (MyModelFactory)EPackage.Registry.INSTANCE.getEFactory("http://org.eclipse.bpmn2.modeler.examples.customtask"); 
+			MyModelFactory theMyModelFactory = (MyModelFactory)EPackage.Registry.INSTANCE.getEFactory(MyModelPackage.eNS_URI);
 			if (theMyModelFactory != null) {
 				return theMyModelFactory;
 			}
@@ -59,6 +59,7 @@ public class MyModelFactoryImpl extends EFactoryImpl implements MyModelFactory {
 			case MyModelPackage.DOCUMENT_ROOT: return createDocumentRoot();
 			case MyModelPackage.PARAMETER: return createParameter();
 			case MyModelPackage.TASK_CONFIG: return createTaskConfig();
+			case MyModelPackage.MY_EVENT_DEFINITION: return createMyEventDefinition();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
 		}
@@ -92,6 +93,16 @@ public class MyModelFactoryImpl extends EFactoryImpl implements MyModelFactory {
 	public TaskConfig createTaskConfig() {
 		TaskConfigImpl taskConfig = new TaskConfigImpl();
 		return taskConfig;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public MyEventDefinition createMyEventDefinition() {
+		MyEventDefinitionImpl myEventDefinition = new MyEventDefinitionImpl();
+		return myEventDefinition;
 	}
 
 	/**

@@ -39,7 +39,7 @@ public class JavaMemberTreeNode extends TreeNode {
 	@Override
 	public String getLabel() {
 	    IMember member = (IMember)modelObject;
-		String label = "";
+		String label = ""; //$NON-NLS-1$
 		String name = member.getElementName();
 //		int mod = member.getModifiers();
 //		if ((mod & Modifier.PUBLIC)!=0)
@@ -54,14 +54,14 @@ public class JavaMemberTreeNode extends TreeNode {
 		if (member instanceof IField) {
 			IField f = (IField)member;
 			try {
-                label += Signature.getSignatureSimpleName(f.getTypeSignature()) + " ";
+                label += Signature.getSignatureSimpleName(f.getTypeSignature()) + " "; //$NON-NLS-1$
             } catch (JavaModelException e) {
             }
 		}
 		if (member instanceof IMethod) {
 		    IMethod m = (IMethod)member;
 			try {
-                label += Signature.getSignatureSimpleName(m.getReturnType()) + " ";
+                label += Signature.getSignatureSimpleName(m.getReturnType()) + " "; //$NON-NLS-1$
             } catch (JavaModelException e) {
             }
 		}
@@ -69,17 +69,17 @@ public class JavaMemberTreeNode extends TreeNode {
 		if (member instanceof IMethod) {
 		    IMethod m = (IMethod)member;
 			if (m.getParameterTypes().length>0) {
-				label += "(";
+				label += "("; //$NON-NLS-1$
 				String[] p = m.getParameterTypes();
 				for (int i=0; i<p.length; ++i) {
 					label += Signature.getSignatureSimpleName(p[i]);
 					if (i+1<p.length)
-						label += ", ";
+						label += ", "; //$NON-NLS-1$
 				}
-				label += ")";
+				label += ")"; //$NON-NLS-1$
 			}
 			else
-				label += "()";
+				label += "()"; //$NON-NLS-1$
 		}
 
 		return label;

@@ -15,6 +15,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
+import org.eclipse.osgi.util.NLS;
 
 public class ReadonlyTextObjectEditor extends TextAndButtonObjectEditor {
 
@@ -27,14 +28,17 @@ public class ReadonlyTextObjectEditor extends TextAndButtonObjectEditor {
 	protected void buttonClicked(int buttonId) {
 		Object value = object.eGet(feature);
 		if (value == null || value instanceof EObject) {
-			FeatureEditingDialog dialog = new FeatureEditingDialog(getDiagramEditor(), object, feature, (EObject)value);
+			FeatureEditingDialog dialog = createFeatureEditingDialog((EObject)value);
 			if (dialog.open()==Window.OK){
 				setValue(dialog.getNewObject());
 			}
 		}
 		else {
-			String msg = "Can not display "+feature.getName()+" for "+object.eClass().getName();
-			MessageDialog.openError(getDiagramEditor().getSite().getShell(), "Internal Error!", msg);
+			String msg = NLS.bind(
+				Messages.ReadonlyTextObjectEditor_Invalid_Feature,
+				feature.getName(),
+				object.eClass().getName()); //$NON-NLS-2$
+			MessageDialog.openError(getDiagramEditor().getSite().getShell(), Messages.ReadonlyTextObjectEditor_Title, msg);
 		}
 	}
 

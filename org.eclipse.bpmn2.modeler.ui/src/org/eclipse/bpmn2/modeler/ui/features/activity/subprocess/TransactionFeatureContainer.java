@@ -104,7 +104,7 @@ public class TransactionFeatureContainer extends AbstractExpandableActivityFeatu
 	public static class CreateTransactionFeature extends AbstractCreateExpandableFlowNodeFeature<Transaction> {
 
 		public CreateTransactionFeature(IFeatureProvider fp) {
-			super(fp, "Transaction", "Create "+"Transaction");		}
+			super(fp, Messages.TransactionFeatureContainer_Name, Messages.TransactionFeatureContainer_Description);		}
 
 		@Override
 		protected String getStencilImageId() {

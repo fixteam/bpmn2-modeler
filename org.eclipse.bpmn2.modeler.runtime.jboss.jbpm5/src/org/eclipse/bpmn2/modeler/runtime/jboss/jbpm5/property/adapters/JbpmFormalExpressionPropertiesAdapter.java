@@ -19,6 +19,7 @@ import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.FormalExpression;
 import org.eclipse.bpmn2.SequenceFlow;
 import org.eclipse.bpmn2.modeler.core.adapters.FeatureDescriptor;
+import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.FormalExpressionPropertiesAdapter;
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -37,12 +38,32 @@ public class JbpmFormalExpressionPropertiesAdapter extends FormalExpressionPrope
 		super(adapterFactory, object);
 
     	final EStructuralFeature language = Bpmn2Package.eINSTANCE.getFormalExpression_Language();
-    	FeatureDescriptor<FormalExpression> fd = super.getFeatureDescriptor(language);
-    	
-    	Hashtable<String, Object> choiceOfValues = fd.getChoiceOfValues(object);
-		if (!(object.eContainer() instanceof SequenceFlow))
-			choiceOfValues.remove("Rule");
-    	fd.setChoiceOfValues(choiceOfValues);
+    	setFeatureDescriptor(language,
+    		new FeatureDescriptor<FormalExpression>(adapterFactory,object,language) {
+				@Override
+				public String getLabel(Object context) {
+					FormalExpression object = adopt(context);
+					if (object.eContainer() instanceof SequenceFlow)
+						return Messages.JbpmFormalExpressionPropertiesAdapter_Condition_Language;
+					return Messages.JbpmFormalExpressionPropertiesAdapter_Script_Language;
+				}
+	
+				@Override
+				public Hashtable<String, Object> getChoiceOfValues(Object context) {
+					FormalExpression object = adopt(context);
+					choiceOfValues = new Hashtable<String, Object>();
+					TargetRuntime rt = TargetRuntime.getCurrentRuntime();
+					String[] s = rt.getRuntimeExtension().getExpressionLanguages();
+					for (int i=0; i<s.length; i+=2) {
+						choiceOfValues.put(s[i+1], s[i]);
+					}
+					if (!(object.eContainer() instanceof SequenceFlow))
+						choiceOfValues.remove(Messages.JbpmFormalExpressionPropertiesAdapter_Rule);
+					return choiceOfValues;
+				}
+				
+			}
+    	);
 	}
 
 }

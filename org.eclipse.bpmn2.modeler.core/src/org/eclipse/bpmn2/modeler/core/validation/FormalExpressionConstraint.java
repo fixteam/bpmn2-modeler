@@ -12,6 +12,7 @@ package org.eclipse.bpmn2.modeler.core.validation;
 
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.FormalExpression;
+import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.validation.AbstractModelConstraint;
@@ -37,11 +38,12 @@ public class FormalExpressionConstraint extends
 			if(eObj instanceof FormalExpression){
 				FormalExpression formalExpression = (FormalExpression) eObj;
 				boolean error = false;
-				if(formalExpression.getLanguage() == null || formalExpression.getLanguage().length() == 0){
-					ctx.addResult(Bpmn2Package.eINSTANCE.getFormalExpression_Language());
-					error = true;
-				}
-				if(formalExpression.getBody() == null || formalExpression.getBody().length() == 0){
+//				if(formalExpression.getLanguage() == null || formalExpression.getLanguage().length() == 0){
+//					ctx.addResult(Bpmn2Package.eINSTANCE.getFormalExpression_Language());
+//					error = true;
+//				}
+				String body = ModelUtil.getExpressionBody(formalExpression);
+				if(body == null || body.isEmpty()){
 					ctx.addResult(Bpmn2Package.eINSTANCE.getFormalExpression_Body());
 					error = true;
 				}

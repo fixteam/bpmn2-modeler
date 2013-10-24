@@ -40,6 +40,10 @@ public class ListCompositeColumnProvider extends ColumnTableProvider {
 		return canModify;
 	}
 	
+	public void setCanModify(boolean f) {
+		canModify = f;
+	}
+	
 	public TableColumn add(EObject object, EStructuralFeature feature) {
 		return add(object, (EClass)feature.eContainer(), feature);
 	}

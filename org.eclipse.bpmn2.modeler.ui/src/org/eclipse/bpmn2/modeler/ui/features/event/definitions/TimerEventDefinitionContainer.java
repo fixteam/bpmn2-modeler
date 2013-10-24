@@ -20,7 +20,7 @@ import org.eclipse.bpmn2.TerminateEventDefinition;
 import org.eclipse.bpmn2.ThrowEvent;
 import org.eclipse.bpmn2.TimerEventDefinition;
 import org.eclipse.bpmn2.modeler.core.features.event.definitions.AbstractEventDefinitionFeatureContainer;
-import org.eclipse.bpmn2.modeler.core.features.event.definitions.CreateEventDefinition;
+import org.eclipse.bpmn2.modeler.core.features.event.definitions.AbstractCreateEventDefinitionFeature;
 import org.eclipse.bpmn2.modeler.core.features.event.definitions.DecorationAlgorithm;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
@@ -91,10 +91,11 @@ public class TimerEventDefinitionContainer extends AbstractEventDefinitionFeatur
 		return timerShape;
 	}
 
-	public static class CreateTimerEventDefinition extends CreateEventDefinition<TimerEventDefinition> {
+	public static class CreateTimerEventDefinition extends AbstractCreateEventDefinitionFeature<TimerEventDefinition> {
 
 		public CreateTimerEventDefinition(IFeatureProvider fp) {
 			super(fp, "时间事件定义", "Create "+"Timer Event Definition");
+			//super(fp, Messages.TimerEventDefinitionContainer_Name, Messages.TimerEventDefinitionContainer_Description);
 		}
 
 		@Override

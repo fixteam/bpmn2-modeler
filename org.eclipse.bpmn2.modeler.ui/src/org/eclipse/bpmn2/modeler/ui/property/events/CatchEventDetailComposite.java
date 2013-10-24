@@ -42,8 +42,8 @@ public class CatchEventDetailComposite extends AbstractDetailComposite {
 	 */
 	@Override
 	public void createBindings(EObject be) {
-		bindAttribute(be,"parallelMultiple");
-		bindList(be,"eventDefinitions");
-		bindList(be,"dataOutputs");
+		bindAttribute(be,"parallelMultiple"); //$NON-NLS-1$
+		bindList(be,"eventDefinitions"); //$NON-NLS-1$
+		bindList(be,"dataOutputs"); //$NON-NLS-1$
 	}
 }

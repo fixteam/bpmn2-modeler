@@ -43,7 +43,7 @@ public class MessageRefFeatureDescriptor<T extends BaseElement> extends RootElem
 		Hashtable<String, Object> choices = super.getChoiceOfValues(context);
 		final T object = adopt(context);
 		Operation operation = null;
-		EStructuralFeature f = object.eClass().getEStructuralFeature("operationRef");
+		EStructuralFeature f = object.eClass().getEStructuralFeature("operationRef"); //$NON-NLS-1$
 		if (f!=null && object.eGet(f)!=null) {
 			operation = (Operation) object.eGet(f);
 		}

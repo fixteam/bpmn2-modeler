@@ -55,19 +55,20 @@ import org.eclipse.bpmn2.di.BpmnDiFactory;
 import org.eclipse.bpmn2.di.BpmnDiPackage;
 import org.eclipse.bpmn2.di.ParticipantBandKind;
 import org.eclipse.bpmn2.modeler.core.di.ImportDiagnostics;
+import org.eclipse.bpmn2.modeler.core.features.participant.AddParticipantFeature;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
+import org.eclipse.bpmn2.modeler.core.utils.FixDuplicateIdsDialog;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil.Bpmn2DiagramType;
+import org.eclipse.bpmn2.modeler.core.utils.Tuple;
 import org.eclipse.bpmn2.util.Bpmn2ResourceImpl;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.dd.dc.Bounds;
 import org.eclipse.dd.dc.DcFactory;
 import org.eclipse.dd.dc.Point;
-import org.eclipse.dd.di.DiagramElement;
-import org.eclipse.emf.common.util.ECollections;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EClass;
@@ -125,13 +126,13 @@ public class ModelHandler {
 		BPMNDiagram diagram = null;
 		switch (diagramType) {
 		case PROCESS:
-			diagram = createProcessDiagram("Default");
+			diagram = createProcessDiagram(Messages.ModelHandler_Default);
 			break;
 		case COLLABORATION:
-			diagram = createCollaborationDiagram("Default");
+			diagram = createCollaborationDiagram(Messages.ModelHandler_Default);
 			break;
 		case CHOREOGRAPHY:
-			diagram = createChoreographyDiagram("Default");
+			diagram = createChoreographyDiagram(Messages.ModelHandler_Default);
 			break;
 		}
 		if (diagram!=null)
@@ -155,11 +156,11 @@ public class ModelHandler {
 					ModelUtil.setID(plane,resource);
 
 					Process process = createProcess();
-					process.setName(name+" Process");
+					process.setName(name+Messages.ModelHandler_Process);
 					// the Process ID should be the same as the resource name
 					String filename = resource.getURI().lastSegment();
-					if (filename.contains("."))
-						filename = filename.split("\\.")[0];
+					if (filename.contains(".")) //$NON-NLS-1$
+						filename = filename.split("\\.")[0]; //$NON-NLS-1$
 					process.setId( ModelUtil.generateID(process,resource,filename) );
 
 					// create StartEvent
@@ -233,7 +234,7 @@ public class ModelHandler {
 					// add to BPMNDiagram
 					plane.setBpmnElement(process);
 					bpmnDiagram.setPlane(plane);
-					bpmnDiagram.setName(name+" Process Diagram");
+					bpmnDiagram.setName(name+Messages.ModelHandler_Process_Diagram);
 					getDefinitions().getDiagrams().add(bpmnDiagram);
 				}
 			});
@@ -256,21 +257,23 @@ public class ModelHandler {
 					ModelUtil.setID(plane,resource);
 
 					Collaboration collaboration = createCollaboration();
-					collaboration.setName(name+" Collaboration");
+					collaboration.setName(name+Messages.ModelHandler_Collaboration);
 
-//					Process initiatingProcess = createProcess();
-//					initiatingProcess.setName(name+" Initiating Process");
+					Process initiatingProcess = createProcess();
+					initiatingProcess.setName(Messages.ModelHandler_Initiating_Process);
+					initiatingProcess.setDefinitionalCollaborationRef(collaboration);
 					
 					Participant initiatingParticipant = create(Participant.class);
-					initiatingParticipant.setName("Initiating Pool");
-//					initiatingParticipant.setProcessRef(initiatingProcess);
+					initiatingParticipant.setName(Messages.ModelHandler_Initiating_Pool);
+					initiatingParticipant.setProcessRef(initiatingProcess);
 					
-//					Process nonInitiatingProcess = createProcess();
-//					nonInitiatingProcess.setName(name+" Non-initiating Process");
+					Process nonInitiatingProcess = createProcess();
+					nonInitiatingProcess.setName(Messages.ModelHandler_Non_Initiating_Process);
+					nonInitiatingProcess.setDefinitionalCollaborationRef(collaboration);
 					
 					Participant nonInitiatingParticipant = create(Participant.class);
-					nonInitiatingParticipant.setName("Non-initiating Pool");
-//					nonInitiatingParticipant.setProcessRef(nonInitiatingProcess);
+					nonInitiatingParticipant.setName(Messages.ModelHandler_Non_Initiating_Pool);
+					nonInitiatingParticipant.setProcessRef(nonInitiatingProcess);
 					
 					collaboration.getParticipants().add(initiatingParticipant);
 					collaboration.getParticipants().add(nonInitiatingParticipant);
@@ -287,14 +290,14 @@ public class ModelHandler {
 					if (horz) {
 						bounds.setX(100);
 						bounds.setY(100);
-						bounds.setWidth(1000);
-						bounds.setHeight(200);
+						bounds.setWidth(AddParticipantFeature.DEFAULT_POOL_WIDTH);
+						bounds.setHeight(AddParticipantFeature.DEFAULT_POOL_HEIGHT);
 					}
 					else {
 						bounds.setX(100);
 						bounds.setY(100);
-						bounds.setWidth(200);
-						bounds.setHeight(1000);
+						bounds.setWidth(AddParticipantFeature.DEFAULT_POOL_HEIGHT);
+						bounds.setHeight(AddParticipantFeature.DEFAULT_POOL_WIDTH);
 					}
 					shape.setBounds(bounds);
 					shape.setIsHorizontal(horz);
@@ -309,15 +312,15 @@ public class ModelHandler {
 					bounds = DcFactory.eINSTANCE.createBounds();
 					if (horz) {
 						bounds.setX(100);
-						bounds.setY(400);
-						bounds.setWidth(1000);
-						bounds.setHeight(200);
+						bounds.setY(350);
+						bounds.setWidth(AddParticipantFeature.DEFAULT_POOL_WIDTH);
+						bounds.setHeight(AddParticipantFeature.DEFAULT_POOL_HEIGHT);
 					}
 					else {
-						bounds.setX(400);
+						bounds.setX(350);
 						bounds.setY(100);
-						bounds.setWidth(200);
-						bounds.setHeight(1000);
+						bounds.setWidth(AddParticipantFeature.DEFAULT_POOL_HEIGHT);
+						bounds.setHeight(AddParticipantFeature.DEFAULT_POOL_WIDTH);
 					}
 					shape.setBounds(bounds);
 					shape.setIsHorizontal(horz);
@@ -326,7 +329,7 @@ public class ModelHandler {
 
 					plane.setBpmnElement(collaboration);
 					bpmnDiagram.setPlane(plane);
-					bpmnDiagram.setName(name+" Collaboration Diagram");
+					bpmnDiagram.setName(name+Messages.ModelHandler_Collaboration_Diagram);
 					getDefinitions().getDiagrams().add(bpmnDiagram);
 				}
 			});
@@ -350,17 +353,17 @@ public class ModelHandler {
 					ModelUtil.setID(plane,resource);
 
 					Choreography choreography = createChoreography();
-					choreography.setName(name+" Choreography");
+					choreography.setName(name+Messages.ModelHandler_Choreography);
 					
 					Participant initiatingParticipant = create(Participant.class);
-					initiatingParticipant.setName(name+" Initiating Participant");
+					initiatingParticipant.setName(name+Messages.ModelHandler_Initiating_Participant);
 
 //					Process initiatingProcess = createProcess();
 //					initiatingProcess.setName(name+" Initiating Process");
 //					initiatingParticipant.setProcessRef(initiatingProcess);
 					
 					Participant nonInitiatingParticipant = create(Participant.class);
-					nonInitiatingParticipant.setName(name+" Non-initiating Participant");
+					nonInitiatingParticipant.setName(name+Messages.ModelHandler_Non_Initiating_Participant);
 
 //					Process nonInitiatingProcess = createProcess();
 //					nonInitiatingProcess.setName(name+" Non-initiating Process");
@@ -370,7 +373,7 @@ public class ModelHandler {
 					choreography.getParticipants().add(nonInitiatingParticipant);
 					
 					ChoreographyTask task = create(ChoreographyTask.class);
-					task.setName(name+" Choreography Task");
+					task.setName(name+Messages.ModelHandler_Choreography_Task);
 					task.getParticipantRefs().add(initiatingParticipant);
 					task.getParticipantRefs().add(nonInitiatingParticipant);
 					task.setInitiatingParticipantRef(initiatingParticipant);
@@ -585,7 +588,7 @@ public class ModelHandler {
 		FlowElementsContainer container = getFlowElementContainer(target);
 		if (container.getLaneSets().isEmpty()) {
 			LaneSet laneSet = create(LaneSet.class);
-			laneSet.setName("Lane Set "+ModelUtil.getIDNumber( laneSet.getId() ));
+			laneSet.setName(Messages.ModelHandler_Lane_Set+ModelUtil.getIDNumber( laneSet.getId() ));
 			container.getLaneSets().add(laneSet);
 		}
 		container.getLaneSets().get(0).getLanes().add(lane);
@@ -749,45 +752,15 @@ public class ModelHandler {
 		return (Definitions) resource.getContents().get(0).eContents().get(0);
 	}
 
-	public void save() {
-		TransactionalEditingDomain domain = TransactionUtil.getEditingDomain(resource);
-		if (domain != null) {
-			domain.getCommandStack().execute(new RecordingCommand(domain) {
-				@Override
-				protected void doExecute() {
-					saveResource();
-				}
-			});
-		} else {
-			saveResource();
-		}
-	}
-
-	private void saveResource() {
-		fixZOrder();
-		try {
-			resource.save(null);
-		} catch (IOException e) {
-			Activator.logError(e);
-		}
-	}
-
-	private void fixZOrder() {
-		final List<BPMNDiagram> diagrams = getAll(BPMNDiagram.class);
-		for (BPMNDiagram bpmnDiagram : diagrams) {
-			fixZOrder(bpmnDiagram);
-		}
-
-	}
-
-	private void fixZOrder(BPMNDiagram bpmnDiagram) {
-		EList<DiagramElement> elements = (EList<DiagramElement>) bpmnDiagram.getPlane().getPlaneElement();
-		ECollections.sort(elements, new DIZorderComparator());
-	}
-
+	// TODO: Move all of this model handler crap into BPMN2PersistencyBehavior where it belongs
 	void loadResource() {
 		try {
 			resource.load(null);
+			List<Tuple<EObject,EObject>> dups = ModelUtil.findDuplicateIds(resource);
+			if (dups.size()>0) {
+				FixDuplicateIdsDialog dlg = new FixDuplicateIdsDialog(dups);
+				dlg.open();
+			}
 		} catch (IOException e) {
 			if (!resource.getErrors().isEmpty()) {
 				ImportDiagnostics diagnostics = new ImportDiagnostics(resource);
@@ -801,12 +774,12 @@ public class ModelHandler {
 						if (value instanceof EObject)
 							stringValue = diagnostics.getText((EObject)value);
 						else
-							stringValue = "\"" + value.toString() + "\"";
+							stringValue = "\"" + value.toString() + "\""; //$NON-NLS-1$ //$NON-NLS-2$
 						
-						String message = "Cannot assign " +
+						String message = Messages.ModelHandler_20 +
 								stringValue +
-								" to " +
-								"\"" + iv.getFeature().getName() + "\"";
+								Messages.ModelHandler_21 +
+								"\"" + iv.getFeature().getName() + "\""; //$NON-NLS-1$ //$NON-NLS-2$
 								
 						diagnostics.add(IStatus.ERROR, iv.getObject(), message);
 					} else {
@@ -840,7 +813,10 @@ public class ModelHandler {
 				return (FlowElementsContainer)be;
 			}
 			else { // somebody did not understand the BPMNPlane (seems to be common), try adding to the first process
-				return getAll(Process.class).get(0);
+				List<Process> list = getAll(Process.class);
+				if (list.size()==0)
+					return getOrCreateProcess(null);
+				return list.get(0);
 			}
 		}
 		if (o instanceof Participant) {

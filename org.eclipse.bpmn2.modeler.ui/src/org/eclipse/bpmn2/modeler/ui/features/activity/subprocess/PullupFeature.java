@@ -49,6 +49,7 @@ import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.PictogramLink;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
+import org.eclipse.osgi.util.NLS;
 
 /**
  * @author Bob Brodt
@@ -67,13 +68,13 @@ public class PullupFeature extends AbstractCustomFeature {
 	
 	@Override
 	public String getName() {
-	    return "Pull up";
+	    return Messages.PullupFeature_Name;
 	}
 	
 	@Override
 	public String getDescription() {
 		if (description==null)
-			description = "Pull the contents of the Diagram for this Container into the current diagram";
+			description = Messages.PullupFeature_Description;
 		return description;
 	}
 
@@ -102,8 +103,10 @@ public class PullupFeature extends AbstractCustomFeature {
 		if (pes != null && pes.length == 1) {
 			PictogramElement pe = pes[0];
 			Object bo = getBusinessObjectForPictogramElement(pe);
-			description = "Pull the contents of the Diagram for this "+
-					ModelUtil.getLabel(bo)+" into the current diagram";
+			description = NLS.bind(
+				Messages.PullupFeature_Description_1,
+				ModelUtil.getLabel(bo)
+			);
 			if (bo instanceof Participant) {
 				bo = ((Participant)bo).getProcessRef();
 			}
@@ -139,11 +142,11 @@ public class PullupFeature extends AbstractCustomFeature {
 		// for the DI elements in the existing BPMNDiagram.
 		BPMNDiagram newBpmnDiagram = DIUtils.getBPMNDiagram(bpmnShape);
 		BPMNPlane newPlane = newBpmnDiagram.getPlane();
-		Diagram newDiagram = DIUtils.findDiagram(getDiagramEditor(), newBpmnDiagram);
+		Diagram newDiagram = DIUtils.findDiagram(getDiagramBehavior(), newBpmnDiagram);
 		
 		BPMNDiagram oldBpmnDiagram = DIUtils.findBPMNDiagram(container);
 		BPMNPlane oldPlane = oldBpmnDiagram.getPlane();
-		Diagram oldDiagram = DIUtils.findDiagram(getDiagramEditor(), oldBpmnDiagram);
+		Diagram oldDiagram = DIUtils.findDiagram(getDiagramBehavior(), oldBpmnDiagram);
 		
 		// copy the elements into the same plane as the sub process
 		while (oldPlane.getPlaneElement().size()>0) {
@@ -172,7 +175,7 @@ public class PullupFeature extends AbstractCustomFeature {
 		newDiagram.getStyles().addAll(oldDiagram.getStyles());
 		
 		// get rid of the old BPMNDiagram
-		DIUtils.deleteDiagram(getDiagramEditor(), oldBpmnDiagram);
+		DIUtils.deleteDiagram(getDiagramBehavior(), oldBpmnDiagram);
 		
 		// expand the sub process
 		if (AbstractExpandableActivityFeatureContainer.isExpandableElement(container)) {

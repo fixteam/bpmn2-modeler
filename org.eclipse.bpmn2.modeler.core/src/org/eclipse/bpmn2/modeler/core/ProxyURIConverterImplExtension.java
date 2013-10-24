@@ -22,6 +22,12 @@ import org.eclipse.emf.ecore.resource.impl.ExtensibleURIConverterImpl;
 
 public final class ProxyURIConverterImplExtension extends ExtensibleURIConverterImpl {
 	private static final String DIR_NAME = "cache/"; //$NON-NLS-1$
+	private URI baseUri;
+	
+	public ProxyURIConverterImplExtension(URI baseUri) {
+		super();
+		this.baseUri = baseUri;
+	}
 	
 	/**
 	 * We provide local copies for some files from the web. Local copy names are requested url without starting
@@ -31,12 +37,13 @@ public final class ProxyURIConverterImplExtension extends ExtensibleURIConverter
 	 */
 	@Override
 	public InputStream createInputStream(URI uri) throws IOException {
-		InputStream stream = getInputStreamForUri(uri);
+		URI resolvedUri = uri.resolve(baseUri);
+		InputStream stream = getInputStreamForUri(resolvedUri);
 		if (stream != null) {
 			return stream;
 		}
 
-		InputStream createInputStream = super.createInputStream(uri);
+		InputStream createInputStream = super.createInputStream(resolvedUri);
 		
 		return createInputStream;
 	}
@@ -50,12 +57,13 @@ public final class ProxyURIConverterImplExtension extends ExtensibleURIConverter
 	 */
 	@Override
 	public InputStream createInputStream(URI uri, java.util.Map<?, ?> options) throws IOException {
-		InputStream stream = getInputStreamForUri(uri);
+		URI resolvedUri = uri.resolve(baseUri);
+		InputStream stream = getInputStreamForUri(resolvedUri);
 		if (stream != null) {
 			return stream;
 		}
 
-		InputStream createInputStream = super.createInputStream(uri, options);
+		InputStream createInputStream = super.createInputStream(resolvedUri, options);
 		
 		return createInputStream;
 	}

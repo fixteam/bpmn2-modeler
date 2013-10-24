@@ -106,7 +106,7 @@ public class BPMN2ValidationStatusLoader {
 
     @SuppressWarnings("unchecked")
     private IStatus convertMarker(IMarker marker, EObject target) {
-        final String message = marker.getAttribute(IMarker.MESSAGE, "");
+        final String message = marker.getAttribute(IMarker.MESSAGE, ""); //$NON-NLS-1$
         final String constraintId = marker.getAttribute(MarkerUtil.RULE_ATTRIBUTE, null);
         final IConstraintDescriptor icd = constraintId == null ? null : ConstraintRegistry.getInstance().getDescriptor(
                 constraintId);

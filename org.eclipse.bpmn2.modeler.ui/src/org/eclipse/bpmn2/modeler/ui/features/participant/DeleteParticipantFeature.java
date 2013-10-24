@@ -14,15 +14,19 @@ package org.eclipse.bpmn2.modeler.ui.features.participant;
 
 import java.util.List;
 
+import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.Definitions;
+import org.eclipse.bpmn2.FlowElementsContainer;
 import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.Process;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.di.BPMNPlane;
 import org.eclipse.bpmn2.modeler.core.ModelHandler;
+import org.eclipse.bpmn2.modeler.core.di.DIUtils;
 import org.eclipse.bpmn2.modeler.core.features.DefaultDeleteBPMNShapeFeature;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
+import org.eclipse.bpmn2.modeler.ui.editor.DesignEditor;
 import org.eclipse.bpmn2.modeler.ui.features.AbstractDefaultDeleteFeature;
 import org.eclipse.bpmn2.modeler.ui.features.choreography.ChoreographyUtil;
 import org.eclipse.dd.di.DiagramElement;
@@ -42,11 +46,20 @@ public class DeleteParticipantFeature extends DefaultDeleteBPMNShapeFeature {
 
 	@Override
 	public void delete(IDeleteContext context) {
-		// DO NOT delete the pool's process (if it owns one) nor its
-		// BPMNDiagram page. This leaves the process available for re-use
-		// by some other participant. If the user wants to delete the
-		// process page, it must be done either with the "Blackbox"
-		// feature, or by navigating to the page and deleting it.
+		// Delete the pool's process and the BPMNDiagram page (if any).
+		PictogramElement pe = context.getPictogramElement();
+		Object bo = getBusinessObjectForPictogramElement(pe);
+		if (bo instanceof Participant) {
+			bo = ((Participant)bo).getProcessRef();
+		}
+		if (bo instanceof FlowElementsContainer) {
+			BPMNDiagram bpmnDiagram = DIUtils.findBPMNDiagram((BaseElement)bo);
+			if (bpmnDiagram != null) {
+				DIUtils.deleteDiagram(getDiagramBehavior(), bpmnDiagram);
+			}
+			EcoreUtil.delete((EObject) bo);
+		}
+
 		super.delete(context);
 	}
 

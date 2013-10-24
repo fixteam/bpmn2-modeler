@@ -33,6 +33,8 @@ public class GatewayConstraint extends AbstractModelConstraint {
 
 			List<SequenceFlow> outgoingGwSequenceFlows = gw.getOutgoing();
 			if (outgoingGwSequenceFlows != null && outgoingGwSequenceFlows.size() > 0) {
+				// TODO: fix this
+				/*
 				int sum = 0;
 				for (SequenceFlow sf : outgoingGwSequenceFlows) {
 					// simulation validation
@@ -69,6 +71,7 @@ public class GatewayConstraint extends AbstractModelConstraint {
 				if (sum != 100) {
 					ctx.createFailureStatus("The sum of probability values of all outgoing Sequence Flows must be equal 100.");
 				}
+				*/
 			}
 		}
 		return ctx.createSuccessStatus();

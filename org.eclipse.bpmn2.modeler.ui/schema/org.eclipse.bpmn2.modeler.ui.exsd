@@ -22,6 +22,7 @@
       <complexType>
          <choice>
             <element ref="importDialog" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="toolProvider" minOccurs="0" maxOccurs="1"/>
          </choice>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -78,6 +79,35 @@
                </documentation>
                <appinfo>
                   <meta.attribute kind="java" basedOn="org.eclipse.ui.dialogs.SelectionStatusDialog:"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="toolProvider">
+      <complexType>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Unique ID for the toolProvider extension.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="runtimeId" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Identifies one of the previously defined runtime elements for which this toolProvider will be used.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The class that implements the Graphiti Tool Behavior Provider, i.e. extends the org.eclipse.bpmn2.ui.BPMN2ToolBehaviorProvider class.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="java" basedOn="org.eclipse.bpmn2.modeler.ui.diagram.BPMNToolBehaviorProvider:"/>
                </appinfo>
             </annotation>
          </attribute>

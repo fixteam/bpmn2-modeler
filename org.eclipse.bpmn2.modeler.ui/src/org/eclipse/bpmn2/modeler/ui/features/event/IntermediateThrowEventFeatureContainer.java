@@ -82,7 +82,7 @@ public class IntermediateThrowEventFeatureContainer extends AbstractEventFeature
 	public static class CreateIntermediateThrowEventFeature extends AbstractCreateEventFeature<IntermediateThrowEvent> {
 
 		public CreateIntermediateThrowEventFeature(IFeatureProvider fp) {
-			super(fp, "Throw Event", "Create "+"Throw Event");
+			super(fp, Messages.IntermediateThrowEventFeatureContainer_0, Messages.IntermediateThrowEventFeatureContainer_1+Messages.IntermediateThrowEventFeatureContainer_2);
 		}
 
 		@Override
@@ -101,7 +101,7 @@ public class IntermediateThrowEventFeatureContainer extends AbstractEventFeature
 	
 	public static class UpdateIntermediateThrowEventFeature extends AbstractUpdateEventFeature {
 
-		public static String INTERMEDIATE_THROW_EVENT_MARKER = "marker.intermediate.throw.event";
+		public static String INTERMEDIATE_THROW_EVENT_MARKER = "marker.intermediate.throw.event"; //$NON-NLS-1$
 
 		/**
 		 * @param fp

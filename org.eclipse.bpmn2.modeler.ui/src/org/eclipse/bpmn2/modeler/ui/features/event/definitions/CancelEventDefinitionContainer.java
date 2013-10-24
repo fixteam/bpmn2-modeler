@@ -21,7 +21,7 @@ import org.eclipse.bpmn2.Event;
 import org.eclipse.bpmn2.EventDefinition;
 import org.eclipse.bpmn2.IntermediateThrowEvent;
 import org.eclipse.bpmn2.modeler.core.features.event.definitions.AbstractEventDefinitionFeatureContainer;
-import org.eclipse.bpmn2.modeler.core.features.event.definitions.CreateEventDefinition;
+import org.eclipse.bpmn2.modeler.core.features.event.definitions.AbstractCreateEventDefinitionFeature;
 import org.eclipse.bpmn2.modeler.core.features.event.definitions.DecorationAlgorithm;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
@@ -94,30 +94,10 @@ public class CancelEventDefinitionContainer extends AbstractEventDefinitionFeatu
 		return cancelShape;
 	}
 
-	public static class CreateCancelEventDefinition extends CreateEventDefinition<CancelEventDefinition> {
+	public static class CreateCancelEventDefinition extends AbstractCreateEventDefinitionFeature<CancelEventDefinition> {
 
 		public CreateCancelEventDefinition(IFeatureProvider fp) {
-			super(fp, "Cancel Event Definition", "Create "+"Cancel Event Definition");
-		}
-
-		@Override
-		public boolean canCreate(ICreateContext context) {
-			if (!super.canCreate(context)) {
-				return false;
-			}
-
-			Event e = (Event) getBusinessObjectForPictogramElement(context.getTargetContainer());
-
-			if (e instanceof BoundaryEvent) {
-				BoundaryEvent be = (BoundaryEvent) e;
-				return be.isCancelActivity();
-			}
-
-			if (e instanceof CatchEvent || e instanceof IntermediateThrowEvent) {
-				return false;
-			}
-
-			return true;
+			super(fp, Messages.CancelEventDefinitionContainer_Name, Messages.CancelEventDefinitionContainer_Description);
 		}
 
 		@Override

@@ -31,22 +31,21 @@ public class ProcessConstraint extends AbstractModelConstraint {
 			Iterator<FeatureMap.Entry> iter = process.getAnyAttribute().iterator();
 			while (iter.hasNext()) {
 				FeatureMap.Entry entry = iter.next();
-				if (entry.getEStructuralFeature().getName().equals("packageName")) {
+				if (entry.getEStructuralFeature().getName().equals("packageName")) { //$NON-NLS-1$
 					name = (String) entry.getValue();
 					if (name==null || name.isEmpty()) {
 						ctx.addResult(entry.getEStructuralFeature());
-						return ctx.createFailureStatus("Process has no package name.");
+						return ctx.createFailureStatus(Messages.ProcessConstraint_No_Package_Name);
 					}
 				}
 			}
 	
 			name = process.getName();
 			if (name==null || name.isEmpty()) {
-				ctx.addResult(process.eClass().getEStructuralFeature("name"));
-				return ctx.createFailureStatus("Process has no name.");
+				ctx.addResult(process.eClass().getEStructuralFeature("name")); //$NON-NLS-1$
+				return ctx.createFailureStatus(Messages.ProcessConstraint_No_Process_Name);
 			}
 		}	
 		return ctx.createSuccessStatus();
 	}
-
 }

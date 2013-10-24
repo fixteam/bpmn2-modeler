@@ -46,7 +46,7 @@ public class FlowElementPropertiesAdapter<T extends FlowElement> extends Extende
 
 			@Override
 			public void setDisplayName(String text) {
-				int i = text.lastIndexOf("/");
+				int i = text.lastIndexOf("/"); //$NON-NLS-1$
 				if (i>=0)
 					text = text.substring(i+1);
 				text = text.trim();
@@ -55,26 +55,26 @@ public class FlowElementPropertiesAdapter<T extends FlowElement> extends Extende
 
 			@Override
 			public String getDisplayName(Object context) {
-				String text = "";
+				String text = ""; //$NON-NLS-1$
 				T flowElement = adopt(context); 
-				if (feature.getName().equals("name"))
+				if (feature.getName().equals("name")) //$NON-NLS-1$
 					return (String)flowElement.getName();
 
-				EStructuralFeature f = flowElement.eClass().getEStructuralFeature("name");
+				EStructuralFeature f = flowElement.eClass().getEStructuralFeature("name"); //$NON-NLS-1$
 				if (f!=null) {
 					String name = (String)flowElement.eGet(f);
 					if (name!=null && !name.isEmpty())
 						text = name;
 				}
 				if (text.isEmpty()) {
-					f = flowElement.eClass().getEStructuralFeature("id");
+					f = flowElement.eClass().getEStructuralFeature("id"); //$NON-NLS-1$
 					if (f!=null) {
 						Object id = flowElement.eGet(f);
 						if (id!=null && !id.toString().isEmpty()) {
 							String className = flowElement.eClass().getName();
 							String idString = id.toString();
 							if (!idString.contains(className)) {
-								text = ModelUtil.toDisplayName(className) + " '" + id + "'";
+								text = ModelUtil.toDisplayName(className) + " '" + id + "'"; //$NON-NLS-1$ //$NON-NLS-2$
 							}
 							else
 								text = idString;
@@ -99,7 +99,7 @@ public class FlowElementPropertiesAdapter<T extends FlowElement> extends Extende
 							break;
 					}
 					if (container instanceof Activity || container instanceof Process) {
-						text = ModelUtil.getDisplayName(container) + "/" + text;
+						text = ModelUtil.getDisplayName(container) + "/" + text; //$NON-NLS-1$
 					}
 					container = container.eContainer();
 				}
@@ -108,7 +108,7 @@ public class FlowElementPropertiesAdapter<T extends FlowElement> extends Extende
 					if (flowElement instanceof ItemAwareElement) {
 						String type = ModelUtil.getDisplayName(((ItemAwareElement)flowElement).getItemSubjectRef());
 						if (type!=null)
-							text += " (" + type + ")";
+							text += " (" + type + ")"; //$NON-NLS-1$ //$NON-NLS-2$
 					}
 				}
 				return text;

@@ -26,16 +26,18 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.edit.ui.provider.PropertyDescriptor.EDataTypeCellEditor;
 import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
+import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
+import org.eclipse.jface.viewers.ICellEditorValidator;
 import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.core.runtime.Assert;
 
 public class TableColumn extends ColumnTableProvider.Column implements ILabelProvider, ICellModifier {
 
@@ -81,7 +83,7 @@ public class TableColumn extends ColumnTableProvider.Column implements ILabelPro
 		if (headerText!=null)
 			return headerText;
 		
-		String text = "";
+		String text = ""; //$NON-NLS-1$
 		if (feature!=null) {
 			if (feature.eContainer() instanceof EClass) {
 				EClass eclass = this.listComposite.getListItemClass();
@@ -97,7 +99,7 @@ public class TableColumn extends ColumnTableProvider.Column implements ILabelPro
 	public String getProperty() {
 		if (feature!=null)
 			return feature.getName(); //$NON-NLS-1$
-		return "";
+		return ""; //$NON-NLS-1$
 	}
 
 	@Override
@@ -156,12 +158,24 @@ public class TableColumn extends ColumnTableProvider.Column implements ILabelPro
 			}
 			else if (ec instanceof EDataType) {
 				ce = new EDataTypeCellEditor((EDataType)ec, parent);
+				ce.setValidator(new CustomDataTypeValidator());
 			}
 			else if (ic==EObject.class) {
 				ce = new StringWrapperCellEditor(parent);
 			}
 		}
 		return ce;
+	}
+	
+	public class CustomDataTypeValidator implements ICellEditorValidator {
+		/* (non-Javadoc)
+		 * @see org.eclipse.jface.viewers.ICellEditorValidator#isValid(java.lang.Object)
+		 */
+		@Override
+		public String isValid(Object value) {
+			// TODO Auto-generated method stub
+			return null;
+		}
 	}
 	
 	public void setEditable(boolean editable) {
@@ -233,7 +247,7 @@ public class TableColumn extends ColumnTableProvider.Column implements ILabelPro
 	
 	public static class CustomCheckboxCellEditor extends ComboBoxCellEditor {
 
-		private static String[] items = new String[] { "false", "true" };
+		private static String[] items = new String[] { "false", "true" }; //$NON-NLS-1$ //$NON-NLS-2$
 		
 		public CustomCheckboxCellEditor(Composite parent) {
 			super(parent, items,SWT.READ_ONLY);
@@ -279,7 +293,7 @@ public class TableColumn extends ColumnTableProvider.Column implements ILabelPro
 		protected Hashtable<String,Object> choices = null;
 
 		public CustomComboBoxCellEditor(Composite parent, EStructuralFeature feature) {
-			super(parent, new String[] {""}, SWT.READ_ONLY);
+			super(parent, new String[] {""}, SWT.READ_ONLY); //$NON-NLS-1$
 		}
 		
 		public void activate(ColumnViewerEditorActivationEvent activationEvent) {
@@ -302,6 +316,8 @@ public class TableColumn extends ColumnTableProvider.Column implements ILabelPro
 			// cell editor since the choices may have changed.
 			List<String> items = new ArrayList<String>();
 			choices = ModelUtil.getChoiceOfValues(object, feature);
+			if (ModelUtil.canSetNull(object,feature))
+				items.add(""); //$NON-NLS-1$
 			items.addAll(choices.keySet());
 			Collections.sort(items);
 			this.setItems(items.toArray(new String[items.size()]));
@@ -327,7 +343,7 @@ public class TableColumn extends ColumnTableProvider.Column implements ILabelPro
 		
 		public Object getChoice(Object value) {
 			// for combobox cell editors, getValue() returns an Integer
-			assert(choices!=null && value instanceof Integer);
+			Assert.isTrue(choices!=null && value instanceof Integer);
 			int index = ((Integer)value).intValue();
 			if (index>=0) {
 				// look up the real value from the list of choices created by getValue()
@@ -354,7 +370,7 @@ public class TableColumn extends ColumnTableProvider.Column implements ILabelPro
 		@Override
 		protected void doSetValue(Object value) {
 			if (value==null)
-				value = "";
+				value = ""; //$NON-NLS-1$
 			else
 				value = ModelUtil.getStringWrapperValue(value);
 			super.doSetValue(value);

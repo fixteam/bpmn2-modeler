@@ -33,24 +33,24 @@ public class Bpmn2TabDescriptor extends AbstractTabDescriptor {
 	protected boolean popup = true;
 
 	public Bpmn2TabDescriptor(IConfigurationElement e) {
-		id = e.getAttribute("id");
-		category = e.getAttribute("category");
+		id = e.getAttribute("id"); //$NON-NLS-1$
+		category = e.getAttribute("category"); //$NON-NLS-1$
 		if (category==null || category.isEmpty())
-			category = "BPMN2";
-		label = e.getAttribute("label");
-		afterTab = e.getAttribute("afterTab");
-		replaceTab = e.getAttribute("replaceTab");
-		String s = e.getAttribute("indented");
-		indented = s!=null && s.trim().equalsIgnoreCase("true");
-		s = e.getAttribute("popup");
-		if (s!=null && s.trim().equalsIgnoreCase("false"))
+			category = "BPMN2"; //$NON-NLS-1$
+		label = e.getAttribute("label"); //$NON-NLS-1$
+		afterTab = e.getAttribute("afterTab"); //$NON-NLS-1$
+		replaceTab = e.getAttribute("replaceTab"); //$NON-NLS-1$
+		String s = e.getAttribute("indented"); //$NON-NLS-1$
+		indented = s!=null && s.trim().equalsIgnoreCase("true"); //$NON-NLS-1$
+		s = e.getAttribute("popup"); //$NON-NLS-1$
+		if (s!=null && s.trim().equalsIgnoreCase("false")) //$NON-NLS-1$
 			popup = false;
 	}
 	
 	public Bpmn2TabDescriptor(String id, String category, String label) {
 		this.id = id;
 		if (category==null || category.isEmpty() )
-			category = "BPMN2";
+			category = "BPMN2"; //$NON-NLS-1$
 		this.category = category;
 		this.label = label;
 	}
@@ -138,7 +138,7 @@ public class Bpmn2TabDescriptor extends AbstractTabDescriptor {
 	public boolean isReplacementForTab(String id) {
 		String replacements = getReplaceTab();
 		if (replacements!=null) {
-			String[] rep = replacements.split(" ");
+			String[] rep = replacements.split(" "); //$NON-NLS-1$
 			for (String r : rep) {
 				if (r.equals(id))
 					return true;

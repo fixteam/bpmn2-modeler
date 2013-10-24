@@ -31,11 +31,11 @@ public class RotatePoolFeature extends AbstractRotateContainerFeature {
 	
 	@Override
 	public String getName() {
-	    return "Change Pool Orientation";
+	    return Messages.RotatePoolFeature_Name;
 	}
 	
 	@Override
 	public String getDescription() {
-	    return "Switch the orientation of this Pool between horizontal and vertical";
+	    return Messages.RotatePoolFeature_Description;
 	}
 }

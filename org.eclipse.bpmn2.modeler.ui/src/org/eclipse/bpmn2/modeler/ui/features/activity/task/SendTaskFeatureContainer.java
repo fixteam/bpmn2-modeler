@@ -65,7 +65,7 @@ public class SendTaskFeatureContainer extends AbstractTaskFeatureContainer {
 	public static class CreateSendTaskFeature extends AbstractCreateTaskFeature<SendTask> {
 
 		public CreateSendTaskFeature(IFeatureProvider fp) {
-			super(fp, "Send Task", "Create "+"Send Task");
+			super(fp, Messages.SendTaskFeatureContainer_Name, Messages.SendTaskFeatureContainer_Description);
 		}
 
 		@Override

@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2011, 2012, 2013 Red Hat, Inc.
+ * All rights reserved.
+ * This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution,
+ * and is available at http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors:
+ * 	Red Hat, Inc. - initial API and implementation
+ ******************************************************************************/
 package org.eclipse.bpmn2.modeler.runtime.example;
 
 import java.net.URL;
@@ -80,16 +90,17 @@ public class SampleImageProvider extends AbstractImageProvider {
 	public static Image createImage(GraphicsAlgorithmContainer ga, CustomTaskDescriptor ctd, int w, int h) {
 		// To create an image of a specific size, use the "huge" versions
 		// to prevent pixelation when stretching a small image
-		String imageId = getImageId(ctd, IconSize.HUGE); 
+		String imageId = getImageId(ctd, IconSize.HUGE);
+		Image img = null;
 		if (imageId != null) {
-			Image img = Graphiti.getGaService().createImage(ga, imageId);
+			img = Graphiti.getGaService().createImage(ga, imageId);
 			img.setProportional(false);
 			img.setWidth(w);
 			img.setHeight(h);
 			img.setStretchH(true);
 			img.setStretchV(true);
 		}
-		return null;
+		return img;
 	}
 	
 	public static String getImageId(CustomTaskDescriptor ctd, IconSize size) {

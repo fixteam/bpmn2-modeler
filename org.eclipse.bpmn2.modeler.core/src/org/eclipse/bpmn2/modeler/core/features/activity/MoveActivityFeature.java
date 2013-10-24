@@ -17,6 +17,7 @@ import org.eclipse.bpmn2.SubProcess;
 import org.eclipse.bpmn2.modeler.core.features.MoveFlowNodeFeature;
 import org.eclipse.bpmn2.modeler.core.features.event.AbstractBoundaryEventOperation;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
+import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.graphiti.datatypes.ILocation;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.IMoveShapeFeature;
@@ -30,8 +31,8 @@ import org.eclipse.graphiti.services.IPeLayoutService;
 
 public class MoveActivityFeature extends MoveFlowNodeFeature {
 
-	public static final String ACTIVITY_MOVE_PROPERTY = "activity.move";
-	public static final String SELECTION_MOVE_PROPERTY = "selection.move";
+	public static final String ACTIVITY_MOVE_PROPERTY = "activity.move"; //$NON-NLS-1$
+	public static final String SELECTION_MOVE_PROPERTY = "selection.move"; //$NON-NLS-1$
 
 	public MoveActivityFeature(IFeatureProvider fp) {
 		super(fp);
@@ -98,7 +99,7 @@ public class MoveActivityFeature extends MoveFlowNodeFeature {
 		super.postMoveShape(context);
 		PictogramElement containerShape = context.getPictogramElement();
 		Activity activity = BusinessObjectUtil.getFirstElementOfType(containerShape, Activity.class);
-		Graphiti.getPeService().sendToFront(context.getShape());
+		GraphicsUtil.sendToFront(context.getShape());
 		
 		new AbstractBoundaryEventOperation() {
 			@Override

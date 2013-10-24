@@ -33,7 +33,7 @@ public class JbpmSubProcessDetailComposite extends JbpmActivityDetailComposite {
 	}
 
 	protected void bindReference(Composite parent, EObject object, EReference reference) {
-		if ("loopCharacteristics".equals(reference.getName())) {
+		if ("loopCharacteristics".equals(reference.getName())) { //$NON-NLS-1$
 			if (!isModelObjectEnabled(object.eClass(), reference))
 				return;
 			super.bindReference(parent, object, reference);

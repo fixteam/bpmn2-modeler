@@ -19,6 +19,7 @@ import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultPropertySection;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IWorkbenchPart;
 
 public class ProcessDiagramPropertySection extends DefaultPropertySection {
 
@@ -41,14 +42,23 @@ public class ProcessDiagramPropertySection extends DefaultPropertySection {
 	@Override
 	protected EObject getBusinessObjectForSelection(ISelection selection) {
 		EObject bo = super.getBusinessObjectForSelection(selection);
-		if (bo instanceof Participant) {
-			return ((Participant) bo).getProcessRef();
-		} else if (bo instanceof BPMNDiagram) {
+		if (bo instanceof BPMNDiagram) {
 			BaseElement be = ((BPMNDiagram)bo).getPlane().getBpmnElement();
 			if (be instanceof Process)
 				return be;
 		}
+		else if (bo instanceof Process) {
+			return bo;
+		}
 		
 		return null;
+	}
+	
+	@Override
+	public boolean appliesTo(IWorkbenchPart part, ISelection selection) {
+		if (super.appliesTo(part, selection))
+			return true;
+		EObject bo = getBusinessObjectForSelection(selection);
+		return bo!=null;
 	}
 }

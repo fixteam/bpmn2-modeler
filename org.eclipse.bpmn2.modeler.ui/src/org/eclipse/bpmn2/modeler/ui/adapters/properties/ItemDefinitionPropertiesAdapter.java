@@ -19,12 +19,13 @@ import java.util.List;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.ItemDefinition;
-import org.eclipse.bpmn2.modeler.core.adapters.AdapterUtil;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.adapters.FeatureDescriptor;
 import org.eclipse.bpmn2.modeler.core.adapters.ObjectDescriptor;
+import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.NamespaceUtil;
+import org.eclipse.bpmn2.modeler.core.validation.SyntaxCheckerUtils;
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
@@ -45,120 +46,183 @@ public class ItemDefinitionPropertiesAdapter extends ExtendedPropertiesAdapter<I
 	 */
 	public ItemDefinitionPropertiesAdapter(AdapterFactory adapterFactory, ItemDefinition object) {
 		super(adapterFactory, object);
-    	final EStructuralFeature ref = Bpmn2Package.eINSTANCE.getItemDefinition_StructureRef();
+
+		final EStructuralFeature ref = Bpmn2Package.eINSTANCE.getItemDefinition_StructureRef();
 		setProperty(ref, UI_CAN_CREATE_NEW, Boolean.TRUE);
 		setProperty(ref, UI_IS_MULTI_CHOICE, Boolean.TRUE);
-		
 		
     	setFeatureDescriptor(ref,
 			new FeatureDescriptor<ItemDefinition>(adapterFactory,object,ref) {
 				@Override
 				public String getLabel(Object context) {
-					return "Data Type";
+					return Messages.ItemDefinitionPropertiesAdapter_Structure;
 				}
 
 				@Override
 				public String getDisplayName(Object context) {
-					final ItemDefinition itemDefinition = adopt(context);
-					Resource resource = ModelUtil.getResource(itemDefinition);
-					String name = "";
-					Object value = itemDefinition.getStructureRef();
-					if (value!=null) {
-						if (value instanceof XSDElementDeclaration) {
-							XSDElementDeclaration elem = (XSDElementDeclaration)value;
-							name = elem.getQName();
-						}
-						else if (value instanceof Message) {
-							Message message = (Message)value;
-							name = NamespaceUtil.normalizeQName(resource,message.getQName());
-						}
-						else if (ModelUtil.isStringWrapper(value))
-							name = ModelUtil.getStringWrapperValue(value);
-					}
-					else {
-						name = itemDefinition.getId() + ".type";
-					}
-					if (itemDefinition.isIsCollection())
-						name += "[]";
-					return name;
+					ItemDefinition itemDefinition = adopt(context);
+					String value = ItemDefinitionPropertiesAdapter.getStructureName(itemDefinition);
+					return value;
 				}
 				
 	    		@Override
 				public EObject createFeature(Resource resource, Object context, EClass eClass) {
 					final ItemDefinition itemDefinition = adopt(context);
-					EObject structureRef = ModelUtil.createStringWrapper("");
-					itemDefinition.setStructureRef(ref);
+					EObject structureRef = ModelUtil.createStringWrapper(""); //$NON-NLS-1$
+					itemDefinition.setStructureRef(structureRef);
 					return structureRef;
 	    		}
 
 	    		@Override
 	    		public Object getValue(Object context) {
-					final ItemDefinition itemDefinition = adopt(context);
-					Object value = itemDefinition.getStructureRef();
-					if (value==null)
-						value = ModelUtil.createStringWrapper("");
+					ItemDefinition itemDefinition = adopt(context);
+					Object value = ItemDefinitionPropertiesAdapter.getStructureRef(itemDefinition);
+					if (value==null || (ModelUtil.isStringWrapper(value) && ModelUtil.getStringWrapperValue(value).isEmpty())) {
+						value = itemDefinition.getId();
+					}
 					return value;
 	    		}
 
 	    		@Override
 	    		public void setValue(Object context, Object value) {
-	    			if (value instanceof String) {
+					ItemDefinition itemDefinition = adopt(context);
+					if (value instanceof String) {
+						if (itemDefinition.getStructureRef()==null) {
+							String oldValue = ItemDefinitionPropertiesAdapter.getStructureName(itemDefinition);
+							value = ((String) value).replace(oldValue, ""); //$NON-NLS-1$
+						}
+						value = SyntaxCheckerUtils.toNCName((String)value);
 						value = ModelUtil.createStringWrapper((String)value);
-	    			}
-	    			else if (!ModelUtil.isStringWrapper(value)) {
-	    				return;
-	    			}
-	    			super.setValue(object, value);
+					}
+					super.setValue(context, value);
 	    		}
 
 				@Override
 				public Hashtable<String, Object> getChoiceOfValues(Object context) {
-					ItemDefinition object = adopt(context);
-					// add all ItemDefinitions
-					Hashtable<String,Object> choices = new Hashtable<String,Object>();
-					String s;
-					Definitions defs = ModelUtil.getDefinitions(object);
-					List<ItemDefinition> itemDefs = ModelUtil.getAllRootElements(defs, ItemDefinition.class);
-					for (ItemDefinition id : itemDefs) {
-						s = ModelUtil.getStringWrapperValue(id.getStructureRef());
-						if (s==null || s.isEmpty())
-							s = id.getId();
-						choices.put(s,id);
-					}
-					return choices;
+					ItemDefinition itemDefinition = adopt(context);
+					return ItemDefinitionPropertiesAdapter.getChoiceOfValues(itemDefinition);
 				}
-
-				@Override
-				public String getChoiceString(Object value) {
-					return super.getChoiceString(value);
-				}
-	    		
 			}
     	);
     	
 		setObjectDescriptor(new ObjectDescriptor<ItemDefinition>(adapterFactory, object) {
 			@Override
 			public String getDisplayName(Object context) {
-				return getFeatureDescriptor(ref).getDisplayName(context);
+				ItemDefinition itemDefinition = adopt(context);
+				return ItemDefinitionPropertiesAdapter.getDisplayName(itemDefinition);
 			}
 			
 			@Override
 			public String getLabel(Object context) {
-				return getFeatureDescriptor(ref).getLabel(context);
+				return ItemDefinitionPropertiesAdapter.getLabel();
 			}
 			
 			@Override
-			
 			public ItemDefinition createObject(Resource resource, Object context) {
-				ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(
-						Bpmn2Package.eINSTANCE.getRootElement(),
-						ExtendedPropertiesAdapter.class);
-				ItemDefinition itemDef = (ItemDefinition) adapter.getObjectDescriptor().createObject(resource, object);
-				EObject value = ModelUtil.createStringWrapper(itemDef.getId());
-				itemDef.setStructureRef(value);
-				return itemDef;
+				ItemDefinition itemDefinition = ItemDefinitionPropertiesAdapter.createItemDefinition(resource);
+				return itemDefinition;
+			}
+
+			@Override
+			public boolean equals(Object obj) {
+				if (obj instanceof ItemDefinition) {
+					return super.equals(obj);
+				}
+				else if (obj instanceof String) {
+					String otherWrapper = (String) obj;
+					Object thisStructure = object.getStructureRef();
+					if (thisStructure==null) {
+						if (otherWrapper.isEmpty())
+							return true;
+						return false;
+					}
+					if (ModelUtil.isStringWrapper(thisStructure)) {
+						String thisWrapper = ModelUtil.getStringWrapperValue(object.getStructureRef());
+						return thisWrapper.equals(otherWrapper);
+					}
+				}
+				return true;
 			}
 		});
 	}
 
+
+	/*
+	 * Methods for dealing with ItemDefinitions
+	 */
+	public static String getLabel() {
+		return Messages.ItemDefinitionPropertiesAdapter_Data_Type;
+	}
+
+	public static ItemDefinition createItemDefinition(Resource resource) {
+		ItemDefinition itemDefinition = Bpmn2ModelerFactory.eINSTANCE.createItemDefinition();
+		ModelUtil.setID(itemDefinition, resource);
+		Definitions defs = ModelUtil.getDefinitions(resource);
+		if (defs!=null) {
+			defs.getRootElements().add(itemDefinition);
+		}
+
+		return itemDefinition;
+	}
+	
+	public static String getDisplayName(ItemDefinition itemDefinition) {
+		String name = ""; //$NON-NLS-1$
+		if (itemDefinition!=null) {
+			name = getStructureName(itemDefinition);
+			if (itemDefinition.isIsCollection())
+				name += "[]"; //$NON-NLS-1$
+		}
+		return name;
+	}
+	
+	public static String getStructureName(ItemDefinition itemDefinition) {
+		Resource resource = ModelUtil.getResource(itemDefinition);
+		String name = ""; //$NON-NLS-1$
+		if (itemDefinition!=null) {
+			Object value = itemDefinition.getStructureRef();
+			if (value!=null) {
+				if (value instanceof XSDElementDeclaration) {
+					XSDElementDeclaration elem = (XSDElementDeclaration)value;
+					name = elem.getQName();
+				}
+				else if (value instanceof Message) {
+					Message message = (Message)value;
+					name = NamespaceUtil.normalizeQName(resource,message.getQName());
+				}
+				else if (ModelUtil.isStringWrapper(value))
+					name = ModelUtil.getStringWrapperValue(value);
+			}
+			if (name==null || name.isEmpty()) {
+				name = ModelUtil.generateUndefinedID(itemDefinition.getId());
+			}
+		}
+		return name;
+	}
+	
+	public static Object getStructureRef(ItemDefinition itemDefinition) {
+		Object value = null;
+		if (itemDefinition!=null)
+			value = itemDefinition.getStructureRef();
+		if (ModelUtil.isStringWrapper(value) && ModelUtil.getStringWrapperValue(value).isEmpty())
+			value = null;
+		return value;
+	}
+
+	public static Hashtable<String, Object> getChoiceOfValues(EObject context) {
+		// add all ItemDefinitions
+		Hashtable<String,Object> choices = new Hashtable<String,Object>();
+		if (context!=null) {
+			String s;
+			Definitions defs = ModelUtil.getDefinitions(context);
+			List<ItemDefinition> itemDefs = ModelUtil.getAllRootElements(defs, ItemDefinition.class);
+			for (ItemDefinition id : itemDefs) {
+				s = getDisplayName(id);
+				if (s==null || s.isEmpty())
+					s = id.getId();
+				choices.put(s,id);
+			}
+		}
+		return choices;
+	}
+	
 }

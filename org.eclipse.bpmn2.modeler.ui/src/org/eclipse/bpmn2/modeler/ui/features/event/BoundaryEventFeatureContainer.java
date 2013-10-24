@@ -29,8 +29,8 @@ import org.eclipse.graphiti.features.impl.DefaultResizeShapeFeature;
 
 public class BoundaryEventFeatureContainer extends BaseElementFeatureContainer {
 
-	public static String BOUNDARY_EVENT_CANCEL = "cancel.activity";
-	public static String BOUNDARY_EVENT_DISTANCE = "boundary.distance";
+	public static String BOUNDARY_EVENT_CANCEL = "cancel.activity"; //$NON-NLS-1$
+	public static String BOUNDARY_EVENT_DISTANCE = "boundary.distance"; //$NON-NLS-1$
 
 	@Override
 	public boolean canApplyTo(Object o) {

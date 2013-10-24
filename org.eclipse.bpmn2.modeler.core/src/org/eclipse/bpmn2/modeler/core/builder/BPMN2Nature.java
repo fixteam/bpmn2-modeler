@@ -21,7 +21,7 @@ public class BPMN2Nature implements IProjectNature {
 	/**
 	 * ID of this project nature
 	 */
-	public static final String NATURE_ID = "org.eclipse.bpmn2.modeler.core.bpmn2Nature";
+	public static final String NATURE_ID = "org.eclipse.bpmn2.modeler.core.bpmn2Nature"; //$NON-NLS-1$
 
 	private IProject project;
 

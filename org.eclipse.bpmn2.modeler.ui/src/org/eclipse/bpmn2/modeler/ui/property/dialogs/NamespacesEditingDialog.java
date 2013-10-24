@@ -19,6 +19,7 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -44,18 +45,18 @@ public class NamespacesEditingDialog extends InputDialog {
 		super(
 			shell,
 			title,
-			"Prefix",
+			Messages.NamespacesEditingDialog_Prefix,
 			prefix,
 			new IInputValidator() {
 
 				@Override
 				public String isValid(String newText) {
 					if (newText==null || newText.isEmpty())
-						return "Prefix can not be empty";
+						return Messages.NamespacesEditingDialog_Invalid_Empty_Prefix;
 					if (newText.equals(prefix))
 						return null;
 					if (map.containsKey(newText))
-						return "The prefix '"+newText+"' is already defined.";
+						return NLS.bind(Messages.NamespacesEditingDialog_Invalid_Duplicate_Prefix,newText);
 					return null;
 				}
 			}
@@ -70,7 +71,7 @@ public class NamespacesEditingDialog extends InputDialog {
 		composite.getChildren();
 		if (namespace!=null) {
             Label label = new Label(composite, SWT.WRAP);
-            label.setText("Namespace");
+            label.setText(Messages.NamespacesEditingDialog_Namespace);
 	            GridData data = new GridData(GridData.GRAB_HORIZONTAL
 	                    | GridData.GRAB_VERTICAL | GridData.HORIZONTAL_ALIGN_FILL
 	                    | GridData.VERTICAL_ALIGN_CENTER);
@@ -104,14 +105,14 @@ public class NamespacesEditingDialog extends InputDialog {
 				String msg = null;
 				String ns = namespaceText.getText();
 				if (ns==null || ns.isEmpty())
-					msg = "Namespace can not be empty";
+					msg = Messages.NamespacesEditingDialog_Invalid_Empty_Namespace;
 				try {
 					URI uri = URI.createURI(ns);
 				}
 				catch (Exception e) {
-					msg = "Namespace is not a valid URI";
+					msg = Messages.NamespacesEditingDialog_Invalid_Namespace_URI;
 				}
-				namespaceErrorText.setText(msg == null ? "" : msg);
+				namespaceErrorText.setText(msg == null ? "" : msg); //$NON-NLS-1$
 	    		Control button = getButton(IDialogConstants.OK_ID);
 	    		if (button != null) {
 	    			if (button.isEnabled())

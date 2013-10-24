@@ -39,6 +39,7 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.graphiti.features.IAddFeature;
 import org.eclipse.graphiti.features.ICreateConnectionFeature;
+import org.eclipse.graphiti.features.IDeleteFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.IReason;
 import org.eclipse.graphiti.features.IReconnectionFeature;
@@ -72,8 +73,8 @@ public class AssociationFeatureContainer extends BaseElementConnectionFeatureCon
 	// the property used to store the current Association's direction;
 	// the value can be one of the AssociationDirection enumerations (a null
 	// or empty string is the same as "None")
-	public static final String ASSOCIATION_DIRECTION = "association.direction";
-	public static final String ARROWHEAD_DECORATOR = "arrowhead.decorator";
+	public static final String ASSOCIATION_DIRECTION = "association.direction"; //$NON-NLS-1$
+	public static final String ARROWHEAD_DECORATOR = "arrowhead.decorator"; //$NON-NLS-1$
 	
 	protected CreateConnectionContext createContext;
 	
@@ -194,7 +195,7 @@ public class AssociationFeatureContainer extends BaseElementConnectionFeatureCon
 	public class CreateAssociationFeature extends AbstractCreateFlowFeature<Association, BaseElement, BaseElement> {
 
 		public CreateAssociationFeature(IFeatureProvider fp) {
-			super(fp, "Association", "Create "+"Association");
+			super(fp, Messages.AssociationFeatureContainer_Name, Messages.AssociationFeatureContainer_Description);
 		}
 
 		@Override
@@ -289,23 +290,6 @@ public class AssociationFeatureContainer extends BaseElementConnectionFeatureCon
 		public EClass getBusinessObjectClass() {
 			return Bpmn2Package.eINSTANCE.getAssociation();
 		}
-
-		@Override
-		public Association createBusinessObject(ICreateConnectionContext context) {
-			Association bo = null;
-			try {
-				ModelHandler mh = ModelHandler.getInstance(getDiagram());
-				BaseElement source = getSourceBo(context);
-				BaseElement target = getTargetBo(context);
-				bo = mh.createAssociation(source, target);
-				putBusinessObject(context, bo);
-
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return bo;
-		}
 	}
 	
 	private static void setAssociationDirection(Connection connection, Association businessObject) {
@@ -324,9 +308,9 @@ public class AssociationFeatureContainer extends BaseElementConnectionFeatureCon
 			for (ConnectionDecorator d : connection.getConnectionDecorators()) {
 				String s = peService.getPropertyValue(d, ARROWHEAD_DECORATOR);
 				if (s!=null) {
-					if (s.equals("source"))
+					if (s.equals("source")) //$NON-NLS-1$
 						sourceDecorator = d;
-					else if (s.equals("target"))
+					else if (s.equals("target")) //$NON-NLS-1$
 						targetDecorator = d;
 				}
 			}
@@ -347,7 +331,7 @@ public class AssociationFeatureContainer extends BaseElementConnectionFeatureCon
 					sourceDecorator = peService.createConnectionDecorator(connection, false, 0.0, true);
 					Polyline arrowhead = gaService.createPolyline(sourceDecorator, new int[] { -l, w, 0, 0, -l, -w });
 					StyleUtil.applyStyle(arrowhead, businessObject);
-					peService.setPropertyValue(sourceDecorator, ARROWHEAD_DECORATOR, "source");
+					peService.setPropertyValue(sourceDecorator, ARROWHEAD_DECORATOR, "source"); //$NON-NLS-1$
 				}
 			}
 			else {
@@ -359,7 +343,7 @@ public class AssociationFeatureContainer extends BaseElementConnectionFeatureCon
 					targetDecorator = peService.createConnectionDecorator(connection, false, 1.0, true);
 					Polyline arrowhead = gaService.createPolyline(targetDecorator, new int[] { -l, w, 0, 0, -l, -w });
 					StyleUtil.applyStyle(arrowhead, businessObject);
-					peService.setPropertyValue(targetDecorator, ARROWHEAD_DECORATOR, "target");
+					peService.setPropertyValue(targetDecorator, ARROWHEAD_DECORATOR, "target"); //$NON-NLS-1$
 				}
 			}
 			else {

@@ -63,6 +63,8 @@ public class Activator extends AbstractUIPlugin {
 				AdapterRegistry.INSTANCE.registerFactory(BpmnDiPackageImpl.eINSTANCE, new Bpmn2EditorDiItemProviderAdapterFactory()));
 	}
 
+	public static final String UI_EXTENSION_ID = "org.eclipse.bpmn2.modeler.ui"; //$NON-NLS-1$
+
 	/**
 	 * The constructor
 	 */
@@ -113,7 +115,7 @@ public class Activator extends AbstractUIPlugin {
 	public static void showErrorWithLogging(Exception e){
 		Status s = createStatus(e);
 		logStatus(s);
-		ErrorDialog.openError(PlatformUI.getWorkbench().getDisplay().getActiveShell(), "An error occured", null, s);
+		ErrorDialog.openError(PlatformUI.getWorkbench().getDisplay().getActiveShell(), Messages.Activator_Error, null, s);
 	}
 
 	/**
@@ -166,7 +168,7 @@ public class Activator extends AbstractUIPlugin {
 				continue;
 			}
 			String name = f.getName();
-			if (name.startsWith("ICON_") || name.startsWith("CURSOR_") || name.startsWith("IMAGE_")) {   //$NON-NLS-1$ //$NON-NLS-2$
+			if (name.startsWith("ICON_") || name.startsWith("CURSOR_") || name.startsWith("IMAGE_")) {   //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				try {
 					String value = (String) f.get(null);
 					createImageDescriptor(registry, value, baseURL);

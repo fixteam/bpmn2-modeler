@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+	<classpathentry kind="src" path="/org.eclipse.bpmn2"/>
+	<classpathentry kind="src" path="/.JETEmitters"/>
+	<classpathentry kind="lib" path="C:/Users/bbrodt/eclipse/4.3RC1/eclipse/plugins/org.eclipse.emf.ecore.xmi_2.9.0.v20130515-0805.jar" sourcepath="C:/Users/bbrodt/eclipse/4.3RC1/eclipse/plugins/org.eclipse.emf.ecore.xmi.source_2.9.0.v20130515-0805.jar">
+		<accessrules>
+			<accessrule kind="accessible" pattern="org/eclipse/emf/ecore/xmi/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/emf/ecore/xmi/impl/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/emf/ecore/xmi/util/*"/>
+			<accessrule ignoreifbetter="true" kind="nonaccessible" pattern="**/*"/>
+		</accessrules>
+	</classpathentry>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

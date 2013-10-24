@@ -16,7 +16,7 @@ package org.eclipse.bpmn2.modeler.ui.features.event;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.Event;
 import org.eclipse.bpmn2.modeler.ui.ImageProvider;
-import org.eclipse.bpmn2.modeler.ui.features.AbstractAppendNodeNodeFeature;
+import org.eclipse.bpmn2.modeler.ui.features.AbstractAppendNodeFeature;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IContext;
@@ -27,7 +27,7 @@ import org.eclipse.graphiti.features.custom.AbstractCustomFeature;
  * @author Bob Brodt
  *
  */
-public class AppendEventFeature extends AbstractAppendNodeNodeFeature<Event> {
+public class AppendEventFeature extends AbstractAppendNodeFeature<Event> {
 
 	/**
 	 * @param fp
@@ -38,12 +38,12 @@ public class AppendEventFeature extends AbstractAppendNodeNodeFeature<Event> {
 
 	@Override
 	public String getName() {
-		return "Append Event";
+		return Messages.AppendEventFeature_Name;
 	}
 
 	@Override
 	public String getDescription() {
-		return "Create a new Event and connect it to this item";
+		return Messages.AppendEventFeature_Description;
 	}
 
 	@Override

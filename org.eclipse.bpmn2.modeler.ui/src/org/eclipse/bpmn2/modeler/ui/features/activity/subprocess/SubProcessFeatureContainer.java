@@ -31,8 +31,8 @@ import org.eclipse.graphiti.features.custom.ICustomFeature;
 
 public class SubProcessFeatureContainer extends AbstractExpandableActivityFeatureContainer {
 
-	public static final String TRIGGERED_BY_EVENT = "triggered-by-event-key";
-	public static final String IS_EXPANDED = "is-expanded-key";
+	public static final String TRIGGERED_BY_EVENT = "triggered-by-event-key"; //$NON-NLS-1$
+	public static final String IS_EXPANDED = "is-expanded-key"; //$NON-NLS-1$
 
 	@Override
 	public boolean canApplyTo(Object o) {
@@ -67,6 +67,7 @@ public class SubProcessFeatureContainer extends AbstractExpandableActivityFeatur
 
 		public CreateSubProcessFeature(IFeatureProvider fp) {
 			super(fp, "内部子流程", "Create "+"Sub-Process");
+			//super(fp, Messages.SubProcessFeatureContainer_Name, Messages.SubProcessFeatureContainer_Description);
 		}
 
 		@Override

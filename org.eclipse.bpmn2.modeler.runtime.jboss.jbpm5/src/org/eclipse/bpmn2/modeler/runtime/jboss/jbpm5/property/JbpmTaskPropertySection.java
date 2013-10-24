@@ -39,7 +39,7 @@ public class JbpmTaskPropertySection extends TaskPropertySection {
 			if (object!=null && Bpmn2Package.eINSTANCE.getTask().isInstance(object)) {
 				List<EStructuralFeature> features = ModelUtil.getAnyAttributes(object);
 				for (EStructuralFeature f : features) {
-					if ("displayName".equals(f.getName()))
+					if ("displayName".equals(f.getName())) //$NON-NLS-1$
 						// don't display this tab for Custom Tasks
 						return false;
 				}

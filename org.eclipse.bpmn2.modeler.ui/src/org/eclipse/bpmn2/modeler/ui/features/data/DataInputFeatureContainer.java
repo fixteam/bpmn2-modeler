@@ -78,6 +78,7 @@ public class DataInputFeatureContainer extends AbstractDataFeatureContainer {
 
 		public CreateDataInputFeature(IFeatureProvider fp) {
 			super(fp, "输入数据", "Create "+"Data Input");
+			//super(fp, Messages.DataInputFeatureContainer_Name, Messages.DataInputFeatureContainer_Description);
 		}
 
 		@Override

@@ -14,6 +14,7 @@ package org.eclipse.bpmn2.modeler.ui.features.gateway;
 
 import org.eclipse.bpmn2.EventBasedGateway;
 import org.eclipse.bpmn2.EventBasedGatewayType;
+import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
 import org.eclipse.graphiti.features.IFeatureProvider;
@@ -87,6 +88,10 @@ public class UpdateEventBasedGatewayFeature extends AbstractUpdateFeature {
 	}
 
 	private void drawEventBased(ContainerShape container) {
+		if (FeatureSupport.isLabelShape(container)) {
+			// don't draw decorators on Labels
+			return;
+		}
 		Ellipse outer = GraphicsUtil.createGatewayOuterCircle(container);
 		Ellipse inner = GraphicsUtil.createGatewayInnerCircle(outer);
 		Polygon pentagon = GraphicsUtil.createGatewayPentagon(container);
@@ -94,12 +99,20 @@ public class UpdateEventBasedGatewayFeature extends AbstractUpdateFeature {
 	}
 
 	private void drawExclusiveEventBased(ContainerShape container) {
+		if (FeatureSupport.isLabelShape(container)) {
+			// don't draw decorators on Labels
+			return;
+		}
 		Ellipse ellipse = GraphicsUtil.createGatewayOuterCircle(container);
 		Polygon pentagon = GraphicsUtil.createGatewayPentagon(container);
 		pentagon.setFilled(false);
 	}
 
 	private void drawParallelMultipleEventBased(ContainerShape container) {
+		if (FeatureSupport.isLabelShape(container)) {
+			// don't draw decorators on Labels
+			return;
+		}
 		Ellipse ellipse = GraphicsUtil.createGatewayOuterCircle(container);
 		Polygon cross = GraphicsUtil.createEventGatewayParallelCross(container);
 	}

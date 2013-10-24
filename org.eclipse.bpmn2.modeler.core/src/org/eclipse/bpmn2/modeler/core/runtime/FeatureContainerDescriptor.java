@@ -16,10 +16,7 @@ package org.eclipse.bpmn2.modeler.core.runtime;
 import java.lang.reflect.Constructor;
 
 import org.eclipse.bpmn2.modeler.core.Activator;
-import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
-import org.eclipse.bpmn2.modeler.core.features.FeatureContainer;
-import org.eclipse.emf.common.notify.AdapterFactory;
-import org.eclipse.emf.ecore.EObject;
+import org.eclipse.bpmn2.modeler.core.features.IFeatureContainer;
 
 /**
  * @author Bob Brodt
@@ -47,13 +44,13 @@ public class FeatureContainerDescriptor extends BaseRuntimeDescriptor {
 		return null;
 	}
 	
-	public FeatureContainer getFeatureContainer() {
+	public IFeatureContainer getFeatureContainer() {
 		try {
 			ClassLoader cl = this.getRuntime().getRuntimeExtension().getClass().getClassLoader();
 			Constructor ctor = null;
 			Class adapterClass = Class.forName(containerClassName, true, cl);
 			ctor = adapterClass.getConstructor();
-			return (FeatureContainer)ctor.newInstance();
+			return (IFeatureContainer)ctor.newInstance();
 		} catch (Exception e) {
 			Activator.logError(e);
 		}

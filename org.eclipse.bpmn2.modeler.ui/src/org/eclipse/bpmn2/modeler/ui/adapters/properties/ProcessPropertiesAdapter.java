@@ -17,6 +17,7 @@ import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.ItemDefinition;
 import org.eclipse.bpmn2.Process;
+import org.eclipse.bpmn2.Property;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.adapters.AdapterUtil;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
@@ -24,6 +25,8 @@ import org.eclipse.bpmn2.modeler.core.adapters.FeatureDescriptor;
 import org.eclipse.bpmn2.modeler.core.adapters.ObjectDescriptor;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.emf.common.notify.AdapterFactory;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.transaction.RecordingCommand;
@@ -41,9 +44,11 @@ public class ProcessPropertiesAdapter extends RootElementPropertiesAdapter<Proce
 	 */
 	public ProcessPropertiesAdapter(AdapterFactory adapterFactory, Process object) {
 		super(adapterFactory, object);
-    	final EStructuralFeature ref = Bpmn2Package.eINSTANCE.getCallableElement_Name();
-    	setFeatureDescriptor(ref,
-			new FeatureDescriptor<Process>(adapterFactory,object,ref) {
+    	EStructuralFeature feature;
+    	
+    	feature = Bpmn2Package.eINSTANCE.getCallableElement_Name();
+    	setFeatureDescriptor(feature,
+			new FeatureDescriptor<Process>(adapterFactory,object,feature) {
 	    		@Override
 	    		public void setValue(Object context, final Object value) {
 	    			// changing the process name also changes its BPMNDiagram name
@@ -90,6 +95,17 @@ public class ProcessPropertiesAdapter extends RootElementPropertiesAdapter<Proce
 				return process;
 			}
 		});
+		
+		feature = Bpmn2Package.eINSTANCE.getProcess_Properties();
+		setFeatureDescriptor(feature,
+			new FeatureDescriptor<Process>(adapterFactory,object,feature) {
+				@Override
+				public EObject createFeature(Resource resource, Object context, EClass eclass) {
+					Process process = adopt(context);
+					return PropertyPropertiesAdapter.createProperty(process.getProperties());
+				}
+			}
+		);
 	}
-
+	
 }

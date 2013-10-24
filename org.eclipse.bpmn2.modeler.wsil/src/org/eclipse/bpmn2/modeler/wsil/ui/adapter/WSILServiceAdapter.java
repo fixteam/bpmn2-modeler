@@ -69,7 +69,7 @@ public class WSILServiceAdapter extends AbstractAdapter
 			return getTypeLabel(obj);
 		}
 		
-		String label = "";
+		String label = ""; //$NON-NLS-1$
 		Name name = null;
 		TypeOfAbstract abs = null;
 		

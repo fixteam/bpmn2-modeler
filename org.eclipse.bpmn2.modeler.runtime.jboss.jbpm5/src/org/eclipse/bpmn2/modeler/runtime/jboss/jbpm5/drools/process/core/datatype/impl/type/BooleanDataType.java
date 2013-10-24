@@ -50,10 +50,10 @@ public final class BooleanDataType
     }
 
     public String writeValue(Object value) {
-        return (Boolean) value ? "true" : "false";
+        return (Boolean) value ? "true" : "false"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     public String getStringType() {
-        return "Boolean";
+        return "Boolean"; //$NON-NLS-1$
     }
 }

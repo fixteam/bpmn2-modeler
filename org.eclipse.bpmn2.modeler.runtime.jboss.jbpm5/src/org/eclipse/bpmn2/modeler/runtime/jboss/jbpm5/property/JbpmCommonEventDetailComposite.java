@@ -20,9 +20,12 @@ import org.eclipse.bpmn2.Event;
 import org.eclipse.bpmn2.EventDefinition;
 import org.eclipse.bpmn2.ThrowEvent;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
+import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractListComposite;
 import org.eclipse.bpmn2.modeler.ui.property.events.CommonEventDetailComposite;
 import org.eclipse.bpmn2.modeler.ui.property.events.EventDefinitionsListComposite;
+import org.eclipse.bpmn2.modeler.ui.property.events.EventDefinitionsListComposite.EventDefinitionsDetailComposite;
+import org.eclipse.bpmn2.modeler.ui.property.tasks.DataAssociationDetailComposite.MapType;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -51,11 +54,25 @@ public class JbpmCommonEventDetailComposite extends CommonEventDetailComposite {
 	}
 
 	@Override
-	protected AbstractListComposite bindList(EObject object, EStructuralFeature feature, EClass listItemClass) {
+	protected AbstractListComposite bindList(final EObject object, EStructuralFeature feature, EClass listItemClass) {
 		if (isModelObjectEnabled(object.eClass(), feature)) {
-			if ("eventDefinitions".equals(feature.getName())) {
+			if ("eventDefinitions".equals(feature.getName())) { //$NON-NLS-1$
 				eventsTable = new EventDefinitionsListComposite(this, (Event)object) {
-	
+
+					public AbstractDetailComposite createDetailComposite(Composite parent, Class eClass) {
+						EventDefinitionsDetailComposite details = new EventDefinitionsDetailComposite(parent, (Event)getBusinessObject()) {
+							@Override
+							public void createBindings(EObject be) {
+								super.createBindings(be);
+								if (object instanceof CatchEvent)
+									getDataAssociationComposite().setAllowedMapTypes(MapType.Property.getValue());
+								else
+									getDataAssociationComposite().setAllowedMapTypes(MapType.Property.getValue() | MapType.Expression.getValue());
+							}
+						};
+						return details;
+					}
+					
 					@Override
 					protected EObject addListItem(EObject object, EStructuralFeature feature) {
 						List<EventDefinition> eventDefinitions = null;
@@ -65,8 +82,8 @@ public class JbpmCommonEventDetailComposite extends CommonEventDetailComposite {
 							eventDefinitions = ((CatchEvent)event).getEventDefinitions();
 							
 						if (eventDefinitions.size()>0) {
-							MessageDialog.openError(getShell(), "Not Supported",
-								"Can not add more than one Event Definition"
+							MessageDialog.openError(getShell(), Messages.JbpmCommonEventDetailComposite_Error_Title,
+								Messages.JbpmCommonEventDetailComposite_Error_Message
 							);
 							return null;
 						}
@@ -74,7 +91,7 @@ public class JbpmCommonEventDetailComposite extends CommonEventDetailComposite {
 					}
 				};
 				eventsTable.bindList(object, feature);
-				eventsTable.setTitle("Event Definitions");
+				eventsTable.setTitle(Messages.JbpmCommonEventDetailComposite_Title);
 				return eventsTable;
 			}
 			return super.bindList(object, feature, listItemClass);

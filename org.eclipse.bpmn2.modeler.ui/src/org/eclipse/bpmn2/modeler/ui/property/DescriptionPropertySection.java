@@ -47,8 +47,6 @@ public class DescriptionPropertySection extends DefaultPropertySection implement
 
 	public class DescriptionPropertyComposite extends DefaultDetailComposite {
 
-		StyledText descriptionText;
-		
 		/**
 		 * @param section
 		 */
@@ -77,14 +75,14 @@ public class DescriptionPropertySection extends DefaultPropertySection implement
 		public void createBindings(EObject be) {
 
 			bindDescription(be);
-			bindAttribute(be,"id");
-			bindAttribute(be,"name");
-			bindList(be, "documentation");
+			bindAttribute(be,"id"); //$NON-NLS-1$
+			bindAttribute(be,"name"); //$NON-NLS-1$
+			bindList(be, "documentation"); //$NON-NLS-1$
 			redrawPage();
 		}
 
 		protected boolean isModelObjectEnabled(String className, String featureName) {
-			if (featureName!=null && "name".equals(featureName))
+			if (featureName!=null && "name".equals(featureName)) //$NON-NLS-1$
 					return true;
 			return super.isModelObjectEnabled(className,featureName);
 		}
@@ -104,7 +102,7 @@ public class DescriptionPropertySection extends DefaultPropertySection implement
 		public String getDescription(EObject object) {
 			String description = null;
 
-			ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(object, ExtendedPropertiesAdapter.class);
+			ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object);
 			if (adapter!=null) {
 				// if this is a Custom Task, use the description provided by the <customTask> extension
 				if (ModelExtensionDescriptor.getModelExtensionAdapter(object) != null)

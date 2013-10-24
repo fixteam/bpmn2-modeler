@@ -85,7 +85,7 @@ public class BPMN2DiagramWizard extends Wizard implements INewWizard {
 			return false;
 		} catch (InvocationTargetException e) {
 			Throwable realException = e.getTargetException();
-			MessageDialog.openError(getShell(), "Error", realException.getMessage());
+			MessageDialog.openError(getShell(), Messages.BPMN2DiagramWizard_Error, realException.getMessage());
 			return false;
 		}
 		return true;

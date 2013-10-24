@@ -47,7 +47,7 @@ import org.eclipse.swt.widgets.Display;
  */
 public class AddChoreographyMessageFeature extends AbstractCustomFeature {
 
-	private boolean changesDone = false;
+	protected boolean changesDone = false;
 	
 	private static ILabelProvider labelProvider = new ILabelProvider() {
 
@@ -85,12 +85,12 @@ public class AddChoreographyMessageFeature extends AbstractCustomFeature {
 	
 	@Override
 	public String getName() {
-	    return "Add Message";
+	    return Messages.AddChoreographyMessageFeature_Name;
 	}
 	
 	@Override
 	public String getDescription() {
-	    return "Add a Message definition to this Choreography Participant";
+	    return Messages.AddChoreographyMessageFeature_Description;
 	}
 
 	@Override
@@ -172,7 +172,6 @@ public class AddChoreographyMessageFeature extends AbstractCustomFeature {
 
 						Message result = message;
 		
-						changesDone = true;
 						if (messageList.size()>1) {
 							PopupMenu popupMenu = new PopupMenu(messageList, labelProvider);
 							changesDone = popupMenu.show(Display.getCurrent().getActiveShell());
@@ -205,7 +204,7 @@ public class AddChoreographyMessageFeature extends AbstractCustomFeature {
 								bpmnShape.setIsMessageVisible(true);
 
 							} else {
-								// REPORT ERROR??
+								// TODO: REPORT ERROR??
 							}
 						}
 					}

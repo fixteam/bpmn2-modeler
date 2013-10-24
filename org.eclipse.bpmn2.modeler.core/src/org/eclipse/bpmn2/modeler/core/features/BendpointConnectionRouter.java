@@ -110,16 +110,12 @@ public class BendpointConnectionRouter extends DefaultConnectionRouter {
 			return calculateSelfConnectionRoute();
 		}
 
-		if (manual) {
-			return null;
-		}
-
 		ConnectionRoute route = new ConnectionRoute(this, 1, source, target);
 		
 		Point pStart;
 		Point pEnd;
 		if (sourceAnchor==null) {
-			BoundaryAnchor ba = AnchorUtil.findNearestBoundaryAnchor(source, oldPoints.get(oldPoints.size()-1));
+			BoundaryAnchor ba = AnchorUtil.findNearestBoundaryAnchor(source, oldPoints.get(1));
 			pStart = GraphicsUtil.createPoint(ba.anchor);
 		}
 		else {
@@ -127,7 +123,7 @@ public class BendpointConnectionRouter extends DefaultConnectionRouter {
 			pStart = oldPoints.get(0);
 		}
 		if (targetAnchor==null) {
-			BoundaryAnchor ba = AnchorUtil.findNearestBoundaryAnchor(target, oldPoints.get(0));
+			BoundaryAnchor ba = AnchorUtil.findNearestBoundaryAnchor(target, oldPoints.get(oldPoints.size()-2));
 			pEnd = GraphicsUtil.createPoint(ba.anchor);
 		}
 		else {
@@ -136,20 +132,20 @@ public class BendpointConnectionRouter extends DefaultConnectionRouter {
 		}
 
 		route.add(pStart);
+		if (!manual) {
+			oldPoints.clear();
+			oldPoints.add(pStart);
+			if (movedBendpoint!=null)
+				oldPoints.add(movedBendpoint);
+			oldPoints.add(pEnd);
+		}
 		
-		oldPoints.clear();
-		oldPoints.add(pStart);
-		if (movedBendpoint!=null)
-			oldPoints.add(movedBendpoint);
-		oldPoints.add(pEnd);
-
 		Point p1 = pStart;
 		Point p2;
-		Point p3;
-		for (int i=1; i<oldPoints.size(); ++i) {
+		for (int i=1; i<oldPoints.size() - 1; ++i) {
 			p2 = oldPoints.get(i);
 			ContainerShape shape = getCollision(p1,p2);
-			if (shape!=null) {
+			if (shape!=null && !manual) {
 				if (shape==target) {
 					// find a better target anchor if possible
 					if (targetAnchor==null) {
@@ -162,8 +158,10 @@ public class BendpointConnectionRouter extends DefaultConnectionRouter {
 				// navigate around this shape
 				DetourPoints detour = new DetourPoints(shape, margin);
 				for (Point d : detour.calculateDetour(p1, p2)) {
-					if (!route.add(d))
+					if (!route.add(d)) {
+						++i;
 						break;
+					}
 					p2 = d;
 				}
 				--i;
@@ -172,8 +170,8 @@ public class BendpointConnectionRouter extends DefaultConnectionRouter {
 				route.add(p2);
 			p1 = p2;
 		}
+
 		route.add(pEnd);
-		
 		
 		oldPoints.clear();
 		
@@ -303,19 +301,19 @@ public class BendpointConnectionRouter extends DefaultConnectionRouter {
 	 * remmoved from the connection
 	 */
 	public static void setMovedBendpoint(Connection connection, int index) {
-		setInterestingBendpoint(connection, "moved.", index);
+		setInterestingBendpoint(connection, "moved.", index); //$NON-NLS-1$
 	}
 
 	public static void setAddedBendpoint(Connection connection, int index) {
-		setInterestingBendpoint(connection, "added.", index);
+		setInterestingBendpoint(connection, "added.", index); //$NON-NLS-1$
 	}
 
 	public static void setRemovedBendpoint(Connection connection, int index) {
-		setInterestingBendpoint(connection, "removed.", index);
+		setInterestingBendpoint(connection, "removed.", index); //$NON-NLS-1$
 	}
 
 	public static void setFixedBendpoint(Connection connection, int index) {
-		setInterestingBendpoint(connection, "fixed."+index+".", index);
+		setInterestingBendpoint(connection, "fixed."+index+".", index); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	protected static void setInterestingBendpoint(Connection connection, String type, int index) {
@@ -339,19 +337,19 @@ public class BendpointConnectionRouter extends DefaultConnectionRouter {
 	 * @return a Graphiti Point in Diagram-relative coordinates, or null if the property is not set
 	 */
 	public static Point getMovedBendpoint(Connection connection) {
-		return getInterestingBendpoint(connection, "moved.");
+		return getInterestingBendpoint(connection, "moved."); //$NON-NLS-1$
 	}
 	
 	public static Point getAddedBendpoint(Connection connection) {
-		return getInterestingBendpoint(connection, "added.");
+		return getInterestingBendpoint(connection, "added."); //$NON-NLS-1$
 	}
 	
 	public static Point getRemovedBendpoint(Connection connection) {
-		return getInterestingBendpoint(connection, "removed.");
+		return getInterestingBendpoint(connection, "removed."); //$NON-NLS-1$
 	}
 	
 	public static Point getFixedBendpoint(Connection connection, int index) {
-		return getInterestingBendpoint(connection, "fixed."+index+".");
+		return getInterestingBendpoint(connection, "fixed."+index+"."); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	
 	protected static Point getInterestingBendpoint(Connection connection, String type) {

@@ -12,7 +12,6 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.ui.features.activity;
 
-import org.eclipse.bpmn2.Activity;
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.modeler.core.features.AbstractUpdateBaseElementFeature;
 import org.eclipse.bpmn2.modeler.core.features.BaseElementFeatureContainer;
@@ -21,21 +20,17 @@ import org.eclipse.bpmn2.modeler.core.features.MultiUpdateFeature;
 import org.eclipse.bpmn2.modeler.core.features.activity.MoveActivityFeature;
 import org.eclipse.bpmn2.modeler.core.features.activity.UpdateActivityCompensateMarkerFeature;
 import org.eclipse.bpmn2.modeler.core.features.activity.UpdateActivityLoopAndMultiInstanceMarkerFeature;
-import org.eclipse.bpmn2.modeler.core.features.event.AbstractBoundaryEventOperation;
-import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
-import org.eclipse.bpmn2.modeler.ui.features.AbstractDefaultDeleteFeature;
+import org.eclipse.bpmn2.modeler.ui.features.activity.task.CustomConnectionFeatureContainer.CreateCustomConnectionFeature;
 import org.eclipse.bpmn2.modeler.ui.features.event.AppendEventFeature;
 import org.eclipse.bpmn2.modeler.ui.features.gateway.AppendGatewayFeature;
+import org.eclipse.graphiti.features.ICreateConnectionFeature;
 import org.eclipse.graphiti.features.IDeleteFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.IMoveShapeFeature;
 import org.eclipse.graphiti.features.IResizeShapeFeature;
 import org.eclipse.graphiti.features.IUpdateFeature;
-import org.eclipse.graphiti.features.context.IDeleteContext;
 import org.eclipse.graphiti.features.context.IUpdateContext;
-import org.eclipse.graphiti.features.context.impl.DeleteContext;
 import org.eclipse.graphiti.features.custom.ICustomFeature;
-import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 
 public abstract class AbstractActivityFeatureContainer extends BaseElementFeatureContainer {
 
@@ -72,33 +67,20 @@ public abstract class AbstractActivityFeatureContainer extends BaseElementFeatur
 
 	@Override
 	public IDeleteFeature getDeleteFeature(IFeatureProvider fp) {
-		return new AbstractDefaultDeleteFeature(fp) {
-			@Override
-			public void delete(final IDeleteContext context) {
-				Activity activity = BusinessObjectUtil.getFirstElementOfType(context.getPictogramElement(),
-						Activity.class);
-				new AbstractBoundaryEventOperation() {
-					@Override
-					protected void doWorkInternal(ContainerShape container) {
-						IDeleteContext delete = new DeleteContext(container);
-						getFeatureProvider().getDeleteFeature(delete).delete(delete);
-					}
-				}.doWork(activity, getDiagram());
-				super.delete(context);
-			}
-		};
+		return new DeleteActivityFeature(fp);
 	}
 
 	@Override
 	public ICustomFeature[] getCustomFeatures(IFeatureProvider fp) {
 		ICustomFeature[] superFeatures = super.getCustomFeatures(fp);
-		ICustomFeature[] thisFeatures = new ICustomFeature[3 + superFeatures.length];
+		ICustomFeature[] thisFeatures = new ICustomFeature[4 + superFeatures.length];
 		int i;
 		for (i=0; i<superFeatures.length; ++i)
 			thisFeatures[i] = superFeatures[i];
 		thisFeatures[i++] = new AppendActivityFeature(fp);
 		thisFeatures[i++] = new AppendGatewayFeature(fp);
 		thisFeatures[i++] = new AppendEventFeature(fp);
+		thisFeatures[i++] = new MorphActivityFeature(fp);
 		return thisFeatures;
 	}
 }

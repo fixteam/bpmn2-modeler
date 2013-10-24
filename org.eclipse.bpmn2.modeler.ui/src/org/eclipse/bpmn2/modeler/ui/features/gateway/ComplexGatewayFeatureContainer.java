@@ -61,7 +61,7 @@ public class ComplexGatewayFeatureContainer extends AbstractGatewayFeatureContai
 	public class CreateComplexGatewayFeature extends AbstractCreateGatewayFeature<ComplexGateway> {
 
 		public CreateComplexGatewayFeature(IFeatureProvider fp) {
-			super(fp, "Complex Gateway", "Create "+"Complex Gateway");
+			super(fp, Messages.ComplexGatewayFeatureContainer_Name, Messages.ComplexGatewayFeatureContainer_Description);
 		}
 
 		@Override

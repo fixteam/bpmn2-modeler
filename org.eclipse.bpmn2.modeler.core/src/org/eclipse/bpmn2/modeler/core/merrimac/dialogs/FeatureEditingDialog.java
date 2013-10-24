@@ -14,15 +14,18 @@
 package org.eclipse.bpmn2.modeler.core.merrimac.dialogs;
 
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.PropertiesCompositeFactory;
+import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.transaction.RecordingCommand;
 import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.emf.transaction.impl.TransactionalEditingDomainImpl;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.jface.window.Window;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
@@ -45,6 +48,7 @@ public class FeatureEditingDialog extends ObjectEditingDialog {
 	}
 
 	public void create() {
+		startTransaction();
 		if (newObject==null) {
 			// create the new object
 			createNew = true;
@@ -67,7 +71,12 @@ public class FeatureEditingDialog extends ObjectEditingDialog {
 				featureEType = (EClass)feature.getEType();
 		}
 		
-		super.create();
+		if (cancel) {
+			rollbackTransaction();
+		}
+		else {
+			super.create();
+		}
 	}
 	
 	protected Composite createDialogContent(Composite parent) {
@@ -83,27 +92,27 @@ public class FeatureEditingDialog extends ObjectEditingDialog {
 			domain.getCommandStack().execute(new RecordingCommand(domain) {
 				@Override
 				protected void doExecute() {
-					result[0] = ModelUtil.createFeature(object, feature, eclass);
+					result[0] = Bpmn2ModelerFactory.createFeature(object, feature, eclass);
 				}
 			});
 		}
 		else {
-			result[0] = ModelUtil.createFeature(object, feature, eclass);
+			result[0] = Bpmn2ModelerFactory.createFeature(object, feature, eclass);
 		}
 		return result[0];
 	}
 
 	@Override
 	protected String getPreferenceKey() {
-		return super.getPreferenceKey() + "." + feature.getName();
+		return super.getPreferenceKey() + "." + feature.getName(); //$NON-NLS-1$
 	}
 	
 	@Override
 	protected String getTitle() {
 		if (createNew)
-			title = "Create New " + ModelUtil.getLabel(newObject);
+			title = NLS.bind(Messages.FeatureEditingDialog_Create, ModelUtil.getLabel(newObject));
 		else
-			title = "Edit " + ModelUtil.getLabel(newObject);
+			title = NLS.bind(Messages.FeatureEditingDialog_Edit, ModelUtil.getLabel(newObject));
 		return title;
 	}
 	
@@ -112,9 +121,34 @@ public class FeatureEditingDialog extends ObjectEditingDialog {
 	}
 	
 	@Override
+	public int open() {
+		int result = super.open();
+		if (result!=Window.OK){
+			undoCreateNewObject();
+		}
+		return result;
+	}
+
+	private void undoCreateNewObject() {
+		if (createNew && newObject!=null) {
+			ModelUtil.unsetID(newObject, object.eResource());
+			final TransactionalEditingDomain domain = (TransactionalEditingDomainImpl)editor.getEditingDomain();
+			if (domain!=null) {
+				if (domain.getCommandStack().canUndo()) {
+					domain.getCommandStack().undo();
+				}
+			}
+			else {
+				EcoreUtil.delete(newObject);
+			}
+		}
+		newObject = null;
+	}
+	
+	@Override
 	protected void cancelPressed() {
 		super.cancelPressed();
-		newObject = null;
+		undoCreateNewObject();
 	}
 	
 	public EObject getNewObject() {

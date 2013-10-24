@@ -87,7 +87,7 @@ public class ModelLabelProvider implements ILabelProvider {
 	
 	public String getText (Object object) {
 		if (object == null) {
-			return "Messages.ModelLabelProvider____None____1"; 
+			return Messages.ModelLabelProvider_Unknown; 
 		}
 		ILabeledElement label = (ILabeledElement)AdapterUtil.adapt(object, ILabeledElement.class, context );
 		if (label == null)  {

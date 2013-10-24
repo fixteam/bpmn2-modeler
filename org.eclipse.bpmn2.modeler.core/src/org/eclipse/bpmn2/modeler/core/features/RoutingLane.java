@@ -1,8 +1,19 @@
+/*******************************************************************************
+ * Copyright (c) 2011, 2012, 2013 Red Hat, Inc.
+ * All rights reserved.
+ * This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution,
+ * and is available at http://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors:
+ * 	Red Hat, Inc. - initial API and implementation
+ ******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.features;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
@@ -56,6 +67,15 @@ public class RoutingLane {
 			return Adjacence.BOTTOM;
 		}
 		return Adjacence.NONE;
+	}
+	
+	public boolean intersects(RoutingLane node) {
+		return intersects(node.rect);
+	}
+	
+	public boolean intersects(Rectangle rect) {
+		return GraphicsUtil.intersects(rect.x+1, rect.y+1, rect.width-2, rect.height-2,
+				this.rect.x+1, this.rect.y+1, this.rect.width-2, this.rect.height-2);
 	}
 	
 	public void addLeft(RoutingLane node) {

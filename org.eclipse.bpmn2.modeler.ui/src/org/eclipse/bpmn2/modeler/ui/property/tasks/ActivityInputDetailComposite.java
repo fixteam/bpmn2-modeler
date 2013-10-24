@@ -48,10 +48,10 @@ public class ActivityInputDetailComposite extends AbstractDetailComposite {
 			Activity abe = (Activity)be;
 			InputOutputSpecification ioSpecification = abe.getIoSpecification();
 			if (ioSpecification != null) {
-				EStructuralFeature feature = getFeature(ioSpecification, "dataInputs");
+				EStructuralFeature feature = getFeature(ioSpecification, "dataInputs"); //$NON-NLS-1$
 				bindList(ioSpecification, feature);
 			}
-			bindList(abe, "dataInputAssociations");
+			bindList(abe, "dataInputAssociations"); //$NON-NLS-1$
 		}
 	}
 }

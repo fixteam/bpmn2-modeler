@@ -52,9 +52,9 @@ public class ScriptTaskDetailComposite extends DefaultDetailComposite {
 	 */
 	@Override
 	public void createBindings(EObject be) {
-		bindAttribute(be,"scriptFormat");
+		bindAttribute(be,"scriptFormat"); //$NON-NLS-1$
 //		bindAttribute(be,"script");
-		scriptEditor = new TextObjectEditor(this,be,be.eClass().getEStructuralFeature("script"));
-		scriptEditor.createControl(getAttributesParent(),"Script");
+		scriptEditor = new TextObjectEditor(this,be,be.eClass().getEStructuralFeature("script")); //$NON-NLS-1$
+		scriptEditor.createControl(getAttributesParent(),Messages.ScriptTaskDetailComposite_Script_Label);
 	}
 }

@@ -14,24 +14,27 @@ package org.eclipse.bpmn2.modeler.ui.property.connectors;
 
 import org.eclipse.bpmn2.Expression;
 import org.eclipse.bpmn2.FlowNode;
+import org.eclipse.bpmn2.FormalExpression;
 import org.eclipse.bpmn2.SequenceFlow;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
+import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractPropertiesProvider;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.PropertiesCompositeFactory;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
-import org.eclipse.bpmn2.modeler.ui.property.data.ExpressionDetailComposite;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.transaction.RecordingCommand;
 import org.eclipse.emf.transaction.TransactionalEditingDomain;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 
-public class SequenceFlowDetailComposite extends ExpressionDetailComposite {
+public class SequenceFlowDetailComposite extends AbstractDetailComposite {
 
 	private Button addRemoveConditionButton;
 	private Button setDefaultFlowCheckbox;
@@ -48,25 +51,36 @@ public class SequenceFlowDetailComposite extends ExpressionDetailComposite {
 	}
 
 	@Override
-	public void cleanBindings() {
-		super.cleanBindings();
-		addRemoveConditionButton = null;
-		setDefaultFlowCheckbox = null;
+	public AbstractPropertiesProvider getPropertiesProvider(EObject object) {
+		if (propertiesProvider==null) {
+			propertiesProvider = new AbstractPropertiesProvider(object) {
+				String[] properties = new String[] {
+						"language", //$NON-NLS-1$
+						"body", //$NON-NLS-1$
+						"evaluatesToTypeRef" //$NON-NLS-1$
+				};
+				
+				@Override
+				public String[] getProperties() {
+					return properties; 
+				}
+			};
+		}
+		return propertiesProvider;
 	}
 
-	@SuppressWarnings("restriction")
 	@Override
 	public void createBindings(final EObject be) {
 		
-		bindAttribute(be, "name");
+		bindAttribute(be, "name"); //$NON-NLS-1$
 		
-		if (isModelObjectEnabled("SequenceFlow", "conditionExpression")) {
+		if (isModelObjectEnabled("SequenceFlow", "conditionExpression")) { //$NON-NLS-1$ //$NON-NLS-2$
 			
 			final SequenceFlow sequenceFlow = (SequenceFlow) be;
 			
 			GridData data;
 
-			addRemoveConditionButton = new Button(this, SWT.PUSH);
+			addRemoveConditionButton = getToolkit().createButton(this, "", SWT.PUSH); //$NON-NLS-1$
 			addRemoveConditionButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1));
 			addRemoveConditionButton.addSelectionListener(new SelectionAdapter() {
 				
@@ -78,10 +92,8 @@ public class SequenceFlowDetailComposite extends ExpressionDetailComposite {
 							if (sequenceFlow.getConditionExpression()!=null)
 								sequenceFlow.setConditionExpression(null);
 							else {
-								Expression exp = FACTORY.createFormalExpression();
+								Expression exp = createModelObject(FormalExpression.class);
 								sequenceFlow.setConditionExpression(exp);
-								ModelUtil.setID(exp);
-								
 								setDefault(sequenceFlow,null);
 							}
 							setBusinessObject(be);
@@ -89,68 +101,70 @@ public class SequenceFlowDetailComposite extends ExpressionDetailComposite {
 					});
 				}
 			});
+			
 			Expression exp = (Expression) sequenceFlow.getConditionExpression();
 			
-			setDefaultFlowCheckbox = new Button(this, SWT.CHECK);
-			data = new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1);
-			if (!allowDefault(sequenceFlow)) {
-				data.exclude = true;
-				setDefaultFlowCheckbox.setVisible(false);
-			}
-			setDefaultFlowCheckbox.setLayoutData(data);
-			setDefaultFlowCheckbox.addSelectionListener(new SelectionAdapter() {
-				
-				public void widgetSelected(SelectionEvent e) {
-					TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
-					domain.getCommandStack().execute(new RecordingCommand(domain) {
-						@Override
-						protected void doExecute() {
-							if (getDefault(sequenceFlow) != sequenceFlow)
-								setDefault(sequenceFlow,sequenceFlow);
-							else
-								setDefault(sequenceFlow,null);
-						}
-					});
-				}
-			});
-			
 			if (exp != null) {
-				addRemoveConditionButton.setText("Remove Condition");
-				setDefaultFlowCheckbox.setVisible(false);
-				this.businessObject = exp;
+				addRemoveConditionButton.setText(Messages.SequenceFlowDetailComposite_Remove_Button);
 				AbstractDetailComposite composite = PropertiesCompositeFactory.createDetailComposite(Expression.class, this, SWT.BORDER);
 				composite.setBusinessObject(exp);
-				composite.setTitle("Condition Expression");
+				// force the property page to resize to adjust for new expression section
+				Point size = composite.computeSize(-1, -1);
+				GridData gd = (GridData)composite.getLayoutData();
+				gd.widthHint = size.x;
+				gd.heightHint = size.y;
+				composite.setBusinessObject(exp);
+				composite.setTitle(Messages.SequenceFlowDetailComposite_Condition_Expression_Title);
 			}
 			else {
-				addRemoveConditionButton.setText("Add Condition");
+				addRemoveConditionButton.setText(Messages.SequenceFlowDetailComposite_Add_Button);
 				if (sequenceFlow.getSourceRef() instanceof FlowNode) {
 					FlowNode flowNode = (FlowNode)sequenceFlow.getSourceRef();
-//					Object adapter = flowNode.eClass().
 					String objectName = flowNode.getName();
 					if (objectName!=null && objectName.isEmpty())
 						objectName = null;
 					String typeName = ModelUtil.getLabel(flowNode);
 					if (allowDefault(sequenceFlow)) {
-						setDefaultFlowCheckbox.setVisible(true);
+						setDefaultFlowCheckbox = getToolkit().createButton(this, "", SWT.CHECK); //$NON-NLS-1$
+						data = new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1);
+						if (!allowDefault(sequenceFlow)) {
+							data.exclude = true;
+							setDefaultFlowCheckbox.setVisible(false);
+						}
+						setDefaultFlowCheckbox.setLayoutData(data);
+						setDefaultFlowCheckbox.addSelectionListener(new SelectionAdapter() {
+							
+							public void widgetSelected(SelectionEvent e) {
+								TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
+								domain.getCommandStack().execute(new RecordingCommand(domain) {
+									@Override
+									protected void doExecute() {
+										if (getDefault(sequenceFlow) != sequenceFlow)
+											setDefault(sequenceFlow,sequenceFlow);
+										else
+											setDefault(sequenceFlow,null);
+									}
+								});
+							}
+						});
 						setDefaultFlowCheckbox.setSelection( getDefault(sequenceFlow) == sequenceFlow );
-						setDefaultFlowCheckbox.setText("Default Flow for "+ typeName +
-								(objectName==null ? "" : (" \"" + objectName + "\"")));
+						setDefaultFlowCheckbox.setText(
+							NLS.bind(
+								Messages.SequenceFlowDetailComposite_Default_Flow_Label,
+								typeName,
+								(objectName==null ? "" : (" \"" + objectName + "\"")) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+							)
+						);
 					}
 				}
-				else {
-					setDefaultFlowCheckbox.setVisible(false);
-				}
 			}
-			redrawPage();
 		}
-		
 	}
 	
 	private boolean allowDefault(SequenceFlow sf) {
 		EObject obj = sf.getSourceRef();
 		if (obj!=null) {
-			EStructuralFeature feature = obj.eClass().getEStructuralFeature("default");
+			EStructuralFeature feature = obj.eClass().getEStructuralFeature("default"); //$NON-NLS-1$
 			if (feature==null || !isModelObjectEnabled(obj.eClass(),feature)) {
 				return false;
 			}
@@ -161,7 +175,7 @@ public class SequenceFlowDetailComposite extends ExpressionDetailComposite {
 	private void setDefault(SequenceFlow sf, EObject target) {
 		EObject obj = sf.getSourceRef();
 		if (obj!=null) {
-			EStructuralFeature feature = obj.eClass().getEStructuralFeature("default");
+			EStructuralFeature feature = obj.eClass().getEStructuralFeature("default"); //$NON-NLS-1$
 			if (feature!=null && obj.eGet(feature)!=target) {
 				obj.eSet(feature, target);
 			}
@@ -171,7 +185,7 @@ public class SequenceFlowDetailComposite extends ExpressionDetailComposite {
 	private EObject getDefault(SequenceFlow sf) {
 		EObject obj = sf.getSourceRef();
 		if (obj!=null) {
-			EStructuralFeature feature = obj.eClass().getEStructuralFeature("default");
+			EStructuralFeature feature = obj.eClass().getEStructuralFeature("default"); //$NON-NLS-1$
 			if (feature!=null) {
 				return (EObject) obj.eGet(feature);
 			}

@@ -21,6 +21,7 @@ import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractListComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractPropertiesProvider;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.ProcessVariableNameChangeAdapter;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.DroolsFactory;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.DroolsPackage;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.GlobalType;
@@ -55,9 +56,9 @@ public class JbpmDataItemsDetailComposite extends DataItemsDetailComposite {
 		if (propertiesProvider==null) {
 			propertiesProvider = new AbstractPropertiesProvider(object) {
 				String[] properties = new String[] {
-						"rootElements#Process.global",
-						"rootElements#Process.properties",
-						"rootElements#Process.resources",
+						"rootElements#Process.global", //$NON-NLS-1$
+						"rootElements#Process.properties", //$NON-NLS-1$
+						"rootElements#Process.resources", //$NON-NLS-1$
 				};
 				
 				@Override
@@ -87,7 +88,7 @@ public class JbpmDataItemsDetailComposite extends DataItemsDetailComposite {
 						@Override
 						protected EObject addListItem(EObject object, EStructuralFeature feature) {
 							// generate a unique global variable name
-							String base = "globalVar";
+							String base = "globalVar"; //$NON-NLS-1$
 							int suffix = 1;
 							String name = base + suffix;
 							for (;;) {
@@ -105,12 +106,15 @@ public class JbpmDataItemsDetailComposite extends DataItemsDetailComposite {
 							
 							GlobalType newGlobal = (GlobalType)DroolsFactory.eINSTANCE.create(listItemClass);
 							newGlobal.setIdentifier(name);
+							newGlobal.setId(name);
 							addExtensionValue(newGlobal);
+							ProcessVariableNameChangeAdapter a = new ProcessVariableNameChangeAdapter();
+							newGlobal.eAdapters().add(a);
 							return newGlobal;
 						}
 					};
 					globalsTable.bindList(process, DroolsPackage.eINSTANCE.getDocumentRoot_Global());
-					globalsTable.setTitle("Global List for "+ModelUtil.getLongDisplayName(process));
+					globalsTable.setTitle(Messages.JbpmDataItemsDetailComposite_Title+ModelUtil.getLongDisplayName(process));
 				}
 			}
 		}

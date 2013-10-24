@@ -25,12 +25,11 @@ import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractListComposite;
-import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultDetailComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultListComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultPropertySection;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.ListCompositeColumnProvider;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.TableColumn;
-import org.eclipse.bpmn2.modeler.core.runtime.ModelEnablementDescriptor;
+import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EClass;
@@ -64,15 +63,7 @@ public class InterfacePropertySection extends DefaultPropertySection {
 		if (super.appliesTo(part, selection)) {
 			if (isModelObjectEnabled(Bpmn2Package.eINSTANCE.getInterface())) {
 				EObject bo = getBusinessObjectForSelection(selection);
-				if (bo instanceof Participant) {
-					return true;
-				} else if (bo instanceof BPMNDiagram) {
-					BaseElement be = ((BPMNDiagram)bo).getPlane().getBpmnElement();
-					if (be instanceof Process)
-						return true;
-				} else if (bo instanceof CallableElement) {
-					return true;
-				}
+				return bo!=null;
 			}
 		}
 		return false;
@@ -90,11 +81,14 @@ public class InterfacePropertySection extends DefaultPropertySection {
 		} else if (bo instanceof CallableElement) {
 			return bo;
 		}
+		else if (bo instanceof Interface) {
+			return bo;
+		}
 		
 		return null;
 	}
 	
-	public class InterfaceSectionRoot extends DefaultDetailComposite {
+	public class InterfaceSectionRoot extends InterfaceDetailComposite {
 
 		protected DefinedInterfaceListComposite definedInterfacesTable;
 		protected ProvidedInterfaceListComposite providedInterfacesTable;
@@ -123,17 +117,22 @@ public class InterfacePropertySection extends DefaultPropertySection {
 
 		@Override
 		public void createBindings(EObject be) {
-			definedInterfacesTable = new DefinedInterfaceListComposite(this);
-			definedInterfacesTable.bindList(be);
-
-			if (be instanceof Participant) {
-				providedInterfacesTable = new ProvidedInterfaceListComposite(this);
-				providedInterfacesTable.bindList(be, getFeature(be, "interfaceRefs"));
+			if (be instanceof Interface) {
+				super.createBindings(be);
 			}
-			else if (be instanceof CallableElement) {
-				CallableElement ce = (CallableElement)be;
-				providedInterfacesTable = new ProvidedInterfaceListComposite(this);
-				providedInterfacesTable.bindList(be, getFeature(be, "supportedInterfaceRefs"));
+			else {
+				definedInterfacesTable = new DefinedInterfaceListComposite(this);
+				definedInterfacesTable.bindList(be);
+	
+				if (be instanceof Participant) {
+					providedInterfacesTable = new ProvidedInterfaceListComposite(this);
+					providedInterfacesTable.bindList(be, getFeature(be, "interfaceRefs")); //$NON-NLS-1$
+				}
+				else if (be instanceof CallableElement) {
+					CallableElement ce = (CallableElement)be;
+					providedInterfacesTable = new ProvidedInterfaceListComposite(this);
+					providedInterfacesTable.bindList(be, getFeature(be, "supportedInterfaceRefs")); //$NON-NLS-1$
+				}
 			}
 		}
 	}
@@ -160,7 +159,7 @@ public class InterfacePropertySection extends DefaultPropertySection {
 
 		@Override
 		protected EObject addListItem(EObject object, EStructuralFeature feature) {
-			Interface iface = (Interface) ModelUtil.createObject(object.eResource(), PACKAGE.getInterface());
+			Interface iface = Bpmn2ModelerFactory.create(object.eResource(), Interface.class);
 			
 			EList<EObject> list = (EList<EObject>)object.eGet(feature);
 			list.add(iface);
@@ -176,7 +175,7 @@ public class InterfacePropertySection extends DefaultPropertySection {
 				tc.setEditable(false);
 				
 				tc = new TableColumn(object,Bpmn2Package.eINSTANCE.getInterface_ImplementationRef());
-				columnProvider.add(tc).setHeaderText("Implementation");
+				columnProvider.add(tc).setHeaderText("Implementation"); //$NON-NLS-1$
 				tc.setEditable(false);
 			}
 			return columnProvider;
@@ -197,9 +196,9 @@ public class InterfacePropertySection extends DefaultPropertySection {
 		public void bindList(final EObject theobject, final EStructuralFeature thefeature) {
 			super.bindList(theobject, thefeature);
 			if (theobject instanceof Participant)
-				setTitle("Interfaces Provided by Participant");
+				setTitle(Messages.InterfacePropertySection_Participant_Title);
 			else if (theobject instanceof CallableElement)
-				setTitle("Interfaces Provided by Process");
+				setTitle(Messages.InterfacePropertySection_Process_Title);
 		}
 		
 		@Override
@@ -268,8 +267,8 @@ public class InterfacePropertySection extends DefaultPropertySection {
 					}
 					
 				});
-				dialog.setTitle("Interfaces");
-				dialog.setMessage("Select the Interface provided by this Process");
+				dialog.setTitle(Messages.InterfacePropertySection_Interfaces_Title);
+				dialog.setMessage(Messages.InterfacePropertySection_Interfaces_Message);
 				dialog.setAddCancelButton(true);
 				dialog.setHelpAvailable(false);
 				dialog.setInput(new Object());
@@ -282,9 +281,8 @@ public class InterfacePropertySection extends DefaultPropertySection {
 				iface = items.get(0);
 			}
 			else {
-				MessageDialog.openInformation(getShell(), "No Defined Interfaces",
-						"There are no new Interfaces to add.\n"+
-						"Please create a new Interface in the \"Defined Interfaces\" first."
+				MessageDialog.openInformation(getShell(), Messages.InterfacePropertySection_No_Interfaces_Error_Title,
+						Messages.InterfacePropertySection_No_Interfaces_Error_Message
 				);
 			}
 			

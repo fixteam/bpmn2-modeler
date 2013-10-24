@@ -26,8 +26,6 @@ import org.eclipse.ui.dialogs.SelectionStatusDialog;
  */
 
 public class SchemaImportDialog {
-	public static final String UI_EXTENSION_ID = "org.eclipse.bpmn2.modeler.ui";
-
 	// resource type flags for configuring this dialog:
 	public final static int ALLOW_XSD   = (1 << 0);
 	public final static int ALLOW_WSDL  = (1 << 1);
@@ -46,15 +44,15 @@ public class SchemaImportDialog {
 		// Get the SchemaImportDialog class for this Target Runtime from contributing plugins;
 		// if none found, use a default
 		IConfigurationElement[] config = Platform.getExtensionRegistry().getConfigurationElementsFor(
-				UI_EXTENSION_ID);
+				Activator.UI_EXTENSION_ID);
 		try {
 			for (IConfigurationElement e : config) {
-				if (e.getName().equals("importDialog")) {
-					String id = e.getAttribute("id");
-					String runtimeId = e.getAttribute("runtimeId");
+				if (e.getName().equals("importDialog")) { //$NON-NLS-1$
+					String id = e.getAttribute("id"); //$NON-NLS-1$
+					String runtimeId = e.getAttribute("runtimeId"); //$NON-NLS-1$
 					TargetRuntime rt = TargetRuntime.getCurrentRuntime();
 					if (rt!=null && rt.getId().equals(runtimeId)) {
-						delegate = (SelectionStatusDialog)e.createExecutableExtension("class");
+						delegate = (SelectionStatusDialog)e.createExecutableExtension("class"); //$NON-NLS-1$
 						break;
 					}
 				}

@@ -41,9 +41,9 @@ public class TextAnnotationDetailComposite extends DefaultDetailComposite {
 		if (propertiesProvider==null) {
 			propertiesProvider = new AbstractPropertiesProvider(object) {
 				String[] properties = new String[] {
-						"anyAttribute",
-						"textFormat",
-						"text",
+						"anyAttribute", //$NON-NLS-1$
+						"textFormat", //$NON-NLS-1$
+						"text", //$NON-NLS-1$
 				};
 				
 				@Override
@@ -57,7 +57,7 @@ public class TextAnnotationDetailComposite extends DefaultDetailComposite {
 
 	@Override
 	public void createBindings(EObject be) {
-		ExtendedPropertiesAdapter adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(be, ExtendedPropertiesAdapter.class);
+		ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(be);
 		adapter.getFeatureDescriptor(Bpmn2Package.eINSTANCE.getTextAnnotation_Text()).setMultiLine(true);
 		super.createBindings(be);
 	}

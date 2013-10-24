@@ -51,14 +51,14 @@ public final class UndefinedDataType implements DataType {
     }
 
     public Object readValue(String value) {
-        throw new IllegalArgumentException("Undefined datatype");
+        throw new IllegalArgumentException(Messages.UndefinedDataType_Undefined);
     }
 
     public String writeValue(Object value) {
-        throw new IllegalArgumentException("Undefined datatype");
+        throw new IllegalArgumentException(Messages.UndefinedDataType_Undefined);
     }
 
     public String getStringType() {
-        return "Object";
+        return "Object"; //$NON-NLS-1$
     }
 }

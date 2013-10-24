@@ -41,7 +41,7 @@ public class ErrorUtils {
 
 	public static void showErrorWithLogging(IStatus status){
 		Platform.getLog(Activator.getDefault().getBundle()).log(status);
-		ErrorDialog.openError(PlatformUI.getWorkbench().getDisplay().getActiveShell(), "An error occured", null, status);
+		ErrorDialog.openError(PlatformUI.getWorkbench().getDisplay().getActiveShell(), Messages.ErrorUtils_Title, null, status);
 	}
 
 

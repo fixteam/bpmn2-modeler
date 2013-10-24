@@ -25,17 +25,17 @@ import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 
 public class UpdateActivityLoopAndMultiInstanceMarkerFeature extends AbstractUpdateMarkerFeature<Activity> {
 
-	public static String IS_LOOP_OR_MULTI_INSTANCE = "marker.loop.or.multi";
+	public static String IS_LOOP_OR_MULTI_INSTANCE = "marker.loop.or.multi"; //$NON-NLS-1$
 
 	enum LoopCharacteristicType {
 		
-		NULL("null"), 
+		NULL("null"),  //$NON-NLS-1$
 		
 		LOOP(StandardLoopCharacteristics.class.getSimpleName()), 
 		
-		MULTI_PARALLEL(MultiInstanceLoopCharacteristics.class.getSimpleName() + ":parallel"), 
+		MULTI_PARALLEL(MultiInstanceLoopCharacteristics.class.getSimpleName() + ":parallel"),  //$NON-NLS-1$
 		
-		MULTI_SEQUENTIAL(MultiInstanceLoopCharacteristics.class.getSimpleName() + ":sequential");
+		MULTI_SEQUENTIAL(MultiInstanceLoopCharacteristics.class.getSimpleName() + ":sequential"); //$NON-NLS-1$
 
 		private String name;
 

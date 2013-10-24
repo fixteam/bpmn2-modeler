@@ -26,7 +26,7 @@ import org.eclipse.bpmn2.modeler.core.features.event.AddEventFeature;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.ui.ImageProvider;
-import org.eclipse.bpmn2.modeler.ui.features.AbstractAppendNodeNodeFeature;
+import org.eclipse.bpmn2.modeler.ui.features.AbstractAppendNodeFeature;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.graphiti.features.IAddFeature;
 import org.eclipse.graphiti.features.ICreateFeature;
@@ -85,7 +85,7 @@ public class EndEventFeatureContainer extends AbstractEventFeatureContainer {
 	public static class CreateEndEventFeature extends AbstractCreateEventFeature<EndEvent> {
 
 		public CreateEndEventFeature(IFeatureProvider fp) {
-			super(fp, "End Event", "Create "+"End Event");
+			super(fp, Messages.EndEventFeatureContainer_0, Messages.EndEventFeatureContainer_1+Messages.EndEventFeatureContainer_2);
 		}
 
 		@Override
@@ -104,7 +104,7 @@ public class EndEventFeatureContainer extends AbstractEventFeatureContainer {
 
 	protected static class UpdateEndEventFeature extends AbstractUpdateEventFeature {
 
-		public static String END_EVENT_MARKER = "marker.end.event";
+		public static String END_EVENT_MARKER = "marker.end.event"; //$NON-NLS-1$
 
 		/**
 		 * @param fp
@@ -128,7 +128,7 @@ public class EndEventFeatureContainer extends AbstractEventFeatureContainer {
 		List<ICustomFeature> thisFeatures = new ArrayList<ICustomFeature>();
 		int i;
 		for (ICustomFeature f : superFeatures) {
-			if (!(f instanceof AbstractAppendNodeNodeFeature))
+			if (!(f instanceof AbstractAppendNodeFeature))
 			thisFeatures.add(f);
 		}
 		return thisFeatures.toArray( new ICustomFeature[thisFeatures.size()] );

@@ -43,9 +43,12 @@ public class IoParameterMappingColumn extends TableColumn {
 
 	@Override
 	public String getHeaderText() {
+		if (headerText!=null)
+			return headerText;
+		
 		return ModelUtil.getLabel(
 				Bpmn2Package.eINSTANCE.getDataAssociation(),
-				feature.getName().startsWith("dataInput") ?
+				feature.getName().startsWith("dataInput") ? //$NON-NLS-1$
 					Bpmn2Package.eINSTANCE.getDataAssociation_SourceRef() :
 					Bpmn2Package.eINSTANCE.getDataAssociation_TargetRef()
 		);
@@ -62,7 +65,7 @@ public class IoParameterMappingColumn extends TableColumn {
 				text = ModelUtil.getDisplayName(target);
 			else {
 				if (da.getTransformation()!=null) {
-					text = "Transform: " + ModelUtil.getDisplayName(da.getTransformation());
+					text = Messages.IoParameterMappingColumn_Transform_Prefix + ModelUtil.getDisplayName(da.getTransformation());
 				}
 				if (!da.getAssignment().isEmpty()) {
 					String text2 = null;
@@ -70,18 +73,18 @@ public class IoParameterMappingColumn extends TableColumn {
 						FormalExpression expr  = getTargetExpression(da, assign);
 						String body = ModelUtil.getDisplayName(expr);
 						if (text2==null)
-							text2 = "Expression: " + body;
+							text2 = "\"" + body + "\""; //$NON-NLS-1$ //$NON-NLS-2$
 						else
-							text2 += ",\n" + body;
+							text2 += ",\n" + body; //$NON-NLS-1$
 					}
 					if (text==null)
 						text = text2;
 					else
-						text += " + " + text2;
+						text += " + " + text2; //$NON-NLS-1$
 				}
 			}
 		}
-		return text==null ? "" : text;
+		return text==null ? "" : text; //$NON-NLS-1$
 	}
 
 	private FormalExpression getTargetExpression(DataAssociation da, Assignment assign) {
@@ -151,6 +154,7 @@ public class IoParameterMappingColumn extends TableColumn {
 		// the real object to be modified is the DataAssociation
 		EStructuralFeature f = getTargetFeature((ItemAwareElement)element);
 		super.modify(association, f, value);
+		tableViewer.refresh(element);
 	}
 	
 	protected List<DataAssociation> getDataAssociations(ItemAwareElement element) {

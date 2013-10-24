@@ -31,7 +31,7 @@ import org.eclipse.swt.graphics.RGB;
 public class ShapeStyle {
 
 	public static IColorConstant DEFAULT_COLOR = new ColorConstant(212, 231, 248);
-	public static String DEFAULT_FONT_STRING = "arial,10,-,-";
+	public static String DEFAULT_FONT_STRING = "arial,10,-,-"; //$NON-NLS-1$
 	public static enum RoutingStyle { ManualBendpoint, AutomaticBendpoint, Manhattan};
 	IColorConstant shapeBackground;
 	IColorConstant shapePrimarySelectedColor;
@@ -39,7 +39,7 @@ public class ShapeStyle {
 	IColorConstant shapeForeground;
 	Font textFont;
 	IColorConstant textColor;
-	RoutingStyle routingStyle = RoutingStyle.ManualBendpoint;
+	RoutingStyle routingStyle = RoutingStyle.Manhattan;
 	boolean defaultSize;
 	boolean dirty;
 
@@ -69,7 +69,7 @@ public class ShapeStyle {
 	}
 	
 	protected ShapeStyle(String s) {
-		String[] a = s.trim().split(";");
+		String[] a = s.trim().split(";"); //$NON-NLS-1$
 		if (a.length>0)
 			shapeBackground = stringToColor(a[0]);
 		if (a.length>1)
@@ -205,15 +205,15 @@ public class ShapeStyle {
 	
 	public static String colorToString(IColorConstant c) {
 		return new String(
-				String.format("%02X",c.getRed()) +
-				String.format("%02X",c.getGreen()) +
-				String.format("%02X",c.getBlue())
+				String.format("%02X",c.getRed()) + //$NON-NLS-1$
+				String.format("%02X",c.getGreen()) + //$NON-NLS-1$
+				String.format("%02X",c.getBlue()) //$NON-NLS-1$
 				);
 	}
 	
 	public static IColorConstant stringToColor(String s) {
-		if (s.contains(",")) {
-			String[] a = s.split(",");
+		if (s.contains(",")) { //$NON-NLS-1$
+			String[] a = s.split(","); //$NON-NLS-1$
 			int r = Integer.parseInt(a[0]);
 			int g = Integer.parseInt(a[1]);
 			int b = Integer.parseInt(a[2]);
@@ -229,11 +229,11 @@ public class ShapeStyle {
 	}
 	
 	public static String booleanToString(boolean b) {
-		return b ? "1" : "0";
+		return b ? "1" : "0"; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	
 	public static boolean stringToBoolean(String s) {
-		return "1".equals(s);
+		return "1".equals(s); //$NON-NLS-1$
 	}
 	
 	public static RGB colorToRGB(IColorConstant c) {
@@ -246,20 +246,20 @@ public class ShapeStyle {
 
 	public static String fontToString(Font f) {
 		return new String(
-				f.getName() + "," +
-				f.getSize() + "," +
-				(f.isItalic() ? "I" : "-") + "," +
-				(f.isBold() ? "B" : "-")
+				f.getName() + "," + //$NON-NLS-1$
+				f.getSize() + "," + //$NON-NLS-1$
+				(f.isItalic() ? "I" : "-") + "," + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				(f.isBold() ? "B" : "-") //$NON-NLS-1$ //$NON-NLS-2$
 				);
 	}
 	
 	public static Font stringToFont(String s) {
-		String[] a = s.split(",");
+		String[] a = s.split(","); //$NON-NLS-1$
 		Font f = StylesFactory.eINSTANCE.createFont();
 		f.eSet(StylesPackage.eINSTANCE.getFont_Name(), a[0]);
 		f.eSet(StylesPackage.eINSTANCE.getFont_Size(), Integer.valueOf(a[1]));
-		f.eSet(StylesPackage.eINSTANCE.getFont_Italic(), a[2].equals("I"));
-		f.eSet(StylesPackage.eINSTANCE.getFont_Bold(), a[3].equals("B"));
+		f.eSet(StylesPackage.eINSTANCE.getFont_Italic(), a[2].equals("I")); //$NON-NLS-1$
+		f.eSet(StylesPackage.eINSTANCE.getFont_Bold(), a[3].equals("B")); //$NON-NLS-1$
 		return f;
 	}
 
@@ -285,19 +285,19 @@ public class ShapeStyle {
 		if (sp==null)
 			return encode(new ShapeStyle());
 		return new String(
-				colorToString(sp.shapeBackground) + ";" +
-				colorToString(sp.shapePrimarySelectedColor) + ";" +
-				colorToString(sp.shapeSecondarySelectedColor) + ";" +
-				colorToString(sp.shapeForeground) + ";" +
-				fontToString(sp.textFont) + ";" +
-				colorToString(sp.textColor) + ";" +
-				booleanToString(sp.defaultSize) + ";" +
+				colorToString(sp.shapeBackground) + ";" + //$NON-NLS-1$
+				colorToString(sp.shapePrimarySelectedColor) + ";" + //$NON-NLS-1$
+				colorToString(sp.shapeSecondarySelectedColor) + ";" + //$NON-NLS-1$
+				colorToString(sp.shapeForeground) + ";" + //$NON-NLS-1$
+				fontToString(sp.textFont) + ";" + //$NON-NLS-1$
+				colorToString(sp.textColor) + ";" + //$NON-NLS-1$
+				booleanToString(sp.defaultSize) + ";" + //$NON-NLS-1$
 				sp.routingStyle.name()
 				);
 	}
 	
 	public static ShapeStyle decode(String s) {
-		if (s==null || s.trim().split(";").length<6)
+		if (s==null || s.trim().split(";").length<6) //$NON-NLS-1$
 			return new ShapeStyle();
 		return new ShapeStyle(s);
 	}

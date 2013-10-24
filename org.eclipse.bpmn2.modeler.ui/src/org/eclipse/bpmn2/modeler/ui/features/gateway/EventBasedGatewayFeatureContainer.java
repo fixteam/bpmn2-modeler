@@ -40,8 +40,8 @@ import org.eclipse.graphiti.services.IPeService;
 
 public class EventBasedGatewayFeatureContainer extends AbstractGatewayFeatureContainer {
 
-	static final String INSTANTIATE_PROPERTY = "instantiate";
-	static final String EVENT_GATEWAY_TYPE_PROPERTY = "eventGatewayType";
+	static final String INSTANTIATE_PROPERTY = "instantiate"; //$NON-NLS-1$
+	static final String EVENT_GATEWAY_TYPE_PROPERTY = "eventGatewayType"; //$NON-NLS-1$
 
 	@Override
 	public boolean canApplyTo(Object o) {
@@ -94,7 +94,7 @@ public class EventBasedGatewayFeatureContainer extends AbstractGatewayFeatureCon
 	public static class CreateEventBasedGatewayFeature extends AbstractCreateGatewayFeature<EventBasedGateway> {
 
 		public CreateEventBasedGatewayFeature(IFeatureProvider fp) {
-			super(fp, "Event-Based Gateway", "Create "+"Event-Based Gateway");
+			super(fp, Messages.EventBasedGatewayFeatureContainer_Name, Messages.EventBasedGatewayFeatureContainer_Description);
 		}
 
 		@Override

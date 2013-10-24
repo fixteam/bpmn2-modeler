@@ -86,7 +86,7 @@ class ViewContentProvider implements IStructuredContentProvider, ITreeContentPro
 	 * expose its hierarchy.
 	 */
 	private void initialize() {
-		invisibleRoot = new TreeParent("");
+		invisibleRoot = new TreeParent(""); //$NON-NLS-1$
 	}
 
 	void updateModel(ModelHandler mh) {
@@ -102,7 +102,7 @@ class ViewContentProvider implements IStructuredContentProvider, ITreeContentPro
 
 			if (element instanceof Process) {
 				Process process = (Process) element;
-				TreeParent proc = new TreeParent("Process");
+				TreeParent proc = new TreeParent("Process"); //$NON-NLS-1$
 
 				createLaneSets(proc, process.getLaneSets());
 				createFlowElementTree(proc, process.getFlowElements());

@@ -30,8 +30,8 @@ class TreeObject implements IAdaptable {
 		this.f = f;
 		if (f instanceof FlowElement) {
 			FlowElement flowElem = (FlowElement) f;
-			name = flowElem.getName() == null ? "" : flowElem.getName();
-			name += " (" + f.eClass().getName() + ")";
+			name = flowElem.getName() == null ? "" : flowElem.getName(); //$NON-NLS-1$
+			name += " (" + f.eClass().getName() + ")"; //$NON-NLS-1$ //$NON-NLS-2$
 		} else {
 			name = f.eClass().getName();
 		}

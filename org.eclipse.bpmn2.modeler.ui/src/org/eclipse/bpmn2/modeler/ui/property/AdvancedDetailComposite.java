@@ -130,13 +130,13 @@ public class AdvancedDetailComposite extends AbstractDetailComposite {
 
 		detailsSection = toolkit.createSection(sashForm, ExpandableComposite.TITLE_BAR);
 		toolkit.paintBordersFor(detailsSection);
-		detailsSection.setText("Properties");
+		detailsSection.setText(Messages.AdvancedDetailComposite_Properties_Title);
 		detailsComposite = toolkit.createComposite(detailsSection);
 		detailsComposite.setLayout(new GridLayout(1,false));
 		detailsSection.setClient(detailsComposite);
 
 
-		fullDetails = toolkit.createButton(detailsComposite, "Show advanced details", SWT.CHECK);
+		fullDetails = toolkit.createButton(detailsComposite, Messages.AdvancedDetailComposite_Advanced_Button, SWT.CHECK);
 		data = new GridData(SWT.LEFT,SWT.TOP,false,false,1,1);
 		data.exclude = true;
 		fullDetails.setLayoutData(data);
@@ -234,7 +234,7 @@ public class AdvancedDetailComposite extends AbstractDetailComposite {
 			detailsDetailComposite.setBusinessObject(obj);
 
 			String name = ModelUtil.getDisplayName(obj);
-			detailsSection.setText(name+" Details");
+			detailsSection.setText(name+Messages.AdvancedDetailComposite_Details_Title);
 			detailsSection.setVisible(true);
 
 			redrawPage();
@@ -276,7 +276,7 @@ public class AdvancedDetailComposite extends AbstractDetailComposite {
 	}
 
 	private void hookPropertySheetPageMenu() {
-		MenuManager manager = new MenuManager("#PropertiesMenu");
+		MenuManager manager = new MenuManager("#PropertiesMenu"); //$NON-NLS-1$
 		manager.setRemoveAllWhenShown(true);
 		manager.addMenuListener(new IMenuListener() {
 
@@ -289,7 +289,7 @@ public class AdvancedDetailComposite extends AbstractDetailComposite {
 		Tree tree = treeViewer.getTree();
 		Menu menu = manager.createContextMenu(tree);
 		tree.setMenu(menu);
-		getDiagramEditor().getSite().registerContextMenu("#PropertiesMenu", manager, treeViewer);
+		getDiagramEditor().getSite().registerContextMenu("#PropertiesMenu", manager, treeViewer); //$NON-NLS-1$
 //		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart().getSite().registerContextMenu("#PropertiesMenu", manager, treeViewer);
 //		getPropertySection().getTabbedPropertySheetPage().
 //			getSite().registerContextMenu("#PropertiesMenu", manager, treeViewer);
@@ -311,14 +311,14 @@ public class AdvancedDetailComposite extends AbstractDetailComposite {
 	}
 
 	private void createRootProperties(MenuManager menuManager) {
-		MenuManager manager = new MenuManager("Add Root Property");
+		MenuManager manager = new MenuManager("Add Root Property"); //$NON-NLS-1$
 		menuManager.add(manager);
-		createMenuItems(manager, "", businessObject, true);
+		createMenuItems(manager, "", businessObject, true); //$NON-NLS-1$
 	}
 
 	private void createElementProperties(MenuManager manager, EObject baseElement) {
 		if (baseElement != null) {
-			createMenuItems(manager, "Add ", baseElement, false);
+			createMenuItems(manager, Messages.AdvancedDetailComposite_Add_Action, baseElement, false);
 		}
 	}
 
@@ -350,7 +350,7 @@ public class AdvancedDetailComposite extends AbstractDetailComposite {
 					Object value = baseElement.eGet(feature);
 
 					String name = PropertyUtil.deCamelCase(commandValue.eClass().getName());
-					if (name.equalsIgnoreCase("Expression") || name.equalsIgnoreCase("Formal Expression")) {
+					if (name.equalsIgnoreCase("Expression") || name.equalsIgnoreCase("Formal Expression")) { //$NON-NLS-1$ //$NON-NLS-2$
 						if (feature.getName() != null && !feature.getName().isEmpty()) {
 							String featureName = PropertyUtil.deCamelCase(' ' + feature.getName());
 							featureName = featureName.substring(0, 1).toUpperCase() + featureName.substring(1);
@@ -368,7 +368,7 @@ public class AdvancedDetailComposite extends AbstractDetailComposite {
 					Object value = baseElement.eGet(feature);
 
 					String name = PropertyUtil.deCamelCase(commandValue.eClass().getName());
-					if (name.equalsIgnoreCase("Expression") || name.equalsIgnoreCase("Formal Expression")) {
+					if (name.equalsIgnoreCase("Expression") || name.equalsIgnoreCase("Formal Expression")) { //$NON-NLS-1$ //$NON-NLS-2$
 						if (feature.getName() != null && !feature.getName().isEmpty()) {
 							String featureName = PropertyUtil.deCamelCase(' ' + feature.getName());
 							featureName = featureName.substring(0, 1).toUpperCase() + featureName.substring(1);
@@ -442,7 +442,7 @@ public class AdvancedDetailComposite extends AbstractDetailComposite {
 	}
 
 	private Action createRemoveAction(final EObject baseElement) {
-		return new Action("Remove") {
+		return new Action(Messages.AdvancedDetailComposite_Remove_Action) {
 			@SuppressWarnings("restriction")
 			@Override
 			public void run() {

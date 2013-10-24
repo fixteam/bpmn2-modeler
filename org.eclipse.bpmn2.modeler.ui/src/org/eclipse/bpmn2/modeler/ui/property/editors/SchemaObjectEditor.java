@@ -28,6 +28,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -77,7 +78,7 @@ public class SchemaObjectEditor extends TextAndButtonObjectEditor {
 		text.setEditable(true);
 		// and change the "Edit" button to a "Browse" to make it clear that
 		// an XML type can be selected from the imports 
-		defaultButton.setText("Browse...");
+		defaultButton.setText(Messages.SchemaObjectEditor_Browse_Button);
 		return text;
 	}
 
@@ -91,8 +92,8 @@ public class SchemaObjectEditor extends TextAndButtonObjectEditor {
 		if (dialog.open() == Window.OK) {
 			Object result = dialog.getResult()[0];
 			String selectionPath = dialog.getSelectionPath();
-			String value = "";
-			String selectionType = "";
+			String value = ""; //$NON-NLS-1$
+			String selectionType = ""; //$NON-NLS-1$
 
 			// TODO: do we need these?
 			if (result instanceof PortType) {
@@ -102,32 +103,32 @@ public class SchemaObjectEditor extends TextAndButtonObjectEditor {
 				if (prefix==null)
 					prefix = NamespaceUtil.addNamespace(resource, qname.getNamespaceURI());
 				if (prefix!=null)
-					value = prefix + ":";
+					value = prefix + ":"; //$NON-NLS-1$
 				value += qname.getLocalPart();
-				selectionType = "WSDL Port Type";
+				selectionType = Messages.SchemaObjectEditor_WSDL_Port;
 			}
 			if (result instanceof Operation) {
-				selectionType = "WSDL Operation";
+				selectionType = Messages.SchemaObjectEditor_WSDL_Operation;
 			}
 			if (result instanceof Input) {
 				Input input = (Input)result;
 				result = input.getMessage();
-				selectionType = "WSDL Input";
+				selectionType = Messages.SchemaObjectEditor_WSDL_Input;
 			}
 			if (result instanceof Output) {
 				Output output = (Output)result;
 				result = output.getMessage();
-				selectionType = "WSDL Output";
+				selectionType = Messages.SchemaObjectEditor_WSDL_Output;
 			}
 			if (result instanceof Fault) {
 				Fault fault = (Fault)result;
 				result = fault.getMessage();
-				selectionType = "WSDL Fault";
+				selectionType = Messages.SchemaObjectEditor_WSDL_Fault;
 			}
 			if (result instanceof Part) {
 				Part part = (Part)result;
 				result = part.getElementDeclaration();
-				selectionType = "WSDL Message Part";
+				selectionType = Messages.SchemaObjectEditor_WSDL_Message_Part;
 			}
 			if (result instanceof Message) {
 				Message message = (Message)result;
@@ -136,12 +137,12 @@ public class SchemaObjectEditor extends TextAndButtonObjectEditor {
 				if (prefix==null)
 					prefix = NamespaceUtil.addNamespace(resource, qname.getNamespaceURI());
 				if (prefix!=null)
-					value = prefix + ":";
+					value = prefix + ":"; //$NON-NLS-1$
 				value += qname.getLocalPart();
-				selectionType = "WSDL Message";
+				selectionType = Messages.SchemaObjectEditor_WSDL_Message;
 			}
 			if (result instanceof XSDAttributeDeclaration) {
-				selectionType = "XML Attribute";
+				selectionType = Messages.SchemaObjectEditor_XML_Attribute;
 			}
 			
 			if (result instanceof XSDElementDeclaration) {
@@ -156,7 +157,7 @@ public class SchemaObjectEditor extends TextAndButtonObjectEditor {
 				}
 				String prefix = NamespaceUtil.getPrefixForNamespace(resource, ns);
 				if (prefix!=null)
-					value = prefix + ":";
+					value = prefix + ":"; //$NON-NLS-1$
 				value += selectionPath;
 			}
 			if (result instanceof XSDTypeDefinition) {
@@ -165,15 +166,15 @@ public class SchemaObjectEditor extends TextAndButtonObjectEditor {
 				String ns = schema.getTargetNamespace();
 				String prefix = NamespaceUtil.getPrefixForNamespace(resource, ns);
 				if (prefix!=null)
-					value = prefix + ":";
+					value = prefix + ":"; //$NON-NLS-1$
 				value += selectionPath;
 			}
 			if (result instanceof XSDSchema) {
 				XSDSchema schema = (XSDSchema)result;
 				String prefix = NamespaceUtil.getPrefixForNamespace(resource, schema.getTargetNamespace());
 				if (prefix!=null)
-					value = prefix + ":";
-				value += "schema";
+					value = prefix + ":"; //$NON-NLS-1$
+				value += "schema"; //$NON-NLS-1$
 			}
 			if (result instanceof Process) {
 				Process process = (Process)result;
@@ -183,8 +184,10 @@ public class SchemaObjectEditor extends TextAndButtonObjectEditor {
 				value = ((IType)result).getFullyQualifiedName('.');
 			}
 			if (value.isEmpty()) {
-				MessageDialog.openWarning(parent.getShell(), "Invalid Selection","The selection, "+
-						selectionType+" is not a valid type definition.");
+				MessageDialog.openWarning(parent.getShell(),
+					Messages.SchemaObjectEditor_Invalid_Selection_Title,
+					NLS.bind(Messages.SchemaObjectEditor_Invalid_Selection_Message,selectionType)
+				);
 			}
 			else
 				setValue(value);

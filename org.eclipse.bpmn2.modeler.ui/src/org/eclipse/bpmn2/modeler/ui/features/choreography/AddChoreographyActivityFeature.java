@@ -31,7 +31,7 @@ import org.eclipse.bpmn2.di.ParticipantBandKind;
 import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.ModelHandler;
 import org.eclipse.bpmn2.modeler.core.di.DIImport;
-import org.eclipse.bpmn2.modeler.core.features.AbstractAddBPMNShapeFeature;
+import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2AddElementFeature;
 import org.eclipse.bpmn2.modeler.core.features.choreography.ChoreographyProperties;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
@@ -49,7 +49,7 @@ import org.eclipse.graphiti.services.IGaService;
 import org.eclipse.graphiti.services.IPeService;
 
 public class AddChoreographyActivityFeature<T extends ChoreographyActivity>
-	extends AbstractAddBPMNShapeFeature<T> {
+	extends AbstractBpmn2AddElementFeature<T> {
 
 	protected final IGaService gaService = Graphiti.getGaService();
 	protected final IPeService peService = Graphiti.getPeService();
@@ -151,7 +151,7 @@ public class AddChoreographyActivityFeature<T extends ChoreographyActivity>
 		peService.setPropertyValue(choreographyContainer, PARTICIPANT_REF_IDS,
 				ChoreographyUtil.getParticipantRefIds(choreography));
 		Participant initiatingParticipant = choreography.getInitiatingParticipantRef();
-		String id = initiatingParticipant == null ? "null" : initiatingParticipant.getId();
+		String id = initiatingParticipant == null ? "null" : initiatingParticipant.getId(); //$NON-NLS-1$
 		peService.setPropertyValue(choreographyContainer, INITIATING_PARTICIPANT_REF, id);
 	}
 

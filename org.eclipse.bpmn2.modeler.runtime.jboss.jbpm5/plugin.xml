@@ -11,10 +11,10 @@
    </extension>
 
 	<extension point="org.eclipse.bpmn2.modeler.runtime">
-		<runtime name="JBoss jBPM5 Business Process Engine" versions="5.1,5.2,5.3"
+		<runtime name="%runtime.name" versions="5.1,5.2,5.3"
 			id="org.jboss.runtime.jbpm5"
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.JBPM5RuntimeExtension"
-			description="BPMN2 Modeler customizations for the JBoss jBPM5 engine">
+			description="%runtime.description">
 		</runtime>
 
 		<model runtimeId="org.jboss.runtime.jbpm5"
@@ -28,7 +28,7 @@
 			id="bpmn2.jbpm.description.tab"
 			replaceTab="org.eclipse.bpmn2.modeler.description.tab"
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmDescriptionPropertySection"
-			label="Description">
+			label="%propertyTab.label">
 		</propertyTab>
 
 		<propertyTab
@@ -37,7 +37,7 @@
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmProcessDiagramPropertySection"
 			type="org.eclipse.bpmn2.di.BPMNDiagram"
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
-			label="Process">
+			label="%propertyTab.label.0">
 		</propertyTab>
 
 		<propertyTab
@@ -46,7 +46,7 @@
 			afterTab="org.eclipse.bpmn2.modeler.process.diagram.tab"
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmInterfacePropertySection"
 			type="org.eclipse.bpmn2.di.BPMNDiagram"
-			label="Interfaces">
+			label="%propertyTab.label.1">
 		</propertyTab>
 
 		<propertyTab
@@ -55,7 +55,7 @@
 			afterTab="org.eclipse.bpmn2.modeler.interface.tab"
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmDefinitionsPropertySection"
 			type="org.eclipse.bpmn2.di.BPMNDiagram"
-			label="Definitions">
+			label="%propertyTab.label.2">
 		</propertyTab>
 
 		<propertyTab
@@ -63,7 +63,7 @@
 			replaceTab="org.eclipse.bpmn2.modeler.dataitems.tab"
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmDataItemsPropertySection"
 			type="org.eclipse.bpmn2.di.BPMNDiagram"
-			label="Data Items">
+			label="%propertyTab.label.3">
 		</propertyTab>
 
 		<propertyTab
@@ -72,7 +72,7 @@
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmCustomTaskPropertySection"
 			type="org.eclipse.bpmn2.Task"
-			label="Custom Task">
+			label="%propertyTab.label.4">
 		</propertyTab>
 
 		<propertyTab
@@ -81,7 +81,7 @@
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmTaskPropertySection"
 			type="org.eclipse.bpmn2.Task"
-			label="Task">
+			label="%propertyTab.label.5">
 		</propertyTab>
 
 		<propertyTab
@@ -90,7 +90,7 @@
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmUserTaskPropertySection"
 			type="org.eclipse.bpmn2.UserTask"
-			label="User Task">
+			label="%propertyTab.label.6">
 		</propertyTab>
 
 		<propertyTab
@@ -99,7 +99,7 @@
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmBusinessRuleTaskPropertySection"
 			type="org.eclipse.bpmn2.BusinessRuleTask"
-			label="Business Rule Task">
+			label="%propertyTab.label.7">
 		</propertyTab>
 
 		<propertyTab
@@ -108,7 +108,7 @@
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmCallActivityPropertySection"
 			type="org.eclipse.bpmn2.CallActivity"
-			label="Call Activity">
+			label="%propertyTab.label.8">
 		</propertyTab>
 
 		<propertyTab
@@ -117,14 +117,14 @@
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmSubProcessPropertySection"
 			type="org.eclipse.bpmn2.SubProcess"
-			label="Sub Process">
+			label="%propertyTab.label.9">
 		</propertyTab>
 
 		<propertyTab
 			id="bpmn2.jbpm.empty.tab"
 			replaceTab="org.eclipse.bpmn2.modeler.main.tab"
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmEmptyPropertySection"
-			label="Empty">
+			label="%propertyTab.label.10">
 		</propertyTab>
 
 		<propertyTab
@@ -133,7 +133,16 @@
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
 		    class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmScriptTaskPropertySection"
 		    type="org.eclipse.bpmn2.ScriptTask"
-		    label="Script Task">
+		    label="%propertyTab.label.11">
+		</propertyTab>
+
+		<propertyTab
+	        id="bpmn2.jbpm.serviceTask.tab"
+	        replaceTab="org.eclipse.bpmn2.modeler.serviceTask.tab"
+			afterTab="org.eclipse.bpmn2.modeler.description.tab"
+		    class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmServiceTaskPropertySection"
+		    type="org.eclipse.bpmn2.ServiceTask"
+		    label="%propertyTab.label.12">
 		</propertyTab>
 
 		<propertyTab
@@ -142,7 +151,7 @@
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
 		    class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmReceiveTaskPropertySection"
 		    type="org.eclipse.bpmn2.ReceiveTask"
-	        label="Receive Task">
+	        label="%propertyTab.label.13">
 		</propertyTab>
 
 		<propertyTab
@@ -151,7 +160,7 @@
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
 		    class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmSendTaskPropertySection"
 		    type="org.eclipse.bpmn2.SendTask"
-	        label="Send Task">
+	        label="%propertyTab.label.14">
 		</propertyTab>
 
 		<propertyTab
@@ -160,7 +169,7 @@
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
 		    class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmManualTaskPropertySection"
 		    type="org.eclipse.bpmn2.ManualTask"
-	        label="Manual Task">
+	        label="%propertyTab.label.15">
 		</propertyTab>
 
 		<propertyTab
@@ -169,7 +178,7 @@
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmSequenceFlowPropertySection"
 			type="org.eclipse.bpmn2.SequenceFlow"
-			label="Sequence Flow">
+			label="%propertyTab.label.16">
 		</propertyTab>
 
 		<propertyTab
@@ -177,7 +186,7 @@
 			replaceTab="org.eclipse.bpmn2.modeler.activity.io.tab"
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmIoParametersPropertySection"
-			label="I/O Parameters">
+			label="%propertyTab.label.17">
 		</propertyTab>
 
 		<propertyTab
@@ -186,7 +195,7 @@
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmCommonEventPropertySection"
 			type="org.eclipse.bpmn2.Event"
-			label="Event">
+			label="%propertyTab.label.18">
 		</propertyTab>
 		
 		<propertyTab
@@ -195,14 +204,14 @@
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.JbpmGatewayPropertySection"
 			type="org.eclipse.bpmn2.Gateway"
-			label="Gateway">
+			label="%propertyTab.label.19">
 		</propertyTab>
 		
 		<propertyTab
 			id="org.jboss.runtime.jbpm5.simulation.tab"
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.SimulationPropertySection"
 			type="org.eclipse.bpmn2.BaseElement"
-			label="Simulation">
+			label="%propertyTab.label.20">
 		</propertyTab>
 
 <!-- Property Extension Adapters -->
@@ -211,8 +220,7 @@
 			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.propertyExtension.FormalExpression"
 			runtimeId="org.jboss.runtime.jbpm5"
 			type="org.eclipse.bpmn2.FormalExpression"
-			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.adapters.JbpmFormalExpressionPropertiesAdapter"
-			>
+			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.adapters.JbpmFormalExpressionPropertiesAdapter">
 		</propertyExtension>
 
 		<propertyExtension
@@ -271,6 +279,14 @@
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.adapters.JbpmGlobalTypePropertiesAdapter">
 		</propertyExtension>
 
+<!-- This needs to go into the SwitchYard extension for the jBPM Target Runtime extension
+		<propertyExtension
+			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.propertyExtension.serviceTask"
+			runtimeId="org.jboss.runtime.jbpm5"
+			type="org.eclipse.bpmn2.ServiceTask"
+			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.adapters.JbpmServiceTaskPropertiesAdapter">
+		</propertyExtension>
+-->
 		<propertyExtension
 			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.propertyExtension.exclusiveGateway"
 			runtimeId="org.jboss.runtime.jbpm5"
@@ -297,6 +313,50 @@
 			runtimeId="org.jboss.runtime.jbpm5"
 			type="org.eclipse.bpmn2.ParallelGateway"
 			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.adapters.JbpmGatewayPropertiesAdapter">
+		</propertyExtension>
+		
+		<!-- Things that have ItemDefinition references (data types) need to include the java native types in combo boxes and such -->
+
+		<propertyExtension
+			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.propertyExtension.CorrelationProperty"
+			runtimeId="org.jboss.runtime.jbpm5"
+			type="org.eclipse.bpmn2.CorrelationProperty"
+			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.adapters.JbpmCorrelationPropertyPropertiesAdapter">
+		</propertyExtension>
+
+		<propertyExtension
+			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.propertyExtension.Error"
+			runtimeId="org.jboss.runtime.jbpm5"
+			type="org.eclipse.bpmn2.Error"
+			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.adapters.JbpmErrorPropertiesAdapter">
+		</propertyExtension>
+		
+		<propertyExtension
+			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.propertyExtension.Escalation"
+			runtimeId="org.jboss.runtime.jbpm5"
+			type="org.eclipse.bpmn2.Escalation"
+			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.adapters.JbpmEscalationPropertiesAdapter">
+		</propertyExtension>
+
+		<propertyExtension
+			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.propertyExtension.Message"
+			runtimeId="org.jboss.runtime.jbpm5"
+			type="org.eclipse.bpmn2.Message"
+			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.adapters.JbpmMessagePropertiesAdapter">
+		</propertyExtension>
+
+		<propertyExtension
+			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.propertyExtension.ResourceParameter"
+			runtimeId="org.jboss.runtime.jbpm5"
+			type="org.eclipse.bpmn2.ResourceParameter"
+			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.adapters.JbpmResourceParameterPropertiesAdapter">
+		</propertyExtension>
+
+		<propertyExtension
+			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.propertyExtension.Signal"
+			runtimeId="org.jboss.runtime.jbpm5"
+			type="org.eclipse.bpmn2.Signal"
+			class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property.adapters.JbpmSignalPropertiesAdapter">
 		</propertyExtension>
 		
 <!-- Graphiti Feature Container Overrides -->
@@ -408,7 +468,7 @@
 		<modelExtension
 			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.modelExtension.process"
 			runtimeId="org.jboss.runtime.jbpm5"
-			name="Process Extensions"
+			name="%modelExtension.name"
 			type="Process">
 			<property name="version" value="1"/>
 			<property name="packageName" value="defaultPackage"/>
@@ -419,15 +479,16 @@
 		<modelExtension
 			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.modelExtension.sequenceFlow"
 			runtimeId="org.jboss.runtime.jbpm5"
-			name="SequenceFlow Extensions"
+			name="%modelExtension.name.0"
 			type="SequenceFlow">
 			<property name="priority" value="1" type="EInt"/>
+			<property name="name" value=""/>
 		</modelExtension>
 		
 		<modelExtension
 			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.modelExtension.businessRuleTask"
 			runtimeId="org.jboss.runtime.jbpm5"
-			name="BusinessRuleTask Extensions"
+			name="%modelExtension.name.1"
 			type="BusinessRuleTask">
 			<property name="ruleFlowGroup" value=""/>
 		</modelExtension>
@@ -435,7 +496,7 @@
 		<modelExtension
 			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.modelExtension.callActivity"
 			runtimeId="org.jboss.runtime.jbpm5"
-			name="CallActivity Extensions"
+			name="%modelExtension.name.2"
 			type="CallActivity">
 			<property name="waitForCompletion" value="true" type="EBoolean"/>
 			<property name="independent" value="false" type="EBoolean"/>
@@ -444,43 +505,96 @@
 		<modelExtension
 			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.modelExtension.exclusiveGateway"
 			runtimeId="org.jboss.runtime.jbpm5"
-			name="ExclusiveGateway Extensions"
+			name="%modelExtension.name.3"
 			type="ExclusiveGateway">
 			<property name="gatewayDirection" value="Diverging"/>
+			<property name="name" value=""/>
 		</modelExtension>
 		
 		<modelExtension
 			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.modelExtension.eventBasedGateway"
 			runtimeId="org.jboss.runtime.jbpm5"
-			name="EventBasedGateway Extensions"
+			name="%modelExtension.name.4"
 			type="EventBasedGateway">
 			<property name="gatewayDirection" value="Diverging"/>
+			<property name="name" value=""/>
 		</modelExtension>
 		
 		<modelExtension
 			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.modelExtension.inclusiveGateway"
 			runtimeId="org.jboss.runtime.jbpm5"
-			name="InclusiveGateway Extensions"
+			name="%modelExtension.name.5"
 			type="InclusiveGateway">
 			<property name="gatewayDirection" value="Diverging"/>
+			<property name="name" value=""/>
 		</modelExtension>
 		
 		<modelExtension
 			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.modelExtension.parallelGateway"
 			runtimeId="org.jboss.runtime.jbpm5"
-			name="ParallelGateway Extensions"
+			name="%modelExtension.name.6"
 			type="ParallelGateway">
 			<property name="gatewayDirection" value="Diverging"/>
+			<property name="name" value=""/>
+		</modelExtension>
+		
+		<!-- do not automatically generate name labels for these objects when created -->
+		
+		<modelExtension
+			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.modelExtension.startEvent"
+			runtimeId="org.jboss.runtime.jbpm5"
+			name="%modelExtension.name.7"
+			type="StartEvent">
+			<property name="name" value=""/>
+		</modelExtension>
+		
+		<modelExtension
+			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.modelExtension.endEvent"
+			runtimeId="org.jboss.runtime.jbpm5"
+			name="%modelExtension.name.8"
+			type="EndEvent">
+			<property name="name" value=""/>
+		</modelExtension>
+		
+		<modelExtension
+			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.modelExtension.boundaryEvent"
+			runtimeId="org.jboss.runtime.jbpm5"
+			name="%modelExtension.name.9"
+			type="BoundaryEvent">
+			<property name="name" value=""/>
+		</modelExtension>
+		
+		<modelExtension
+			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.modelExtension.intermediateCatchEvent"
+			runtimeId="org.jboss.runtime.jbpm5"
+			name="%modelExtension.name.10"
+			type="IntermediateCatchEvent">
+			<property name="name" value=""/>
+		</modelExtension>
+		
+		<modelExtension
+			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.modelExtension.intermediateThrowEvent"
+			runtimeId="org.jboss.runtime.jbpm5"
+			name="%modelExtension.name.11"
+			type="IntermediateThrowEvent">
+			<property name="name" value=""/>
 		</modelExtension>
 
+		<!-- customized User Task -->
+		
 		<modelExtension
 			id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.modelExtension.userTask"
 			runtimeId="org.jboss.runtime.jbpm5"
-			name="UserTask Extensions"
+			name="%modelExtension.name.12"
 			type="UserTask">
 			
 			<property name="ioSpecification">
 				<value>
+					<property name="outputSets">
+						<value>
+							<property name="name" value="Output Set" type="EString"/>
+						</value>
+					</property>
 					<property name="dataInputs">
 						<value>
 							<property name="name" value="TaskName" type="EString"/>
@@ -598,6 +712,7 @@
 			<enable object="BusinessRuleTask" feature="isForCompensation"/>
 			<enable object="BusinessRuleTask" feature="name"/>
 			<enable object="BusinessRuleTask" feature="ruleFlowGroup"/>
+			<enable object="CancelEventDefinition"/>
 			<enable object="CallActivity" feature="anyAttribute"/>
 			<enable object="CallActivity" feature="calledElementRef"/>
 			<enable object="CallActivity" feature="dataInputAssociations"/>
@@ -611,6 +726,7 @@
 			<enable object="CatchEvent" feature="dataOutputAssociation"/>
 			<enable object="CompensateEventDefinition" feature="activityRef"/>
 			<enable object="ConditionalEventDefinition" feature="condition"/>
+			<enable object="DataAssociation"/>
 			<enable object="DataInput" feature="anyAttribute"/>
 			<enable object="DataInput" feature="documentation"/>
 			<enable object="DataInput" feature="extensionDefinitions"/>
@@ -644,13 +760,9 @@
 			<enable object="Definitions" feature="diagrams"/>
 			<enable object="Definitions" feature="exporter"/>
 			<enable object="Definitions" feature="exporterVersion"/>
-			<enable object="Definitions" feature="expressionLanguage"/>
 			<enable object="Definitions" feature="extensionValues"/>
 			<enable object="Definitions" feature="extensions"/>
-			<enable object="Definitions" feature="name"/>
 			<enable object="Definitions" feature="rootElements"/>
-			<enable object="Definitions" feature="targetNamespace"/>
-			<enable object="Definitions" feature="typeLanguage"/>
 			<enable object="Documentation" feature="anyAttribute"/>
 			<enable object="Documentation" feature="extensionValues"/>
 			<enable object="Documentation" feature="text"/>
@@ -752,6 +864,9 @@
 			<enable object="Operation" feature="extensionValues"/>
 			<enable object="Operation" feature="id"/>
 			<enable object="Operation" feature="name"/>
+			<enable object="Operation" feature="inMessageRef"/>
+			<enable object="Operation" feature="outMessageRef"/>
+			<enable object="Operation" feature="errorRefs"/>
 			<enable object="ParallelGateway" feature="gatewayDirection"/>
 			<enable object="ParallelGateway" feature="name"/>
 			<enable object="Process" feature="adHoc"/>
@@ -767,10 +882,13 @@
 			<enable object="Property" feature="itemSubjectRef"/>
 			<enable object="Property" feature="name"/>
 			<enable object="ReceiveTask" feature="dataOutputAssociations"/>
+			<enable object="ReceiveTask" feature="implementation"/>
+			<enable object="ReceiveTask" feature="instantiate"/>
 			<enable object="ReceiveTask" feature="ioSpecification"/>
 			<enable object="ReceiveTask" feature="isForCompensation"/>
 			<enable object="ReceiveTask" feature="messageRef"/>
 			<enable object="ReceiveTask" feature="name"/>
+			<enable object="ReceiveTask" feature="operationRef"/>
 			<enable object="RootElement" feature="anyAttribute"/>
 			<enable object="RootElement" feature="extensionValues"/>
 			<enable object="ScriptTask" feature="isForCompensation"/>
@@ -779,9 +897,11 @@
 			<enable object="ScriptTask" feature="scriptFormat"/>
 			<enable object="SendTask" feature="dataInputAssociations"/>
 			<enable object="SendTask" feature="ioSpecification"/>
+			<enable object="SendTask" feature="implementation"/>
 			<enable object="SendTask" feature="isForCompensation"/>
 			<enable object="SendTask" feature="messageRef"/>
 			<enable object="SendTask" feature="name"/>
+			<enable object="SendTask" feature="operationRef"/>
 			<enable object="SequenceFlow" feature="conditionExpression"/>
 			<enable object="SequenceFlow" feature="name"/>
 			<enable object="SequenceFlow" feature="priority"/>
@@ -792,12 +912,14 @@
 			<enable object="ServiceTask" feature="dataOutputAssociations"/>
 			<enable object="ServiceTask" feature="ioSpecification"/>
 			<enable object="ServiceTask" feature="isForCompensation"/>
+			<enable object="ServiceTask" feature="implementation"/>
 			<enable object="ServiceTask" feature="name"/>
 			<enable object="ServiceTask" feature="operationRef"/>
 			<enable object="Signal" feature="id"/>
 			<enable object="Signal" feature="name"/>
 			<enable object="SignalEventDefinition" feature="signalRef"/>
 			<enable object="StartEvent" feature="name"/>
+			<enable object="StartEvent" feature="eventDefinitions"/>
 			<enable object="SubProcess" feature="flowElements"/>
 			<enable object="SubProcess" feature="isForCompensation"/>
 			<enable object="SubProcess" feature="loopCharacteristics"/>
@@ -817,6 +939,7 @@
 			<enable object="TextAnnotation" feature="id"/>
 			<enable object="TextAnnotation" feature="text"/>
 			<enable object="TextAnnotation" feature="textFormat"/>
+			<enable object="TerminateEventDefinition"/>
 			<enable object="ThrowEvent" feature="dataInputAssociation"/>
 			<enable object="TimerEventDefinition" feature="timeCycle"/>
 			<enable object="TimerEventDefinition" feature="timeDuration"/>
@@ -839,8 +962,9 @@
 			<disable object="AdHocSubProcess"/>
 			<disable object="Assignment"/>
 			<disable object="BPSimDataType"/>
-			<disable object="BoundaryEvent"/>
+			<disable object="BusinessRuleTask" feature="isForCompensation"/>
 			<disable object="CallActivity" feature="extensionValues"/>
+			<disable object="CallActivity" feature="isForCompensation"/>
 			<disable object="CompensateEventDefinition"/>
 			<disable object="ConditionalEventDefinition"/>
 			<disable object="DataInputAssociation"/>
@@ -850,6 +974,8 @@
 			<disable object="Documentation"/>
 			<disable object="Error"/>
 			<disable object="ErrorEventDefinition"/>
+			<disable object="Escalation"/>
+			<disable object="Interface"/>
 			<disable object="InputSet"/>
 			<disable object="IntermediateThrowEvent"/>
 			<disable object="Lane"/>
@@ -858,12 +984,19 @@
 			<disable object="Message"/>
 			<disable object="MessageEventDefinition"/>
 			<disable object="OutputSet"/>
-			<disable object="Property"/>
+			<disable object="Process" feature="isExecutable"/>
 			<disable object="ReceiveTask"/>
+			<disable object="ScriptTask" feature="isForCompensation"/>
 			<disable object="SendTask"/>
+			<disable object="SubProcess" feature="isForCompensation"/>
 			<disable object="Task" feature="extensionValues"/>
 			<disable object="UserTask" feature="extensionValues"/>
 			<disable object="Process" feature="adHoc"/>
+
+			<enable object="BoundaryEvent" feature="attachedToRef"/>
+			<enable object="BoundaryEvent" feature="cancelActivity"/>
+			<enable object="BoundaryEvent" feature="eventDefinitions"/>
+			<enable object="BoundaryEvent" feature="name"/>
 			
 			<enable object="GlobalType"/>
 			<enable object="ImportType"/>
@@ -945,7 +1078,7 @@
 			<enable object="SequenceFlow" feature="priority"/>
 			<enable object="SequenceFlow" feature="sourceRef"/>
 			<enable object="SequenceFlow" feature="targetRef"/>
-			<enable object="StartEvent"/>
+			<enable object="StartEvent" feature="name"/>
 			<enable object="TerminateEventDefinition" feature="id"/>
 		</modelEnablement>
 		
@@ -956,32 +1089,37 @@
 			runtimeId="org.jboss.runtime.jbpm5"
 			type="Process" profile="Simple">
 			
-			<category id="org.jboss.runtime.jbpm5.toolpalette.simple.Activities" name="Activities">
-				<tool name="AdHoc Subprocess" object="AdHocSubProcess"/>
-				<tool name="Subprocess" object="SubProcess"/>
-				<tool name="Reusable Subprocess" object="CallActivity"/>
-				<tool name="Task" object="Task"/>
-				<tool name="Manual Task" object="ManualTask"/>
-				<tool name="User Task" object="UserTask"/>
-				<tool name="Script Task" object="ScriptTask"/>
-				<tool name="Business Rule Task" object="BusinessRuleTask"/>
-				<tool name="Service Task" object="ServiceTask"/>
-				<tool name="Send Task" object="SendTask"/>
-				<tool name="Receive Task" object="ReceiveTask"/>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.simple.Activities" name="%category.name">
+				<tool name="%tool.name" object="AdHocSubProcess"/>
+				<tool name="%tool.name.0" object="SubProcess"/>
+				<tool name="%tool.name.1" object="CallActivity"/>
+				<tool name="%tool.name.2" object="ManualTask"/>
+				<tool name="%tool.name.3" object="UserTask"/>
+				<tool name="%tool.name.4" object="ScriptTask"/>
+				<tool name="%tool.name.5" object="BusinessRuleTask"/>
+				<tool name="%tool.name.6" object="SendTask"/>
+				<tool name="%tool.name.7" object="ReceiveTask"/>
 			</category>
-			<category id="org.jboss.runtime.jbpm5.toolpalette.simple.Connection" name="Connections">
-				<tool name="Sequence Flow" object="SequenceFlow"/>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.simple.BoundaryEvents" name="%category.name.0">
+				<tool name="%tool.name.8" object="BoundaryEvent+ErrorEventDefinition" icon="ErrorCatchEvent.png"/>
+				<tool name="%tool.name.9" object="BoundaryEvent+TimerEventDefinition" icon="TimerCatchEvent.png"/>
 			</category>
-			<category id="org.jboss.runtime.jbpm5.toolpalette.simple.Events" name="Events">
-				<tool name="Start" object="StartEvent" icon="StartEvent.png"/>
-				<tool name="End" object="EndEvent" icon="EndEvent.png"/>
-				<tool name="Error End" object="EndEvent+ErrorEventDefinition" icon="ErrorEndEvent.png"/>
-				<tool name="Terminate End" object="EndEvent+TerminateEventDefinition" icon="TerminateEndEvent.png"/>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.simple.Connection" name="%category.name.1">
+				<tool name="%tool.name.10" object="SequenceFlow"/>
 			</category>
-			<category id="org.jboss.runtime.jbpm5.toolpalette.simple.Gateways" name="Gateways">
-				<tool name="Data-based Exclusive (XOR)" object="ExclusiveGateway"/>
-				<tool name="Inclusive" object="InclusiveGateway"/>
-				<tool name="Parallel" object="ParallelGateway"/>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.simple.Events" name="%category.name.2">
+				<tool name="%tool.name.11" object="StartEvent" icon="StartEvent.png"/>
+				<tool name="%tool.name.12" object="EndEvent" icon="EndEvent.png"/>
+				<tool name="%tool.name.13" object="EndEvent+ErrorEventDefinition" icon="ErrorEndEvent.png"/>
+				<tool name="%tool.name.14" object="EndEvent+TerminateEventDefinition" icon="TerminateEndEvent.png"/>
+			</category>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.simple.Gateways" name="%category.name.3">
+				<tool name="%tool.name.15" object="ExclusiveGateway"/>
+				<tool name="%tool.name.16" object="ParallelGateway"/>
+			</category>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.full.CatchEvents" name="%category.name.4">
+				<tool name="%tool.name.17" object="IntermediateCatchEvent+SignalEventDefinition" icon="SignalCatchEvent.png"/>
+				<tool name="%tool.name.18" object="IntermediateCatchEvent+TimerEventDefinition" icon="TimerCatchEvent.png"/>
 			</category>
 		</toolPalette>
 		
@@ -990,22 +1128,22 @@
 			runtimeId="org.jboss.runtime.jbpm5"
 			type="Process" profile="RuleFlow">
 			
-			<category id="org.jboss.runtime.jbpm5.toolpalette.ruleFlow.Activities" name="Activities">
-				<tool name="Business Rule Task" object="BusinessRuleTask"/>
-				<tool name="Call Activity" object="CallActivity"/>
-				<tool name="Script Task" object="ScriptTask"/>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.ruleFlow.Activities" name="%category.name.5">
+				<tool name="%tool.name.19" object="BusinessRuleTask"/>
+				<tool name="%tool.name.20" object="CallActivity"/>
+				<tool name="%tool.name.21" object="ScriptTask"/>
 			</category>
-			<category id="org.jboss.runtime.jbpm5.toolpalette.ruleFlow.Connections" name="Connections">
-				<tool name="Sequence Flow" object="SequenceFlow"/>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.ruleFlow.Connections" name="%category.name.6">
+				<tool name="%tool.name.22" object="SequenceFlow"/>
 			</category>
-			<category id="org.jboss.runtime.jbpm5.toolpalette.ruleFlow.Events" name="Events">
-				<tool name="Start" object="StartEvent" icon="StartEvent.png"/>
-				<tool name="End" object="EndEvent" icon="EndEvent.png"/>
-				<tool name="Terminate" object="EndEvent+TerminateEventDefinition" icon="TerminateEndEvent.png"/>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.ruleFlow.Events" name="%category.name.7">
+				<tool name="%tool.name.23" object="StartEvent" icon="StartEvent.png"/>
+				<tool name="%tool.name.24" object="EndEvent" icon="EndEvent.png"/>
+				<tool name="%tool.name.25" object="EndEvent+TerminateEventDefinition" icon="TerminateEndEvent.png"/>
 			</category>
-			<category id="org.jboss.runtime.jbpm5.toolpalette.ruleFlow.Gateways" name="Gateways">
-				<tool name="Data-based Exclusive (XOR)" object="ExclusiveGateway"/>
-				<tool name="Parallel" object="ParallelGateway"/>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.ruleFlow.Gateways" name="%category.name.8">
+				<tool name="%tool.name.26" object="ExclusiveGateway"/>
+				<tool name="%tool.name.27" object="ParallelGateway"/>
 			</category>
 		</toolPalette>
 		
@@ -1014,117 +1152,91 @@
 			runtimeId="org.jboss.runtime.jbpm5"
 			type="Process" profile="Full">
 			
-			<category id="org.jboss.runtime.jbpm5.toolpalette.full.Activities" name="Activities">
-				<tool name="AdHoc Subprocess" object="AdHocSubProcess"/>
-				<tool name="Subprocess" object="SubProcess"/>
-				<tool name="Reusable Subprocess" object="CallActivity"/>
-				<tool name="Task" object="Task"/>
-				<tool name="Manual Task" object="ManualTask"/>
-				<tool name="User Task" object="UserTask"/>
-				<tool name="Script Task" object="ScriptTask"/>
-				<tool name="Business Rule Task" object="BusinessRuleTask"/>
-				<tool name="Service Task" object="ServiceTask"/>
-				<tool name="Send Task" object="SendTask"/>
-				<tool name="Receive Task" object="ReceiveTask"/>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.full.Activities" name="%category.name.9">
+				<tool name="%tool.name.28" object="AdHocSubProcess"/>
+				<tool name="%tool.name.29" object="SubProcess"/>
+				<tool name="%tool.name.30" object="CallActivity"/>
+				<tool name="%tool.name.31" object="Task"/>
+				<tool name="%tool.name.32" object="ManualTask"/>
+				<tool name="%tool.name.33" object="UserTask"/>
+				<tool name="%tool.name.34" object="ScriptTask"/>
+				<tool name="%tool.name.35" object="BusinessRuleTask"/>
+				<tool name="%tool.name.36" object="ServiceTask"/>
+				<tool name="%tool.name.37" object="SendTask"/>
+				<tool name="%tool.name.38" object="ReceiveTask"/>
 			</category>
-			<category id="org.jboss.runtime.jbpm5.toolpalette.full.Artifacts" name="Artifacts">
-				<tool name="Group" object="Group"/>
-				<tool name="Text Annotation" object="TextAnnotation"/>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.full.Artifacts" name="%category.name.10">
+				<tool name="%tool.name.39" object="Group"/>
+				<tool name="%tool.name.40" object="TextAnnotation"/>
 			</category>
-			<category id="org.jboss.runtime.jbpm5.toolpalette.full.Connections" name="Connections">
-				<tool name="Association (undirected)" object="Association[$associationDirection=None]"/>
-				<tool name="Association (one-way)" object="Association[$associationDirection=One]"/>
-				<tool name="Sequence Flow" object="SequenceFlow"/>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.simple.BoundaryEvents" name="%category.name.11">
+				<tool name="%tool.name.41" object="BoundaryEvent" icon="IntermediateEvent.png"/>
+				<tool name="%tool.name.42" object="BoundaryEvent+ConditionalEventDefinition" icon="ConditionalCatchEvent.png"/>
+				<tool name="%tool.name.43" object="BoundaryEvent+ErrorEventDefinition" icon="ErrorCatchEvent.png"/>
+				<tool name="%tool.name.44" object="BoundaryEvent+EscalationEventDefinition" icon="EscalationCatchEvent.png"/>
+				<tool name="%tool.name.45" object="BoundaryEvent+MessageEventDefinition" icon="MessageCatchEvent.png"/>
+				<tool name="%tool.name.46" object="BoundaryEvent+SignalEventDefinition" icon="SignalCatchEvent.png"/>
+				<tool name="%tool.name.47" object="BoundaryEvent+TimerEventDefinition" icon="TimerCatchEvent.png"/>
 			</category>
-			<category id="org.jboss.runtime.jbpm5.toolpalette.full.DataObjects" name="Data Objects">
-				<tool name="Data Object" object="DataObject"/>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.full.Connections" name="%category.name.12">
+				<tool name="%tool.name.48" object="Association[$associationDirection=None]"/>
+				<tool name="%tool.name.49" object="Association[$associationDirection=One]"/>
+				<tool name="%tool.name.50" object="DataAssociation"/>
+				<tool name="%tool.name.51" object="SequenceFlow"/>
 			</category>
-			<category id="org.jboss.runtime.jbpm5.toolpalette.full.EndEvents" name="End Events">
-				<tool name="Cancel" object="EndEvent+CancelEventDefinition" icon="CancelEndEvent.png"/>
-				<tool name="Compensation" object="EndEvent+CompensateEventDefinition" icon="CompensationEndEvent.png"/>
-				<tool name="End" object="EndEvent" icon="EndEvent.png"/>
-				<tool name="Error" object="EndEvent+ErrorEventDefinition" icon="ErrorEndEvent.png"/>
-				<tool name="Escalation" object="EndEvent+EscalationEventDefinition" icon="EscalationEndEvent.png"/>
-				<tool name="Message" object="EndEvent+MessageEventDefinition" icon="MessageEndEvent.png"/>
-				<tool name="Signal" object="EndEvent+SignalEventDefinition" icon="SignalEndEvent.png"/>
-				<tool name="Terminate" object="EndEvent+TerminateEventDefinition" icon="TerminateEndEvent.png"/>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.full.DataObjects" name="%category.name.13">
+				<tool name="%tool.name.52" object="DataObject"/>
 			</category>
-			<category id="org.jboss.runtime.jbpm5.toolpalette.full.Gateways" name="Gateways">
-				<tool name="Data-based Exclusive (XOR)" object="ExclusiveGateway"/>
-				<tool name="Event-based" object="EventBasedGateway"/>
-				<tool name="Inclusive" object="InclusiveGateway"/>
-				<tool name="Parallel" object="ParallelGateway"/>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.full.EndEvents" name="%category.name.14">
+				<tool name="%tool.name.53" object="EndEvent+CancelEventDefinition" icon="CancelEndEvent.png"/>
+				<tool name="%tool.name.54" object="EndEvent+CompensateEventDefinition" icon="CompensationEndEvent.png"/>
+				<tool name="%tool.name.55" object="EndEvent" icon="EndEvent.png"/>
+				<tool name="%tool.name.56" object="EndEvent+ErrorEventDefinition" icon="ErrorEndEvent.png"/>
+				<tool name="%tool.name.57" object="EndEvent+EscalationEventDefinition" icon="EscalationEndEvent.png"/>
+				<tool name="%tool.name.58" object="EndEvent+MessageEventDefinition" icon="MessageEndEvent.png"/>
+				<tool name="%tool.name.59" object="EndEvent+SignalEventDefinition" icon="SignalEndEvent.png"/>
+				<tool name="%tool.name.60" object="EndEvent+TerminateEventDefinition" icon="TerminateEndEvent.png"/>
 			</category>
-			<category id="org.jboss.runtime.jbpm5.toolpalette.full.CatchEvents" name="Intermediate Catch Events">
-				<tool name="Conditional" object="IntermediateCatchEvent+ConditionalEventDefinition" icon="ConditionalCatchEvent.png"/>
-				<tool name="Error" object="IntermediateCatchEvent+ErrorEventDefinition" icon="ErrorCatchEvent.png"/>
-				<tool name="Escalation" object="IntermediateCatchEvent+EscalationEventDefinition" icon="EscalationCatchEvent.png"/>
-				<tool name="Message" object="IntermediateCatchEvent+MessageEventDefinition" icon="MessageCatchEvent.png"/>
-				<tool name="Signal" object="IntermediateCatchEvent+SignalEventDefinition" icon="SignalCatchEvent.png"/>
-				<tool name="Timer" object="IntermediateCatchEvent+TimerEventDefinition" icon="TimerCatchEvent.png"/>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.full.Gateways" name="%category.name.15">
+				<tool name="%tool.name.61" object="ExclusiveGateway"/>
+				<tool name="%tool.name.62" object="EventBasedGateway"/>
+				<tool name="%tool.name.63" object="InclusiveGateway"/>
+				<tool name="%tool.name.64" object="ParallelGateway"/>
 			</category>
-			<category id="org.jboss.runtime.jbpm5.toolpalette.full.ThrowEvents" name="Intermediate Throw Events">
-				<tool name="Escalation" object="IntermediateThrowEvent+EscalationEventDefinition" icon="EscalationThrowEvent.png"/>
-				<tool name="Intermediate" object="IntermediateThrowEvent" icon="ThrowEvent.png"/>
-				<tool name="Message" object="IntermediateThrowEvent+MessageEventDefinition" icon="MessageThrowEvent.png"/>
-				<tool name="Signal" object="IntermediateThrowEvent+SignalEventDefinition" icon="SignalThrowEvent.png"/>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.full.CatchEvents" name="%category.name.16">
+				<tool name="%tool.name.65" object="IntermediateCatchEvent+ConditionalEventDefinition" icon="ConditionalCatchEvent.png"/>
+				<tool name="%tool.name.66" object="IntermediateCatchEvent+MessageEventDefinition" icon="MessageCatchEvent.png"/>
+				<tool name="%tool.name.67" object="IntermediateCatchEvent+SignalEventDefinition" icon="SignalCatchEvent.png"/>
+				<tool name="%tool.name.68" object="IntermediateCatchEvent+TimerEventDefinition" icon="TimerCatchEvent.png"/>
 			</category>
-			<category id="org.jboss.runtime.jbpm5.toolpalette.full.StartEvents" name="Start Events">
-				<tool name="Compensation" object="StartEvent+CompensateEventDefinition" icon="CompensationStartEvent.png"/>
-				<tool name="Conditional" object="StartEvent+ConditionalEventDefinition" icon="ConditionalStartEvent.png"/>
-				<tool name="Error" object="StartEvent+ErrorEventDefinition" icon="ErrorStartEvent.png"/>
-				<tool name="Escalation" object="StartEvent+EscalationEventDefinition" icon="EscalationStartEvent.png"/>
-				<tool name="Start" object="StartEvent" icon="StartEvent.png"/>
-				<tool name="Message" object="StartEvent+MessageEventDefinition" icon="MessageStartEvent.png"/>
-				<tool name="Signal" object="StartEvent+SignalEventDefinition" icon="SignalStartEvent.png"/>
-				<tool name="Timer" object="StartEvent+TimerEventDefinition" icon="TimerStartEvent.png"/>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.full.ThrowEvents" name="%category.name.17">
+				<tool name="%tool.name.69" object="IntermediateThrowEvent+CompensateEventDefinition" icon="CompensationEndEvent.png"/>
+				<tool name="%tool.name.70" object="IntermediateThrowEvent+EscalationEventDefinition" icon="EscalationThrowEvent.png"/>
+				<tool name="%tool.name.71" object="IntermediateThrowEvent" icon="IntermediateEvent.png"/>
+				<tool name="%tool.name.72" object="IntermediateThrowEvent+MessageEventDefinition" icon="MessageThrowEvent.png"/>
+				<tool name="%tool.name.73" object="IntermediateThrowEvent+SignalEventDefinition" icon="SignalThrowEvent.png"/>
 			</category>
-			<category id="org.jboss.runtime.jbpm5.toolpalette.full.SwimLanes" name="Swimlanes">
-				<tool name="Lane" object="Lane"/>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.full.StartEvents" name="%category.name.18">
+				<tool name="%tool.name.74" object="StartEvent+CompensateEventDefinition" icon="CompensationStartEvent.png"/>
+				<tool name="%tool.name.75" object="StartEvent+ConditionalEventDefinition" icon="ConditionalStartEvent.png"/>
+				<tool name="%tool.name.76" object="StartEvent+ErrorEventDefinition" icon="ErrorStartEvent.png"/>
+				<tool name="%tool.name.77" object="StartEvent+EscalationEventDefinition" icon="EscalationStartEvent.png"/>
+				<tool name="%tool.name.78" object="StartEvent" icon="StartEvent.png"/>
+				<tool name="%tool.name.79" object="StartEvent+MessageEventDefinition" icon="MessageStartEvent.png"/>
+				<tool name="%tool.name.80" object="StartEvent+SignalEventDefinition" icon="SignalStartEvent.png"/>
+				<tool name="%tool.name.81" object="StartEvent+TimerEventDefinition" icon="TimerStartEvent.png"/>
+			</category>
+			<category id="org.jboss.runtime.jbpm5.toolpalette.full.SwimLanes" name="%category.name.19">
+				<tool name="%tool.name.82" object="Lane"/>
 			</category>
 			
-			<category id="org.jboss.runtime.jbpm5.toolpalette.full.Patterns" name="Workflow Patterns">
-				<tool name="Sub Process with Start-&gt;End"
-					object="SubProcess+StartEvent[x=100,y=100],EndEvent[x=200,y=100],SequenceFlow"/>
-			
-			<!-- TODO: not yet implemented
-				<tool name="Arbitrary Cycles">
-					<composite id="arbitrary.cycles">
-						<object type="Task" id="arbitrary.cycles.taskA" name="Task A"/>
-						<object type="Task" id="arbitrary.cycles.taskB" name="Task B"/>
-						<object type="Task" id="arbitrary.cycles.taskC" name="Task C"/>
-						<object type="Task" id="arbitrary.cycles.taskD" name="Task D"/>
-						<object type="Task" id="arbitrary.cycles.taskE" name="Task E"/>
-						<object type="Task" id="arbitrary.cycles.taskF" name="Task F"/>
-						<object type="Task" id="arbitrary.cycles.taskG" name="Task G"/>
-						<object type="ExclusiveGateway" id="arbitrary.cycles.xor1"/>
-						<object type="ExclusiveGateway" id="arbitrary.cycles.xor2"/>
-						<object type="ExclusiveGateway" id="arbitrary.cycles.xor3"/>
-						<object type="ExclusiveGateway" id="arbitrary.cycles.xor4"/>
-						<object type="ExclusiveGateway" id="arbitrary.cycles.xor5"/>
-						<connection id="arbitrary.cycles.c1" type="SequenceFlow" source="arbitrary.cycles.taskA" target="arbitrary.cycles.xor1"/>
-						<connection id="arbitrary.cycles.c2" type="SequenceFlow" source="arbitrary.cycles.xor1" target="arbitrary.cycles.taskB"/>
-						<connection id="arbitrary.cycles.c3" type="SequenceFlow" source="arbitrary.cycles.xor1" target="arbitrary.cycles.xor2"/>
-						<connection id="arbitrary.cycles.c4" type="SequenceFlow" source="arbitrary.cycles.xor2" target="arbitrary.cycles.taskC"/>
-						<connection id="arbitrary.cycles.c5" type="SequenceFlow" source="arbitrary.cycles.taskB" target="arbitrary.cycles.xor3"/>
-						<connection id="arbitrary.cycles.c6" type="SequenceFlow" source="arbitrary.cycles.taskC" target="arbitrary.cycles.xor3"/>
-						<connection id="arbitrary.cycles.c7" type="SequenceFlow" source="arbitrary.cycles.xor3" target="arbitrary.cycles.taskD"/>
-						<connection id="arbitrary.cycles.c8" type="SequenceFlow" source="arbitrary.cycles.taskD" target="arbitrary.cycles.xor4"/>
-						<connection id="arbitrary.cycles.c9" type="SequenceFlow" source="arbitrary.cycles.xor4" target="arbitrary.cycles.taskE"/>
-						<connection id="arbitrary.cycles.c10" type="SequenceFlow" source="arbitrary.cycles.xor4" target="arbitrary.cycles.taskF"/>
-						<connection id="arbitrary.cycles.c11" type="SequenceFlow" source="arbitrary.cycles.taskF" target="arbitrary.cycles.xor5"/>
-						<connection id="arbitrary.cycles.c12" type="SequenceFlow" source="arbitrary.cycles.xor5" target="arbitrary.cycles.taskG"/>
-						<connection id="arbitrary.cycles.c13" type="SequenceFlow" source="arbitrary.cycles.xor5" target="arbitrary.cycles.xor2"/>
-					</composite>
-				</tool>
-			-->
-			</category>
+			<category id="org.bpmn2.modeler.toolpalette.process.patterns" fromPalette="org.bpmn2.modeler.toolpalette.process.default"/>
 			
 		</toolPalette>
 		
 		
 	</extension>
-	
+
  <extension
        point="org.eclipse.graphiti.ui.imageProviders">
     <imageProvider
@@ -1136,24 +1248,24 @@
  <extension
          point="org.eclipse.emf.validation.constraintProviders">
       <category
-            name="jBPM Constraints"
-            id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5"/>
+            name="%category.name.20"
+            id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validationCategory"/>
       <constraintProvider cache="true">
          <package namespaceUri="http://www.omg.org/spec/BPMN/20100524/MODEL-XMI"/>
-         <constraints categories="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5">
+         <constraints categories="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validationCategory">
             <constraint
                   lang="Java"
                   class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validation.ProcessConstraint"
                   severity="ERROR"
                   mode="Batch"
-                  name="Process Validation"
+                  name="%constraint.name"
                   id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validation.Process"
                   statusCode="1">
                <description>
-                  Process Name, ID and Package Name validation.
+                  %constraint.description
                </description>
                <message>
-                  {0}
+                  %constraint.message
                </message>
                <target class="Process"/>
             </constraint>
@@ -1162,14 +1274,14 @@
                   class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validation.BusinessRuleTaskConstraint"
                   severity="ERROR"
                   mode="Batch"
-                  name="Business Rule Task Validation"
+                  name="%constraint.name.0"
                   id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validation.BusinessRuleTask"
                   statusCode="1">
                <description>
-                  Business Rule Task validation.
+                  %constraint.description.0
                </description>
                <message>
-                  {0}
+                  %constraint.message.0
                </message>
                <target class="BusinessRuleTask"/>
             </constraint>
@@ -1178,14 +1290,14 @@
                   class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validation.UserTaskConstraint"
                   severity="WARNING"
                   mode="Batch"
-                  name="User Task Validation"
+                  name="%constraint.name.1"
                   id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validation.UserTask"
                   statusCode="1">
                <description>
-                  User Task validation.
+                  %constraint.description.1
                </description>
                <message>
-                  {0}
+                  %constraint.message.1
                </message>
                <target class="UserTask"/>
             </constraint>
@@ -1194,14 +1306,14 @@
                   class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validation.TaskConstraint"
                   severity="WARNING"
                   mode="Batch"
-                  name="Task Validation"
+                  name="%constraint.name.2"
                   id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validation.Task"
                   statusCode="1">
                <description>
-                  Task validation.
+                  %constraint.description.2
                </description>
                <message>
-                  {0}
+                  %constraint.message.2
                </message>
                <target class="Task"/>
             </constraint>
@@ -1210,14 +1322,14 @@
                   class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validation.GatewayConstraint"
                   severity="WARNING"
                   mode="Batch"
-                  name="Gateway Validation"
+                  name="%constraint.name.3"
                   id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validation.Gateway"
                   statusCode="1">
                <description>
-                  Gateway validation.
+                  %constraint.description.3
                </description>
                <message>
-                  {0}
+                  %constraint.message.3
                </message>
                <target class="Gateway"/>
             </constraint>
@@ -1226,17 +1338,33 @@
                   class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validation.CallActivityConstraint"
                   severity="WARNING"
                   mode="Batch"
-                  name="CallActivity Validation"
+                  name="%constraint.name.4"
                   id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validation.CallActivity"
                   statusCode="1">
                <description>
-                  CallActivity validation.
+                  %constraint.description.4
                </description>
                <message>
-                  {0}
+                  %constraint.message.4
                </message>
                <target class="CallActivity"/>
             </constraint>
+			<constraint
+					class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validation.ProcessVariableNameConstraint"
+					id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validation.VariableName"
+					isEnabledByDefault="true"
+					lang="Java"
+					mode="Live"
+					name="%constraint.name.5"
+					severity="INFO"
+					statusCode="1">
+				<message>%constraint.message.5</message>
+				<description>%constraint.description.5</description>
+				<target class="BaseElement"/>
+				<target class="Property"/>
+				<target class="Message"/>
+				<target class="DataObject"/>
+			</constraint>
          </constraints>
       </constraintProvider>
    </extension>
@@ -1245,25 +1373,43 @@
          point="org.eclipse.emf.validation.constraintBindings">
       <clientContext
             default="false"
-            id="org.eclipse.bpmn2.modeler.core.validationContext">
-         <selector class="org.eclipse.bpmn2.modeler.core.validation.ValidationDelegateClientSelector"/>
+            id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validationContext">
+         <enablement>
+         	<test
+                property="org.eclipse.bpmn2.modeler.property.targetRuntimeId"
+                value="org.jboss.runtime.jbpm5"/>
+         </enablement>
       </clientContext>
       <binding
-            context="org.eclipse.bpmn2.modeler.core.validationContext"
-            category="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5"/>
+            context="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validationContext"
+            category="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.validationCategory">
+      </binding>
    </extension>
+  
+  <extension
+        id="org.jboss.runtime.jbpm5.problemMarker"
+        name="%extension.name"
+        point="org.eclipse.core.resources.markers">
+     <persistent
+           value="true">
+     </persistent>
+     <super
+           type="org.eclipse.emf.validation.problem">
+     </super>
+  </extension>
+   
    <extension
          point="org.eclipse.ui.newWizards">
       <category
             id="org.eclipse.bpmn2.wizardCategory"
-            name="BPMN2">
+            name="%category.name.21">
       </category>
       <wizard
             category="org.eclipse.bpmn2.wizardCategory"
             class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wizards.NewJbpmProcessWizard"
             icon="icons/wizard.gif"
             id="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.wizards.NewJbpmProcessWizard"
-            name="jBPM Process Diagram">
+            name="%wizard.name">
       </wizard>
    </extension>
    

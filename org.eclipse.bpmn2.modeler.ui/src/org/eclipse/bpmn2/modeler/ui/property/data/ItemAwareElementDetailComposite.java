@@ -38,10 +38,10 @@ public class ItemAwareElementDetailComposite extends DefaultDetailComposite {
 		if (propertiesProvider==null) {
 			propertiesProvider = new AbstractPropertiesProvider(object) {
 				String[] properties = new String[] {
-						"id",
-						"name",
-						"dataState",
-						"itemSubjectRef"
+						"id", //$NON-NLS-1$
+						"name", //$NON-NLS-1$
+						"dataState", //$NON-NLS-1$
+						"itemSubjectRef" //$NON-NLS-1$
 				};
 				
 				@Override

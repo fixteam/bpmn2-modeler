@@ -34,7 +34,7 @@ public class JbpmImportTypeDetailComposite extends DefaultDetailComposite {
 			parent = getAttributesParent();
 		
 		final ImportType def = (ImportType)object;
-		String displayName = "Import"; //ModelUtil.getLabel(object, attribute);
+		String displayName = Messages.JbpmImportTypeDetailComposite_Title; //ModelUtil.getLabel(object, attribute);
 		
 		JbpmImportObjectEditor editor = new JbpmImportObjectEditor(this,object,attribute);
 		editor.createControl(parent,displayName);

@@ -72,7 +72,7 @@ public class ToolEnablementPreferences {
 	public static ToolEnablementPreferences getPreferences(IProject project) {
 		IEclipsePreferences rootNode = Platform.getPreferencesService().getRootNode();
 		Preferences prefs = rootNode.node(ProjectScope.SCOPE).node(project.getName())
-				.node("org.eclipse.bpmn2.modeler.tools");
+				.node("org.eclipse.bpmn2.modeler.tools"); //$NON-NLS-1$
 		return new ToolEnablementPreferences(prefs);
 	}
 
@@ -87,8 +87,8 @@ public class ToolEnablementPreferences {
 			for (String s : enablements) {
 				String className = null;
 				String featureName = null;
-				if (s.contains(".")) {
-					String[] a = s.split("\\.");
+				if (s.contains(".")) { //$NON-NLS-1$
+					String[] a = s.split("\\."); //$NON-NLS-1$
 					className = a[0];
 					featureName = a[1];
 				}
@@ -97,7 +97,7 @@ public class ToolEnablementPreferences {
 				
 				prefs.putBoolean(className, true);
 				if (featureName!=null)
-					prefs.putBoolean(className+"."+featureName, true);
+					prefs.putBoolean(className+"."+featureName, true); //$NON-NLS-1$
 			}
 		}
 		catch (Exception e) {
@@ -121,7 +121,7 @@ public class ToolEnablementPreferences {
 			for (EAttribute a : e.getEAllAttributes()) {
 				// anyAttribute is always enabled to support
 				// extension features.
-				if (!"anyAttribute".equals(a.getName()))
+				if (!"anyAttribute".equals(a.getName())) //$NON-NLS-1$
 						possibleFeatures.add(a);
 			}
 
@@ -188,7 +188,7 @@ public class ToolEnablementPreferences {
 		
 		ToolEnablement bpmnModelExtensionsRoot = new ToolEnablement();
 		bpmnModelExtensionsRoot.setEnabled(true);
-		bpmnModelExtensionsRoot.setName("BPMN Model Element Extensions");
+		bpmnModelExtensionsRoot.setName(Messages.ToolEnablementPreferences_BPMN_Extensions);
 
 		TargetRuntime rt = me.getRuntime();
 		for (ModelExtensionDescriptor mx : rt.getModelExtensions()) {
@@ -241,7 +241,7 @@ public class ToolEnablementPreferences {
 		
 		ToolEnablement runtimeModelExtensionsRoot = new ToolEnablement();
 		runtimeModelExtensionsRoot.setEnabled(true);
-		runtimeModelExtensionsRoot.setName("Target Runtime Model Extensions");
+		runtimeModelExtensionsRoot.setName(Messages.ToolEnablementPreferences_Target_Extensions);
 
 		
 		ArrayList<ToolEnablement> runtimeModelExtensions = new ArrayList<ToolEnablement>();
@@ -251,7 +251,7 @@ public class ToolEnablementPreferences {
 				EClass eclass = (EClass)ec;
 				// skip over DocumentRoot - we'll assume that all of its features are
 				// containers of, or references to EClasses which we'll process anyway.
-				if (eclass.getName().equals("DocumentRoot"))
+				if (eclass.getName().equals("DocumentRoot")) //$NON-NLS-1$
 					continue;
 				
 				ToolEnablement tool = new ToolEnablement(eclass, runtimeModelExtensionsRoot);
@@ -322,7 +322,7 @@ public class ToolEnablementPreferences {
 	}
 
 	public boolean isEnabled(EClass c, ENamedElement element) {
-		return prefs.getBoolean(c.getName() + "." + element.getName(), false);
+		return prefs.getBoolean(c.getName() + "." + element.getName(), false); //$NON-NLS-1$
 	}
 
 	public void setEnabled(ToolEnablement tool, boolean enabled) {
@@ -352,39 +352,39 @@ public class ToolEnablementPreferences {
 
 	public void exportPreferences(String runtimeId, String type, String profile, String path) throws BackingStoreException, FileNotFoundException, IOException {
 		FileWriter fw = new FileWriter(path);
-		boolean writeXml = path.endsWith(".xml");
+		boolean writeXml = path.endsWith(".xml"); //$NON-NLS-1$
 
 		List<String> keys = Arrays.asList(prefs.keys());
 		Collections.sort(keys);
 
 		if (writeXml) {
-			fw.write("\t\t<modelEnablement");
+			fw.write("\t\t<modelEnablement"); //$NON-NLS-1$
 			if (runtimeId!=null)
-				fw.write(" runtimeId=\"" + runtimeId + "\"");
+				fw.write(" runtimeId=\"" + runtimeId + "\""); //$NON-NLS-1$ //$NON-NLS-2$
 			if (type!=null)
-				fw.write(" type=\"" + type + "\"");
+				fw.write(" type=\"" + type + "\""); //$NON-NLS-1$ //$NON-NLS-2$
 			if (profile!=null)
-				fw.write(" profile=\"" + profile + "\"");
-			fw.write(">\r\n");
+				fw.write(" profile=\"" + profile + "\""); //$NON-NLS-1$ //$NON-NLS-2$
+			fw.write(">\r\n"); //$NON-NLS-1$
 			
-			fw.write("\t\t\t<disable object=\"all\"/>\r\n");
+			fw.write("\t\t\t<disable object=\"all\"/>\r\n"); //$NON-NLS-1$
 		}
 		
 		for (String k : keys) {
 			boolean enable = prefs.getBoolean(k, false);
 			if (writeXml) {
 				if (enable) {
-					if (k.contains(".")) {
-						String a[] = k.split("\\.");
-						fw.write("\t\t\t<enable object=\""+ a[0] + "\" feature=\"" + a[1] + "\"/>\r\n");
+					if (k.contains(".")) { //$NON-NLS-1$
+						String a[] = k.split("\\."); //$NON-NLS-1$
+						fw.write("\t\t\t<enable object=\""+ a[0] + "\" feature=\"" + a[1] + "\"/>\r\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 					}
 				}
 			}
 			else
-				fw.write(k + "=" + enable + "\r\n");
+				fw.write(k + "=" + enable + "\r\n"); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		if (writeXml) {
-			fw.write("\t</modelEnablement>\r\n");
+			fw.write("\t</modelEnablement>\r\n"); //$NON-NLS-1$
 		}
 		
 		fw.flush();

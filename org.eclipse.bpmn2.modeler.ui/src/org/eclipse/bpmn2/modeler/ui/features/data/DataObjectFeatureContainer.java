@@ -14,47 +14,37 @@ package org.eclipse.bpmn2.modeler.ui.features.data;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.bpmn2.BaseElement;
+import org.eclipse.bpmn2.Bpmn2Factory;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.DataObject;
 import org.eclipse.bpmn2.DataObjectReference;
 import org.eclipse.bpmn2.FlowElement;
-import org.eclipse.bpmn2.Lane;
-import org.eclipse.bpmn2.LaneSet;
-import org.eclipse.bpmn2.di.BPMNDiagram;
+import org.eclipse.bpmn2.impl.DataObjectImpl;
 import org.eclipse.bpmn2.modeler.core.ModelHandler;
 import org.eclipse.bpmn2.modeler.core.features.AbstractCreateFlowElementFeature;
 import org.eclipse.bpmn2.modeler.core.features.MultiUpdateFeature;
 import org.eclipse.bpmn2.modeler.core.features.data.AddDataFeature;
-import org.eclipse.bpmn2.modeler.core.features.data.Properties;
 import org.eclipse.bpmn2.modeler.core.features.label.UpdateLabelFeature;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
+import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.ui.Activator;
 import org.eclipse.bpmn2.modeler.ui.ImageProvider;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.graphiti.features.IAddFeature;
 import org.eclipse.graphiti.features.ICreateFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
-import org.eclipse.graphiti.features.IReason;
 import org.eclipse.graphiti.features.IUpdateFeature;
 import org.eclipse.graphiti.features.context.ICreateContext;
-import org.eclipse.graphiti.features.context.IUpdateContext;
-import org.eclipse.graphiti.features.impl.AbstractUpdateFeature;
-import org.eclipse.graphiti.features.impl.Reason;
-import org.eclipse.graphiti.mm.algorithms.Polyline;
-import org.eclipse.graphiti.mm.pictograms.ContainerShape;
-import org.eclipse.graphiti.mm.pictograms.Shape;
-import org.eclipse.graphiti.services.Graphiti;
-import org.eclipse.graphiti.services.IPeService;
 import org.eclipse.graphiti.ui.internal.util.ui.PopupMenu;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 
@@ -62,7 +52,7 @@ public class DataObjectFeatureContainer extends AbstractDataFeatureContainer {
 
 	@Override
 	public boolean canApplyTo(Object o) {
-		return super.canApplyTo(o) && o instanceof DataObject;
+		return o instanceof DataObject;
 	}
 
 	@Override
@@ -78,7 +68,7 @@ public class DataObjectFeatureContainer extends AbstractDataFeatureContainer {
 	@Override
 	public IUpdateFeature getUpdateFeature(IFeatureProvider fp) {
 		MultiUpdateFeature multiUpdate = new MultiUpdateFeature(fp);
-		multiUpdate.addUpdateFeature(new UpdateMarkersFeature(fp));
+		multiUpdate.addUpdateFeature(new UpdateDataObjectFeature(fp));
 		multiUpdate.addUpdateFeature(new UpdateLabelFeature(fp));
 		return multiUpdate;
 	}
@@ -91,52 +81,6 @@ public class DataObjectFeatureContainer extends AbstractDataFeatureContainer {
 		@Override
 		public String getName(DataObject t) {
 			return t.getName();
-		}
-	}
-
-	private class UpdateMarkersFeature extends AbstractUpdateFeature {
-
-		public UpdateMarkersFeature(IFeatureProvider fp) {
-			super(fp);
-		}
-
-		@Override
-		public boolean canUpdate(IUpdateContext context) {
-			Object o = getBusinessObjectForPictogramElement(context.getPictogramElement());
-			return o != null && o instanceof BaseElement && canApplyTo(o);
-		}
-
-		@Override
-		public IReason updateNeeded(IUpdateContext context) {
-			IPeService peService = Graphiti.getPeService();
-			ContainerShape container = (ContainerShape) context.getPictogramElement();
-			DataObject data = (DataObject) getBusinessObjectForPictogramElement(container);
-			boolean isCollection = Boolean.parseBoolean(peService.getPropertyValue(container,
-					Properties.COLLECTION_PROPERTY));
-			return data.isIsCollection() != isCollection ? Reason.createTrueReason() : Reason.createFalseReason();
-		}
-
-		@Override
-		public boolean update(IUpdateContext context) {
-			IPeService peService = Graphiti.getPeService();
-			ContainerShape container = (ContainerShape) context.getPictogramElement();
-			DataObject data = (DataObject) getBusinessObjectForPictogramElement(container);
-
-			boolean drawCollectionMarker = data.isIsCollection();
-
-			Iterator<Shape> iterator = peService.getAllContainedShapes(container).iterator();
-			while (iterator.hasNext()) {
-				Shape shape = iterator.next();
-				String prop = peService.getPropertyValue(shape, Properties.HIDEABLE_PROPERTY);
-				if (prop != null && new Boolean(prop)) {
-					Polyline line = (Polyline) shape.getGraphicsAlgorithm();
-					line.setLineVisible(drawCollectionMarker);
-				}
-			}
-
-			peService.setPropertyValue(container, Properties.COLLECTION_PROPERTY,
-					Boolean.toString(data.isIsCollection()));
-			return true;
 		}
 	}
 
@@ -162,7 +106,7 @@ public class DataObjectFeatureContainer extends AbstractDataFeatureContainer {
 			public String getText(Object element) {
 				if (((DataObject) element).getId() == null)
 					return ((DataObject) element).getName();
-				return "Reference existing \"" + ((DataObject) element).getName() + "\"";
+				return NLS.bind(Messages.DataObjectFeatureContainer_Ref, ((DataObject) element).getName());
 			}
 
 			public Image getImage(Object element) {
@@ -173,6 +117,12 @@ public class DataObjectFeatureContainer extends AbstractDataFeatureContainer {
 
 		public CreateDataObjectFeature(IFeatureProvider fp) {
 			super(fp, "数据对象", "Create "+"Data Object");
+			//super(fp, Messages.DataObjectFeatureContainer_Name, Messages.DataObjectFeatureContainer_Description);
+		}
+
+		@Override
+		public boolean canCreate(ICreateContext context) {
+			return FeatureSupport.isValidDataTarget(context);
 		}
 
 		@Override
@@ -190,6 +140,7 @@ public class DataObjectFeatureContainer extends AbstractDataFeatureContainer {
 
 		@Override
 		public FlowElement createBusinessObject(ICreateContext context) {
+			changesDone = true;
 			FlowElement bo = null;
 			try {
 				DataObjectReference dataObjectReference = null;
@@ -197,52 +148,67 @@ public class DataObjectFeatureContainer extends AbstractDataFeatureContainer {
 				ModelHandler mh = ModelHandler.getInstance(getDiagram());
 				dataObjectReference = Bpmn2ModelerFactory.create(DataObjectReference.class);
 				dataObject = Bpmn2ModelerFactory.create(DataObject.class);
-				dataObject.setName("Create a new Data Object");
-				Object container = getBusinessObjectForPictogramElement(context.getTargetContainer());
-				Object containerBO = container;
-				if (container instanceof BPMNDiagram) {
-					containerBO = ((BPMNDiagram)container).getPlane().getBpmnElement();
-				}
-				if (container instanceof Lane) {
-					EObject laneSet = ((Lane)container).eContainer();
-					if (laneSet instanceof LaneSet)
-						containerBO = laneSet.eContainer();
-				}
+				String oldName = dataObject.getName();
+				dataObject.setName(Messages.DataObjectFeatureContainer_New);
+				dataObject.setId(null);
+				EObject targetBusinessObject = (EObject)getBusinessObjectForPictogramElement(context.getTargetContainer());
+				
+				// NOTE: this code removed. A DataObjectReference may reference DataObjects
+				// from any other container (Process) in the BPMN file, not just those defined
+				// within the same container as the target (context.getTargetContainer())
+//				Object containerBO = container;
+//				if (container instanceof BPMNDiagram) {
+//					containerBO = ((BPMNDiagram)container).getPlane().getBpmnElement();
+//				}
+//				if (container instanceof Lane) {
+//					EObject laneSet = ((Lane)container).eContainer();
+//					if (laneSet instanceof LaneSet)
+//						containerBO = laneSet.eContainer();
+//				}
 
 				List<DataObject> dataObjectList = new ArrayList<DataObject>();
 				dataObjectList.add(dataObject);
-				TreeIterator<EObject> iter = mh.getDefinitions().eAllContents();
+				TreeIterator<EObject> iter = ModelUtil.getDefinitions(targetBusinessObject).eAllContents();
 				while (iter.hasNext()) {
 					EObject obj = iter.next();
-					if (obj instanceof DataObject && obj.eContainer() == containerBO)
+					if (obj instanceof DataObject) // removed, see above: && obj.eContainer() == containerBO)
 						dataObjectList.add((DataObject) obj);
 				}
 
 				DataObject result = dataObject;
 				if (dataObjectList.size() > 1) {
 					PopupMenu popupMenu = new PopupMenu(dataObjectList, labelProvider);
-					boolean b = popupMenu.show(Display.getCurrent().getActiveShell());
-					if (b) {
+					changesDone = popupMenu.show(Display.getCurrent().getActiveShell());
+					if (changesDone) {
 						result = (DataObject) popupMenu.getResult();
 					}
+					else {
+						EcoreUtil.delete(dataObject);
+						EcoreUtil.delete(dataObjectReference);
+					}
 				}
-				if (result == dataObject) { // the new one
-					mh.addFlowElement(container,dataObject);
-					dataObject.setId(null);
-					ModelUtil.setID(dataObject);
-					dataObject.setIsCollection(false);
-					dataObject.setName(ModelUtil.toDisplayName(dataObject.getId()));
-					dataObjectReference.setName(dataObject.getName());
-					bo = dataObject;
-				} else {
-					mh.addFlowElement(container,dataObjectReference);
-					ModelUtil.setID(dataObjectReference);
-					dataObjectReference.setName(result.getName() + " Ref");
-					dataObjectReference.setDataObjectRef(result);
-					dataObject = result;
-					bo = dataObjectReference;
+				if (changesDone) {
+					if (result == dataObject) { // the new one
+						mh.addFlowElement(targetBusinessObject,dataObject);
+						ModelUtil.setID(dataObject);
+						dataObject.setIsCollection(false);
+						dataObject.setName(oldName);
+						bo = dataObject;
+					} else {
+						mh.addFlowElement(targetBusinessObject,dataObjectReference);
+						ModelUtil.setID(dataObjectReference);
+						dataObjectReference.setName(
+							NLS.bind(
+								Messages.DataObjectFeatureContainer_Default_Name,
+								result.getName()
+							)
+						);
+						dataObjectReference.setDataObjectRef(result);
+						dataObject = result;
+						bo = dataObjectReference;
+					}
+					putBusinessObject(context, bo);
 				}
-				putBusinessObject(context, bo);
 
 			} catch (IOException e) {
 				Activator.showErrorWithLogging(e);

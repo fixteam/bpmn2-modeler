@@ -31,6 +31,7 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.Window;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.dialogs.ListDialog;
 
@@ -125,8 +126,10 @@ public class ModelSubclassSelectionDialog extends ListDialog {
 				}
 				
 			});
-			setTitle("Select a type of "+
-					ModelUtil.toDisplayName(listItemClass.getName()));
+			setTitle(NLS.bind(
+				Messages.ModelSubclassSelectionDialog_Title,
+				ModelUtil.toDisplayName(listItemClass.getName()))
+			);
 			setAddCancelButton(true);
 			setHelpAvailable(false);
 			setInput(new Object());

@@ -16,6 +16,8 @@ package org.eclipse.bpmn2.modeler.ui.property.tasks;
 
 
 import org.eclipse.bpmn2.InputOutputSpecification;
+import org.eclipse.bpmn2.ReceiveTask;
+import org.eclipse.bpmn2.SendTask;
 import org.eclipse.bpmn2.modeler.core.adapters.InsertionAdapter;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
@@ -66,41 +68,53 @@ public class IoParametersDetailComposite extends AbstractDetailComposite {
 	 */
 	@Override
 	public void createBindings(final EObject be) {
-		final EStructuralFeature ioSpecificationFeature = be.eClass().getEStructuralFeature("ioSpecification");
+		final EStructuralFeature ioSpecificationFeature = be.eClass().getEStructuralFeature("ioSpecification"); //$NON-NLS-1$
 		if (ioSpecificationFeature != null) {
 			// the control parameter must be an Activity or CallableElement (i.e. a Process or GlobalTask)
 			InputOutputSpecification ioSpecification = (InputOutputSpecification)be.eGet(ioSpecificationFeature);
 			if (ioSpecification==null) {
-				ioSpecification = (InputOutputSpecification) FACTORY.createInputOutputSpecification();
+				ioSpecification = createModelObject(InputOutputSpecification.class);
 				InsertionAdapter.add(be, ioSpecificationFeature, ioSpecification);
 			}
 
-			EStructuralFeature inputSetsFeature = getFeature(ioSpecification, "inputSets");
+			EStructuralFeature inputSetsFeature = getFeature(ioSpecification, "inputSets"); //$NON-NLS-1$
 			if (isModelObjectEnabled(ioSpecification.eClass(),inputSetsFeature)) {
 				inputSetsTable = new IoSetsListComposite(this, be, ioSpecification, inputSetsFeature);
 				inputSetsTable.bindList(ioSpecification, inputSetsFeature);
-				inputSetsTable.setTitle("Input Sets");
+				inputSetsTable.setTitle(Messages.IoParametersDetailComposite_Input_Sets_Title);
+			}
+			if (be instanceof ReceiveTask) {
+				inputSetsTable.setVisible(false);
 			}
 			
-			EStructuralFeature dataInputsFeature = getFeature(ioSpecification, "dataInputs");
+			EStructuralFeature dataInputsFeature = getFeature(ioSpecification, "dataInputs"); //$NON-NLS-1$
 			if (isModelObjectEnabled(ioSpecification.eClass(),dataInputsFeature)) {
 				dataInputsTable = new IoParametersListComposite(this, be, ioSpecification, dataInputsFeature);
 				dataInputsTable.bindList(ioSpecification, dataInputsFeature);
-				dataInputsTable.setTitle("Input Parameters");
+				dataInputsTable.setTitle(Messages.IoParametersDetailComposite_Input_Parameter_Mapping_Title);
+			}
+			if (be instanceof ReceiveTask) {
+				dataInputsTable.setVisible(false);
 			}
 
-			EStructuralFeature outputSetsFeature = getFeature(ioSpecification, "outputSets");
+			EStructuralFeature outputSetsFeature = getFeature(ioSpecification, "outputSets"); //$NON-NLS-1$
 			if (isModelObjectEnabled(ioSpecification.eClass(),outputSetsFeature)) {
 				outputSetsTable = new IoSetsListComposite(this, be, ioSpecification, outputSetsFeature);
 				outputSetsTable.bindList(ioSpecification, outputSetsFeature);
-				outputSetsTable.setTitle("Output Sets");
+				outputSetsTable.setTitle(Messages.IoParametersDetailComposite_Output_Sets_Title);
+			}
+			if (be instanceof SendTask) {
+				outputSetsTable.setVisible(false);
 			}
 			
-			EStructuralFeature dataOutputsFeature = getFeature(ioSpecification, "dataOutputs");
+			EStructuralFeature dataOutputsFeature = getFeature(ioSpecification, "dataOutputs"); //$NON-NLS-1$
 			if (isModelObjectEnabled(ioSpecification.eClass(),dataOutputsFeature)) {
 				dataOutputsTable = new IoParametersListComposite(this, be, ioSpecification, dataOutputsFeature);
 				dataOutputsTable.bindList(ioSpecification, dataOutputsFeature);
-				dataOutputsTable.setTitle("Output Parameters");
+				dataOutputsTable.setTitle(Messages.IoParametersDetailComposite_Output_Parameter_Mapping_Title);
+			}
+			if (be instanceof SendTask) {
+				dataOutputsTable.setVisible(false);
 			}
 		}
 		else {

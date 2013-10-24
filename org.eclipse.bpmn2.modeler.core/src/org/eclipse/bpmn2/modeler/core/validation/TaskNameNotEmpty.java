@@ -34,7 +34,7 @@ public class TaskNameNotEmpty extends AbstractModelConstraint {
 			if (eObj instanceof Task) {
 				Task t = (Task) eObj;
 				if (t.getName() == null || t.getName().length() == 0) {
-					ctx.addResult(t.eClass().getEStructuralFeature("name"));
+					ctx.addResult(t.eClass().getEStructuralFeature("name")); //$NON-NLS-1$
 					return ctx.createFailureStatus(new Object[] { eObj.eClass().getName() });
 				}
 			}

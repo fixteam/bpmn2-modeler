@@ -110,7 +110,7 @@ public class Bpmn2HomePreferencePage
 		Group group = new Group(getFieldEditorParent(), SWT.BORDER);
 		group.setLayout(new GridLayout(3,false));
 		group.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1));
-		group.setText("Default values for BPMN Diagram Interchange (DI) optional attributes");
+		group.setText(Messages.Bpmn2HomePreferencePage_Default_DI_Values_Title);
 
 		BPMNDIAttributeDefaultComboFieldEditor isHorizontal = new BPMNDIAttributeDefaultComboFieldEditor(
 				Bpmn2Preferences.PREF_IS_HORIZONTAL,

@@ -14,6 +14,7 @@
 package org.eclipse.bpmn2.modeler.ui.property.data;
 
 import org.eclipse.bpmn2.Expression;
+import org.eclipse.bpmn2.FormalExpression;
 import org.eclipse.bpmn2.ResourceParameterBinding;
 import org.eclipse.bpmn2.modeler.core.adapters.InsertionAdapter;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
@@ -66,7 +67,7 @@ public class ResourceParameterBindingDetailComposite extends DefaultDetailCompos
 			// an Assignment is not really valid without both a From and To
 			Expression expr = rpb.getExpression();
 			if (expr==null) {
-				expr = FACTORY.createFormalExpression();
+				expr = createModelObject(FormalExpression.class);
 				InsertionAdapter.add(rpb, PACKAGE.getResourceParameterBinding_Expression(), expr);
 			}
 			
@@ -75,7 +76,7 @@ public class ResourceParameterBindingDetailComposite extends DefaultDetailCompos
 						Expression.class, this, SWT.NONE);
 			}
 			exprDetails.setBusinessObject(expr);
-			exprDetails.setTitle("Parameter Expression");
+			exprDetails.setTitle(Messages.ResourceParameterBindingDetailComposite_Expression_Label);
 		}
 	}
 

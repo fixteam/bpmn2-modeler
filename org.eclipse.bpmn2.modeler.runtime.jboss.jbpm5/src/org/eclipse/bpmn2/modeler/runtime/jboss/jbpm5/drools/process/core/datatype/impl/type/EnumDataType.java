@@ -69,11 +69,11 @@ public class EnumDataType implements DataType {
     }
 
     public String writeValue(Object value) {
-        return value == null ? "" : value.toString();
+        return value == null ? "" : value.toString(); //$NON-NLS-1$
     }
 
     public String getStringType() {
-        return className == null ? "java.lang.Object" : className;
+        return className == null ? "java.lang.Object" : className; //$NON-NLS-1$
     }
 
     public Object[] getValues() {
@@ -95,22 +95,22 @@ public class EnumDataType implements DataType {
                 if (!clazz.isEnum()) {
                     return null;
                 }
-                Object[] values = (Object[]) clazz.getMethod("values", null).invoke(clazz, null);
+                Object[] values = (Object[]) clazz.getMethod("values", null).invoke(clazz, null); //$NON-NLS-1$
                 for (Object value: values) {
                     this.valueMap.put(value.toString(), value);
                 }
             } catch (ClassNotFoundException e) {
                 throw new IllegalArgumentException(
-                    "Could not find data type " + className);
+                    Messages.EnumDataType_3 + className);
             } catch (IllegalAccessException e) {
                 throw new IllegalArgumentException(
-                    "IllegalAccessException " + e);
+                    Messages.EnumDataType_4 + e);
             } catch (InvocationTargetException e) {
                 throw new IllegalArgumentException(
-                    "InvocationTargetException " + e);
+                    Messages.EnumDataType_5 + e);
             } catch (NoSuchMethodException e) {
                 throw new IllegalArgumentException(
-                    "NoSuchMethodException " + e);
+                    Messages.EnumDataType_6 + e);
             }
 
         }

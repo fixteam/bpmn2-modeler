@@ -43,9 +43,9 @@ public class BPMN2DiagramWizardPage1 extends WizardPage implements IConstants {
 	 * @param pageName
 	 */
 	public BPMN2DiagramWizardPage1(ISelection selection) {
-		super("wizardPage1");
-		setTitle("BPMN2 Diagram Type");
-		setDescription("Select a BPMN 2.0 Diagram Type.");
+		super("wizardPage1"); //$NON-NLS-1$
+		setTitle(Messages.BPMN2DiagramWizardPage1_Title);
+		setDescription(Messages.BPMN2DiagramWizardPage1_Description);
 		this.selection = selection;
 	}
 
@@ -71,10 +71,7 @@ public class BPMN2DiagramWizardPage1 extends WizardPage implements IConstants {
 		data = new GridData(SWT.LEFT,SWT.FILL,false,false,1,1);
 		data.widthHint = labelWidth;
 		processLabel.setLayoutData(data);
-		processLabel.setText(
-				"A Process describes a sequence or flow of Activities in an organization" +
-				" with the objective of carrying out work. A Process contains Activities,"+
-				" Events, Gateways, and Sequence Flows that define its execution semantics.");
+		processLabel.setText(Messages.BPMN2DiagramWizardPage1_Process_Diagram_Description);
 
 		final Button collaborationButton = new Button(container, SWT.RADIO | SWT.PUSH);
 //		collaborationButton.setText("Collaboration");
@@ -85,11 +82,7 @@ public class BPMN2DiagramWizardPage1 extends WizardPage implements IConstants {
 		data = new GridData(SWT.LEFT,SWT.FILL,false,false,1,1);
 		data.widthHint = labelWidth;
 		collaborationLabel.setLayoutData(data);
-		collaborationLabel.setText(
-				"A Collaboration is a collection of Participants shown as Pools,"+
-				" and their interactions as shown by Message Flows."+
-				" A Collaboration Diagram may also include Processes within the"+
-				" Pools and/or Choreographies between the Pools.");
+		collaborationLabel.setText(Messages.BPMN2DiagramWizardPage1_Collaboration_Diagram_Description);
 		
 		final Button choreographyButton = new Button(container, SWT.RADIO | SWT.PUSH);
 //		choreographyButton.setText("Choreography");
@@ -100,11 +93,7 @@ public class BPMN2DiagramWizardPage1 extends WizardPage implements IConstants {
 		data = new GridData(SWT.LEFT,SWT.FILL,false,false,1,1);
 		data.widthHint = labelWidth;
 		choreographyLabel.setLayoutData(data);
-		choreographyLabel.setText(
-				"A Choreography formalizes the way business Participants"+
-				" coordinate their interactions. The focus is not on orchestrations"+
-				" of the work performed within these Participants, but rather on the"+
-				" exchange of information (Messages) between these Participants.");
+		choreographyLabel.setText(Messages.BPMN2DiagramWizardPage1_Choreography_Diagram_Description);
 		
 		SelectionAdapter buttonListener = new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {

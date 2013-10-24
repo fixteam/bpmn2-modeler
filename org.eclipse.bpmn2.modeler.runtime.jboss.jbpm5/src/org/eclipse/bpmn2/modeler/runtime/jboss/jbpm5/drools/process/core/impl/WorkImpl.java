@@ -44,7 +44,7 @@ public class WorkImpl implements Work, Serializable {
     
     public void setParameter(String name, Object value) {
         if (name == null) {
-            throw new NullPointerException("Parameter name is null");
+            throw new NullPointerException(Messages.WorkImpl_Null_Parameter);
         }
         parameters.put(name, value);
     }
@@ -58,7 +58,7 @@ public class WorkImpl implements Work, Serializable {
     
     public Object getParameter(String name) {
         if (name == null) {
-            throw new NullPointerException("Parameter name is null");
+            throw new NullPointerException(Messages.WorkImpl_Null_Parameter);
         }
         return parameters.get(name);
     }
@@ -68,7 +68,7 @@ public class WorkImpl implements Work, Serializable {
     }
     
     public String toString() {
-        return "Work " + name;
+        return Messages.WorkImpl_Work_Item_Name + name;
     }
 
     public void setParameterDefinitions(Set<ParameterDefinition> parameterDefinitions) {

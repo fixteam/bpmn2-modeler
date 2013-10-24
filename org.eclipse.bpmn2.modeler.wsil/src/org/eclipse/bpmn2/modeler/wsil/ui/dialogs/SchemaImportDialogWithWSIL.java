@@ -83,9 +83,8 @@ public class SchemaImportDialogWithWSIL extends DefaultSchemaImportDialog {
 				return;
 			}
 			if (fBasePath==null || fBasePath.isEmpty()) {
-				MessageDialog.openInformation(getShell(), "WSIL Browser",
-						"In order to browse a WSIL registry, please configure a\n"+
-						"WSIL Document URL in the BPMN2 Preferences.");
+				MessageDialog.openInformation(getShell(), Messages.SchemaImportDialogWithWSIL_Title,
+						Messages.SchemaImportDialogWithWSIL_Message);
 				Display.getDefault().asyncExec(new Runnable() {
 					@Override
 					public void run() {
@@ -202,7 +201,7 @@ public class SchemaImportDialogWithWSIL extends DefaultSchemaImportDialog {
 		fWSILTreeViewer.setContentProvider( new WSILContentProvider() );
 		fWSILTreeViewer.setLabelProvider( new ModelLabelProvider() );
 		
-		Object wsilDoc = attemptLoad(URI.createURI(fBasePath),"wsil");
+		Object wsilDoc = attemptLoad(URI.createURI(fBasePath),"wsil"); //$NON-NLS-1$
 		fWSILTreeViewer.setInput ( 	wsilDoc ) ;
 		if (wsilDoc == null || wsilDoc instanceof Throwable  ) {
 //			fBtnWSIL.setEnabled(false);

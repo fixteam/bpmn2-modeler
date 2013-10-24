@@ -50,10 +50,10 @@ public class DataItemsDetailComposite extends DefaultDetailComposite {
 		if (propertiesProvider==null) {
 			propertiesProvider = new AbstractPropertiesProvider(object) {
 				String[] properties = new String[] {
-						"rootElements#Process.properties",
-						"rootElements#Process.resources",
-						"rootElements#Process.correlationSubscriptions",
-						"rootElements#Process.collaborations",
+						"rootElements#Process.properties", //$NON-NLS-1$
+						"rootElements#Process.resources", //$NON-NLS-1$
+						"rootElements#Process.correlationSubscriptions", //$NON-NLS-1$
+						"rootElements#Process.collaborations", //$NON-NLS-1$
 				};
 				
 				@Override
@@ -67,7 +67,7 @@ public class DataItemsDetailComposite extends DefaultDetailComposite {
 	
 	@Override
 	protected AbstractListComposite bindList(EObject object, EStructuralFeature feature, EClass listItemClass) {
-		if (listItemClass!=null && listItemClass.getName().equals("ItemDefinition")) {
+		if (listItemClass!=null && listItemClass.getName().equals("ItemDefinition")) { //$NON-NLS-1$
 			if (isModelObjectEnabled(object.eClass(), feature) || isModelObjectEnabled(listItemClass)) {
 				AbstractListComposite table = super.bindList(object, feature, listItemClass);
 				return table;

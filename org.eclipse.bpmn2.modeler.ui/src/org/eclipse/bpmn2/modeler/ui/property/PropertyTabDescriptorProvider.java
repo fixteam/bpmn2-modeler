@@ -55,7 +55,7 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
 		for (Bpmn2TabDescriptor d : desc) {
 			String replacedId = d.getReplaceTab();
 			if (replacedId!=null) {
-				String[] replacements = replacedId.split(" ");
+				String[] replacements = replacedId.split(" "); //$NON-NLS-1$
 				// tab replacement is only done if the replacement tab has section descriptors
 				// that want the replacement to happen.
 				for (String id : replacements) {

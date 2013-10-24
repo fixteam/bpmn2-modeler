@@ -31,6 +31,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.util.FeatureMap.Entry;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
@@ -77,7 +78,7 @@ public class DefaultDetailComposite extends AbstractDetailComposite {
 				List<Documentation> docList = (List<Documentation>)object.eGet(feature);
 				Documentation documentation;
 				if (docList.size()==0) {
-					documentation = (Documentation) FACTORY.createDocumentation();
+					documentation = createModelObject(Documentation.class);
 					InsertionAdapter.add(object, feature, documentation);
 				}
 				else {
@@ -86,7 +87,7 @@ public class DefaultDetailComposite extends AbstractDetailComposite {
 				EStructuralFeature f = PACKAGE.getDocumentation_Text();
 				ModelUtil.setMultiLine(documentation, f, true);
 				TextObjectEditor documentationEditor = new TextObjectEditor(this,documentation,f);
-				documentationEditor.createControl(getAttributesParent(),"Documentation");
+				documentationEditor.createControl(getAttributesParent(),Messages.DefaultDetailComposite_Documentation);
 				return null;
 			}
 		}
@@ -101,9 +102,9 @@ public class DefaultDetailComposite extends AbstractDetailComposite {
 	 */
 	protected Composite bindProperty(EObject be, String property) {
 		Composite composite = null;
-		String[] propArray = property.split("\\.");
+		String[] propArray = property.split("\\."); //$NON-NLS-1$
 		String prop0 = propArray[0];
-		String[] featureAndClassArray = prop0.split("#");
+		String[] featureAndClassArray = prop0.split("#"); //$NON-NLS-1$
 		String featureName = featureAndClassArray[0];
 		EStructuralFeature feature = getFeature(be,featureName);
 		EClass eclass = null;
@@ -119,10 +120,10 @@ public class DefaultDetailComposite extends AbstractDetailComposite {
 		}
 		
 		// reconstruct the remainder of the property string (if any)
-		property = "";
+		property = ""; //$NON-NLS-1$
 		for (int i=1; i<propArray.length; ++i) {
 			if (!property.isEmpty())
-				property += ".";
+				property += "."; //$NON-NLS-1$
 			property += propArray[i];
 		}
 		
@@ -146,15 +147,18 @@ public class DefaultDetailComposite extends AbstractDetailComposite {
 					
 					for (Object o : values) {
 						if (eclass.isInstance(o)) {
-							propArray = property.split("[\\.#]");
+							propArray = property.split("[\\.#]"); //$NON-NLS-1$
 							featureName = propArray[0];
 							feature = getFeature((EObject)o,featureName);
 							composite = bindProperty((EObject)o, property);
 							if (composite instanceof AbstractListComposite) {
 								((AbstractListComposite)composite).setTitle(
-										getPropertiesProvider().getLabel((EObject)o,feature)+
-										" List for "+
-										ModelUtil.getLongDisplayName((EObject)o));
+									NLS.bind(
+										Messages.DefaultDetailComposite_List_Title,
+										getPropertiesProvider().getLabel((EObject)o,feature),
+										ModelUtil.getLongDisplayName((EObject)o)
+									)
+								);
 							}
 						}
 					}
@@ -220,7 +224,7 @@ public class DefaultDetailComposite extends AbstractDetailComposite {
 			if (reference.getEType() == PACKAGE.getExpression() || reference.getEType() == PACKAGE.getFormalExpression()) {
 				FormalExpression expression = (FormalExpression)object.eGet(reference);
 				if (expression==null) {
-					expression = FACTORY.createFormalExpression();
+					expression = createModelObject(FormalExpression.class);
 					InsertionAdapter.add(object, reference, expression);
 				}
 				AbstractDetailComposite composite = PropertiesCompositeFactory.createDetailComposite(Expression.class, getAttributesParent(), SWT.BORDER);

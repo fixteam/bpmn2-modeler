@@ -82,7 +82,7 @@ public class IntermediateCatchEventFeatureContainer extends AbstractEventFeature
 	public static class CreateIntermediateCatchEventFeature extends AbstractCreateEventFeature<IntermediateCatchEvent> {
 
 		public CreateIntermediateCatchEventFeature(IFeatureProvider fp) {
-			super(fp, "Catch Event", "Create "+"Catch Event");
+			super(fp, Messages.IntermediateCatchEventFeatureContainer_0, Messages.IntermediateCatchEventFeatureContainer_1+Messages.IntermediateCatchEventFeatureContainer_2);
 		}
 
 		@Override
@@ -101,7 +101,7 @@ public class IntermediateCatchEventFeatureContainer extends AbstractEventFeature
 	
 	public static class UpdateIntermediateCatchEventFeature extends AbstractUpdateEventFeature {
 
-		public static String INTERMEDIATE_CATCH_EVENT_MARKER = "marker.intermediate.catch.event";
+		public static String INTERMEDIATE_CATCH_EVENT_MARKER = "marker.intermediate.catch.event"; //$NON-NLS-1$
 
 		/**
 		 * @param fp

@@ -29,7 +29,7 @@ public class ImportPropertiesAdapter extends ExtendedPropertiesAdapter<Import> {
 			
 			@Override
 			public String getLabel(Object context) {
-				return "Import";
+				return Messages.ImportPropertiesAdapter_Import;
 			}
 		});
 	}

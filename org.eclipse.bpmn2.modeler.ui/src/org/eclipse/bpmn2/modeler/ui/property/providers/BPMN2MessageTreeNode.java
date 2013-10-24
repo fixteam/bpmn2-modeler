@@ -63,7 +63,7 @@ public class BPMN2MessageTreeNode extends TreeNode {
 		Message msg = (Message)modelObject;
 		String label = msg.getName();
 		if (label==null || label.isEmpty())
-			label = "Unnamed Message";
+			label = Messages.BPMN2MessageTreeNode_Unnamed;
 		return label;
 	}
 }

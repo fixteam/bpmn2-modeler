@@ -76,7 +76,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 @SuppressWarnings({"nls","boxing","unchecked"})
 
 public class WSILPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
-	public final static String PREF_WSIL_URL = "wsil.url";
+	public final static String PREF_WSIL_URL = "wsil.url"; //$NON-NLS-1$
 
 	Bpmn2ModelerResourceSetImpl resourceSet = new Bpmn2ModelerResourceSetImpl();
 		
@@ -99,7 +99,7 @@ public class WSILPreferencePage extends PreferencePage implements IWorkbenchPref
 	Button moveDownButton;
 	Button openInBrowserButton;
 	
-	private static String WSIL = "wsil";
+	private static String WSIL = "wsil"; //$NON-NLS-1$
 	
 	// Track the  modification of any parameter in the WSIL model.
 	// we don't use commands and stacks here.
@@ -150,14 +150,14 @@ public class WSILPreferencePage extends PreferencePage implements IWorkbenchPref
 
 
 			public void focusGained(FocusEvent e) {
-				wsilURL.setData("lastValue",wsilURL.getText());
+				wsilURL.setData("lastValue",wsilURL.getText()); //$NON-NLS-1$
 			}
 
 			public void focusLost(FocusEvent e) {
 				String url = wsilURL.getText();
 				
 				// no change.
-				if (url.equals(wsilURL.getData("lastValue"))) {
+				if (url.equals(wsilURL.getData("lastValue"))) { //$NON-NLS-1$
 					return ;
 				}						
 				attemptLoad( url );				
@@ -176,7 +176,7 @@ public class WSILPreferencePage extends PreferencePage implements IWorkbenchPref
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				FileDialog fd = new FileDialog(getShell(), SWT.OPEN);
-				fd.setFilterExtensions(new String[]{"*."+WSIL});
+				fd.setFilterExtensions(new String[]{"*."+WSIL}); //$NON-NLS-1$
 				String fileName = fd.open();
 				if ((fileName != null) && (fileName.length() > 0)) {
 					// parse to file url
@@ -590,7 +590,7 @@ public class WSILPreferencePage extends PreferencePage implements IWorkbenchPref
 					return absType.getValue();					
 				}				
 			}
-			return "";
+			return ""; //$NON-NLS-1$
 		}
 		
 		/**
@@ -680,7 +680,7 @@ public class WSILPreferencePage extends PreferencePage implements IWorkbenchPref
 				Link link = (Link) element;
 				return link.getLocation();
 			}
-			return "";
+			return ""; //$NON-NLS-1$
 		}
 		
 		/**
@@ -791,7 +791,7 @@ public class WSILPreferencePage extends PreferencePage implements IWorkbenchPref
 //				return  NamespaceUtils.convertUriToNamespace( link.getReferencedNamespace() );
 				return link.getReferencedNamespace();
 			}
-			return "";
+			return ""; //$NON-NLS-1$
 		}
 		
 	}
@@ -841,7 +841,7 @@ public class WSILPreferencePage extends PreferencePage implements IWorkbenchPref
 				return Integer.toString( insp.getLinks().indexOf(link) + 1 );
 			}
 			
-			return "";
+			return ""; //$NON-NLS-1$
 		}
 	}	
 		

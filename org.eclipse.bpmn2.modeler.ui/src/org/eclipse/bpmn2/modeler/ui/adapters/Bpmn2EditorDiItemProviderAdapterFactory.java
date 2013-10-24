@@ -18,6 +18,7 @@ import org.eclipse.bpmn2.di.util.BpmnDiSwitch;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.adapters.ObjectDescriptor;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
+import org.eclipse.bpmn2.modeler.ui.Messages;
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.common.notify.Notifier;
@@ -67,7 +68,7 @@ public class Bpmn2EditorDiItemProviderAdapterFactory extends BpmnDiItemProviderA
 					if (context instanceof EObject)
 						object = (EObject)context;
 					if (ModelUtil.isStringWrapper(object)) {
-						return "Item Type";
+						return Messages.CommonLabels_Data_Type;
 					}
 					return super.getLabel(context);
 				}

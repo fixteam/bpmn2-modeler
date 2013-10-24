@@ -56,6 +56,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
@@ -347,14 +348,14 @@ public class DefaultSchemaImportDialog extends SelectionStatusDialog {
 		if (fImportType==BID_IMPORT_JAVA) {
 			setVisibleControl(fKindButtonComposite, false);
 			setVisibleControl(fBrowseButton,false);
-			fLocationLabel.setText(Messages.SchemaImportDialog_27);
+			fLocationLabel.setText(Messages.SchemaImportDialog_Type_Label);
 		}
 		else {
 			setVisibleControl(fKindButtonComposite, true);
 			setVisibleControl(fBrowseButton,true);
-			fLocationLabel.setText(Messages.SchemaImportDialog_8);
+			fLocationLabel.setText(Messages.SchemaImportDialog_Location_Label);
 			fBrowseButton.setText(fImportSource==BID_BROWSE_FILE ?
-					Messages.SchemaImportDialog_9 : Messages.SchemaImportDialog_26);
+					Messages.SchemaImportDialog_Browse_Button : Messages.SchemaImportDialog_Load_Button);
 		}
 		fLocation.setText(EMPTY);
 		fTypeGroup.getParent().layout(true);
@@ -409,7 +410,7 @@ public class DefaultSchemaImportDialog extends SelectionStatusDialog {
 
 	protected void createImportType(Composite parent) {
 		fTypeGroup = new Group(parent, SWT.SHADOW_ETCHED_IN);
-		fTypeGroup.setText(Messages.SchemaImportDialog_3);
+		fTypeGroup.setText(Messages.SchemaImportDialog_Import_Type_Title);
 		GridLayout layout = new GridLayout(1, true);
 		GridData typeGroupGridData = new GridData();
 		typeGroupGridData.grabExcessVerticalSpace = false;
@@ -440,28 +441,28 @@ public class DefaultSchemaImportDialog extends SelectionStatusDialog {
 //		button.setLayoutData(new GridData(SWT.FILL,SWT.FILL,true,true,1,1));
 		int buttonCount = 0;
 		if ((allowedResourceTypes & SchemaImportDialog.ALLOW_XSD) != 0) {
-			button = createRadioButton(container, Messages.SchemaImportDialog_21,
+			button = createRadioButton(container, Messages.SchemaImportDialog_XSD_Button,
 					BID_IMPORT_XSD, fImportType == BID_IMPORT_XSD);
 			button.setLayoutData(new GridData(SWT.FILL,SWT.FILL,true,true,1,1));
 			++buttonCount;
 		}
 		
 		if ((allowedResourceTypes & SchemaImportDialog.ALLOW_WSDL) != 0) {
-			button = createRadioButton(container, Messages.SchemaImportDialog_22,
+			button = createRadioButton(container, Messages.SchemaImportDialog_WSDL_Button,
 					BID_IMPORT_WSDL, fImportType == BID_IMPORT_WSDL);
 			button.setLayoutData(new GridData(SWT.FILL,SWT.FILL,true,true,1,1));
 			++buttonCount;
 		}
 		
 		if ((allowedResourceTypes & SchemaImportDialog.ALLOW_BPMN2) != 0) {
-			button = createRadioButton(container, Messages.SchemaImportDialog_28,
+			button = createRadioButton(container, Messages.SchemaImportDialog_BPMN2_Button,
 					BID_IMPORT_BPMN2, fImportType == BID_IMPORT_BPMN2);
 			button.setLayoutData(new GridData(SWT.FILL,SWT.FILL,true,true,1,1));
 			++buttonCount;
 		}
 		
 		if ((allowedResourceTypes & SchemaImportDialog.ALLOW_JAVA) != 0) {
-			button = createRadioButton(container, Messages.SchemaImportDialog_23,
+			button = createRadioButton(container, Messages.SchemaImportDialog_Java_Button,
 					BID_IMPORT_JAVA, fImportType == BID_IMPORT_JAVA);
 			button.setLayoutData(new GridData(SWT.FILL,SWT.FILL,true,true,1,1));
 			++buttonCount;
@@ -475,7 +476,7 @@ public class DefaultSchemaImportDialog extends SelectionStatusDialog {
 	protected void createImportLocation(Composite parent) {
 
 		fKindGroup = new Group(parent, SWT.SHADOW_ETCHED_IN);
-		fKindGroup.setText(Messages.SchemaImportDialog_4);
+		fKindGroup.setText(Messages.SchemaImportDialog_Import_Source_Title);
 		GridLayout layout = new GridLayout(1, true);
 		GridData data = new GridData();
 		data.grabExcessVerticalSpace = false;
@@ -499,11 +500,11 @@ public class DefaultSchemaImportDialog extends SelectionStatusDialog {
 		data.verticalAlignment = GridData.CENTER;
 		fKindButtonComposite.setLayoutData(data);
 
-		fBtnResource = createRadioButton(fKindButtonComposite, Messages.SchemaImportDialog_5,
+		fBtnResource = createRadioButton(fKindButtonComposite, Messages.SchemaImportDialog_Workspace_Button,
 				BID_BROWSE_WORKSPACE, fImportSource == BID_BROWSE_WORKSPACE);
-		createRadioButton(fKindButtonComposite, Messages.SchemaImportDialog_6,
+		createRadioButton(fKindButtonComposite, Messages.SchemaImportDialog_File_System_Button,
 				BID_BROWSE_FILE, fImportSource == BID_BROWSE_FILE);
-		createRadioButton(fKindButtonComposite, Messages.SchemaImportDialog_7,
+		createRadioButton(fKindButtonComposite, Messages.SchemaImportDialog_URL_Button,
 				BID_BROWSE_URL, fImportSource == BID_BROWSE_URL);
 
 		// Create location variant
@@ -520,7 +521,7 @@ public class DefaultSchemaImportDialog extends SelectionStatusDialog {
 		fLocationComposite.setLayoutData(data);
 
 		fLocationLabel = new Label(fLocationComposite, SWT.NONE);
-		fLocationLabel.setText(Messages.SchemaImportDialog_8);
+		fLocationLabel.setText(Messages.SchemaImportDialog_Location_Label);
 
 		fLocation = new Text(fLocationComposite, SWT.BORDER);
 		fLocation.setText(EMPTY);
@@ -565,7 +566,7 @@ public class DefaultSchemaImportDialog extends SelectionStatusDialog {
 		});
 
 		fBrowseButton = createButton(fLocationComposite, BID_BROWSE,
-				Messages.SchemaImportDialog_9, false);
+				Messages.SchemaImportDialog_Browse_Button, false);
 
 		// End of location variant
 
@@ -580,7 +581,7 @@ public class DefaultSchemaImportDialog extends SelectionStatusDialog {
 				}
 				markEmptySelection();
 			}
-		}, Messages.SchemaImportDialog_10, resourceFilter); //$NON-NLS-1$
+		}, Messages.SchemaImportDialog_Select_Resource_Title, resourceFilter); //$NON-NLS-1$
 
 		TreeViewer viewer = fResourceComposite.getTreeViewer();
 		viewer.setAutoExpandLevel(2);
@@ -611,7 +612,7 @@ public class DefaultSchemaImportDialog extends SelectionStatusDialog {
 						updateStatus(Status.OK_STATUS);
 					else
 						updateStatus(new Status(IStatus.ERROR, Activator.getDefault().getID(),0,
-								Messages.SchemaImportDialog_31,null));
+								Messages.SchemaImportDialog_Select_Java_Message,null));
 				} else {
 					markEmptySelection();
 				}
@@ -632,7 +633,7 @@ public class DefaultSchemaImportDialog extends SelectionStatusDialog {
 	protected Object attemptLoad(URI uri, String kind) {
 
 		Resource resource = null;
-		if ("java".equals(kind)) {
+		if ("java".equals(kind)) { //$NON-NLS-1$
 			final String fileName = uri.lastSegment();
 			final ArrayList<IType> results = new ArrayList<IType>();
 				try {
@@ -696,7 +697,7 @@ public class DefaultSchemaImportDialog extends SelectionStatusDialog {
 		
 		
 		fRunnableLoadURI = uri;		
-		final String msg = MessageFormat.format(Messages.SchemaImportDialog_17,fRunnableLoadURI);		 	    
+		final String msg = MessageFormat.format(Messages.SchemaImportDialog_Loading_Message,fRunnableLoadURI);		 	    
 		fLoaderJob = new Job(msg) {
 
 			@Override
@@ -739,13 +740,13 @@ public class DefaultSchemaImportDialog extends SelectionStatusDialog {
 			markEmptySelection();
 			
 			updateStatus( new Status(IStatus.ERROR,Activator.getDefault().getID(),0,
-					MessageFormat.format(Messages.SchemaImportDialog_19,fRunnableLoadURI,elapsed),(Throwable) fInput) );
+					MessageFormat.format(Messages.SchemaImportDialog_Load_Failed_Message,fRunnableLoadURI,elapsed),(Throwable) fInput) );
 			fInput = null;
 			
 		} else {
 			
 			updateStatus ( new Status(IStatus.INFO, Activator.getDefault().getID(),0,
-					MessageFormat.format(Messages.SchemaImportDialog_18,fRunnableLoadURI,elapsed),null)) ;
+					MessageFormat.format(Messages.SchemaImportDialog_Loaded_Message,fRunnableLoadURI,elapsed),null)) ;
 				
 
 			// display a warning if this import does not define a targetNamespace
@@ -756,20 +757,20 @@ public class DefaultSchemaImportDialog extends SelectionStatusDialog {
 				XSDSchema schema = (XSDSchema)fInput;
 				ns = schema.getTargetNamespace();
 				loc = schema.getSchemaLocation();
-				type = "XSD Schema";
+				type = Messages.DefaultSchemaImportDialog_XSD_Type;
 			}
 			else if (fInput instanceof Definition) {
 				Definition definition = (Definition)fInput;
 				ns = definition.getTargetNamespace();
 				loc = definition.getLocation();
-				type = "WSDL";
+				type = Messages.DefaultSchemaImportDialog_WSDL_Type;
 			}
 			else if (fInput instanceof org.eclipse.bpmn2.DocumentRoot) {
 				DocumentRoot root = (DocumentRoot)fInput;
 				org.eclipse.bpmn2.Definitions definitions = root.getDefinitions();
 				ns = definitions.getTargetNamespace();
 				loc = root.eResource().getURI().toString();
-				type = "BPMN2";
+				type = Messages.DefaultSchemaImportDialog_BPMN2_Type;
 				fInput = definitions;
 			}
 			else if (fInput instanceof List) {
@@ -778,11 +779,11 @@ public class DefaultSchemaImportDialog extends SelectionStatusDialog {
 			if (type!=null) {
 				if (ns==null || ns.isEmpty()) {
 					updateStatus ( new Status(IStatus.WARNING, Activator.getDefault().getID(),0,
-							"This "+type+" does not define a target namespace",null)) ;
+							MessageFormat.format(Messages.DefaultSchemaImportDialog_Missing_Namespace_Message,type),null)) ;
 				}
 				if (loc==null || loc.isEmpty()) {
 					updateStatus( new Status(IStatus.ERROR,Activator.getDefault().getID(),0,
-							MessageFormat.format(Messages.SchemaImportDialog_19,fRunnableLoadURI,elapsed),null) );
+							MessageFormat.format(Messages.SchemaImportDialog_Load_Failed_Message,fRunnableLoadURI,elapsed),null) );
 					fInput = null;
 				}
 			}
@@ -821,7 +822,7 @@ public class DefaultSchemaImportDialog extends SelectionStatusDialog {
 			}
 			
 		} catch (Exception ex) {
-			updateStatus ( new Status(IStatus.ERROR,Activator.getDefault().getID(),0,Messages.SchemaImportDialog_13,ex) );			
+			updateStatus ( new Status(IStatus.ERROR,Activator.getDefault().getID(),0,Messages.SchemaImportDialog_Invalid_Location,ex) );			
 			return null;
 		}
 	}
@@ -869,32 +870,32 @@ public class DefaultSchemaImportDialog extends SelectionStatusDialog {
 	 * TODO: not implemented - do we need this?
 	 */
 	public void configureAsXMLImport() {
-		setTitle(Messages.SchemaImportDialog_1);
-		fStructureTitle = Messages.SchemaImportDialog_12;
+		setTitle(Messages.SchemaImportDialog_Browse_XML_Title);
+		fStructureTitle = Messages.SchemaImportDialog_Structure_Label;
 		if (fStructureLabel!=null)
 			fStructureLabel.setText(fStructureTitle);
 		fTreeContentProvider = new VariableTypeTreeContentProvider(true, true);
 		if (fTreeViewer!=null)
 			fTreeViewer.setContentProvider(fTreeContentProvider);
-		fResourceKind = "xml";
+		fResourceKind = "xml"; //$NON-NLS-1$
 
 		String[] xml_FILTER_EXTENSIONS = {
-				"*.xml",
-				"*.xsd",
-				"*.wsdl",
-				"*.*"
+				"*.xml", //$NON-NLS-1$
+				"*.xsd", //$NON-NLS-1$
+				"*.wsdl", //$NON-NLS-1$
+				"*.*" //$NON-NLS-1$
 		};
 		FILTER_EXTENSIONS = xml_FILTER_EXTENSIONS;
 
 		String[] xml_FILTER_NAMES = {
-				"XML Files",
-				"XML Schema Files",
-				"WSDL Definition Files",
-				"All"
+				Messages.DefaultSchemaImportDialog_XML_Filter,
+				Messages.DefaultSchemaImportDialog_XSD_Filter,
+				Messages.DefaultSchemaImportDialog_WSDL_Filter,
+				Messages.DefaultSchemaImportDialog_All
 		};
 		FILTER_NAMES = xml_FILTER_NAMES;
 
-		resourceFilter = ".xml";
+		resourceFilter = ".xml"; //$NON-NLS-1$
 		if (fResourceComposite!=null)
 			fResourceComposite.setFileFilter(resourceFilter);
 	}
@@ -906,32 +907,32 @@ public class DefaultSchemaImportDialog extends SelectionStatusDialog {
 	 */
 
 	public void configureAsSchemaImport() {
-		setTitle(Messages.SchemaImportDialog_2);
-		fStructureTitle = Messages.SchemaImportDialog_11;
+		setTitle(Messages.SchemaImportDialog_Browse_XSD_Title);
+		fStructureTitle = Messages.SchemaImportDialog_Types_Label;
 		if (fStructureLabel!=null)
 			fStructureLabel.setText(fStructureTitle);
 		fTreeContentProvider = new VariableTypeTreeContentProvider(true, true);
 		if (fTreeViewer!=null)
 			fTreeViewer.setContentProvider(fTreeContentProvider);
-		fResourceKind = "xsd";
+		fResourceKind = "xsd"; //$NON-NLS-1$
 
 		String[] wsdl_FILTER_EXTENSIONS = {
-				"*.xml",
-				"*.xsd",
-				"*.wsdl",
-				"*.*"
+				"*.xml", //$NON-NLS-1$
+				"*.xsd", //$NON-NLS-1$
+				"*.wsdl", //$NON-NLS-1$
+				"*.*" //$NON-NLS-1$
 		};
 		FILTER_EXTENSIONS = wsdl_FILTER_EXTENSIONS;
 
 		String[] wsdl_FILTER_NAMES = {
-				"XML Files",
-				"XML Schema Files",
-				"WSDL Definition Files",
-				"All"
+				Messages.DefaultSchemaImportDialog_XML_Filter,
+				Messages.DefaultSchemaImportDialog_XSD_Filter,
+				Messages.DefaultSchemaImportDialog_WSDL_Filter,
+				Messages.DefaultSchemaImportDialog_All
 		};
 		FILTER_NAMES = wsdl_FILTER_NAMES;
 
-		resourceFilter = ".xsd";
+		resourceFilter = ".xsd"; //$NON-NLS-1$
 		if (fResourceComposite!=null)
 			fResourceComposite.setFileFilter(resourceFilter);
 	}
@@ -944,91 +945,91 @@ public class DefaultSchemaImportDialog extends SelectionStatusDialog {
 
 	public void configureAsWSDLImport() {
 
-		setTitle(Messages.SchemaImportDialog_0);
-		fStructureTitle = Messages.SchemaImportDialog_14;
+		setTitle(Messages.SchemaImportDialog_Browse_WSDL_Title);
+		fStructureTitle = Messages.SchemaImportDialog_Ports_Title;
 		if (fStructureLabel!=null)
 			fStructureLabel.setText(fStructureTitle);
 		fTreeContentProvider = new ServiceTreeContentProvider(true);
 		if (fTreeViewer!=null)
 			fTreeViewer.setContentProvider(fTreeContentProvider);
-		fResourceKind = "wsdl";
+		fResourceKind = "wsdl"; //$NON-NLS-1$
 
 		String[] wsdl_FILTER_EXTENSIONS = {
-				"*.wsdl",
-				"*.*"
+				"*.wsdl", //$NON-NLS-1$
+				"*.*" //$NON-NLS-1$
 		};
 		FILTER_EXTENSIONS = wsdl_FILTER_EXTENSIONS;
 
 		String[] wsdl_FILTER_NAMES = {
-				"WSDL Definition Files",
-				"All"
+				Messages.DefaultSchemaImportDialog_WSDL_Filter,
+				Messages.DefaultSchemaImportDialog_All
 		};
 		FILTER_NAMES = wsdl_FILTER_NAMES;
 
-		resourceFilter = ".wsdl";
+		resourceFilter = ".wsdl"; //$NON-NLS-1$
 		if (fResourceComposite!=null)
 			fResourceComposite.setFileFilter(resourceFilter);
 	}
 
 	public void configureAsBPMN2Import() {
 
-		setTitle(Messages.SchemaImportDialog_29);
-		fStructureTitle = Messages.SchemaImportDialog_30;
+		setTitle(Messages.SchemaImportDialog_Browse_BPMN2_Title);
+		fStructureTitle = Messages.SchemaImportDialog_Interfaces_Label;
 		if (fStructureLabel!=null)
 			fStructureLabel.setText(fStructureTitle);
 		fTreeContentProvider = new BPMN2DefinitionsTreeContentProvider(true);
 		if (fTreeViewer!=null)
 			fTreeViewer.setContentProvider(fTreeContentProvider);
-		fResourceKind = "";
+		fResourceKind = ""; //$NON-NLS-1$
 
 		String[] wsdl_FILTER_EXTENSIONS = {
-				"*.bpmn",
-				"*.bpmn2",
-				"*.*"
+				"*.bpmn", //$NON-NLS-1$
+				"*.bpmn2", //$NON-NLS-1$
+				"*.*" //$NON-NLS-1$
 		};
 		FILTER_EXTENSIONS = wsdl_FILTER_EXTENSIONS;
 
 		String[] wsdl_FILTER_NAMES = {
-				"BPMN 2.0 Diagram Files",
-				"BPMN 2.0 Diagram Files",
-				"All"
+				Messages.DefaultSchemaImportDialog_BPMN2_Filter_1,
+				Messages.DefaultSchemaImportDialog_BPMN2_Filter_2,
+				Messages.DefaultSchemaImportDialog_All
 		};
 		FILTER_NAMES = wsdl_FILTER_NAMES;
 
-		resourceFilter = ".bpmn";
+		resourceFilter = ".bpmn, .bpmn2"; //$NON-NLS-1$
 		if (fResourceComposite!=null)
 			fResourceComposite.setFileFilter(resourceFilter);
 	}
 
 	public void configureAsJavaImport() {
 
-		setTitle(Messages.SchemaImportDialog_24);
-		fStructureTitle = Messages.SchemaImportDialog_25;
+		setTitle(Messages.SchemaImportDialog_Browse_Java_Title);
+		fStructureTitle = Messages.SchemaImportDialog_Java_Types_Label;
 		if (fStructureLabel!=null)
 			fStructureLabel.setText(fStructureTitle);
 		fTreeContentProvider = new JavaTreeContentProvider(true);
 		if (fTreeViewer!=null)
 			fTreeViewer.setContentProvider(fTreeContentProvider);
-		fResourceKind = "java";
+		fResourceKind = "java"; //$NON-NLS-1$
 
 		String[] java_FILTER_EXTENSIONS = {
-				"*.java",
-				"*.class",
-				"*.jar",
-				"*.*"
+				"*.java", //$NON-NLS-1$
+				"*.class", //$NON-NLS-1$
+				"*.jar", //$NON-NLS-1$
+				"*.*" //$NON-NLS-1$
 		};
 		FILTER_EXTENSIONS = java_FILTER_EXTENSIONS;
 
 		String[] wsdl_FILTER_NAMES = {
-				"Java Source Files",
-				"Compiled Java Files",
-				"Java Archives",
-				"All"
+				Messages.DefaultSchemaImportDialog_Java_Filter_1,
+				Messages.DefaultSchemaImportDialog_Java_Filter_2,
+				Messages.DefaultSchemaImportDialog_Java_Filter_3,
+				Messages.DefaultSchemaImportDialog_All
 		};
 		FILTER_NAMES = wsdl_FILTER_NAMES;
 
 		// Resource selection widget not used (yet)
-		resourceFilter = ".java";
+		resourceFilter = ".java"; //$NON-NLS-1$
 		if (fResourceComposite!=null)
 			fResourceComposite.setFileFilter(resourceFilter);
 	}

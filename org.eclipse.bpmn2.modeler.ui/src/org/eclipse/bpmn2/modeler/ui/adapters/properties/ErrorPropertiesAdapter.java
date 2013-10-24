@@ -15,10 +15,8 @@ package org.eclipse.bpmn2.modeler.ui.adapters.properties;
 
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.Error;
-import org.eclipse.bpmn2.modeler.core.adapters.ObjectDescriptor;
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.ecore.resource.Resource;
 
 /**
  * @author Bob Brodt
@@ -32,20 +30,24 @@ public class ErrorPropertiesAdapter extends RootElementPropertiesAdapter<Error> 
 	 */
 	public ErrorPropertiesAdapter(AdapterFactory adapterFactory, Error object) {
 		super(adapterFactory, object);
+
+		EStructuralFeature feature = Bpmn2Package.eINSTANCE.getError_StructureRef();
+		setProperty(feature, UI_IS_MULTI_CHOICE, Boolean.TRUE);
+    	setFeatureDescriptor(feature, new ItemDefinitionRefFeatureDescriptor<Error>(adapterFactory, object, feature));
 		
     	setObjectDescriptor(new RootElementObjectDescriptor<Error>(adapterFactory, object) {
 			@Override
 			public String getDisplayName(Object context) {
 				final Error error = adopt(context);
-				String text = "";
+				String text = ""; //$NON-NLS-1$
 				if (error.getName()!=null) {
 					text += error.getName();
 				}
 				else if (error.getErrorCode()!=null) {
-					text += "Error Code: " + error.getErrorCode();
+					text += Messages.ErrorPropertiesAdapter_Error_Code + error.getErrorCode();
 				}
 				if (text.isEmpty())
-					text = "ID: " + error.getId();
+					text = Messages.ErrorPropertiesAdapter_ID + error.getId();
 				return text;
 			}
     	});

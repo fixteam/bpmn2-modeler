@@ -38,13 +38,13 @@ public class IoParameterNameColumn extends TableColumn {
 					if (text==null)
 						text = ((DataInput)e).getName();
 					else
-						text += ", " + ((DataInput)e).getName();
+						text += ", " + ((DataInput)e).getName(); //$NON-NLS-1$
 				}
 				else if (e instanceof DataOutput) {
 					if (text==null)
 						text = ((DataOutput)e).getName();
 					else
-						text += ", " + ((DataOutput)e).getName();
+						text += ", " + ((DataOutput)e).getName(); //$NON-NLS-1$
 				}
 			}
 		}
@@ -55,13 +55,13 @@ public class IoParameterNameColumn extends TableColumn {
 					if (text==null)
 						text = ((DataInput)e).getName();
 					else
-						text += ", " + ((DataInput)e).getName();
+						text += ", " + ((DataInput)e).getName(); //$NON-NLS-1$
 				}
 				else if (e instanceof DataOutput) {
 					if (text==null)
 						text = ((DataOutput)e).getName();
 					else
-						text += ", " + ((DataOutput)e).getName();
+						text += ", " + ((DataOutput)e).getName(); //$NON-NLS-1$
 				}
 			}
 		}
@@ -72,7 +72,7 @@ public class IoParameterNameColumn extends TableColumn {
 			text = ((DataOutput)o).getName();
 		}
 		if (text==null)
-			return "";
+			return ""; //$NON-NLS-1$
 		return text;
 	}
 }

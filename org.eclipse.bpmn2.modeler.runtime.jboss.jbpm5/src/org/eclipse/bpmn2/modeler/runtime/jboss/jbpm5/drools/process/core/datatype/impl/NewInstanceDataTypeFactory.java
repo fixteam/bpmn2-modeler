@@ -36,10 +36,10 @@ public class NewInstanceDataTypeFactory implements DataTypeFactory {
         try {
             return this.dataTypeClass.newInstance();
         } catch (final IllegalAccessException e) {
-            throw new RuntimeException("Could not create data type for class "
+            throw new RuntimeException(Messages.NewInstanceDataTypeFactory_Cannot_Create
                     + this.dataTypeClass, e);
         } catch (final InstantiationException e) {
-            throw new RuntimeException("Could not create data type for class "
+            throw new RuntimeException(Messages.NewInstanceDataTypeFactory_Cannot_Create
                     + this.dataTypeClass, e);
         }
     }

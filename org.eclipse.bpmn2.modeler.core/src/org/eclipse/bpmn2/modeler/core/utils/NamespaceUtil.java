@@ -65,11 +65,11 @@ public class NamespaceUtil {
 		String namespace = qname.getNamespaceURI();
 		String prefix = qname.getPrefix();
 		if (prefix!=null && !prefix.isEmpty()) {
-			return prefix + ":" + localPart;
+			return prefix + ":" + localPart; //$NON-NLS-1$
 		}
 		prefix = getPrefixForNamespace(resource, namespace);
 		if (prefix!=null && !prefix.isEmpty()) {
-			return prefix + ":" + localPart;
+			return prefix + ":" + localPart; //$NON-NLS-1$
 		}
 		return localPart;
 	}
@@ -101,7 +101,7 @@ public class NamespaceUtil {
 		String prefix = null;
 		Map<String,String> map = getXMLNSPrefixMap(resource);
 		if (map!=null) {
-			prefix = "ns";
+			prefix = "ns"; //$NON-NLS-1$
 			int index = 1;
 			while (map.containsKey(prefix+index))
 				++index;

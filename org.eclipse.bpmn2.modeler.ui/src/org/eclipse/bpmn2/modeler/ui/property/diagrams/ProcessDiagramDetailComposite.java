@@ -33,13 +33,12 @@ public class ProcessDiagramDetailComposite extends DefaultDetailComposite {
 		if (propertiesProvider == null) {
 			propertiesProvider = new AbstractPropertiesProvider(object) {
 				String[] properties = new String[] {
-						"id", "name",
-						"anyAttribute",
-						"processType",
-						"isExecutable",
-						"isClosed",
-						"laneSets",
-						"correlationSubscriptions"
+						"id", "name", //$NON-NLS-1$ //$NON-NLS-2$
+						"anyAttribute", //$NON-NLS-1$
+						"processType", //$NON-NLS-1$
+						"isExecutable", //$NON-NLS-1$
+						"isClosed", //$NON-NLS-1$
+						"correlationSubscriptions" //$NON-NLS-1$
 				};
 				
 				@Override

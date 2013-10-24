@@ -1,5 +1,6 @@
 target/
 local/
+sandbox/
 .git/
 
 # Eclipse, Netbeans and IntelliJ files

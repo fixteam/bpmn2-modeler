@@ -12,6 +12,7 @@ package org.eclipse.bpmn2.modeler.ui.property.tasks;
 
 import org.eclipse.bpmn2.Activity;
 import org.eclipse.bpmn2.Expression;
+import org.eclipse.bpmn2.FormalExpression;
 import org.eclipse.bpmn2.ItemAwareElement;
 import org.eclipse.bpmn2.MultiInstanceBehavior;
 import org.eclipse.bpmn2.MultiInstanceLoopCharacteristics;
@@ -33,6 +34,7 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.transaction.RecordingCommand;
 import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
@@ -55,9 +57,9 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 		LoopCardinality
 	};
 
-	ObjectEditor throwBehaviorEditor;
-	ObjectEditor noneBehaviorEventEditor;
-	ObjectEditor oneBehaviorEventEditor;
+	ComboObjectEditor throwBehaviorEditor;
+	ComboObjectEditor noneBehaviorEventEditor;
+	ComboObjectEditor oneBehaviorEventEditor;
 	AbstractListComposite complexBehaviorList;
 
 	ObjectEditor isSequentialEditor;
@@ -96,18 +98,18 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 		if (propertiesProvider==null) {
 			propertiesProvider = new AbstractPropertiesProvider(object) {
 				String[] properties = new String[] {
-						"anyAttribute",
-						"isSequential",
-						"inputDataItem",
-						"outputDataItem",
-						"loopDataInputRef",
-						"loopDataOutputRef",
-						"completionCondition",
-						"loopCardinality",
-						"behavior",
-						"noneBehaviorEventRef",
-						"oneBehaviorEventRef",
-						"complexBehaviorDefinition",
+						"anyAttribute", //$NON-NLS-1$
+						"isSequential", //$NON-NLS-1$
+						"inputDataItem", //$NON-NLS-1$
+						"outputDataItem", //$NON-NLS-1$
+						"loopDataInputRef", //$NON-NLS-1$
+						"loopDataOutputRef", //$NON-NLS-1$
+						"completionCondition", //$NON-NLS-1$
+						"loopCardinality", //$NON-NLS-1$
+						"behavior", //$NON-NLS-1$
+						"noneBehaviorEventRef", //$NON-NLS-1$
+						"oneBehaviorEventRef", //$NON-NLS-1$
+						"complexBehaviorDefinition", //$NON-NLS-1$
 				};
 				
 				@Override
@@ -153,7 +155,7 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 		
 		////////////////////////
 		// "sequential" checkbox
-		if (isEnabled("isSequential")) {
+		if (isEnabled("isSequential")) { //$NON-NLS-1$
 			isSequentialEditor = new BooleanObjectEditor(this, getBO(), PACKAGE.getMultiInstanceLoopCharacteristics_IsSequential()) {
 				
 				protected boolean setValue(final Object result) {
@@ -180,7 +182,7 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 					return true;
 				}
 			};
-			isSequentialEditor.createControl(getAttributesParent(),"Sequential instead of Parallel Execution");
+			isSequentialEditor.createControl(getAttributesParent(),Messages.MultiInstanceLoopCharacteristicsDetailComposite_Sequential_Label);
 			isSequentialEditor.getControl().addListener(SWT.Selection, new Listener() {
 				@Override
 				public void handleEvent(Event event) {
@@ -190,7 +192,7 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 			});
 		}
 		
-		if (isEnabled("completionCondition")) {
+		if (isEnabled("completionCondition")) { //$NON-NLS-1$
 			// completion condition expression
 			completionConditionWidgets = toolkit.createComposite(getAttributesParent(), SWT.NONE);
 			completionConditionWidgets.setLayout(new GridLayout(1,false));
@@ -202,11 +204,11 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 		
 		////////////////////////
 		// radio buttons for number of instances controls
-		if (isEnabled("loopCardinality") && isEnabled("loopDataInputRef")) {
-			label = toolkit.createLabel(getAttributesParent(), "Number of Instances determined by");
+		if (isEnabled("loopCardinality") && isEnabled("loopDataInputRef")) { //$NON-NLS-1$ //$NON-NLS-2$
+			label = toolkit.createLabel(getAttributesParent(), Messages.MultiInstanceLoopCharacteristicsDetailComposite_Number_Of_Instances);
 			label.setLayoutData(new GridData(SWT.RIGHT,SWT.TOP,false,false,1,1));
 	
-			loopCardinalityButton = toolkit.createButton(getAttributesParent(), "Integer Expression", SWT.RADIO);
+			loopCardinalityButton = toolkit.createButton(getAttributesParent(), Messages.MultiInstanceLoopCharacteristicsDetailComposite_Integer_Expression_Button, SWT.RADIO);
 			loopCardinalityButton.setLayoutData(new GridData(SWT.LEFT,SWT.TOP,false,false,1,1));
 			loopCardinalityButton.addSelectionListener(new SelectionAdapter() {
 				@Override
@@ -219,7 +221,7 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 				}
 			});
 	
-			loopDataInputButton = toolkit.createButton(getAttributesParent(), "Collection of Data Items", SWT.RADIO);
+			loopDataInputButton = toolkit.createButton(getAttributesParent(), Messages.MultiInstanceLoopCharacteristicsDetailComposite_Collection_Button, SWT.RADIO);
 			loopDataInputButton.setLayoutData(new GridData(SWT.LEFT,SWT.TOP,true,false,1,1));
 			loopDataInputButton.addSelectionListener(new SelectionAdapter() {
 				@Override
@@ -238,20 +240,20 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 		instanceWidgets = toolkit.createComposite(getAttributesParent(), SWT.NONE);
 		instanceWidgets.setLayout(new GridLayout(3,false));
 		instanceWidgets.setLayoutData(new GridData(SWT.FILL,SWT.FILL,true,true,3,1));
-		if (isEnabled("loopCardinality") && isEnabled("loopDataInputRef")) {
+		if (isEnabled("loopCardinality") && isEnabled("loopDataInputRef")) { //$NON-NLS-1$ //$NON-NLS-2$
 			// initially hidden
 			instanceWidgets.setVisible(false);
 			((GridData)instanceWidgets.getLayoutData()).exclude = true;
 		}
 		
-		if (isEnabled("loopCardinality")) {
+		if (isEnabled("loopCardinality")) { //$NON-NLS-1$
 			// expression
 			loopCardinalityWidgets = toolkit.createComposite(instanceWidgets, SWT.NONE);
 			loopCardinalityWidgets.setLayout(new GridLayout(1,false));
 			loopCardinalityWidgets.setLayoutData(new GridData(SWT.FILL,SWT.TOP,true,true,3,1));
 		}
 		
-		if (isEnabled("loopDataInputRef")) {
+		if (isEnabled("loopDataInputRef")) { //$NON-NLS-1$
 			// data collection
 			loopDataInputWidgets = toolkit.createComposite(instanceWidgets, SWT.NONE);
 			loopDataInputWidgets.setLayout(new GridLayout(3,false));
@@ -260,10 +262,10 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 		
 		////////////////////////
 		// produces output checkbox
-		if (isEnabled("loopDataOutputRef")) {
-			label = toolkit.createLabel(getAttributesParent(), "Activity Execution Produces Output");
+		if (isEnabled("loopDataOutputRef")) { //$NON-NLS-1$
+			label = toolkit.createLabel(getAttributesParent(), Messages.MultiInstanceLoopCharacteristicsDetailComposite_Produces_Output_Label);
 			label.setLayoutData(new GridData(SWT.RIGHT,SWT.TOP,false,false,1,1));
-			producesOutputButton = toolkit.createButton(getAttributesParent(), "", SWT.CHECK);
+			producesOutputButton = toolkit.createButton(getAttributesParent(), "", SWT.CHECK); //$NON-NLS-1$
 			producesOutputButton.setLayoutData(new GridData(SWT.LEFT,SWT.TOP,true,false,2,1));
 			producesOutputButton.addSelectionListener(new SelectionAdapter() {
 				@Override
@@ -285,8 +287,8 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 		
 		////////////////////////
 		// throw behavior combo and related widgets
-		if (isEnabled("behavior")) {
-			this.bindAttribute(getAttributesParent(), getBO(), "behavior", "Throw Behavior");
+		if (isEnabled("behavior")) { //$NON-NLS-1$
+			this.bindAttribute(getAttributesParent(), getBO(), "behavior", Messages.MultiInstanceLoopCharacteristicsDetailComposite_Throw_Behavior_Label); //$NON-NLS-1$
 			this.bindReference(getAttributesParent(), getBO(), PACKAGE.getMultiInstanceLoopCharacteristics_NoneBehaviorEventRef());
 			this.bindReference(getAttributesParent(), getBO(), PACKAGE.getMultiInstanceLoopCharacteristics_OneBehaviorEventRef());
 			this.bindList(getBO(), PACKAGE.getMultiInstanceLoopCharacteristics_ComplexBehaviorDefinition());
@@ -341,7 +343,7 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 	}
 	
 	private InstanceType getInstanceType() {
-		if (isEnabled("loopCardinality") && isEnabled("loopDataInputRef")) {
+		if (isEnabled("loopCardinality") && isEnabled("loopDataInputRef")) { //$NON-NLS-1$ //$NON-NLS-2$
 			MultiInstanceLoopCharacteristics lc = getBO();
 			if (lc.getLoopDataInputRef()==null) {
 				if (lc.getLoopCardinality()==null)
@@ -354,10 +356,10 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 				return InstanceType.DataInput;
 			}
 		}
-		else if (isEnabled("loopCardinality")) {
+		else if (isEnabled("loopCardinality")) { //$NON-NLS-1$
 			return InstanceType.LoopCardinality;
 		}
-		else if (isEnabled("loopDataInputRef")) {
+		else if (isEnabled("loopDataInputRef")) { //$NON-NLS-1$
 			return InstanceType.DataInput;
 		}
 		return InstanceType.None;
@@ -370,7 +372,7 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 	}
 	
 	private void showCompletionConditionWidgets(boolean show) {
-		if (!isEnabled("completionCondition"))
+		if (!isEnabled("completionCondition")) //$NON-NLS-1$
 			return;
 		
 		if (show != completionConditionWidgetsShowing) {
@@ -378,7 +380,7 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 				completionConditionWidgets.setVisible(true);
 				((GridData)completionConditionWidgets.getLayoutData()).exclude = false;
 
-				this.bindReference(completionConditionWidgets, getBO(), "completionCondition");
+				this.bindReference(completionConditionWidgets, getBO(), "completionCondition"); //$NON-NLS-1$
 			}
 			else {
 				completionConditionWidgets.setVisible(false);
@@ -399,7 +401,7 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 	}
 
 	private void showLoopDataInputWidgets(boolean show) {
-		if (!isEnabled("loopDataInputRef"))
+		if (!isEnabled("loopDataInputRef")) //$NON-NLS-1$
 			return;
 
 		if (show != loopDataInputWidgetsShowing) {
@@ -410,7 +412,7 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 				loopDataInputWidgets.setVisible(true);
 				((GridData)loopDataInputWidgets.getLayoutData()).exclude = false;
 
-				this.bindReference(loopDataInputWidgets, getBO(), "loopDataInputRef");
+				this.bindReference(loopDataInputWidgets, getBO(), "loopDataInputRef"); //$NON-NLS-1$
 			}
 			else {
 				instanceWidgets.setVisible(false);
@@ -435,7 +437,7 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 	}
 
 	private void showLoopCardinalityWidgets(boolean show) {
-		if (!isEnabled("loopCardinality"))
+		if (!isEnabled("loopCardinality")) //$NON-NLS-1$
 			return;
 
 		if (show != loopCardinalityWidgetsShowing) {
@@ -446,7 +448,7 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 				loopCardinalityWidgets.setVisible(true);
 				((GridData)loopCardinalityWidgets.getLayoutData()).exclude = false;
 
-				this.bindReference(loopCardinalityWidgets, getBO(), "loopCardinality");
+				this.bindReference(loopCardinalityWidgets, getBO(), "loopCardinality"); //$NON-NLS-1$
 			}
 			else {
 				instanceWidgets.setVisible(false);
@@ -470,7 +472,7 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 	}
 
 	private void showLoopDataOutputWidgets(boolean show) {
-		if (!isEnabled("loopDataOutputRef"))
+		if (!isEnabled("loopDataOutputRef")) //$NON-NLS-1$
 			return;
 
 		if (show != loopDataOutputWidgetsShowing) {
@@ -478,7 +480,7 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 				loopDataOutputWidgets.setVisible(true);
 				((GridData)loopDataOutputWidgets.getLayoutData()).exclude = false;
 				
-				this.bindReference(loopDataOutputWidgets, getBO(), "loopDataOutputRef");
+				this.bindReference(loopDataOutputWidgets, getBO(), "loopDataOutputRef"); //$NON-NLS-1$
 			}
 			else {
 				loopDataOutputWidgets.setVisible(false);
@@ -517,7 +519,7 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 	}
 	
 	protected void bindAttribute(Composite parent, EObject object, EAttribute attribute, String label) {
-		if (attribute.getName().equals("behavior")) {
+		if (attribute.getName().equals("behavior")) { //$NON-NLS-1$
 			throwBehaviorEditor = new ComboObjectEditor(this,object,attribute) {
 
 				@Override
@@ -602,8 +604,8 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 							Expression.class, completionConditionWidgets, SWT.BORDER);
 					((DefaultDetailComposite)completionConditionEditor).setPropertiesProvider( new AbstractPropertiesProvider(getBO()) {
 						String[] properties = new String[] {
-								"language",
-								"body",
+								"language", //$NON-NLS-1$
+								"body", //$NON-NLS-1$
 								// this must evaluate to a Boolean data type
 						};
 						
@@ -617,11 +619,11 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 				// create a new Loop Cardinality FormalExpression if necessary
 				Expression expression = getBO().getCompletionCondition();
 				if (expression==null) {
-					expression = FACTORY.createFormalExpression();
+					expression = createModelObject(FormalExpression.class);
 					InsertionAdapter.add(getBO(), PACKAGE.getMultiInstanceLoopCharacteristics_CompletionCondition(), expression);
 				}
 				completionConditionEditor.setBusinessObject(expression);
-				completionConditionEditor.setTitle("Completion Condition");
+				completionConditionEditor.setTitle(Messages.MultiInstanceLoopCharacteristicsDetailComposite_Completion_Condition_Label);
 			}
 		}
 		else if (reference == PACKAGE.getMultiInstanceLoopCharacteristics_LoopDataInputRef()) {
@@ -632,15 +634,15 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 						@Override
 						public void createBindings(EObject be) {
 							ObjectEditor editor = new ComboObjectEditor(this,object,reference, PACKAGE.getDataInput());
-							editor.createControl(getAttributesParent(), "Input Data Collection");
+							editor.createControl(getAttributesParent(), Messages.MultiInstanceLoopCharacteristicsDetailComposite_Input_Data_Label);
 							EStructuralFeature f = PACKAGE.getMultiInstanceLoopCharacteristics_InputDataItem();
 							editor = new DataInputOutputItemEditor(lc,f);
-							editor.createControl(getAttributesParent(), "Input Instance Parameter");
+							editor.createControl(getAttributesParent(), Messages.MultiInstanceLoopCharacteristicsDetailComposite_Input_Parameter_Label);
 						}
 					};
 				}
 				loopDataInputEditor.setBusinessObject(object);
-				loopDataInputEditor.setTitle("Input Data Items");
+				loopDataInputEditor.setTitle(Messages.MultiInstanceLoopCharacteristicsDetailComposite_Input_Data_Title);
 			}
 		}
 		else if (reference == PACKAGE.getMultiInstanceLoopCharacteristics_LoopDataOutputRef()) {
@@ -651,15 +653,15 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 						@Override
 						public void createBindings(EObject be) {
 							ObjectEditor editor = new ComboObjectEditor(this,object,reference);
-							editor.createControl(getAttributesParent(), "Output Data Collection");
+							editor.createControl(getAttributesParent(), Messages.MultiInstanceLoopCharacteristicsDetailComposite_Output_Data_Label);
 							EStructuralFeature f = PACKAGE.getMultiInstanceLoopCharacteristics_OutputDataItem();
 							editor = new DataInputOutputItemEditor(lc,f);
-							editor.createControl(getAttributesParent(), "Output Instance Parameter");
+							editor.createControl(getAttributesParent(), Messages.MultiInstanceLoopCharacteristicsDetailComposite_Output_Parameter_Label);
 						}
 					};
 				}
 				loopDataOutputEditor.setBusinessObject(object);
-				loopDataOutputEditor.setTitle("Output Data Items");
+				loopDataOutputEditor.setTitle(Messages.MultiInstanceLoopCharacteristicsDetailComposite_Output_Data_Title);
 			}
 		}
 		else if (reference == PACKAGE.getMultiInstanceLoopCharacteristics_LoopCardinality()) {
@@ -673,17 +675,18 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 				// create a new Loop Cardinality FormalExpression if necessary
 				Expression expression = getBO().getLoopCardinality();
 				if (expression==null) {
-					expression = FACTORY.createFormalExpression();
+					expression = createModelObject(FormalExpression.class);
 					InsertionAdapter.add(getBO(), PACKAGE.getMultiInstanceLoopCharacteristics_LoopCardinality(), expression);
 				}
 				loopCardinalityEditor.setBusinessObject(expression);
-				loopCardinalityEditor.setTitle("Expression");
+				loopCardinalityEditor.setTitle(Messages.MultiInstanceLoopCharacteristicsDetailComposite_Expression_Title);
 			}
 		}
 		else if (reference == PACKAGE.getMultiInstanceLoopCharacteristics_NoneBehaviorEventRef()) {
 			if (isModelObjectEnabled(lc.eClass(), reference)) {
 				String displayName = ModelUtil.getLabel(object, reference);
 				noneBehaviorEventEditor = new ComboObjectEditor(this,object,reference);
+				noneBehaviorEventEditor.setStyle(SWT.READ_ONLY);
 				noneBehaviorEventEditor.createControl(parent,displayName);
 				noneBehaviorEventEditor.setVisible( lc.getBehavior() == MultiInstanceBehavior.NONE );
 			}				
@@ -692,6 +695,7 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 			if (isModelObjectEnabled(lc.eClass(), reference)) {
 				String displayName = ModelUtil.getLabel(object, reference);
 				oneBehaviorEventEditor = new ComboObjectEditor(this,object,reference);
+				oneBehaviorEventEditor.setStyle(SWT.READ_ONLY);
 				oneBehaviorEventEditor.createControl(parent,displayName);
 				oneBehaviorEventEditor.setVisible( lc.getBehavior() == MultiInstanceBehavior.ONE );
 			}
@@ -702,7 +706,7 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 	
 	protected AbstractListComposite bindList(EObject object, EStructuralFeature feature, EClass listItemClass) {
 		MultiInstanceLoopCharacteristics lc = (MultiInstanceLoopCharacteristics)object;
-		if (feature.getName().equals("complexBehaviorDefinition")) {
+		if (feature.getName().equals("complexBehaviorDefinition")) { //$NON-NLS-1$
 			if (isModelObjectEnabled(lc.eClass(), feature)) {
 				complexBehaviorList = super.bindList(getAttributesParent(), object, feature, listItemClass);
 				complexBehaviorList.setVisible( lc.getBehavior() == MultiInstanceBehavior.COMPLEX );
@@ -732,9 +736,9 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 					if (propertiesProvider==null) {
 						propertiesProvider = new AbstractPropertiesProvider(object) {
 							String[] properties = new String[] {
-									"anyAttribute",
-									"name",
-									"itemSubjectRef",
+									"anyAttribute", //$NON-NLS-1$
+									"name", //$NON-NLS-1$
+									"itemSubjectRef", //$NON-NLS-1$
 							};
 							
 							@Override
@@ -775,14 +779,14 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 			// update the read-only text for this DataInput or DataOutput editor:
 			// this will be in the form "Parameter Name (Data Type)"
 			ItemAwareElement item = (ItemAwareElement) object.eGet(feature);
-			String newText = "";
+			String newText = ""; //$NON-NLS-1$
 			if (item!=null) {
 				String name = ModelUtil.getName(item);
 				String type = ModelUtil.getDisplayName(item.getItemSubjectRef());
 				if (name!=null)
 					newText = name;
 				if (type!=null)
-					newText += "  (" + type + ")";
+					newText += "  (" + type + ")"; //$NON-NLS-1$ //$NON-NLS-2$
 			}
 			
 			if (!text.getText().equals(newText)) {

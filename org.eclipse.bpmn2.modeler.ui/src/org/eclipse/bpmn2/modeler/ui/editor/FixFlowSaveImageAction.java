@@ -1,4 +1,4 @@
-package org.eclipse.bpmn2.modeler.ui.editor;
+/*package org.eclipse.bpmn2.modeler.ui.editor;
 
 import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.graphiti.features.ISaveImageFeature;
@@ -48,3 +48,4 @@ public class FixFlowSaveImageAction extends SaveImageAction {
 		saveImageFeature.postSave(context);
 	}
 }
+*/

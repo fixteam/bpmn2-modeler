@@ -85,7 +85,7 @@ public class DataObjectPropertySection extends DefaultPropertySection {
 			if (object instanceof DataState) {
 				if (dataStatePropertiesProvider == null) {
 					dataStatePropertiesProvider = new AbstractPropertiesProvider(object) {
-						String[] properties = new String[] { "id", "name" };
+						String[] properties = new String[] { "id", "name" }; //$NON-NLS-1$ //$NON-NLS-2$
 						
 						@Override
 						public String[] getProperties() {
@@ -98,7 +98,7 @@ public class DataObjectPropertySection extends DefaultPropertySection {
 			else if (object instanceof DataObject) {
 				if (propertiesProvider == null) {
 					propertiesProvider = new AbstractPropertiesProvider(object) {
-						String[] properties = new String[] { "id", "name", "isCollection", "itemSubjectRef", "dataState" };
+						String[] properties = new String[] { "id", "name", "isCollection", "itemSubjectRef", "dataState" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 						
 						@Override
 						public String[] getProperties() {
@@ -111,7 +111,7 @@ public class DataObjectPropertySection extends DefaultPropertySection {
 			else if (object instanceof DataObjectReference) {
 				if (dataObjectReferencePropertiesProvider == null) {
 					dataObjectReferencePropertiesProvider = new AbstractPropertiesProvider(object) {
-						String[] properties = new String[] { "id", "name", "dataObjectRef" , "dataState" };
+						String[] properties = new String[] { "id", "name", "dataObjectRef" , "dataState" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 	
 						@Override
 						public String[] getProperties() {

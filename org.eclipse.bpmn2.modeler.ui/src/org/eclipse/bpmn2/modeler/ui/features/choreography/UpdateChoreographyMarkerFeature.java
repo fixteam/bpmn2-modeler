@@ -44,7 +44,7 @@ public class UpdateChoreographyMarkerFeature extends AbstractUpdateFeature {
 		ChoreographyActivity choreography = BusinessObjectUtil.getFirstElementOfType(choreographyContainer,
 				ChoreographyActivity.class);
 
-		String loopType = choreography.getLoopType() == null ? "null" : choreography.getLoopType().getName();
+		String loopType = choreography.getLoopType() == null ? "null" : choreography.getLoopType().getName(); //$NON-NLS-1$
 		String property = peService.getPropertyValue(choreographyContainer, ChoreographyProperties.CHOREOGRAPHY_MARKER);
 
 		if (!loopType.equals(property)) {
@@ -67,7 +67,7 @@ public class UpdateChoreographyMarkerFeature extends AbstractUpdateFeature {
 			}
 		}
 
-		String loopType = choreography.getLoopType() == null ? "null" : choreography.getLoopType().getName();
+		String loopType = choreography.getLoopType() == null ? "null" : choreography.getLoopType().getName(); //$NON-NLS-1$
 		peService.setPropertyValue(choreographyContainer, ChoreographyProperties.CHOREOGRAPHY_MARKER, loopType);
 
 		return true;

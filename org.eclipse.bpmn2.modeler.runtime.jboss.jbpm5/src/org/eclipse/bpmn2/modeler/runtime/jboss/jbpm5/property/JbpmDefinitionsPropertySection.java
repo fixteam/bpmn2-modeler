@@ -70,8 +70,8 @@ public class JbpmDefinitionsPropertySection extends DefinitionsPropertySection {
 			if (propertiesProvider==null) {
 				propertiesProvider = new AbstractPropertiesProvider(object) {
 					String[] properties = new String[] {
-							"id",
-							"itemRef"
+							"id", //$NON-NLS-1$
+							"itemRef" //$NON-NLS-1$
 					};
 					
 					@Override
@@ -85,8 +85,8 @@ public class JbpmDefinitionsPropertySection extends DefinitionsPropertySection {
 		
 		@Override
 		protected void bindAttribute(Composite parent, EObject object, EAttribute attribute, String label) {
-			if ("id".equals(attribute.getName()))
-				label = "Name";
+			if ("id".equals(attribute.getName())) //$NON-NLS-1$
+				label = Messages.JbpmDefinitionsPropertySection_Name;
 			super.bindAttribute(parent, object, attribute, label);
 		}
 		
@@ -116,7 +116,7 @@ public class JbpmDefinitionsPropertySection extends DefinitionsPropertySection {
 			if (columnProvider==null) {
 				columnProvider = new ListCompositeColumnProvider(this);
 				TableColumn tc = new TableColumn(object,Bpmn2Package.eINSTANCE.getBaseElement_Id());
-				tc.setHeaderText("Name"); 
+				tc.setHeaderText(Messages.JbpmDefinitionsPropertySection_Name); 
 				columnProvider.add(tc);
 				columnProvider.add(new TableColumn(object,Bpmn2Package.eINSTANCE.getMessage_ItemRef()));
 			}

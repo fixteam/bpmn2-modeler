@@ -58,7 +58,7 @@ public class BPMN2ErrorTreeNode extends TreeNode {
 		Error error = (Error)modelObject;
 		String label = error.getName();
 		if (label==null || label.isEmpty())
-			label = "Unnamed Error";
+			label = Messages.BPMN2ErrorTreeNode_Unnamed;
 		return label;
 	}
 }
