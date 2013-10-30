@@ -97,7 +97,7 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 	}
 	
 	public static TargetRuntime getCurrentRuntime() {
-		return currentRuntime;
+		return getRuntime(DEFAULT_RUNTIME_ID);
 	}
 	
 	public static void setCurrentRuntime(TargetRuntime rt) {
