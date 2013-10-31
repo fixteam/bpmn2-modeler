@@ -42,7 +42,7 @@ import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.adapters.FeatureDescriptor;
 import org.eclipse.bpmn2.modeler.core.features.ContextConstants;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
-import org.eclipse.bpmn2.modeler.core.runtime.ModelEnablementDescriptor;
+import org.eclipse.bpmn2.modeler.core.preferences.ModelEnablements;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
@@ -205,8 +205,8 @@ public class DataAssociationPropertiesAdapter extends ExtendedPropertiesAdapter<
 				if (property==null) {
 					// need to create a new one!
 					DiagramEditor editor = ModelUtil.getEditor(object);
-					ModelEnablementDescriptor modelEnablement =
-							(ModelEnablementDescriptor)editor.getAdapter(ModelEnablementDescriptor.class);
+					ModelEnablements modelEnablement =
+							(ModelEnablements)editor.getAdapter(ModelEnablements.class);
 					// find nearest element that can contain a Property and create one
 					container = association;
 					for (;;) {

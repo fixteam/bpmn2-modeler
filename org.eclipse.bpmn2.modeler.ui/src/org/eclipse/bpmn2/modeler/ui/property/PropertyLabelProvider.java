@@ -52,12 +52,6 @@ public class PropertyLabelProvider extends LabelProvider {
 	public String getText(Object element) {
 		EObject object = getBusinessObject(element);
 		if (object!=null) {
-			if (object instanceof BPMNDiagram) {
-				BaseElement bpmnElement = ((BPMNDiagram)object).getPlane().getBpmnElement();
-				if (bpmnElement instanceof Process) {
-					object = bpmnElement;
-				}
-			}
 			String text = ModelUtil.getDisplayName(object);
 			// check if this is a CustomTask
 			CustomTaskDescriptor ctd = getCustomTaskDescriptor(object); 

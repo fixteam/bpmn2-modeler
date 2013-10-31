@@ -683,8 +683,10 @@
 
 <!-- Model Enablements and Profiles -->
 
-		<modelEnablement runtimeId="org.jboss.runtime.jbpm5" type="Process" profile="Full">
-			<disable object="all"/>
+		<modelEnablement
+				runtimeId="org.jboss.runtime.jbpm5"
+				type="Process"
+				profile="Full">
 			<enable object="AdHocSubProcess" feature="cancelRemainingInstances"/>
 			<enable object="AdHocSubProcess" feature="completionCondition"/>
 			<enable object="AdHocSubProcess" feature="flowElements"/>
@@ -953,11 +955,12 @@
 			<enable object="UserTask" feature="resources"/>
 		</modelEnablement>
 		
-		<modelEnablement runtimeId="org.jboss.runtime.jbpm5" type="Process" profile="Simple">
-			<disable object="all"/>
+		<modelEnablement
+				runtimeId="org.jboss.runtime.jbpm5"
+				type="Process"
+				profile="Simple"
+				ref="org.jboss.runtime.jbpm5:Process:Full">
 			<!-- copy the enablements from "Process" diagram type -->
-			<enable object="org.jboss.runtime.jbpm5" feature="Process.Full"/>
-			
 			<!-- and then disable these objects and features -->
 			<disable object="AdHocSubProcess"/>
 			<disable object="Assignment"/>
@@ -1004,8 +1007,10 @@
 			<enable object="OnExitScriptType"/>
 		</modelEnablement>
 		
-		<modelEnablement runtimeId="org.jboss.runtime.jbpm5" type="Process" profile="RuleFlow">
-			<disable object="all" />
+		<modelEnablement
+				runtimeId="org.jboss.runtime.jbpm5"
+				type="Process"
+				profile="RuleFlow">
 			<enable object="BusinessRuleTask" feature="anyAttribute"/>
 			<enable object="BusinessRuleTask" feature="name"/>
 			<enable object="BusinessRuleTask" feature="ruleFlowGroup"/>
@@ -1416,7 +1421,7 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            category="org.eclipse.bpmn2.modeler.ui.preferences.Bpmn2HomePreferencePage"
+            category="org.eclipse.bpmn2.modeler.BPMN2"
             class="org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.preferences.JbpmPreferencePage"
             id="org.jboss.runtime.jbpm5.preferences"
             name="%PREFERENCE_PAGE_JBPM"/>

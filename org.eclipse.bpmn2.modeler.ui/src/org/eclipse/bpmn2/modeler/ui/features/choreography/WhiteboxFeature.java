@@ -38,6 +38,7 @@ import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.ui.internal.util.ui.PopupMenu;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 
@@ -201,9 +202,12 @@ public class WhiteboxFeature extends AbstractCustomFeature {
 			else
 				return null;
 		}
+		else
+			changesDone = true;
+		
 		if (changesDone) {
 			if (result==newDiagram) { // the new one
-				String name = Messages.WhiteboxFeature_Process_For+ModelUtil.getDisplayName(participant);
+				String name = NLS.bind(Messages.WhiteboxFeature_Process_For, ModelUtil.getDisplayName(participant));
 		        process.setName(name);
 		        newDiagram.setName(name);
 		        definitions.getRootElements().add(process);

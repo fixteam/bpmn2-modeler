@@ -142,9 +142,8 @@ public class Messages extends NLS {
 	public static String Bpmn2HomePreferencePage_Default_DI_Values_Title;
 
 	public static String Bpmn2PreferencePage_HomePage_Description;
-	public static String Bpmn2PreferencePage_EditorPage_Description;
 
-	public static String Bpmn2PropertyPage_DI_Defaults_Title;
+	public static String Bpmn2PropertyPage_HomePage_Description;
 
 	public static String CommonLabels_Data_Type;
 
@@ -175,9 +174,9 @@ public class Messages extends NLS {
 	public static String DefaultSchemaImportDialog_XSD_Type;
 
 	public static String UI_UnknownDiagram_long_description;
-	public static String UI_ProcessDiagram_long_description;
-	public static String UI_ChoreographyDiagram_long_description;
-	public static String UI_CollaborationDiagram_long_description;
+	public static String UI_Process_long_description;
+	public static String UI_Choreography_long_description;
+	public static String UI_Collaboration_long_description;
 	
 	public static String UI_SequenceFlow_long_description;
 	public static String UI_MessageFlow_long_description;
@@ -210,8 +209,14 @@ public class Messages extends NLS {
 	public static String UI_ComplexGateway_long_description;
 	
 	public static String UI_Participant_long_description;
+	public static String UI_ParticipantBand_long_description;
 	public static String UI_Lane_long_description;
 	public static String UI_SubProcess_long_description;
+	public static String UI_Transaction_long_description;
+	public static String UI_ConversationLink_long_description;
+	public static String UI_CallChoreography_long_description;
+	public static String UI_AdHocSubProcess_long_description;
+	
 	public static String UI_Group_long_description;
 	public static String UI_SubChoreography_long_description;
 	public static String UI_CallActivity_long_description;

@@ -144,12 +144,13 @@
       </propertyExtension>
 
       <modelEnablement
-            runtimeId="org.eclipse.bpmn2.modeler.examples.customtask.runtime"
-            type="Process" profile="Default Process">
-			<disable object="all"/>
-			<!-- copy the enablements from "Process" diagram type as defined in the "None" Target Runtime -->
-			<enable object="default" feature="Process"/>
-
+        	    runtimeId="org.eclipse.bpmn2.modeler.examples.customtask.runtime"
+    	        type="Process"
+	            profile="Default Process"
+				ref="org.eclipse.bpmn2.modeler.runtime.none:Process:Default Process">
+				
+			<!-- copy the enablements from Default Target Runtime -->
+			<!-- and then add our extension features -->
 			<enable object="Task" feature="taskConfig"/>
 			<enable object="TaskConfig"/>
 			<enable object="Parameter"/>
@@ -160,12 +161,13 @@
       </modelEnablement>
 
       <modelEnablement
-            runtimeId="org.eclipse.bpmn2.modeler.examples.customtask.runtime"
-            type="Collaboration" profile="Default Collaboration">
-			<disable object="all"/>
-			<!-- copy the enablements from "Collaboration" diagram type as defined in the "None" Target Runtime -->
-			<enable object="default" feature="Collaboration"/>
-
+        	    runtimeId="org.eclipse.bpmn2.modeler.examples.customtask.runtime"
+    	        type="Collaboration"
+	            profile="Default Collaboration"
+				ref="org.eclipse.bpmn2.modeler.runtime.none:Process:Default Process">
+				
+			<!-- copy the enablements from Default Target Runtime -->
+			<!-- and then add our extension features -->
 			<enable object="Task" feature="taskConfig"/>
 			<enable object="TaskConfig"/>
 			<enable object="Parameter"/>

@@ -19,8 +19,8 @@ import org.eclipse.bpmn2.modeler.core.di.DIImport;
 import org.eclipse.bpmn2.modeler.core.features.activity.task.ICustomElementFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ObjectEditingDialog;
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
+import org.eclipse.bpmn2.modeler.core.preferences.ModelEnablements;
 import org.eclipse.bpmn2.modeler.core.runtime.CustomTaskDescriptor;
-import org.eclipse.bpmn2.modeler.core.runtime.ModelEnablementDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
@@ -163,22 +163,22 @@ public abstract class AbstractBpmn2CreateFeature<T extends BaseElement>
 	 * or context menus.
 	 */
 	protected boolean isModelObjectEnabled() {
-		ModelEnablementDescriptor me = getModelEnablements();
+		ModelEnablements me = getModelEnablements();
 		if (me!=null)
 			return me.isEnabled(getBusinessObjectClass());
 		return false;
 	}
 	
 	protected boolean isModelObjectEnabled(EObject o) {
-		ModelEnablementDescriptor me = getModelEnablements();
+		ModelEnablements me = getModelEnablements();
 		if (me!=null)
 			return me.isEnabled(o.eClass());
 		return false;
 	}
 	
-	protected ModelEnablementDescriptor getModelEnablements() {
+	protected ModelEnablements getModelEnablements() {
 		DiagramEditor editor = (DiagramEditor) getDiagramEditor();
-		return (ModelEnablementDescriptor) editor.getAdapter(ModelEnablementDescriptor.class);
+		return (ModelEnablements) editor.getAdapter(ModelEnablements.class);
 	}
 
 	@Override

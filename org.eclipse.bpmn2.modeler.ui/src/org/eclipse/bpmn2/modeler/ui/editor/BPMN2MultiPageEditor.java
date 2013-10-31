@@ -171,7 +171,7 @@ public class BPMN2MultiPageEditor extends MultiPageEditorPart implements IGotoMa
 					--pageIndex;
 				addPage(pageIndex, designEditor, BPMN2MultiPageEditor.this.getEditorInput());
 				defaultTabHeight = tabFolder.getTabHeight();
-				setPageText(pageIndex,ModelUtil.getDiagramTypeName( designEditor.getBpmnDiagram() ));
+				setPageText(pageIndex,ModelUtil.getDisplayName( designEditor.getBpmnDiagram() ));
 
 				defaultTabHeight = tabFolder.getTabHeight();
 
@@ -202,7 +202,7 @@ public class BPMN2MultiPageEditor extends MultiPageEditorPart implements IGotoMa
 					CTabItem oldItem = tabFolder.getItem(pageIndex-1);
 					CTabItem newItem = tabFolder.getItem(pageIndex);
 					newItem.setControl( oldItem.getControl() );
-					setPageText(pageIndex,bpmnDiagram.getName());
+					setPageText(pageIndex,ModelUtil.getDisplayName(bpmnDiagram));
 		
 					setActivePage(pageIndex);
 					updateTabs();

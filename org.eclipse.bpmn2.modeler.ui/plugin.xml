@@ -56,13 +56,29 @@
          point="org.eclipse.ui.preferencePages">
       <page
             class="org.eclipse.bpmn2.modeler.ui.preferences.Bpmn2HomePreferencePage"
-            id="org.eclipse.bpmn2.modeler.ui.preferences.Bpmn2HomePreferencePage"
+            id="org.eclipse.bpmn2.modeler.BPMN2"
             name="%PREFERENCE_PAGE_HOME"/>
       <page
-            category="org.eclipse.bpmn2.modeler.ui.preferences.Bpmn2HomePreferencePage"
+            category="org.eclipse.bpmn2.modeler.BPMN2"
             class="org.eclipse.bpmn2.modeler.ui.preferences.Bpmn2EditorPreferencePage"
-            id="org.eclipse.bpmn2.modeler.ui.preferences.Bpmn2EditorPreferencePage"
+            id="org.eclipse.bpmn2.modeler.Editor"
             name="%PREFERENCE_PAGE_EDITOR"/>
+
+	      <page
+	            category="org.eclipse.bpmn2.modeler.BPMN2/org.eclipse.bpmn2.modeler.Editor"
+	            class="org.eclipse.bpmn2.modeler.ui.preferences.Bpmn2EditorAppearancePreferencePage"
+	            id="org.eclipse.bpmn2.modeler.Appearance"
+	            name="%PREFERENCE_PAGE_APPEARANCE"/>
+	      <page
+	            category="org.eclipse.bpmn2.modeler.BPMN2/org.eclipse.bpmn2.modeler.Editor"
+	            class="org.eclipse.bpmn2.modeler.ui.preferences.Bpmn2EditorBehaviorPreferencePage"
+	            id="org.eclipse.bpmn2.modeler.Behavior"
+	            name="%PREFERENCE_PAGE_BEHAVIOR"/>
+	      <page
+	            category="org.eclipse.bpmn2.modeler.BPMN2/org.eclipse.bpmn2.modeler.Editor"
+	            class="org.eclipse.bpmn2.modeler.ui.preferences.ToolProfilesPreferencePage"
+	            id="org.eclipse.bpmn2.modeler.Profiles"
+	            name="%PREFERENCE_PAGE_PROFILES"/>
    </extension>
 
 	<!-- Property Pages - these per-project settings override the global preferences (above)-->
@@ -75,18 +91,6 @@
 					<!-- TODO: do we need a java project? <adapt type="org.eclipse.core.resources.IProject"> 
 						<test property="org.eclipse.core.resources.projectNature" value="org.eclipse.jdt.core.javanature"> 
 						</test> </adapt> -->
-					<adapt type="org.eclipse.core.resources.IProject">
-					</adapt>
-				</or>
-			</enabledWhen>
-		</page>
-
-		<page
-			class="org.eclipse.bpmn2.modeler.ui.preferences.ToolEnablementPropertyPage"
-			id="org.eclipse.bpmn2.modeler.ui.toolEnablement" name="%PROPERTY_PAGE_TOOL_ENABLEMENT"
-			category="org.eclipse.bpmn2.modeler.ui">
-			<enabledWhen>
-				<or>
 					<adapt type="org.eclipse.core.resources.IProject">
 					</adapt>
 				</or>
@@ -693,7 +697,7 @@
 		<toolPalette
 			id="org.bpmn2.modeler.toolpalette.process.default"
 			runtimeId="org.eclipse.bpmn2.modeler.runtime.none"
-			type="Process" profile="Default Process">
+			type="Process" profile="Default Process,Simple Process">
 			
 			<category id="org.bpmn2.modeler.toolpalette.default.categories"/>
 			
@@ -839,8 +843,10 @@
 		<!-- ===  Model Enablements and Profiles ==== -->
 		<!-- ======================================== -->
 
-		<modelEnablement runtimeId="org.eclipse.bpmn2.modeler.runtime.none" type="Process" profile="Default Process">
-			<disable object="all"/>
+		<modelEnablement
+				runtimeId="org.eclipse.bpmn2.modeler.runtime.none"
+				type="Process"
+				profile="Default Process">
 			<enable object="Definitions"/>
 
 			<!-- process -->
@@ -961,24 +967,121 @@
 			<disable object="FormalExpression" feature="evaluatesToTypeRef"/>
 		</modelEnablement>
 
-		<modelEnablement runtimeId="org.eclipse.bpmn2.modeler.runtime.none" type="Collaboration" profile="Default Collaboration">
-			<disable object="all"/>
+		<modelEnablement
+				runtimeId="org.eclipse.bpmn2.modeler.runtime.none"
+				type="Process"
+				profile="Simple Process">
+			<enable object="Definitions"/>
+
+			<!-- process -->
+			<enable object="Process"/>
+			<enable object="SubProcess"/>
+
+			<!-- gateways -->
+			<enable object="ExclusiveGateway"/>
+			<enable object="InclusiveGateway"/>
+
+			<!-- tasks -->
+			<enable object="CallActivity"/>
+			<enable object="ManualTask"/>
+			<enable object="ReceiveTask"/>
+			<enable object="ScriptTask"/>
+			<enable object="SendTask"/>
+			<enable object="ServiceTask"/>
+			<enable object="Task"/>
+			<enable object="UserTask"/>
+
+			<!-- connections -->
+			<enable object="SequenceFlow"/>
+			<enable object="Association"/>
+			<enable object="DataAssociation"/>
+
+			<!-- events -->
+			<enable object="StartEvent"/>
+			<enable object="EndEvent"/>
+			<enable object="IntermediateCatchEvent"/>
+			<enable object="IntermediateThrowEvent"/>
+			<enable object="Escalation"/>
+			<enable object="CatchEvent"/>
+			<enable object="ThrowEvent"/>
+			<enable object="BoundaryEvent"/>
+			<enable object="Signal"/>
+			<enable object="Error"/>
+
+			<!-- event definitions -->
+			<enable object="ConditionalEventDefinition"/>
+			<enable object="TimerEventDefinition"/>
+			<enable object="SignalEventDefinition"/>
+			<enable object="MessageEventDefinition"/>
+			<enable object="EscalationEventDefinition"/>
+			<enable object="CompensateEventDefinition"/>
+			<enable object="LinkEventDefinition" feature="name"/>
+			<enable object="ErrorEventDefinition"/>
+			<enable object="CancelEventDefinition"/>
+			<enable object="TerminateEventDefinition"/>
+			<enable object="ComplexBehaviorDefinition"/>
+			<enable object="ImplicitThrowEvent"/>
+			
+
+			<!-- data definitions -->
+			<enable object="Import"/>
+			<enable object="InputOutputSpecification"/>
+			<enable object="InputSet"/>
+			<enable object="OutputSet"/>
+			<enable object="Operation"/>
+			<enable object="Interface"/>
+			<enable object="ItemDefinition"/>
+			<enable object="Message"/>
+			<enable object="DataInput"/>
+			<enable object="DataInputAssociation"/>
+			<enable object="DataOutput"/>
+			<enable object="DataOutputAssociation"/>
+			<enable object="Property"/>
+			<enable object="ItemAwareElement"/>
+			<enable object="DataState"/>
+			<enable object="DataStore"/>
+			<enable object="DataStoreReference"/>
+			<enable object="DataObjectReference"/>
+			<enable object="DataObject"/>
+			<enable object="Group"/>
+			<enable object="TextAnnotation"/>
+			<enable object="ExtensionAttributeValue"/>
+			<enable object="ExtensionAttributeDefinition"/>
+			<enable object="StandardLoopCharacteristics"/>
+			<enable object="MultiInstanceLoopCharacteristics"/>
+			<enable object="Lane"/>
+			<enable object="LaneSet"/>
+			<enable object="Resource"/>
+			<enable object="ResourceParameter"/>
+			<enable object="ResourceRole"/>
+			
+			<disable object="CallableElement"/>
+			
+			<disable object="MessageFlow"/>
+			<disable object="ConversationLink"/>
+			<disable object="ConversationAssociation"/>
+			<disable object="Collaboration"/>
+			<disable object="Choreography"/>
+			<disable object="ConversationNode"/>
+			<disable object="MessageFlowAssociation"/>
+			<disable object="Participant"/>
+			<disable object="ParticipantAssociation"/>
+			<disable object="ParticipantMultiplicity"/>
+			
+			<enable object="Assignment"/>
+			<enable object="FormalExpression"/>
+			<disable object="FormalExpression" feature="evaluatesToTypeRef"/>
+		</modelEnablement>
+
+		<modelEnablement
+				runtimeId="org.eclipse.bpmn2.modeler.runtime.none"
+				type="Collaboration"
+				profile="Default Collaboration"
+				ref="org.eclipse.bpmn2.modeler.runtime.none:Choreography:Default Process">
+				
 			<!-- copy the enablements from "Process" diagram type -->
-			<enable object="default" feature="Process"/>
-			
-			<!-- and then change these objects -->
-			<!--
-			<disable object="DataObject"/>
-			<disable object="DataObjectReference"/>
-			<disable object="DataState"/>
-			<disable object="DataStore"/>
-			<disable object="DataStoreReference"/>
-			<disable object="DataInput"/>
-			<disable object="DataInputAssociation"/>
-			<disable object="DataOutput"/>
-			<disable object="DataOutputAssociation"/>
-			-->
-			
+			<!-- and then add these objects -->
+			<enable object="Collaboration"/>
 			<enable object="Participant"/>
 			<enable object="Lane"/>
 			<enable object="MessageFlow"/>
@@ -988,11 +1091,14 @@
 			<enable object="ConversationLink"/>
 		</modelEnablement>
 
-		<modelEnablement runtimeId="org.eclipse.bpmn2.modeler.runtime.none" type="Choreography" profile="Default Choreography">
-			<disable object="all"/>
-			<!-- copy the enablements from "Collaboration" diagram type -->
-			<enable object="default" feature="Collaboration"/>
-
+		<modelEnablement
+				runtimeId="org.eclipse.bpmn2.modeler.runtime.none"
+				type="Choreography"
+				profile="Default Choreography"
+				ref="org.eclipse.bpmn2.modeler.runtime.none:Choreography:Default Process">
+				
+			<!-- copy the enablements from "Process" diagram type -->
+			<!-- and then add these objects -->
 			<enable object="Definitions"/>
 			<enable object="Group"/>
 
@@ -1053,7 +1159,7 @@
 		<style object="Conversation" foreground="546778" background="D4E7F8" textColor="546778" font="arial,10,-,-"/>
 		<style object="DataAssociation" foreground="546778" background="D4E7F8" textColor="546778" font="arial,10,-,-"/>
 		<style object="DataInput" foreground="546778" background="D4E7F8" textColor="546778" font="arial,10,-,-"/>
-		<style object="DataObject" foreground="546778" background="D4E7F8" textColor="546778" font="Arial,10,-,-"/>
+		<style object="DataObject" foreground="546778" background="D4E7F8" textColor="546778" font="arial,10,-,-"/>
 		<style object="DataOutput" foreground="546778" background="D4E7F8" textColor="546778" font="arial,10,-,-"/>
 		<style object="DataStoreReference" foreground="546778" background="D4E7F8" textColor="546778" font="arial,10,-,-"/>
 		<style object="EndEvent" foreground="7F0000" background="FF8080" textColor="7F0000" font="arial,10,-,-"/>

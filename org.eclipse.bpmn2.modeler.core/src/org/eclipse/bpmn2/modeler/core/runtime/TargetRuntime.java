@@ -211,12 +211,16 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 								ModelEnablementDescriptor me;
 								String type = e.getAttribute("type"); //$NON-NLS-1$
 								String profile = e.getAttribute("profile"); //$NON-NLS-1$
+								String ref = e.getAttribute("ref"); //$NON-NLS-1$
 								currentRuntime.addModelEnablements(me = new ModelEnablementDescriptor(currentRuntime));
-								me.setType(type);
+								me.setDiagramType(Bpmn2DiagramType.fromString(type));
 								me.setProfile(profile);
-								
-								if (e.getAttribute("override") != null) { //$NON-NLS-1$
-									me.setOverride(new Boolean(e.getAttribute("override"))); //$NON-NLS-1$
+								if (ref!=null) {
+									String a[] = ref.split(":");
+									TargetRuntime rt = TargetRuntime.getRuntime(a[0]);
+									type = a[1];
+									profile = a[2];
+									me.initializeFromTargetRuntime(rt, Bpmn2DiagramType.fromString(type), profile);
 								}
 								
 								for (IConfigurationElement c : e.getChildren()) {
@@ -298,12 +302,16 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 							ModelEnablementDescriptor me;
 							String type = e.getAttribute("type"); //$NON-NLS-1$
 							String profile = e.getAttribute("profile"); //$NON-NLS-1$
+							String ref = e.getAttribute("ref"); //$NON-NLS-1$
 							currentRuntime.addModelEnablements(me = new ModelEnablementDescriptor(currentRuntime));
-							me.setType(type);
+							me.setDiagramType(Bpmn2DiagramType.fromString(type));
 							me.setProfile(profile);
-							
-							if (e.getAttribute("override") != null) { //$NON-NLS-1$
-								me.setOverride(new Boolean(e.getAttribute("override"))); //$NON-NLS-1$
+							if (ref!=null) {
+								String a[] = ref.split(":");
+								TargetRuntime rt = TargetRuntime.getRuntime(a[0]);
+								type = a[1];
+								profile = a[2];
+								me.initializeFromTargetRuntime(rt, Bpmn2DiagramType.fromString(type), profile);
 							}
 							
 							for (IConfigurationElement c : e.getChildren()) {
@@ -424,7 +432,7 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 				RUNTIME_EXTENSION_ID);
 
 		String runtimeId = modelEnablements.getRuntime().getId();
-		String type = modelEnablements.getType();
+		Bpmn2DiagramType type = modelEnablements.getDiagramType();
 		String profile = modelEnablements.getProfile();
 		ModelEnablementDescriptor me = null;
 		try {
@@ -436,11 +444,15 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 					if (runtimeId.equals(id) && type.equals(t) && profile.equals(p)) {
 						TargetRuntime rt = getRuntime(id);
 						me = new ModelEnablementDescriptor(rt);
-						me.setType(t);
+						me.setDiagramType(Bpmn2DiagramType.fromString(t));
 						me.setProfile(p);
-						
-						if (e.getAttribute("override") != null) { //$NON-NLS-1$
-							me.setOverride(new Boolean(e.getAttribute("override"))); //$NON-NLS-1$
+						String ref = e.getAttribute("ref"); //$NON-NLS-1$
+						if (ref!=null) {
+							String a[] = ref.split(":");
+							rt = TargetRuntime.getRuntime(a[0]);
+							t = a[1];
+							p = a[2];
+							me.initializeFromTargetRuntime(rt, Bpmn2DiagramType.fromString(t), p);
 						}
 						
 						for (IConfigurationElement c : e.getChildren()) {
@@ -654,18 +666,21 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 		// more and more just to get things done.
 		// Think about either reorganizing these two plugins, or simply combining them...
 		DiagramEditor diagramEditor = ModelUtil.getEditor(object);
-		return (ModelEnablementDescriptor) diagramEditor.getAdapter(ModelEnablementDescriptor.class);
+		TargetRuntime rt = (TargetRuntime) diagramEditor.getAdapter(TargetRuntime.class);
+		ArrayList<ModelEnablementDescriptor> meds = rt.getModelEnablements();
+		if (meds.size()>0)
+			return meds.get(0);
+		return null;
 	}
 	
 	public ArrayList<ModelEnablementDescriptor>  getModelEnablements(Bpmn2DiagramType diagramType)
 	{
 		ArrayList<ModelEnablementDescriptor> list = new ArrayList<ModelEnablementDescriptor>();
 		for (ModelEnablementDescriptor me : getModelEnablements()) {
-			String s = diagramType.name();
-			if (diagramType == Bpmn2DiagramType.NONE && me.getType()==null) {
+			if (diagramType == Bpmn2DiagramType.NONE && me.getDiagramType()==null) {
 				list.add(me);
 			}
-			else if (s.equalsIgnoreCase(me.getType())) {
+			else if (diagramType == me.getDiagramType()) {
 				list.add(me);
 			}
 		}
@@ -678,12 +693,11 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 			profile = null;
 		
 		for (ModelEnablementDescriptor me : getModelEnablements()) {
-			String s = diagramType.name();
-			if (diagramType == Bpmn2DiagramType.NONE && me.getType()==null) {
+			if (diagramType == Bpmn2DiagramType.NONE && me.getDiagramType()==null) {
 				if (profile==null || profile.equalsIgnoreCase(me.getProfile()))
 					return me;
 			}
-			if (s.equalsIgnoreCase(me.getType())) {
+			if (diagramType == me.getDiagramType()) {
 				if (profile==null || profile.equalsIgnoreCase(me.getProfile()))
 					return me;
 			}
@@ -726,12 +740,20 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 		for (ToolPaletteDescriptor tp : getToolPalettes()) {
 			String s = diagramType.name();
 			if (diagramType == Bpmn2DiagramType.NONE && tp.getType()==null) {
-				if (profile==null || profile.equalsIgnoreCase(tp.getProfile()))
+				if (profile==null)
 					return tp;
+				 for (String p : tp.getProfiles()) {
+					 if (profile.equalsIgnoreCase(p))
+						 return tp;
+				 }
 			}
 			if (s.equalsIgnoreCase(tp.getType())) {
-				if (profile==null || profile.equalsIgnoreCase(tp.getProfile()))
+				if (profile==null)
 					return tp;
+				 for (String p : tp.getProfiles()) {
+					 if (profile.equalsIgnoreCase(p))
+						 return tp;
+				 }
 			}
 			if (tp.getType()==null || tp.getType().isEmpty())
 				defaultToolPalette = tp;
@@ -754,7 +776,7 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 	/////////////////////
 	
 	
-	protected Map<Class, ShapeStyle> getShapeStyles() {
+	public Map<Class, ShapeStyle> getShapeStyles() {
 		if (shapeStyles==null) {
 			shapeStyles = new HashMap<Class, ShapeStyle>();
 		}
@@ -763,13 +785,10 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 	
 	public ShapeStyle getShapeStyle(Class c) {
 		ShapeStyle ss = getShapeStyles().get(c);
-		if (ss==null && !TargetRuntime.DEFAULT_RUNTIME_ID.equals(id)) {
-			// not defined in this TargetRuntime - check default TargetRuntime
-			ss = TargetRuntime.getDefaultRuntime().getShapeStyle(c);
-			if (ss!=null)
-				return ss;
+		if (ss==null) {
+			ss = new ShapeStyle(ss);
 		}
-		return new ShapeStyle(ss);
+		return ss;
 	}
 
 	private void addAfterTab(ArrayList<Bpmn2TabDescriptor> list, Bpmn2TabDescriptor tab) {

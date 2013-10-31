@@ -17,13 +17,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.bpmn2.Bpmn2Package;
-import org.eclipse.bpmn2.modeler.core.runtime.ModelEnablementDescriptor;
+import org.eclipse.bpmn2.modeler.core.preferences.ModelEnablements;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.jface.viewers.ILabelProvider;
@@ -58,7 +57,7 @@ public class ModelSubclassSelectionDialog extends ListDialog {
 			listItemClass = (EClass)feature.getEType(); // allow a classcast exception
 		this.listItemClass = listItemClass;
 		
-		ModelEnablementDescriptor modelEnablement = (ModelEnablementDescriptor)diagramEditor.getAdapter(ModelEnablementDescriptor.class);
+		ModelEnablements modelEnablement = (ModelEnablements)diagramEditor.getAdapter(ModelEnablements.class);
 		items = new ArrayList<EClass>();
 		if (listItemClass!=null
 				&& !listItemClass.isAbstract()

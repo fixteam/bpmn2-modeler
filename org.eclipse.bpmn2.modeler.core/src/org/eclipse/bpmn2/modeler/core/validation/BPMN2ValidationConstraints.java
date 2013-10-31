@@ -558,7 +558,8 @@ public class BPMN2ValidationConstraints extends AbstractModelConstraint {
 			Assert.isNotNull(feature);
 			List<EventDefinition> eventdefs = (List<EventDefinition>) event.eGet(feature);
 			if (eventdefs.size()==0) {
-				return createMissingFeatureStatus(ctx,event,"eventDefinitions"); //$NON-NLS-1$
+				if (!(event instanceof StartEvent || event instanceof EndEvent))
+					return createMissingFeatureStatus(ctx,event,"eventDefinitions"); //$NON-NLS-1$
 			}
 			for (EventDefinition ed : eventdefs) {
 				IStatus status = validateEventDefinition(ctx,ed);

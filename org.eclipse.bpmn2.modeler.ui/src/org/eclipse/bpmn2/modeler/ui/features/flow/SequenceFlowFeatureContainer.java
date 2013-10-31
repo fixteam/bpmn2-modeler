@@ -399,7 +399,8 @@ public class SequenceFlowFeatureContainer extends BaseElementConnectionFeatureCo
 
 	private static ConnectionDecorator createDefaultConnectionDecorator(Connection connection) {
 		ConnectionDecorator marker = Graphiti.getPeService().createConnectionDecorator(connection, false, 0.0, true);
-		Graphiti.getGaService().createPolyline(marker, new int[] { -5, 5, -10, -5 });
+		Polyline line = Graphiti.getGaService().createPolyline(marker, new int[] { -6, 6, -12, -6 });
+		line.setLineWidth(2);
 		Graphiti.getPeService().setPropertyValue(marker, DEFAULT_MARKER_PROPERTY, Boolean.toString(true));
 		return marker;
 	}

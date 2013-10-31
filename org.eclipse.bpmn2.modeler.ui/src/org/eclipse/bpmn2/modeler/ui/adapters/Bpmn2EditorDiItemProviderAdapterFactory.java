@@ -13,6 +13,8 @@
 
 package org.eclipse.bpmn2.modeler.ui.adapters;
 
+import org.eclipse.bpmn2.BaseElement;
+import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.di.provider.BpmnDiItemProviderAdapterFactory;
 import org.eclipse.bpmn2.di.util.BpmnDiSwitch;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
@@ -23,6 +25,7 @@ import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.common.notify.Notifier;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EStructuralFeature;
 
 /**
  * @author Bob Brodt
@@ -58,15 +61,25 @@ public class Bpmn2EditorDiItemProviderAdapterFactory extends BpmnDiItemProviderA
     		this.adapterFactory = adapterFactory;
     	}
     	
-        @Override
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+		@Override
 		public ExtendedPropertiesAdapter defaultCase(EObject object) {
-        	ExtendedPropertiesAdapter adapter = new ExtendedPropertiesAdapter(adapterFactory,object);
+        	ExtendedPropertiesAdapter adapter = getBpmnElementAdapter(object);
+        	if (adapter!=null)
+        		return adapter;
+        	
+        	adapter = new ExtendedPropertiesAdapter(adapterFactory,object);
         	adapter.setObjectDescriptor(new ObjectDescriptor(adapterFactory, object) {
 				@Override
 				public String getLabel(Object context) {
-					EObject object = this.object;
-					if (context instanceof EObject)
-						object = (EObject)context;
+					EObject object = adopt(context);
+		        	ExtendedPropertiesAdapter adapter = getBpmnElementAdapter(object);
+		        	if (adapter!=null) {
+		        		BaseElement bpmnElement = getBpmnElement(object);
+		        		if (bpmnElement!=null)
+		        			return adapter.getObjectDescriptor().getLabel(context);
+		        	}
+		        	
 					if (ModelUtil.isStringWrapper(object)) {
 						return Messages.CommonLabels_Data_Type;
 					}
@@ -75,9 +88,14 @@ public class Bpmn2EditorDiItemProviderAdapterFactory extends BpmnDiItemProviderA
 
 				@Override
 				public String getDisplayName(Object context) {
-					EObject object = this.object;
-					if (context instanceof EObject)
-						object = (EObject)context;
+					EObject object = adopt(context);
+		        	ExtendedPropertiesAdapter adapter = getBpmnElementAdapter(object);
+		        	if (adapter!=null) {
+		        		BaseElement bpmnElement = getBpmnElement(object);
+		        		if (bpmnElement!=null)
+		        			return adapter.getObjectDescriptor().getDisplayName(context);
+		        	}
+		        	
 					if (ModelUtil.isStringWrapper(object)) {
 						return ModelUtil.getStringWrapperValue(object);
 					}
@@ -86,5 +104,40 @@ public class Bpmn2EditorDiItemProviderAdapterFactory extends BpmnDiItemProviderA
         	});
         	return adapter;
 		}
+        
+        private BaseElement getBpmnElement(EObject object) {
+        	if (object instanceof BPMNDiagram) {
+        		EObject plane = ((BPMNDiagram)object).getPlane();
+        		if (plane!=null)
+        			object = plane;
+        	}
+        	EStructuralFeature bpmnElementFeature = object.eClass().getEStructuralFeature("bpmnElement");
+        	if (bpmnElementFeature!=null) {
+        		EObject bpmnElement = (EObject)object.eGet(bpmnElementFeature);
+        		if (bpmnElement instanceof BaseElement) {
+        			object = bpmnElement;
+        		}
+        	}
+        	if (object instanceof BaseElement)
+        		return (BaseElement) object;
+        	return null;
+        }
+        
+        private ExtendedPropertiesAdapter getBpmnElementAdapter(EObject object) {
+        	ExtendedPropertiesAdapter adapter = null;
+        	if (object instanceof BPMNDiagram) {
+        		EObject plane = ((BPMNDiagram)object).getPlane();
+        		if (plane!=null)
+        			object = plane;
+        	}
+        	EStructuralFeature bpmnElementFeature = object.eClass().getEStructuralFeature("bpmnElement");
+        	if (bpmnElementFeature!=null) {
+        		Object bpmnElement = object.eGet(bpmnElementFeature);
+        		if (bpmnElement instanceof BaseElement) {
+        			adapter = ExtendedPropertiesAdapter.adapt(bpmnElement);
+        		}
+        	}
+			return adapter;
+        }
     }
 }

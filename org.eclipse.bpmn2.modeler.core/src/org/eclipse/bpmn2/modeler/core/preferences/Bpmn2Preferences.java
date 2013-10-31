@@ -12,7 +12,6 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.preferences;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -46,7 +45,9 @@ import org.eclipse.bpmn2.Transaction;
 import org.eclipse.bpmn2.di.BPMNShape;
 import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.preferences.ShapeStyle.RoutingStyle;
+import org.eclipse.bpmn2.modeler.core.runtime.ModelEnablementDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
+import org.eclipse.bpmn2.modeler.core.utils.ModelUtil.Bpmn2DiagramType;
 import org.eclipse.core.internal.resources.ProjectPreferences;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -57,9 +58,11 @@ import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
+import org.eclipse.core.runtime.preferences.IPreferencesService;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
@@ -76,7 +79,6 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.eclipse.ui.views.navigator.ResourceNavigator;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
@@ -86,15 +88,14 @@ import com.founder.fix.designer.base.util.StyleConfigUtil;
 
 @SuppressWarnings("restriction")
 public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyChangeListener, IResourceChangeListener {
-	public final static String PROJECT_PREFERENCES_ID = "org.eclipse.bpmn2.modeler"; //$NON-NLS-1$
 	public final static String PREF_TARGET_RUNTIME = "target.runtime"; //$NON-NLS-1$
 	public final static String PREF_TARGET_RUNTIME_LABEL = Messages.Bpmn2Preferences_Target_Runtime;
 	public final static String PREF_SHOW_ADVANCED_PROPERTIES = "show.advanced.properties"; //$NON-NLS-1$
 	public final static String PREF_SHOW_ADVANCED_PROPERTIES_LABEL = Messages.Bpmn2Preferences_Show_Advanced_Properties;
 	public final static String PREF_SHOW_DESCRIPTIONS = "show.descriptions"; //$NON-NLS-1$
 	public final static String PREF_SHOW_DESCRIPTIONS_LABEL = Messages.Bpmn2Preferences_Show_Descriptions;
-	public final static String PREF_OVERRIDE_MODEL_ENABLEMENTS = "override.model.enablements"; //$NON-NLS-1$
-	public final static String PREF_DEFAULT_MODEL_ENABLEMENT_PROFILE = "default.model.enablement.profile"; //$NON-NLS-1$
+	public final static String PREF_TOOL_PROFILE = "tool.profile"; //$NON-NLS-1$
+	public final static String PREF_MODEL_ENABLEMENT = "model.enablement"; //$NON-NLS-1$
 	public final static String PREF_IS_HORIZONTAL = "is.horizontal"; //$NON-NLS-1$
 	public final static String PREF_IS_HORIZONTAL_LABEL = Messages.Bpmn2Preferences_Horizontal;
 	
@@ -139,8 +140,12 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	private static IProject activeProject;
 
 	private IProject project;
+	private static IPreferencesService preferenceService;
+	private static IPreferenceStore preferenceStore;
+	private boolean useProjectPreferences;
 	private Preferences projectPreferences;
-	private IPreferenceStore globalPreferences;
+	private static Preferences instancePreferences;
+	private static Preferences defaultPreferences;
 	private boolean loaded;
 	private boolean dirty;
 	
@@ -153,20 +158,18 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	
 	private TargetRuntime targetRuntime;
 	private boolean showAdvancedPropertiesTab;
-	private boolean overrideModelEnablementProfile;
 	private boolean showDescriptions;
 	private boolean showIdAttribute;
 	private boolean checkProjectNature;
 	private boolean simplifyLists;
+	private boolean doCoreValidation;
 	private BPMNDIAttributeDefault isHorizontal;
 	private BPMNDIAttributeDefault isExpanded;
 	private BPMNDIAttributeDefault isMessageVisible;
 	private BPMNDIAttributeDefault isMarkerVisible;
-	private String connectionTimeout;
+	private int connectionTimeout;
 	private int popupConfigDialog;
 	private boolean popupConfigDialogFor[] = new boolean[6];
-	private String defaultModelEnablementProfile = ""; //$NON-NLS-1$
-	private boolean doCoreValidation;
 
 	private HashMap<Class, ShapeStyle> shapeStyles = new HashMap<Class, ShapeStyle>();
 	
@@ -174,25 +177,48 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 
 	private Bpmn2Preferences(IProject project) {
 		this.project = project;
-		IEclipsePreferences rootNode = Platform.getPreferencesService()
-				.getRootNode();
-		if (project!=null) {
-		projectPreferences = rootNode.node(ProjectScope.SCOPE)
-				.node(project.getName())
-				.node(PROJECT_PREFERENCES_ID);
-		if (projectPreferences instanceof ProjectPreferences)
-			((ProjectPreferences)projectPreferences).addPreferenceChangeListener(this);
+		if (preferenceService==null)
+			preferenceService = Platform.getPreferencesService();
+		if (instancePreferences==null)
+			instancePreferences = preferenceService.getRootNode().node(InstanceScope.SCOPE).node(Activator.PLUGIN_ID);
+		if (defaultPreferences==null)
+			defaultPreferences = preferenceService.getRootNode().node(DefaultScope.SCOPE).node(Activator.PLUGIN_ID);
+		if (preferenceStore==null)
+			preferenceStore = Activator.getDefault().getPreferenceStore();
+
+		projectPreferences = getProjectPreferences(project);
+		
+		preferenceStore.addPropertyChangeListener(this);
+		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+
+		loadDefaults();
+		load();
+	}
+	
+	private Preferences[] getAllPreferences() {
+		if (projectPreferences!=null) {
+			return new Preferences[] {projectPreferences, instancePreferences, defaultPreferences};
+		}
+		else {
+			return new Preferences[] {instancePreferences, defaultPreferences};
+		}
+	}
+
+	private Preferences getProjectPreferences(IProject project) {
+		if (project != null) {
+			projectPreferences = preferenceService.getRootNode().node(ProjectScope.SCOPE).node(project.getName()).node(Activator.PLUGIN_ID);
+			((ProjectPreferences) projectPreferences).addPreferenceChangeListener(this);
+			
 			try {
 				projectPreferences.sync();
 			}
 			catch (Exception e) {
+				return null;
 			}
-		}		
-		globalPreferences = Activator.getDefault().getPreferenceStore();
-		globalPreferences.addPropertyChangeListener(this);
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+		}
+		return projectPreferences;
 	}
-
+	
 	// various preference instance getters
 	
 	/**
@@ -258,131 +284,125 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 		Bpmn2Preferences pref;
 		if (project==null)
 			pref = new Bpmn2Preferences(null);
-		else
+		else {
 			pref = instances.get(project);
-		if (pref==null) {
-			pref = new Bpmn2Preferences(project);
-			instances.put(project, pref);
+			if (pref==null) {
+				pref = new Bpmn2Preferences(project);
+				instances.put(project, pref);
+			}
 		}
 		return pref;
 	}
 	
-	public IPreferenceStore getGlobalPreferences()
+	public IPreferenceStore getPreferenceStore()
 	{
-		return globalPreferences;
+		return preferenceStore;
 	}
 	
+	public void useProjectPreferences() {
+		Assert.isNotNull(projectPreferences);
+		useProjectPreferences = true;
+	}
+
 	public Preferences getProjectPreferences()
 	{
 		return projectPreferences;
 	}
 	
-	public void loadDefaults() {
-		String rid = TargetRuntime.getFirstNonDefaultId();
-		globalPreferences.setDefault(PREF_TARGET_RUNTIME, rid);
-		globalPreferences.setDefault(PREF_SHOW_ADVANCED_PROPERTIES, false);
-		globalPreferences.setDefault(PREF_CHECK_PROJECT_NATURE, true);
-		globalPreferences.setDefault(PREF_SIMPLIFY_LISTS, true);
-		globalPreferences.setDefault(PREF_SHOW_DESCRIPTIONS, true);
-		globalPreferences.setDefault(PREF_IS_HORIZONTAL, BPMNDIAttributeDefault.DEFAULT_TRUE.name());
-		globalPreferences.setDefault(PREF_IS_EXPANDED, BPMNDIAttributeDefault.ALWAYS_TRUE.name());
-		globalPreferences.setDefault(PREF_IS_MESSAGE_VISIBLE, BPMNDIAttributeDefault.ALWAYS_TRUE.name());
-		globalPreferences.setDefault(PREF_IS_MARKER_VISIBLE, BPMNDIAttributeDefault.DEFAULT_TRUE.name());
+	private void loadDefaults() {
+		if (defaultPreferences.get(PREF_TARGET_RUNTIME, null)==null) {
+			String rid = TargetRuntime.getFirstNonDefaultId();
+			defaultPreferences.put(PREF_TARGET_RUNTIME, rid);
+			defaultPreferences.putBoolean(PREF_SHOW_ADVANCED_PROPERTIES, false);
+			defaultPreferences.putBoolean(PREF_CHECK_PROJECT_NATURE, true);
+			defaultPreferences.putBoolean(PREF_SIMPLIFY_LISTS, true);
+			defaultPreferences.putBoolean(PREF_SHOW_DESCRIPTIONS, true);
+			defaultPreferences.put(PREF_IS_HORIZONTAL, BPMNDIAttributeDefault.DEFAULT_TRUE.name());
+			defaultPreferences.put(PREF_IS_EXPANDED, BPMNDIAttributeDefault.ALWAYS_TRUE.name());
+			defaultPreferences.put(PREF_IS_MESSAGE_VISIBLE, BPMNDIAttributeDefault.ALWAYS_TRUE.name());
+			defaultPreferences.put(PREF_IS_MARKER_VISIBLE, BPMNDIAttributeDefault.DEFAULT_TRUE.name());
 
-		globalPreferences.setDefault(PREF_POPUP_CONFIG_DIALOG, false); // tri-state checkbox
-		globalPreferences.setDefault(PREF_POPUP_CONFIG_DIALOG_FOR_ACTIVITIES, false);
-		globalPreferences.setDefault(PREF_POPUP_CONFIG_DIALOG_FOR_GATEWAYS, false);
-		globalPreferences.setDefault(PREF_POPUP_CONFIG_DIALOG_FOR_EVENTS, false);
-		globalPreferences.setDefault(PREF_POPUP_CONFIG_DIALOG_FOR_EVENT_DEFS, false);
-		globalPreferences.setDefault(PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS, false);
-		globalPreferences.setDefault(PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS, false);
-		globalPreferences.setDefault(PREF_DO_CORE_VALIDATION, true);
+			defaultPreferences.putInt(PREF_POPUP_CONFIG_DIALOG, 0); // tri-state checkbox
+			defaultPreferences.putBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_ACTIVITIES, false);
+			defaultPreferences.putBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_GATEWAYS, false);
+			defaultPreferences.putBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_EVENTS, false);
+			defaultPreferences.putBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_EVENT_DEFS, false);
+			defaultPreferences.putBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS, false);
+			defaultPreferences.putBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS, false);
+			defaultPreferences.putBoolean(PREF_DO_CORE_VALIDATION, true);
 
-		for (Class key : shapeStyles.keySet()) {
-			globalPreferences.setDefault(getShapeStyleId(key), IPreferenceStore.STRING_DEFAULT_DEFAULT);
-		}
-		globalPreferences.setDefault(PREF_CONNECTION_TIMEOUT, "1000"); //$NON-NLS-1$
-	}
-	
-	public void restoreDefaults(boolean resetProjectPreferences) {
-		loadDefaults();
-		if (resetProjectPreferences && projectPreferences != null) {
-			projectPreferences.remove(PREF_TARGET_RUNTIME);
-			projectPreferences.remove(PREF_SHOW_ADVANCED_PROPERTIES);
-			projectPreferences.remove(PREF_SHOW_DESCRIPTIONS);
-			projectPreferences.remove(PREF_SHOW_ID_ATTRIBUTE);
-			projectPreferences.remove(PREF_CHECK_PROJECT_NATURE);
-			projectPreferences.remove(PREF_SIMPLIFY_LISTS);
-			projectPreferences.remove(PREF_IS_HORIZONTAL);
-			projectPreferences.remove(PREF_IS_EXPANDED);
-			projectPreferences.remove(PREF_IS_MESSAGE_VISIBLE);
-			projectPreferences.remove(PREF_IS_MARKER_VISIBLE);
-
-			projectPreferences.remove(PREF_POPUP_CONFIG_DIALOG);
-			projectPreferences.remove(PREF_POPUP_CONFIG_DIALOG_FOR_ACTIVITIES);
-			projectPreferences.remove(PREF_POPUP_CONFIG_DIALOG_FOR_GATEWAYS);
-			projectPreferences.remove(PREF_POPUP_CONFIG_DIALOG_FOR_EVENTS);
-			projectPreferences.remove(PREF_POPUP_CONFIG_DIALOG_FOR_EVENT_DEFS);
-			projectPreferences.remove(PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS);
-			projectPreferences.remove(PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS);
-			projectPreferences.remove(PREF_DO_CORE_VALIDATION);
-
-			for (Class key : shapeStyles.keySet()) {
-				projectPreferences.remove(getShapeStyleId(key));
-			}
-			try {
-				projectPreferences.flush();
-			} catch (BackingStoreException e) {
-				e.printStackTrace();
-			}
-		}
-
-		globalPreferences.setToDefault(PREF_TARGET_RUNTIME);
-		globalPreferences.setToDefault(PREF_SHOW_ADVANCED_PROPERTIES);
-		globalPreferences.setToDefault(PREF_SHOW_DESCRIPTIONS);
-		globalPreferences.setToDefault(PREF_SHOW_ID_ATTRIBUTE);
-		globalPreferences.setToDefault(PREF_CHECK_PROJECT_NATURE);
-		globalPreferences.setToDefault(PREF_SIMPLIFY_LISTS);
-		globalPreferences.setToDefault(PREF_IS_HORIZONTAL);
-		globalPreferences.setToDefault(PREF_IS_EXPANDED);
-		globalPreferences.setToDefault(PREF_IS_MESSAGE_VISIBLE);
-		globalPreferences.setToDefault(PREF_IS_MARKER_VISIBLE);
-
-		globalPreferences.setToDefault(PREF_POPUP_CONFIG_DIALOG);
-		globalPreferences.setToDefault(PREF_POPUP_CONFIG_DIALOG_FOR_ACTIVITIES);
-		globalPreferences.setToDefault(PREF_POPUP_CONFIG_DIALOG_FOR_GATEWAYS);
-		globalPreferences.setToDefault(PREF_POPUP_CONFIG_DIALOG_FOR_EVENTS);
-		globalPreferences.setToDefault(PREF_POPUP_CONFIG_DIALOG_FOR_EVENT_DEFS);
-		globalPreferences.setToDefault(PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS);
-		globalPreferences.setToDefault(PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS);
-		globalPreferences.setToDefault(PREF_DO_CORE_VALIDATION);
-
-		List<Class> keys = new ArrayList<Class>();
-		keys.addAll(shapeStyles.keySet());
-		shapeStyles.clear();
-		for (Class key : keys) {
-			globalPreferences.setToDefault(getShapeStyleId(key));
-			ShapeStyle ss = getShapeStyle(key);
-			ss.setDirty(true);
-		}
-		
-		try {
-			((ScopedPreferenceStore)globalPreferences).save();
-		} catch (IOException e) {
-			e.printStackTrace();
+			defaultPreferences.put(PREF_CONNECTION_TIMEOUT, "1000"); //$NON-NLS-1$
+			
+			loadDefaults(PREF_TOOL_PROFILE);
+			loadDefaults(PREF_MODEL_ENABLEMENT);
+			loadDefaults(PREF_SHAPE_STYLE);
 		}
 	}
-	
-	public boolean hasProjectPreference(String key) {
-		if (projectPreferences!=null) {
-			try {
-				String[] keys;
-				keys = projectPreferences.keys();
-				for (String k : keys) {
-					if (k.equals(key))
-						return true;
+
+	private void loadDefaults(String key) {
+		if (key.equals(PREF_TOOL_PROFILE)) {
+			for (TargetRuntime rt : TargetRuntime.getAllRuntimes()) {
+				for (Bpmn2DiagramType diagramType : Bpmn2DiagramType.values()) {
+					String defaultProfile = null;
+					for (ModelEnablementDescriptor med : rt.getModelEnablements(diagramType)) {
+						String path = getToolProfilePath(rt, diagramType);
+						Preferences prefs = defaultPreferences.node(path);
+						if (defaultProfile == null)
+							prefs.putBoolean(defaultProfile = med.getProfile(), true);
+						else
+							prefs.putBoolean(med.getProfile(), false);
+					}
 				}
-			} catch (Exception e) {
+			}
+			
+		}
+		else if (key.equals(PREF_MODEL_ENABLEMENT)) {
+			for (TargetRuntime rt : TargetRuntime.getAllRuntimes()) {
+				for (Bpmn2DiagramType diagramType : Bpmn2DiagramType.values()) {
+					for (ModelEnablementDescriptor med : rt.getModelEnablements(diagramType)) {
+						String path = getModelEnablementsPath(rt, diagramType, med.getProfile());
+						Preferences prefs = defaultPreferences.node(path);
+						for (String s : med.getAllEnabled()) {
+							prefs.putBoolean(s, Boolean.TRUE);
+						}
+					}
+				}
+			}
+		}
+		else if (key.equals(PREF_SHAPE_STYLE)) {
+			// Use ShapeStyles defined in the Default Target Runtime if an extension does not provide its own. 
+			Map<Class, ShapeStyle> defaultShapeStyles = TargetRuntime.getDefaultRuntime().getShapeStyles();
+			for (TargetRuntime rt : TargetRuntime.getAllRuntimes()) {
+				String path = getShapeStylePath(rt);
+				Preferences prefs = defaultPreferences.node(path);
+				if (rt!=TargetRuntime.getDefaultRuntime()) {
+					for (Entry<Class, ShapeStyle> entry : defaultShapeStyles.entrySet()) {
+						String value = ShapeStyle.encode(entry.getValue());
+						prefs.put(entry.getKey().getSimpleName(), value);
+					}
+				}
+				for (Entry<Class, ShapeStyle> entry : rt.getShapeStyles().entrySet()) {
+					String value = ShapeStyle.encode(entry.getValue());
+					prefs.put(entry.getKey().getSimpleName(), value);
+				}
+			}
+		}
+	}
+	
+	public boolean shouldSaveToProjectPreference(String key) {
+		if (projectPreferences!=null) {
+			if (useProjectPreferences) {
+				// if saving to project preferences, create the preference node
+				projectPreferences.node(key);
+				return true;
+			}
+			// otherwise only save to project preferences if the key already exists.
+			try {
+				return projectPreferences.nodeExists(key);
+			}
+			catch (BackingStoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 		return false;
@@ -391,7 +411,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	public void dispose() {
 		if (projectPreferences instanceof ProjectPreferences)
 			((ProjectPreferences)projectPreferences).removePreferenceChangeListener(this);
-		globalPreferences.removePropertyChangeListener(this);
+		preferenceStore.removePropertyChangeListener(this);
 		if (project!=null)
 			instances.remove(project);
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
@@ -406,14 +426,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	public void load() {
 		
 		if (!loaded) {
-			// load all preferences
-			loadDefaults();
-			
-			if (projectPreferences!=null) {
-				overrideModelEnablementProfile = projectPreferences.getBoolean(PREF_OVERRIDE_MODEL_ENABLEMENTS, false);
-				defaultModelEnablementProfile = projectPreferences.get(PREF_DEFAULT_MODEL_ENABLEMENT_PROFILE, ""); //$NON-NLS-1$
-			}
-
+			// cache all preferences as Bpmn2Preferences instance variables for faster access
 			String id = getString(PREF_TARGET_RUNTIME,TargetRuntime.getFirstNonDefaultId());
 			if (id==null || id.isEmpty())
 				id = TargetRuntime.getFirstNonDefaultId();
@@ -427,7 +440,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 			isExpanded = getBPMNDIAttributeDefault(PREF_IS_EXPANDED, BPMNDIAttributeDefault.USE_DI_VALUE);
 			isMessageVisible = getBPMNDIAttributeDefault(PREF_IS_MESSAGE_VISIBLE, BPMNDIAttributeDefault.USE_DI_VALUE);
 			isMarkerVisible = getBPMNDIAttributeDefault(PREF_IS_MARKER_VISIBLE, BPMNDIAttributeDefault.USE_DI_VALUE);
-			connectionTimeout = this.getString(PREF_CONNECTION_TIMEOUT, "60000"); //$NON-NLS-1$
+			connectionTimeout = getInt(PREF_CONNECTION_TIMEOUT, 60000); //$NON-NLS-1$
 			
 			popupConfigDialog = getInt(PREF_POPUP_CONFIG_DIALOG, 0); // tri-state checkbox
 			popupConfigDialogFor[0] = getBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_ACTIVITIES, false);
@@ -445,13 +458,6 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	
 	public synchronized void save() throws BackingStoreException {
 		if (dirty) {
-			// this is the only preference that is a project property,
-			// and not saved in the preference store for this plugin.
-			if (projectPreferences!=null) {
-				projectPreferences.putBoolean(PREF_OVERRIDE_MODEL_ENABLEMENTS, overrideModelEnablementProfile);
-				projectPreferences.put(PREF_DEFAULT_MODEL_ENABLEMENT_PROFILE, defaultModelEnablementProfile);
-			}
-
 			setString(PREF_TARGET_RUNTIME,getRuntime().getId());
 			setBoolean(PREF_SHOW_ADVANCED_PROPERTIES, showAdvancedPropertiesTab);
 			setBoolean(PREF_SHOW_DESCRIPTIONS, showDescriptions);
@@ -464,7 +470,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 			setBPMNDIAttributeDefault(PREF_IS_MESSAGE_VISIBLE, isMessageVisible);
 			setBPMNDIAttributeDefault(PREF_IS_MARKER_VISIBLE, isMarkerVisible);
 			
-			setString(PREF_CONNECTION_TIMEOUT, connectionTimeout);
+			setInt(PREF_CONNECTION_TIMEOUT, connectionTimeout);
 
 			setInt(PREF_POPUP_CONFIG_DIALOG, popupConfigDialog);
 			setBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_ACTIVITIES, popupConfigDialogFor[0]);
@@ -487,17 +493,25 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 		dirty = false;
 	}
 	
-	public static String getShapeStyleId(EObject object) {
+	public String getShapeStyleId(EObject object) {
+		return getShapeStyleId(getRuntime(), object);
+	}
+	
+	public static String getShapeStyleId(TargetRuntime rt, EObject object) {
 		try {
 			Class clazz = Class.forName(object.eClass().getInstanceClassName());
-			return getShapeStyleId(clazz);
+			return getShapeStyleId(rt, clazz);
 		} catch (ClassNotFoundException e) {
-			return getShapeStyleId(object.getClass());
+			return getShapeStyleId(rt, object.getClass());
 		}
 	}
 	
-	public static String getShapeStyleId(Class clazz) {
-		return clazz.getSimpleName() + "." + PREF_SHAPE_STYLE; //$NON-NLS-1$
+	public static String getShapeStyleId(TargetRuntime rt, Class clazz) {
+		return getShapeStylePath(rt) + "/" + clazz.getSimpleName(); //$NON-NLS-1$
+	}
+	
+	public static String getShapeStylePath(TargetRuntime rt) {
+		return PREF_SHAPE_STYLE + "/" + rt.getId(); //$NON-NLS-1$
 	}
 
 	public ShapeStyle getShapeStyle(EObject object) {
@@ -513,40 +527,8 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 /*	public ShapeStyle getShapeStyle(Class clazz) {
 		ShapeStyle ss = shapeStyles.get(clazz);
 		if (ss==null) {
-			// maybe the given class is a subclass of one that we know about?
-			for (Entry<Class, ShapeStyle> entry : shapeStyles.entrySet()) {
-				Class c = entry.getKey();
-				if (c.isAssignableFrom(clazz)) {
-					ss = entry.getValue();
-					break;
-				}
-			}
-		}
-		if (ss==null) {
-			String key = getShapeStyleId(clazz);
-			String value;
-			if (hasProjectPreference(key)) {
-				value = projectPreferences.get(key, ""); //$NON-NLS-1$
-			}
-			else {
-				value = globalPreferences.getString(key);
-				if (value.isEmpty()) {
-					//get from TargetRuntime
-					ss = getRuntime().getShapeStyle(clazz);
-					if (ss==null) {
-						if (!TargetRuntime.DEFAULT_RUNTIME_ID.equals(getRuntime().getId())) {
-							// search default runtime
-							ss = TargetRuntime.getDefaultRuntime().getShapeStyle(clazz);
-						}
-						if (ss==null) {
-							// give up
-							ss = new ShapeStyle();
-						}
-					}
-					// don't cache this because we don't want to save it PreferenceStore
-					return ss;
-				}
-			}
+			String key = getShapeStyleId(getRuntime(), clazz);
+			String value = getString(key, "");
 			ss = ShapeStyle.decode(value);
 			shapeStyles.put(clazz, ss);
 		}
@@ -585,15 +567,11 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	
 	public void setShapeStyle(Class clazz, ShapeStyle style) {
 		if (style!=null && style.isDirty()) {
-			String key = getShapeStyleId(clazz);
+			String key = getShapeStyleId(getRuntime(),clazz);
 			String value = ShapeStyle.encode(style);
-			if (hasProjectPreference(key))
-				projectPreferences.put(key, value);
-			else
-				globalPreferences.setValue(key, value);
+			setString(key, value);
 			shapeStyles.put(clazz, style);
 			style.setDirty(false);
-			dirty = true;
 		}
 	}
 	
@@ -627,84 +605,316 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	}
 
 	public void setRuntime(TargetRuntime rt) {
-		
 		Assert.isTrue(rt!=null);
-		overrideGlobalString(PREF_TARGET_RUNTIME, rt.getId());
+		setString(PREF_TARGET_RUNTIME, rt.getId());
 		targetRuntime = rt;
 	}
 	
 	public boolean getShowAdvancedPropertiesTab() {
-		load();
 		return showAdvancedPropertiesTab;
 	}
 	
 	public void setShowAdvancedPropertiesTab(boolean show) {
-		overrideGlobalBoolean(PREF_SHOW_ADVANCED_PROPERTIES, show);
+		setBoolean(PREF_SHOW_ADVANCED_PROPERTIES, show);
 		showAdvancedPropertiesTab = show;
 	}
 	
 	public boolean getShowDescriptions() {
-		load();
 		return showDescriptions;
 	}
 	
 	public void setShowDescriptions(boolean show) {
-		overrideGlobalBoolean(PREF_SHOW_DESCRIPTIONS, show);
+		setBoolean(PREF_SHOW_DESCRIPTIONS, show);
 		showDescriptions = show;
 	}
 	
 	public boolean getShowIdAttribute() {
-		load();
 		return showIdAttribute;
 	}
 	
 	public void setShowIdAttribute(boolean show) {
-		overrideGlobalBoolean(PREF_SHOW_ID_ATTRIBUTE, show);
+		setBoolean(PREF_SHOW_ID_ATTRIBUTE, show);
 		showIdAttribute = show;
 	}
 	
 	public boolean getCheckProjectNature() {
-		load();
 		return checkProjectNature;
 	}
 	
 	public void setCheckProjectNature(boolean show) {
-		overrideGlobalBoolean(PREF_CHECK_PROJECT_NATURE, show);
+		setBoolean(PREF_CHECK_PROJECT_NATURE, show);
 		checkProjectNature = show;
 	}
 	
 	public boolean getSimplifyLists() {
-		load();
 		return simplifyLists;
 	}
 	
 	public void setSimplifyLists(boolean simplify) {
-		overrideGlobalBoolean(PREF_SIMPLIFY_LISTS,simplify);
+		setBoolean(PREF_SIMPLIFY_LISTS,simplify);
 		simplifyLists = simplify;
 	}
 
-	public boolean getOverrideModelEnablementProfile() {
-		load();
-		return overrideModelEnablementProfile;
+	public String getDefaultToolProfile(Bpmn2DiagramType diagramType) {
+		return getDefaultToolProfile(getRuntime(), diagramType);
 	}
 	
-	public void setOverrideModelEnablements(boolean override) {
-		overrideModelEnablementProfile = override;
-		dirty = true;
+	public void setDefaultToolProfile(Bpmn2DiagramType diagramType, String profile) {
+		setDefaultToolProfile(getRuntime(), diagramType, profile);
 	}
 
-	public String getDefaultModelEnablementProfile() {
-		load();
-		return defaultModelEnablementProfile;
+	public static String getToolProfilePath(TargetRuntime rt, Bpmn2DiagramType diagramType) {
+		return PREF_TOOL_PROFILE + "/" + rt.getId() + "/" + diagramType;
 	}
 	
-	public void setDefaultModelEnablementProfile(String profile) {
-		defaultModelEnablementProfile = profile;
-		dirty = true;
+	public String getDefaultToolProfile(TargetRuntime rt, Bpmn2DiagramType diagramType) {
+		try {
+			Preferences prefs = null;
+			String path = getToolProfilePath(rt, diagramType);
+			if (projectPreferences!=null && projectPreferences.nodeExists(path))
+				prefs = projectPreferences.node(path);
+			else if (instancePreferences.nodeExists(path))
+				prefs = instancePreferences.node(path);
+			else if (defaultPreferences.nodeExists(path))
+				prefs = defaultPreferences.node(path);
+
+			if (prefs!=null) {
+				for (String p : prefs.keys()) {
+					if (prefs.getBoolean(p, false))
+						return p;
+				}
+			}
+		}
+		catch (BackingStoreException e) {
+			e.printStackTrace();
+		}
+		return "";
+	}
+	
+	public boolean setDefaultToolProfile(TargetRuntime rt, Bpmn2DiagramType diagramType, String profile) {
+		boolean result = false;
+		if (profile!=null && !profile.isEmpty()) {
+			try {
+				Preferences prefs = null;
+				String path = getToolProfilePath(rt, diagramType);
+				String keys[] = null;
+				if (projectPreferences!=null && useProjectPreferences) {
+					if (!projectPreferences.nodeExists(path))
+						keys = defaultPreferences.node(path).keys();
+					prefs = projectPreferences.node(path);
+				}
+				else {
+					if (!instancePreferences.nodeExists(path))
+						keys = defaultPreferences.node(path).keys();
+					prefs = instancePreferences.node(path);
+				}
+	
+				if (keys==null)
+					keys = prefs.keys();
+
+				for (String p : keys) {
+					if (profile.equals(p)) {
+						prefs.putBoolean(p, true);
+						result = true;
+					}
+					else {
+						prefs.putBoolean(p, false);
+					}
+				}
+			}
+			catch (BackingStoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return result;
+	}
+
+	public boolean createToolProfile(TargetRuntime rt, Bpmn2DiagramType diagramType, String profile) {
+		boolean result = false;
+		if (profile!=null && !profile.isEmpty()) {
+			try {
+				Preferences prefs = null;
+				String path = getToolProfilePath(rt, diagramType);
+				String keys[] = null;
+				boolean populate = false;
+				if (projectPreferences!=null && useProjectPreferences) {
+					if (!projectPreferences.nodeExists(path)) {
+						populate = true;
+						keys = defaultPreferences.node(path).keys();
+					}
+					prefs = projectPreferences.node(path);
+				}
+				else {
+					if (!instancePreferences.nodeExists(path)) {
+						keys = defaultPreferences.node(path).keys();
+						populate = true;
+					}
+					prefs = instancePreferences.node(path);
+				}
+	
+				if (keys==null)
+					keys = prefs.keys();
+
+				result = true;
+				for (String p : keys) {
+					if (profile.equals(p)) {
+						result = false;
+					}
+					if (populate)
+						prefs.putBoolean(p, false);
+				}
+				if (result) {
+					prefs.putBoolean(profile, true);
+				}
+			}
+			catch (BackingStoreException e) {
+				e.printStackTrace();
+			}
+		}
+		return result;
+	}
+
+	public boolean deleteToolProfile(TargetRuntime rt, Bpmn2DiagramType diagramType, String profile) {
+		boolean result = false;
+		if (profile!=null && !profile.isEmpty()) {
+			try {
+				Preferences prefs = null;
+				String path = getToolProfilePath(rt, diagramType);
+				String keys[] = null;
+				boolean populate = false;
+				if (projectPreferences!=null && useProjectPreferences) {
+					if (!projectPreferences.nodeExists(path)) {
+						keys = defaultPreferences.node(path).keys();
+						populate = true;
+					}
+					prefs = projectPreferences.node(path);
+				}
+				else {
+					if (!instancePreferences.nodeExists(path)) {
+						keys = defaultPreferences.node(path).keys();
+						populate = true;
+					}
+					prefs = instancePreferences.node(path);
+				}
+	
+				if (keys==null)
+					keys = prefs.keys();
+	
+				for (String p : keys) {
+					if (populate)
+						prefs.putBoolean(p, false);
+					if (profile.equals(p)) {
+						result = true;
+						prefs.remove(p);
+					}
+				}
+				if (result && prefs.keys().length>0) {
+					prefs.putBoolean(prefs.keys()[0], true);
+				}
+			}
+			catch (BackingStoreException e) {
+				e.printStackTrace();
+			}
+		}
+		return result;
+	}
+	
+	public String[] getAllToolProfiles(TargetRuntime rt, Bpmn2DiagramType diagramType) {
+		List<String> profiles = new ArrayList<String>();
+		try {
+			Preferences prefs = null;
+			String path = getToolProfilePath(rt, diagramType);
+			if (projectPreferences!=null && projectPreferences.nodeExists(path))
+				prefs = projectPreferences.node(path);
+			else if (instancePreferences.nodeExists(path))
+				prefs = instancePreferences.node(path);
+			else if (defaultPreferences.nodeExists(path))
+				prefs = defaultPreferences.node(path);
+		
+			if (prefs!=null) {
+				int i = 1;
+				for (String p : prefs.keys()) {
+					if (prefs.getBoolean(p, false))
+						profiles.add(0, p);
+					else {
+						profiles.add(p);
+					}
+				}
+			}
+		}
+		catch (BackingStoreException e) {
+			e.printStackTrace();
+		}
+		
+		return profiles.toArray(new String[profiles.size()]);
+	}
+	
+	public static String getModelEnablementsPath(TargetRuntime rt, Bpmn2DiagramType diagramType, String profile) {
+		return PREF_MODEL_ENABLEMENT + "/" + rt.getId() + "/" + diagramType + "/" + profile;
+	}
+
+	public ModelEnablements getModelEnablements(Bpmn2DiagramType diagramType, String profile) {
+		return getModelEnablements(getRuntime(), diagramType, profile);
+	}
+	
+	public ModelEnablements getModelEnablements(TargetRuntime rt, Bpmn2DiagramType diagramType, String profile) {
+		ModelEnablements me = new ModelEnablements(rt);
+		if (profile!=null && !profile.isEmpty()) {
+			try {
+				Preferences prefs = null;
+				String path = getModelEnablementsPath(rt, diagramType, profile);
+				if (projectPreferences!=null && projectPreferences.nodeExists(path))
+					prefs = projectPreferences.node(path);
+				else if (instancePreferences.nodeExists(path))
+					prefs = instancePreferences.node(path);
+				else if (defaultPreferences.nodeExists(path))
+					prefs = defaultPreferences.node(path);
+				
+				if (prefs!=null) {
+					me.setEnabledAll(false);
+					for (String k : prefs.keys()) {
+						if (prefs.getBoolean(k, false))
+							me.setEnabled(k, true);
+					}
+				}
+			}
+			catch (BackingStoreException e) {
+				e.printStackTrace();
+			}
+		}
+		return me;
+	}
+	
+	public boolean setModelEnablements(TargetRuntime rt, Bpmn2DiagramType diagramType, String profile, ModelEnablements me) {
+		if (me!=null && me.size()>0) {
+			try {
+				Preferences prefs = null;
+				String path = getModelEnablementsPath(rt, diagramType, profile);
+				if (projectPreferences!=null && useProjectPreferences) {
+					prefs = projectPreferences.node(path);
+					prefs.removeNode();
+					prefs = projectPreferences.node(path);
+				}
+				else {
+					prefs = instancePreferences.node(path);
+					prefs.removeNode();
+					prefs = instancePreferences.node(path);
+				}
+			
+				for (String s : me.getAllEnabled()) {
+					prefs.putBoolean(s, true);
+				}
+				return true;
+			}
+			catch (BackingStoreException e) {
+				e.printStackTrace();
+			}
+		}
+		return false;
 	}
 	
 	public boolean getShowPopupConfigDialog(Object context) {
-		load();
 		if (popupConfigDialog!=0) {
 			if (context instanceof Task || context instanceof ChoreographyActivity) {
 				return popupConfigDialogFor[0];
@@ -757,22 +967,20 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	}
 	
 	public void setShowPopupConfigDialog(Object context, boolean value) {
-		overrideGlobalInt(PREF_POPUP_CONFIG_DIALOG,  value ? 1 : 0);
+		setInt(PREF_POPUP_CONFIG_DIALOG,  value ? 1 : 0);
 		popupConfigDialog = value ? 1 : 0;
 	}
 	
 	public boolean getDoCoreValidation() {
-		load();
 		return doCoreValidation;
 	}
 	
 	public void setDoCoreValidation(boolean enable) {
-		overrideGlobalBoolean(PREF_DO_CORE_VALIDATION, enable);
+		setBoolean(PREF_DO_CORE_VALIDATION,enable);
 		doCoreValidation = enable;
 	}
 
 	public boolean isHorizontalDefault() {
-		load();
 		return isHorizontal==BPMNDIAttributeDefault.ALWAYS_TRUE ||
 				isHorizontal==BPMNDIAttributeDefault.DEFAULT_TRUE;
 	}
@@ -782,59 +990,49 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	}
 	
 	public void setIsHorizontal(BPMNDIAttributeDefault value) {
-		overrideGlobalBPMNDIAttributeDefault(PREF_IS_HORIZONTAL, value);
+		setBPMNDIAttributeDefault(PREF_IS_HORIZONTAL, value);
 		this.isHorizontal = value;
 	}
 
 	public boolean isExpandedDefault() {
-		load();
 		return isExpanded==BPMNDIAttributeDefault.ALWAYS_TRUE ||
 				isExpanded==BPMNDIAttributeDefault.DEFAULT_TRUE;
 	}
 
 	public BPMNDIAttributeDefault getIsExpanded() {
-		load();
 		return isExpanded;
 	}
 
 	public void setIsExpanded(BPMNDIAttributeDefault value) {
-		overrideGlobalBPMNDIAttributeDefault(PREF_IS_EXPANDED, value);
+		setBPMNDIAttributeDefault(PREF_IS_EXPANDED, value);
 		this.isExpanded = value;
 	}
 
 	public BPMNDIAttributeDefault getIsMessageVisible() {
-		load();
 		return isMessageVisible;
 	}
 
 	public void setIsMessageVisible(BPMNDIAttributeDefault value) {
-		overrideGlobalBPMNDIAttributeDefault(PREF_IS_MESSAGE_VISIBLE, value);
+		setBPMNDIAttributeDefault(PREF_IS_MESSAGE_VISIBLE, value);
 		this.isMessageVisible = value;
 	}
 
 	public BPMNDIAttributeDefault getIsMarkerVisible() {
-		load();
 		return isMarkerVisible;
 	}
 
 	public void setIsMarkerVisible(BPMNDIAttributeDefault value) {
-		overrideGlobalBPMNDIAttributeDefault(PREF_IS_MARKER_VISIBLE, value);
+		setBPMNDIAttributeDefault(PREF_IS_MARKER_VISIBLE, value);
 		this.isMarkerVisible = value;
 	}
 
-	public String getConnectionTimeout() {
-		load();
+	public int getConnectionTimeout() {
 		return connectionTimeout;
 	}
 	
-	public void setConnectionTimeout(String value) {
-		try {
-			Integer.parseInt(value);
-			overrideGlobalString(PREF_CONNECTION_TIMEOUT, value);
-			this.connectionTimeout = value;
-		}
-		catch (Exception e) {
-		}
+	public void setConnectionTimeout(int value) {
+		setInt(PREF_CONNECTION_TIMEOUT, value);
+		connectionTimeout = value;
 	}
 	
 	// this is temporary until the connection routing has been proven reliable
@@ -862,89 +1060,110 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 
 	// preference/property getters and setters
 	public boolean getBoolean(String key, boolean defaultValue) {
-		if (hasProjectPreference(key))
-			return projectPreferences.getBoolean(key, defaultValue);
-		if (globalPreferences.contains(key))
-			return globalPreferences.getBoolean(key);
-		return defaultValue;
+		String value = preferenceService.get(key, null, getAllPreferences());
+		if (value!=null)
+			return Boolean.parseBoolean(value);
+		return false;
 	}
 	
 	public void setBoolean(String key, boolean value) {
-		if (hasProjectPreference(key))
+		if (shouldSaveToProjectPreference(key))
 			projectPreferences.putBoolean(key, value);
 		else
-			globalPreferences.setValue(key, value);
-	}
-
-	private void overrideGlobalBoolean(String key, boolean value) {
-		projectPreferences.putBoolean(key, value);
-		saveProjectPreferences();
+			instancePreferences.putBoolean(key, value);
 		dirty = true;
 	}
-	
+
 	public int getInt(String key, int defaultValue) {
-		if (hasProjectPreference(key))
-			return projectPreferences.getInt(key, defaultValue);
-		if (globalPreferences.contains(key))
-			return globalPreferences.getInt(key);
-		return defaultValue;
+		String value = preferenceService.get(key, null, getAllPreferences());
+		if (value!=null)
+			return Integer.parseInt(value);
+		return -1;
 	}
 	
 	public void setInt(String key, int value) {
-		if (hasProjectPreference(key))
+		if (shouldSaveToProjectPreference(key))
 			projectPreferences.putInt(key, value);
 		else
-			globalPreferences.setValue(key, value);
-	}
-
-	private void overrideGlobalInt(String key, int value) {
-		projectPreferences.putInt(key, value);
-		saveProjectPreferences();
+			instancePreferences.putInt(key, value);
 		dirty = true;
 	}
 	
 	public String getString(String key, String defaultValue) {
-		if (hasProjectPreference(key))
-			return projectPreferences.get(key, defaultValue);
-		if (globalPreferences.contains(key))
-			return globalPreferences.getString(key);
+		try {
+			Preferences prefs = null;
+			String path = null;
+			int i = key.lastIndexOf("/");
+			if (i>0) {
+				path = key.substring(0, i);
+				key = key.substring(i+1);
+				if (projectPreferences!=null && projectPreferences.nodeExists(path))
+					prefs = projectPreferences.node(path);
+				else if (instancePreferences.nodeExists(path))
+					prefs = instancePreferences.node(path);
+				else if (defaultPreferences.nodeExists(path))
+					prefs = defaultPreferences.node(path);
+			}
+			else {
+				if (projectPreferences!=null)
+					prefs = projectPreferences;
+				else if (instancePreferences.get(key, null)!=null)
+					prefs = instancePreferences;
+				else if (defaultPreferences.get(key,null)!=null)
+					prefs = defaultPreferences;
+			}
+			
+			if (prefs!=null) {
+				String value = prefs.get(key, defaultValue);
+				return value;
+			}
+		}
+		catch (BackingStoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return defaultValue;
 	}
 	
 	public void setString(String key, String value) {
-		if (hasProjectPreference(key))
-			projectPreferences.put(key, value);
-		else
-			globalPreferences.setValue(key, value);
-	}
-
-	private void overrideGlobalString(String key, String value) {
-		projectPreferences.put(key, value);
-		saveProjectPreferences();
+		Preferences prefs = null;
+		String path = null;
+		int i = key.lastIndexOf("/");
+		if (i>0) {
+			path = key.substring(0, i);
+			key = key.substring(i+1);
+			if (shouldSaveToProjectPreference(key))
+				prefs = projectPreferences.node(path);
+			else
+				prefs = instancePreferences.node(path);
+		}
+		else {
+			if (shouldSaveToProjectPreference(key))
+				prefs = projectPreferences;
+			else
+				prefs = instancePreferences;
+		}		
+		prefs.put(key, value);
 		dirty = true;
+
 	}
 
 	public BPMNDIAttributeDefault getBPMNDIAttributeDefault(String key, BPMNDIAttributeDefault defaultValue) {
 		BPMNDIAttributeDefault value = null;
-		if (hasProjectPreference(key))
+		if (shouldSaveToProjectPreference(key))
 			value = BPMNDIAttributeDefault.valueOf(projectPreferences.get(key, defaultValue.name()));
-		else if (globalPreferences.contains(key))
-			value = BPMNDIAttributeDefault.valueOf(globalPreferences.getString(key));
+		else if (preferenceStore.contains(key))
+			value = BPMNDIAttributeDefault.valueOf(preferenceStore.getString(key));
 		else
 			value = defaultValue;
 		return value;
 	}
 	
 	public void setBPMNDIAttributeDefault(String key, BPMNDIAttributeDefault value) {
-		if (hasProjectPreference(key))
+		if (shouldSaveToProjectPreference(key))
 			projectPreferences.put(key, value.name());
 		else
-			globalPreferences.setValue(key, value.name());
-	}
-
-	private void overrideGlobalBPMNDIAttributeDefault(String key, BPMNDIAttributeDefault value) {
-		projectPreferences.put(key, value.name());
-		saveProjectPreferences();
+			instancePreferences.put(key, value.name());
 		dirty = true;
 	}
 
@@ -1151,6 +1370,36 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 		}
 	}
 
+	public void setToDefault(String key) {
+		try {
+			if (key.startsWith(PREF_TOOL_PROFILE)) {
+				Preferences prefs = instancePreferences.node(key);
+				prefs.removeNode();
+			}
+			else if (key.startsWith(PREF_MODEL_ENABLEMENT)) {
+				Preferences prefs = instancePreferences.node(key);
+				prefs.removeNode();
+			}
+			else if (key.startsWith(PREF_SHAPE_STYLE)) {
+				shapeStyles.clear();
+				Preferences prefs = instancePreferences.node(key);
+				prefs.removeNode();
+			}
+			else if (key.startsWith(PREF_TARGET_RUNTIME)) {
+				if (shouldSaveToProjectPreference(PREF_TARGET_RUNTIME)) {
+					projectPreferences.put(PREF_TARGET_RUNTIME, TargetRuntime.DEFAULT_RUNTIME_ID);
+				}
+			}
+			else {
+				instancePreferences.put(key, defaultPreferences.get(key,""));
+			}
+		}
+		catch (BackingStoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	// TODO: use CNF for indigo & future - keep ResourceNavigator for backward compatibility
 	public static IProject getActiveProject() {
 		if (activeProject!=null)
@@ -1199,14 +1448,5 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 		}
 		if (type==IResourceChangeEvent.PRE_DELETE)
 			dispose();
-	}
-
-	private void saveProjectPreferences() {
-		try {
-			projectPreferences.flush();
-		} catch (BackingStoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 }

@@ -130,10 +130,14 @@
 			<property name="timeToComplete" value="1d" type="EString"/>
 		</modelExtension>
 		
-		<modelEnablement runtimeId="org.eclipse.bpmn2.modeler.runtime.example" type="Process" profile="Default">
-			<disable object="all"/>
-			<enable object="default" feature="Process"/>
-			
+		<modelEnablement
+				runtimeId="org.eclipse.bpmn2.modeler.runtime.example"
+				type="Process"
+				profile="Default Process"
+				ref="org.eclipse.bpmn2.modeler.runtime.none:Process:Default Process">
+				
+			<!-- copy the enablements from Default Target Runtime -->
+			<!-- and then add our extension features -->
 			<enable object="TextAnnotation"/>
 			<enable object="TextAnnotation" feature="text"/>
 			<enable object="TextAnnotation" feature="name"/>

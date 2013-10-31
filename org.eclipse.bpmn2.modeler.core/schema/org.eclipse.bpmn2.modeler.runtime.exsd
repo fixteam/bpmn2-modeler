@@ -469,7 +469,7 @@ rootFeature/childFeature_1/childFeature_2#0
          <attribute name="type" use="required">
             <annotation>
                <documentation>
-                  Optional diagram type name: either Process, Collaboration or Choreography.
+                  Required Diagram Type name: either Process, Collaboration, Choreography or Conversation.
                </documentation>
             </annotation>
             <simpleType>
@@ -480,29 +480,27 @@ rootFeature/childFeature_1/childFeature_2#0
                   </enumeration>
                   <enumeration value="Choreography">
                   </enumeration>
+                  <enumeration value="Conversation">
+                  </enumeration>
                </restriction>
             </simpleType>
          </attribute>
          <attribute name="profile" type="string" use="required">
             <annotation>
                <documentation>
-                  An optional profile name that can be used to define different levels of enablment within each diagram type.
+                  Required Tool Profile name that can be used to define different BPMN 2 language subsets (enablements) within each Diagram Type.
                </documentation>
             </annotation>
          </attribute>
-         <attribute name="override" type="boolean">
+         <attribute name="ref" type="string">
             <annotation>
                <documentation>
-                  Controls the processing of the modelEnablement. By default the model enablements will be effective instantly on opening a diagram with the corresponding type and runtime. 
+                  Iniitalizes this modelEnablement set from a different Target Runtime, DiagramType and Tool Profile. This simplifies Model Enablement definitions by referencing a base set of enablements already defined.
 
-If set to &quot;false&quot;, the model enablement will not be effective by default. 
-If not set, this value will be treated as &quot;true&quot;.
+The value of this attribute string must be the referenced Target Runtime ID, a Diagram Type and a Tool Profile name defined in the referenced runtime, all separated by a colon (:), for example:
 
-DEPRECATED: I have no idea what I was thinking here...
+ref=&quot;org.eclipse.bpmn2.modeler.runtime.none:Process:Default Process&quot;
                </documentation>
-               <appinfo>
-                  <meta.attribute deprecated="true"/>
-               </appinfo>
             </annotation>
          </attribute>
       </complexType>
@@ -723,7 +721,7 @@ The value &quot;default&quot; is used by contributing plugins to refer to enable
          <attribute name="profile" type="string" use="required">
             <annotation>
                <documentation>
-                  An optional profile name that can be used to define different levels of enablment within each diagram type.
+                  A profile name that can be used to define different BPMN 2 language subsets within each diagram type. This may be a comma separated list to indicate that this tool palette should be included in more than one profile.
                </documentation>
             </annotation>
          </attribute>

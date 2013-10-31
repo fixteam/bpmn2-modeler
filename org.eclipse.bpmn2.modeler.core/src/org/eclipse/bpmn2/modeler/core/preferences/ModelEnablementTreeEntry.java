@@ -17,22 +17,22 @@ import java.util.ArrayList;
 import org.eclipse.bpmn2.modeler.core.AbstractPropertyChangeListenerProvider;
 import org.eclipse.emf.ecore.ENamedElement;
 
-public class ToolEnablement extends AbstractPropertyChangeListenerProvider {
+public class ModelEnablementTreeEntry extends AbstractPropertyChangeListenerProvider {
 
 	private String name;
-	private ENamedElement tool;
+	private ENamedElement element;
 	private Boolean enabled;
-	private ToolEnablement parent;
-	private ArrayList<ToolEnablement> children;
-	// "friends" are references to this ToolEnablement.
-	private ArrayList<ToolEnablement> friends;
-	private static ArrayList<ToolEnablement> EMPTY_LIST = new ArrayList<ToolEnablement>();
+	private ModelEnablementTreeEntry parent;
+	private ArrayList<ModelEnablementTreeEntry> children;
+	// "friends" are references to this ModelEnablementTreeEntry.
+	private ArrayList<ModelEnablementTreeEntry> friends;
+	private static ArrayList<ModelEnablementTreeEntry> EMPTY_LIST = new ArrayList<ModelEnablementTreeEntry>();
 
-	public ToolEnablement() {
+	public ModelEnablementTreeEntry() {
 	}
 
-	public ToolEnablement(ENamedElement tool, ToolEnablement parent) {
-		setTool(tool);
+	public ModelEnablementTreeEntry(ENamedElement element, ModelEnablementTreeEntry parent) {
+		setElement(element);
 		this.parent = parent;
 	}
 
@@ -41,13 +41,13 @@ public class ToolEnablement extends AbstractPropertyChangeListenerProvider {
 	}
 	
 	public String getName() {
-		if (tool!=null)
-			return tool.getName();
+		if (element!=null)
+			return element.getName();
 		return name==null ? "" : name; //$NON-NLS-1$
 	}
 
 	public String getPreferenceName() {
-		if (parent == null || parent.getTool()==null) {
+		if (parent == null || parent.getElement()==null) {
 			return getName();
 		} else {
 			return parent.getPreferenceName() + "." + getName(); //$NON-NLS-1$
@@ -64,7 +64,7 @@ public class ToolEnablement extends AbstractPropertyChangeListenerProvider {
 
 	public void setSubtreeEnabled(Boolean enabled) {
 		setEnabled(enabled);
-		for (ToolEnablement child : getChildren()) {
+		for (ModelEnablementTreeEntry child : getChildren()) {
 			child.setSubtreeEnabled(enabled);
 		}
 	}
@@ -73,9 +73,9 @@ public class ToolEnablement extends AbstractPropertyChangeListenerProvider {
 		return getSubtreeSize(this);
 	}
 	
-	private static int getSubtreeSize(ToolEnablement parent) {
+	private static int getSubtreeSize(ModelEnablementTreeEntry parent) {
 		int size = 0;
-		for (ToolEnablement child : parent.getChildren()) {
+		for (ModelEnablementTreeEntry child : parent.getChildren()) {
 			++size;
 			size += getSubtreeSize(child);
 		}
@@ -86,9 +86,9 @@ public class ToolEnablement extends AbstractPropertyChangeListenerProvider {
 		return getSubtreeEnabledCount(this);
 	}
 	
-	private static int getSubtreeEnabledCount(ToolEnablement parent) {
+	private static int getSubtreeEnabledCount(ModelEnablementTreeEntry parent) {
 		int count = 0;
-		for (ToolEnablement child : parent.getChildren()) {
+		for (ModelEnablementTreeEntry child : parent.getChildren()) {
 			if (child.getEnabled())
 				++count;
 			count += getSubtreeEnabledCount(child);
@@ -96,37 +96,37 @@ public class ToolEnablement extends AbstractPropertyChangeListenerProvider {
 		return count;
 	}
 	
-	public void setTool(ENamedElement tool) {
-		if (tool!=null)
-			this.name = tool.getName();
-		this.tool = tool;
+	public void setElement(ENamedElement element) {
+		if (element!=null)
+			this.name = element.getName();
+		this.element = element;
 	}
 
-	public ENamedElement getTool() {
-		return tool;
+	public ENamedElement getElement() {
+		return element;
 	}
 
-	public void setChildren(ArrayList<ToolEnablement> children) {
+	public void setChildren(ArrayList<ModelEnablementTreeEntry> children) {
 		this.children = children;
 	}
 
-	public ArrayList<ToolEnablement> getChildren() {
+	public ArrayList<ModelEnablementTreeEntry> getChildren() {
 		if (children==null)
 			return EMPTY_LIST;
 		return children;
 	}
 
-	public void setParent(ToolEnablement parent) {
+	public void setParent(ModelEnablementTreeEntry parent) {
 		this.parent = parent;
 	}
 
-	public ToolEnablement getParent() {
+	public ModelEnablementTreeEntry getParent() {
 		return parent;
 	}
 
 	@Override
 	public String toString() {
-		return "ToolEnablement [tool=" + getName() + ", enabled=" + enabled + ", children=" + children + ", parent=" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		return "ModelEnablementTreeEntry [element=" + getName() + ", enabled=" + enabled + ", children=" + children + ", parent=" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 				+ (parent == null ? "null" : parent.getName()) + "]"; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
@@ -139,16 +139,16 @@ public class ToolEnablement extends AbstractPropertyChangeListenerProvider {
 		return friends!=null && friends.size()>0;
 	}
 	
-	public ArrayList<ToolEnablement> getFriends() {
+	public ArrayList<ModelEnablementTreeEntry> getFriends() {
 		if (friends==null)
 			return EMPTY_LIST;
 		return friends;
 	}
 	
-	public void addFriend(ToolEnablement friend) {
+	public void addFriend(ModelEnablementTreeEntry friend) {
 		if (friend!=null) {
 			if (friends==null)
-				friends = new ArrayList<ToolEnablement>();
+				friends = new ArrayList<ModelEnablementTreeEntry>();
 			if (!friends.contains(friend))
 				friends.add(friend);
 		}

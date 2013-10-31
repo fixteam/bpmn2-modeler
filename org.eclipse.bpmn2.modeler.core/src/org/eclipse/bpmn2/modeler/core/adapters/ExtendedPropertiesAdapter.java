@@ -16,6 +16,11 @@ package org.eclipse.bpmn2.modeler.core.adapters;
 import java.lang.reflect.Field;
 import java.util.Hashtable;
 
+import org.eclipse.bpmn2.Choreography;
+import org.eclipse.bpmn2.ChoreographyActivity;
+import org.eclipse.bpmn2.FlowElement;
+import org.eclipse.bpmn2.Participant;
+import org.eclipse.bpmn2.Process;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.utils.JavaReflectionUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
@@ -67,41 +72,6 @@ public class ExtendedPropertiesAdapter<T extends EObject> extends AdapterImpl {
 		super();
 		this.adapterFactory = adapterFactory;
 		setTarget(object);
-
-		String name = ""; //$NON-NLS-1$
-		if (object instanceof BPMNDiagram) {
-			switch(ModelUtil.getDiagramType(object)) {
-			case NONE:
-				name = "UnknownDiagram"; //$NON-NLS-1$
-				break;
-			case PROCESS:
-				name = "ProcessDiagram"; //$NON-NLS-1$
-				break;
-			case CHOREOGRAPHY:
-				name = "ChoreographyDiagram"; //$NON-NLS-1$
-				break;
-			case COLLABORATION:
-				name = "CollaborationDiagram"; //$NON-NLS-1$
-				break;
-			}
-		}
-		else {
-			name = object.eClass().getName().replaceAll("Impl$", ""); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-		// Set the model element's long description from the Messages class.
-		// The field in Messages that contains the description will have the
-		// form: "UI_<BPMN2ElementName>_long_description".
-		// The Messages class must be contained somewhere in the package hierarchy
-		// that contains the adapter factory class; by default, this will be the
-		// BPMN2 modeler UI plug-in hierarchy, starting with org.eclipse.bpmn2.modeler.ui.adapters
-    	try {
-        	String fieldName = "UI_" + name + "_long_description"; //$NON-NLS-1$ //$NON-NLS-2$
-        	Class messages = JavaReflectionUtil.findClass(adapterFactory, "Messages"); //$NON-NLS-1$
-			Field field = messages.getField(fieldName);
-			String text = (String)field.get(null);
-			setProperty(LONG_DESCRIPTION, text);
-		} catch (Exception e) {
-		}
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -140,6 +110,8 @@ public class ExtendedPropertiesAdapter<T extends EObject> extends AdapterImpl {
 				adapter.getObjectDescriptor().setObject(eObject);
 				if (feature!=null)
 					adapter.getFeatureDescriptor(feature).setObject(eObject);
+				
+				adapter.initializeDescription();
 			}
 		}
 		return adapter;
@@ -273,5 +245,61 @@ public class ExtendedPropertiesAdapter<T extends EObject> extends AdapterImpl {
 			}
 		}
 		return false;
+	}
+	
+	protected String initializeDescription() {
+		EObject object = (EObject)target;
+		String name = ""; //$NON-NLS-1$
+		String description = "";
+		if (object instanceof BPMNDiagram) {
+			switch(ModelUtil.getDiagramType(object)) {
+			case NONE:
+				name = "UnknownDiagram"; //$NON-NLS-1$
+				break;
+			case PROCESS:
+				name = "Process"; //$NON-NLS-1$
+				break;
+			case CHOREOGRAPHY:
+				name = "Choreography"; //$NON-NLS-1$
+				break;
+			case COLLABORATION:
+				name = "Collaboration"; //$NON-NLS-1$
+				break;
+			}
+		}
+		else if (object instanceof Participant) {
+			Participant participant = (Participant) target;
+			EObject container = participant.eContainer();
+			if (container instanceof Choreography) {
+				for (FlowElement fe : ((Choreography)container).getFlowElements()) {
+					if (fe instanceof ChoreographyActivity) {
+						ChoreographyActivity ca = (ChoreographyActivity) fe;
+						if (ca.getParticipantRefs().contains(participant)) {
+							name = "ParticipantBand";
+							break;
+						}
+					}
+				}
+			}
+		}
+		if (name.isEmpty()) {
+			name = object.eClass().getName().replaceAll("Impl$", ""); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+		// Set the model element's long description from the Messages class.
+		// The field in Messages that contains the description will have the
+		// form: "UI_<BPMN2ElementName>_long_description".
+		// The Messages class must be contained somewhere in the package hierarchy
+		// that contains the adapter factory class; by default, this will be the
+		// BPMN2 modeler UI plug-in hierarchy, starting with org.eclipse.bpmn2.modeler.ui.adapters
+    	try {
+        	String fieldName = "UI_" + name + "_long_description"; //$NON-NLS-1$ //$NON-NLS-2$
+        	Class messages = JavaReflectionUtil.findClass(adapterFactory, "Messages"); //$NON-NLS-1$
+			Field field = messages.getField(fieldName);
+			description = (String)field.get(null);
+			setProperty(LONG_DESCRIPTION, description);
+		} catch (Exception e) {
+		}
+    	
+    	return description;
 	}
 }

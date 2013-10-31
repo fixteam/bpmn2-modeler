@@ -15,9 +15,9 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            category="org.eclipse.bpmn2.modeler.ui.preferences.Bpmn2HomePreferencePage"
+            category="org.eclipse.bpmn2.modeler.BPMN2"
             class="org.eclipse.bpmn2.modeler.wsil.ui.preferences.WSILPreferencePage"
-            id="org.eclipse.bpmn2.wsil.ui.preferences.WSILPreferencePage"
+            id="org.eclipse.bpmn2.wsil.WSIL"
             name="%PREFERENCE_PAGE_WSIL"/>
    </extension>
 

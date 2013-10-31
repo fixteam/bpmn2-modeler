@@ -540,7 +540,31 @@ public class ModelUtil {
 	}
 	
 	public enum Bpmn2DiagramType {
-		NONE, PROCESS, CHOREOGRAPHY, COLLABORATION;
+		NONE("None"), //$NON-NLS-1$
+		PROCESS("Process"), //$NON-NLS-1$
+		CHOREOGRAPHY("Choreography"), //$NON-NLS-1$
+		COLLABORATION("Collaboration"), //$NON-NLS-1$
+		CONVERSATION("Conversation"); //$NON-NLS-1$
+		String value;
+		Bpmn2DiagramType(String value) {
+			this.value = value;
+		}
+
+		public static Bpmn2DiagramType fromString(String value) {
+			if (value != null) {
+				for (Bpmn2DiagramType type : Bpmn2DiagramType.values()) {
+					if (value.equalsIgnoreCase(type.value)) {
+						return type;
+					}
+				}
+			}
+			return null;
+		}
+
+		@Override
+		public String toString() {
+			return value;
+		}
 	}
 
 	public static Bpmn2DiagramType getDiagramType(String name) {

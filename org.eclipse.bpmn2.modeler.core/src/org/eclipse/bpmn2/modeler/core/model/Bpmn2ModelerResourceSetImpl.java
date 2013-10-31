@@ -146,9 +146,9 @@ public class Bpmn2ModelerResourceSetImpl extends ResourceSetImpl implements IRes
 	
 	private void setDefaultTimeoutProperties() {
 		saveTimeoutProperties();
-		String timeout = Bpmn2Preferences.getInstance().getConnectionTimeout();
-		System.setProperty("sun.net.client.defaultConnectTimeout", timeout); //$NON-NLS-1$
-		System.setProperty("sun.net.client.defaultReadTimeout", timeout); //$NON-NLS-1$
+		Integer timeout = Bpmn2Preferences.getInstance().getConnectionTimeout();
+		System.setProperty("sun.net.client.defaultConnectTimeout", timeout.toString()); //$NON-NLS-1$
+		System.setProperty("sun.net.client.defaultReadTimeout", timeout.toString()); //$NON-NLS-1$
 	}
 
 	/**

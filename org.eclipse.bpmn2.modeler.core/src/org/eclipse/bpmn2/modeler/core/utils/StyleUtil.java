@@ -104,7 +104,7 @@ public class StyleUtil {
 			if (ss==null) {
 				Bpmn2Preferences pref = Bpmn2Preferences.getInstance(be);
 				ss = pref.getShapeStyle(be);
-				id = Bpmn2Preferences.getShapeStyleId(be);
+				id = pref.getShapeStyleId(be);
 			}
 			else {
 				id = ss.toString();
@@ -188,7 +188,7 @@ public class StyleUtil {
 	 */
 	public static AdaptedGradientColoredAreas getStyleAdaptions(BaseElement be) {
 		Bpmn2Preferences pref = Bpmn2Preferences.getInstance(be);
-		return getStyleAdaptations(pref.getShapeStyle(be), Bpmn2Preferences.getShapeStyleId(be));
+		return getStyleAdaptations(pref.getShapeStyle(be), pref.getShapeStyleId(be));
 	}
 	
 	public static AdaptedGradientColoredAreas getStyleAdaptations(ShapeStyle ss, String id) {

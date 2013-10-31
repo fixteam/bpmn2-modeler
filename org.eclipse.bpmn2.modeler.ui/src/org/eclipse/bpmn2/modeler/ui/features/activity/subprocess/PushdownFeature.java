@@ -104,6 +104,8 @@ public class PushdownFeature extends AbstractCustomFeature {
 		PictogramElement[] pes = context.getPictogramElements();
 		if (pes != null && pes.length == 1) {
 			PictogramElement pe = pes[0];
+			if (ChoreographyUtil.isChoreographyParticipantBand(pe))
+				return false;
 			Object bo = getBusinessObjectForPictogramElement(pe);
 			description = NLS.bind(Messages.PushdownFeature_Description_1,ModelUtil.getLabel(bo));
 			

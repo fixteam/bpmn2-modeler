@@ -25,7 +25,7 @@ import org.eclipse.bpmn2.FlowNode;
 import org.eclipse.bpmn2.Lane;
 import org.eclipse.bpmn2.modeler.core.di.DIImport;
 import org.eclipse.bpmn2.modeler.core.features.IBpmn2CreateFeature;
-import org.eclipse.bpmn2.modeler.core.runtime.ModelEnablementDescriptor;
+import org.eclipse.bpmn2.modeler.core.preferences.ModelEnablements;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil.AnchorLocation;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
@@ -254,8 +254,8 @@ public abstract class AbstractMorphNodeFeature<T extends FlowNode> extends Abstr
 
 	protected List<EClass> getAvailableTypes(ICustomContext context) {
 		DiagramEditor editor = (DiagramEditor)getDiagramEditor();
-		ModelEnablementDescriptor enablements =
-				(ModelEnablementDescriptor)editor.getAdapter(ModelEnablementDescriptor.class);
+		ModelEnablements enablements =
+				(ModelEnablements)editor.getAdapter(ModelEnablements.class);
 		EClass newType = getBusinessObjectClass();
 		List<EClass> subtypes = new ArrayList<EClass>();
 		ContainerShape oldShape = getOldShape(context);

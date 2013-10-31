@@ -29,7 +29,7 @@ import org.eclipse.bpmn2.modeler.core.di.DIImport;
 import org.eclipse.bpmn2.modeler.core.features.IBpmn2CreateFeature;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
-import org.eclipse.bpmn2.modeler.core.runtime.ModelEnablementDescriptor;
+import org.eclipse.bpmn2.modeler.core.preferences.ModelEnablements;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
@@ -257,8 +257,8 @@ public abstract class AbstractAppendNodeFeature<T extends FlowNode> extends Abst
 
 	protected List<EClass> getAvailableTypes() {
 		DiagramEditor editor = (DiagramEditor)getDiagramEditor();
-		ModelEnablementDescriptor enablements =
-				(ModelEnablementDescriptor)editor.getAdapter(ModelEnablementDescriptor.class);
+		ModelEnablements enablements =
+				(ModelEnablements)editor.getAdapter(ModelEnablements.class);
 		EClass newType = getBusinessObjectClass();
 
 		// build a list of possible subclasses for the popup menu

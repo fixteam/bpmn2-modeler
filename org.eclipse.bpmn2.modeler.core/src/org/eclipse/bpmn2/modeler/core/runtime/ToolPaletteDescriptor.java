@@ -460,8 +460,13 @@ public class ToolPaletteDescriptor extends BaseRuntimeDescriptor {
 		return id;
 	}
 	
-	public String getProfile() {
-		return profile;
+	public List<String> getProfiles() {
+		String a[] = profile.split(",");
+		List<String> profiles = new ArrayList<String>();
+		for (String p : a) {
+			profiles.add(p.trim());
+		}
+		return profiles;
 	}
 
 	public String getType() {

@@ -151,6 +151,7 @@ public class NewJbpmProcessWizard extends Wizard implements INewWizard {
 		if (isSetJbpmRuntime) {
 			monitor.setTaskName(Messages.NewJbpmProcessWizard_Configuring_Project_Message);
 			Bpmn2Preferences prefs = Bpmn2Preferences.getInstance(container.getProject());
+			prefs.useProjectPreferences();
 			TargetRuntime rt = TargetRuntime.getRuntime(JBPM5RuntimeExtension.JBPM5_RUNTIME_ID);
 			prefs.setRuntime(rt);
 			try {

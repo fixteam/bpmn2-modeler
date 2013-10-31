@@ -12,8 +12,8 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.merrimac.clad;
 
+import org.eclipse.bpmn2.modeler.core.preferences.ModelEnablements;
 import org.eclipse.bpmn2.modeler.core.runtime.IBpmn2PropertySection;
-import org.eclipse.bpmn2.modeler.core.runtime.ModelEnablementDescriptor;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
@@ -262,7 +262,7 @@ public abstract class AbstractBpmn2PropertySection extends GFPropertySection imp
 	
 	protected boolean isModelObjectEnabled(EObject o, EStructuralFeature f) {
 		if (o !=null && f!=null) {
-			ModelEnablementDescriptor me = getModelEnablement();
+			ModelEnablements me = getModelEnablements();
 			if (me!=null) {
 				EClass eclass = (o instanceof EClass) ? (EClass)o : o.eClass();
 				return me.isEnabled(eclass, f);
@@ -273,7 +273,7 @@ public abstract class AbstractBpmn2PropertySection extends GFPropertySection imp
 	
 	protected boolean isModelObjectEnabled(EObject o) {
 		if (o !=null) {
-			ModelEnablementDescriptor me = getModelEnablement();
+			ModelEnablements me = getModelEnablements();
 			if (me!=null) {
 				EClass eclass = (o instanceof EClass) ? (EClass)o : o.eClass();
 				return me.isEnabled(eclass);
@@ -282,8 +282,8 @@ public abstract class AbstractBpmn2PropertySection extends GFPropertySection imp
 		return false;
 	}
 
-	protected ModelEnablementDescriptor getModelEnablement() {
-		return (ModelEnablementDescriptor)getDiagramEditor().getAdapter(ModelEnablementDescriptor.class);
+	protected ModelEnablements getModelEnablements() {
+		return (ModelEnablements)getDiagramEditor().getAdapter(ModelEnablements.class);
 	}
 	
 	public boolean doReplaceTab(String id, IWorkbenchPart part, ISelection selection) {

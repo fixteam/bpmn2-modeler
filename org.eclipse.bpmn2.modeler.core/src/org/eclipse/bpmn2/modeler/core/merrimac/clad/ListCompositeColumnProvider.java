@@ -50,7 +50,7 @@ public class ListCompositeColumnProvider extends ColumnTableProvider {
 	
 	public TableColumn add(EObject object, EClass eclass, EStructuralFeature feature) {
 		TableColumn tc = null;
-		listComposite.getModelEnablement();
+		listComposite.getModelEnablements();
 		if (listComposite.isModelObjectEnabled(eclass,feature)) {
 			tc = new TableColumn(object, feature);
 			tc.setOwner(listComposite);

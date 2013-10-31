@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.bpmn2.modeler.ui.preferences;
 
+import java.util.Iterator;
+import java.util.List;
+
 import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.preferences.TristateCheckboxFieldEditor;
@@ -17,7 +20,13 @@ import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.ui.Messages;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.IPreferenceNode;
+import org.eclipse.jface.preference.IPreferencePage;
+import org.eclipse.jface.preference.IPreferencePageContainer;
 import org.eclipse.jface.preference.IntegerFieldEditor;
+import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.preference.PreferenceManager;
+import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -44,10 +53,13 @@ public class Bpmn2HomePreferencePage
 	extends FieldEditorPreferencePage
 	implements IWorkbenchPreferencePage {
 	
+	Bpmn2Preferences preferences;
+
 	public Bpmn2HomePreferencePage() {
 		super(GRID);
 		setPreferenceStore(Activator.getDefault().getPreferenceStore());
 		setDescription(Messages.Bpmn2PreferencePage_HomePage_Description);
+		preferences = Bpmn2Preferences.getInstance();
 	}
 	
 	/**
@@ -58,56 +70,8 @@ public class Bpmn2HomePreferencePage
 	 */
 	@Override
 	public void createFieldEditors() {
-		String[][] entries = new String[TargetRuntime.getAllRuntimes().length][2];
-		int i = 0;
-		for (TargetRuntime r : TargetRuntime.getAllRuntimes()) {
-			entries[i][0] = r.getName();
-			entries[i][1] = r.getId();
-			++i;
-		}
 
-		SelectableComboFieldEditor targetRuntimes = new SelectableComboFieldEditor(
-				Bpmn2Preferences.PREF_TARGET_RUNTIME,
-				Bpmn2Preferences.PREF_TARGET_RUNTIME_LABEL,
-				entries,
-				getFieldEditorParent());
-
-		targetRuntimes.setPreferenceStore(getPreferenceStore());
-//		targetRuntimes.setSelectedValue(getPreferenceStore().getString(Bpmn2Preferences.PREF_TARGET_RUNTIME));
-		
-		addField(targetRuntimes);
-
-		BooleanFieldEditor showAdvancedPropsTab = new BooleanFieldEditor(
-				Bpmn2Preferences.PREF_SHOW_ADVANCED_PROPERTIES,
-				Bpmn2Preferences.PREF_SHOW_ADVANCED_PROPERTIES_LABEL,
-				getFieldEditorParent());
-		addField(showAdvancedPropsTab);
-
-		BooleanFieldEditor showDescriptions = new BooleanFieldEditor(
-				Bpmn2Preferences.PREF_SHOW_DESCRIPTIONS,
-				Bpmn2Preferences.PREF_SHOW_DESCRIPTIONS_LABEL,
-				getFieldEditorParent());
-		addField(showDescriptions);
-
-		BooleanFieldEditor showIds = new BooleanFieldEditor(
-				Bpmn2Preferences.PREF_SHOW_ID_ATTRIBUTE,
-				Bpmn2Preferences.PREF_SHOW_ID_ATTRIBUTE_LABEL,
-				getFieldEditorParent());
-		addField(showIds);
-
-		BooleanFieldEditor checkProjectNature = new BooleanFieldEditor(
-				Bpmn2Preferences.PREF_CHECK_PROJECT_NATURE,
-				Bpmn2Preferences.PREF_CHECK_PROJECT_NATURE_LABEL,
-				getFieldEditorParent());
-		addField(checkProjectNature);
-
-		BooleanFieldEditor simplifyLists = new BooleanFieldEditor(
-				Bpmn2Preferences.PREF_SIMPLIFY_LISTS,
-				Bpmn2Preferences.PREF_SIMPLIFY_LISTS_LABEL,
-				getFieldEditorParent());
-		addField(simplifyLists);
-
-		Group group = new Group(getFieldEditorParent(), SWT.BORDER);
+		Group group = new Group(getFieldEditorParent(), SWT.NONE);
 		group.setLayout(new GridLayout(3,false));
 		group.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1));
 		group.setText(Messages.Bpmn2HomePreferencePage_Default_DI_Values_Title);
@@ -141,69 +105,6 @@ public class Bpmn2HomePreferencePage
 				Bpmn2Preferences.PREF_CONNECTION_TIMEOUT_LABEL,
 				getFieldEditorParent());
 		addField(connectionTimeout);
-
-		//////////////////////////////////////////////////////////////////////////////
-		
-		TristateCheckboxFieldEditor popupConfigDialog = new TristateCheckboxFieldEditor(
-				Bpmn2Preferences.PREF_POPUP_CONFIG_DIALOG,
-				Bpmn2Preferences.PREF_POPUP_CONFIG_DIALOG_LABEL,
-				getFieldEditorParent());
-		addField(popupConfigDialog);
-
-		//////////////////////////////////////////////////////////////////////////////
-
-		Composite comp = new Composite(getFieldEditorParent(), SWT.NONE);
-		comp.setLayout(new GridLayout(1,false));
-		GridData gd = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
-		gd.horizontalIndent = 40;
-		comp.setLayoutData(gd);
-
-		TristateCheckboxFieldEditor popupConfigDialogForTasks = new TristateCheckboxFieldEditor(
-				Bpmn2Preferences.PREF_POPUP_CONFIG_DIALOG_FOR_ACTIVITIES,
-				Bpmn2Preferences.PREF_POPUP_CONFIG_DIALOG_FOR_ACTIVITIES_LABEL,
-				comp);
-		addField(popupConfigDialogForTasks);
-		popupConfigDialog.addField(popupConfigDialogForTasks);
-
-		TristateCheckboxFieldEditor popupConfigDialogForGateways = new TristateCheckboxFieldEditor(
-				Bpmn2Preferences.PREF_POPUP_CONFIG_DIALOG_FOR_GATEWAYS,
-				Bpmn2Preferences.PREF_POPUP_CONFIG_DIALOG_FOR_GATEWAYS_LABEL,
-				comp);
-		addField(popupConfigDialogForGateways);
-		popupConfigDialog.addField(popupConfigDialogForGateways);
-
-		TristateCheckboxFieldEditor popupConfigDialogForEvents = new TristateCheckboxFieldEditor(
-				Bpmn2Preferences.PREF_POPUP_CONFIG_DIALOG_FOR_EVENTS,
-				Bpmn2Preferences.PREF_POPUP_CONFIG_DIALOG_FOR_EVENTS_LABEL,
-				comp);
-		addField(popupConfigDialogForEvents);
-		popupConfigDialog.addField(popupConfigDialogForEvents);
-
-		TristateCheckboxFieldEditor popupConfigDialogForEventDefs = new TristateCheckboxFieldEditor(
-				Bpmn2Preferences.PREF_POPUP_CONFIG_DIALOG_FOR_EVENT_DEFS,
-				Bpmn2Preferences.PREF_POPUP_CONFIG_DIALOG_FOR_EVENT_DEFS_LABEL,
-				comp);
-		addField(popupConfigDialogForEventDefs);
-		popupConfigDialog.addField(popupConfigDialogForEventDefs);
-
-		TristateCheckboxFieldEditor popupConfigDialogForDataDefs = new TristateCheckboxFieldEditor(
-				Bpmn2Preferences.PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS,
-				Bpmn2Preferences.PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS_LABEL,
-				comp);
-		addField(popupConfigDialogForDataDefs);
-		popupConfigDialog.addField(popupConfigDialogForDataDefs);
-
-		TristateCheckboxFieldEditor popupConfigDialogForContainers = new TristateCheckboxFieldEditor(
-				Bpmn2Preferences.PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS,
-				Bpmn2Preferences.PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS_LABEL,
-				comp);
-		addField(popupConfigDialogForContainers);
-		popupConfigDialog.addField(popupConfigDialogForContainers);
-		
-		
-		popupConfigDialog.updateCheckState();
-
-		//////////////////////////////////////////////////////////////////////////////
 	}
 
 	/* (non-Javadoc)
@@ -214,7 +115,26 @@ public class Bpmn2HomePreferencePage
 
 	@Override
 	protected void performDefaults() {
-		Bpmn2Preferences.getInstance().restoreDefaults(false);
+		preferences.setToDefault(Bpmn2Preferences.PREF_IS_HORIZONTAL);
+		preferences.setToDefault(Bpmn2Preferences.PREF_IS_EXPANDED);
+		preferences.setToDefault(Bpmn2Preferences.PREF_IS_MESSAGE_VISIBLE);
+		preferences.setToDefault(Bpmn2Preferences.PREF_IS_MARKER_VISIBLE);
+		preferences.setToDefault(Bpmn2Preferences.PREF_CONNECTION_TIMEOUT);
 		super.performDefaults();
 	}
+	
+	public static IPreferencePage getPage(IPreferencePageContainer container, String nodeId) {
+		PreferenceDialog pd = (PreferenceDialog) container;
+		PreferenceManager pm = pd.getPreferenceManager();
+
+		List nodes = pm.getElements(PreferenceManager.POST_ORDER);
+		for (Iterator i = nodes.iterator(); i.hasNext();) {
+			IPreferenceNode node = (IPreferenceNode) i.next();
+			if (node.getId().equals(nodeId)) {
+				return node.getPage();
+			}
+		}
+		return null;
+	}
+
 }
