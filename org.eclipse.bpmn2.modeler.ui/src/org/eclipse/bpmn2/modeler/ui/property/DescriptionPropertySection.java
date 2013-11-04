@@ -90,7 +90,7 @@ public class DescriptionPropertySection extends DefaultPropertySection implement
 		protected void bindDescription(EObject be) {
 			// don't display the description text if disabled in preferences,
 			// or if this is a popup configuration dialog.
-			if (Bpmn2Preferences.getInstance().getShowDescriptions() && !isPopupDialog) {
+			if (Bpmn2Preferences.getInstance(be).getShowDescriptions() && !isPopupDialog) {
 				String description = getDescription(be);
 	
 				if (description != null) {

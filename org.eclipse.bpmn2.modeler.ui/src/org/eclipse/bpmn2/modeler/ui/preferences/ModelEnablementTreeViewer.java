@@ -15,36 +15,43 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Tree;
 
 public class ModelEnablementTreeViewer extends Composite {
 	
-	private Label label;
+	private Group group;
 	private Tree tree;
 	private CheckboxTreeViewer treeViewer;
 	
 	public ModelEnablementTreeViewer(Composite parent, String name) {
 		
-		super(parent, SWT.BORDER);
+		super(parent, SWT.NONE);
+		GridData data;
 		
 		setLayout(new GridLayout(1, false));
 		setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 
-		label = new Label(this, SWT.NONE);
-		label.setText(name);
-		label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
-
-		treeViewer = new CheckboxTreeViewer(this, SWT.BORDER);
+		group = new Group(this, SWT.NONE);
+		group.setText(name);
+		data = new GridData(SWT.FILL, SWT.TOP, true, true, 1, 1);
+		data.heightHint = 100;
+		data.widthHint = 50;
+		group.setLayoutData(data);
+		group.setLayout(new GridLayout(1,false));
+		
+		treeViewer = new CheckboxTreeViewer(group, SWT.BORDER);
 		tree = treeViewer.getTree();
 
-		GridData data = new GridData(SWT.FILL, SWT.TOP, true, true, 1, 1);
-		data.heightHint = 200;
+		data = new GridData(SWT.FILL, SWT.TOP, true, true, 1, 1);
+		data.heightHint = 100;
 		data.widthHint = 50;
 		tree.setLayoutData(data);
 		treeViewer.setCheckStateProvider(new ICheckStateProvider() {
@@ -79,7 +86,23 @@ public class ModelEnablementTreeViewer extends Composite {
 			}
 			
 		});
-		
+
+		// adjust height of the tree viewers to fill their container when dialog is resized
+		// oddly enough, setting GridData.widthHint still causes the controls to fill available
+		// horizontal space, but setting heightHint just keeps them the same height. Probably
+		// because a GridLayout has a fixed number of columns, but variable number of rows.
+		parent.addControlListener(new ControlAdapter() {
+			@Override
+			public void controlResized(ControlEvent e) {
+				GridData gd = (GridData) tree.getLayoutData();
+				gd.heightHint = 1000;
+				gd = (GridData) group.getLayoutData();
+				gd.heightHint = 1000;
+				group.layout();
+				layout();
+			}
+		});
+
 		treeViewer.addCheckStateListener(new ICheckStateListener() {
 			@Override
 			public void checkStateChanged(CheckStateChangedEvent event) {

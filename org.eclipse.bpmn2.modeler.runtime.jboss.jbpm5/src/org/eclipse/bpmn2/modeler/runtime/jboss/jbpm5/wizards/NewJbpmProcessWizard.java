@@ -155,7 +155,7 @@ public class NewJbpmProcessWizard extends Wizard implements INewWizard {
 			TargetRuntime rt = TargetRuntime.getRuntime(JBPM5RuntimeExtension.JBPM5_RUNTIME_ID);
 			prefs.setRuntime(rt);
 			try {
-				prefs.save();
+				prefs.flush();
 			} catch (BackingStoreException e) {
 				throwCoreException(e.getMessage());
 			}

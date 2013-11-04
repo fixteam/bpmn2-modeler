@@ -19,9 +19,11 @@ import org.eclipse.bpmn2.Activity;
 import org.eclipse.bpmn2.modeler.core.di.DIImport;
 import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2AddElementFeature;
 import org.eclipse.bpmn2.modeler.core.features.activity.UpdateActivityLoopAndMultiInstanceMarkerFeature.LoopCharacteristicType;
+import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.features.context.impl.AddContext;
@@ -44,6 +46,8 @@ public abstract class AbstractAddActivityFeature<T extends Activity>
 	protected final IGaService gaService = Graphiti.getGaService();
 	protected final IPeService peService = Graphiti.getPeService();
 
+	protected Bpmn2Preferences preferences;
+	
 	public AbstractAddActivityFeature(IFeatureProvider fp) {
 		super(fp);
 	}
@@ -73,6 +77,8 @@ public abstract class AbstractAddActivityFeature<T extends Activity>
 
 	@Override
 	public PictogramElement add(IAddContext context) {
+		preferences = Bpmn2Preferences.getInstance((EObject)context.getNewObject());
+
 		T businessObject = getBusinessObject(context);
 
 		int width = context.getWidth() > 0 ? context.getWidth() : this.getWidth();

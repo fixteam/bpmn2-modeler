@@ -112,11 +112,10 @@ import org.eclipse.swt.widgets.Display;
 
 public class BPMNToolBehaviorProvider extends DefaultToolBehaviorProvider implements IFeatureCheckerHolder {
 
-	public final static String DEFAULT_PALETTE_ID = "org.bpmn2.modeler.toolpalette.default.categories"; //$NON-NLS-1$
-	
+	BPMN2Editor editor;
+	TargetRuntime targetRuntime;
 	BPMNFeatureProvider featureProvider;
 	ModelEnablements modelEnablements;
-	ModelDescriptor modelDescriptor;
 	Hashtable<String, PaletteCompartmentEntry> categories = new Hashtable<String, PaletteCompartmentEntry>();
 	List<IPaletteCompartmentEntry> palette;
 	
@@ -131,7 +130,8 @@ public class BPMNToolBehaviorProvider extends DefaultToolBehaviorProvider implem
 		public Tool createTool() {
 			String profile = getLabel();
 			Bpmn2DiagramType diagramType = ModelUtil.getDiagramType(editor);
-			editor.getPreferences().setDefaultToolProfile(diagramType, profile);
+			TargetRuntime rt = editor.getTargetRuntime();
+			editor.getPreferences().setDefaultToolProfile(rt, diagramType, profile);
 			Display.getDefault().asyncExec(new Runnable() {
 
 				@Override
@@ -151,7 +151,8 @@ public class BPMNToolBehaviorProvider extends DefaultToolBehaviorProvider implem
 		@Override
 		public ImageDescriptor getSmallIcon() {
 			Bpmn2DiagramType diagramType = ModelUtil.getDiagramType(editor);
-			String profile = editor.getPreferences().getDefaultToolProfile(diagramType);
+			TargetRuntime rt = editor.getTargetRuntime();
+			String profile = editor.getPreferences().getDefaultToolProfile(rt, diagramType);
 			if (getLabel().equals(profile))
 				return Activator.getDefault().getImageDescriptor(IConstants.ICON_CHECKBOX_CHECKED_16);
 			return Activator.getDefault().getImageDescriptor(IConstants.ICON_CHECKBOX_UNCHECKED_16);
@@ -182,67 +183,61 @@ public class BPMNToolBehaviorProvider extends DefaultToolBehaviorProvider implem
 	@Override
 	public IPaletteCompartmentEntry[] getPalette() {
 
-		BPMN2Editor editor = (BPMN2Editor)getDiagramTypeProvider().getDiagramEditor();
-		Diagram diagram = getDiagramTypeProvider().getDiagram();
-		EObject object = Graphiti.getLinkService().getBusinessObjectForLinkedPictogramElement(diagram);
-		
-		palette = new ArrayList<IPaletteCompartmentEntry>();
+		editor = (BPMN2Editor)getDiagramTypeProvider().getDiagramEditor();
+		targetRuntime = editor.getTargetRuntime();
+		modelEnablements = editor.getModelEnablements();
+		featureProvider = (BPMNFeatureProvider)getFeatureProvider();
 
-		if (object!=null) {
-			Bpmn2DiagramType diagramType = ModelUtil.getDiagramType(object);
-			String profile = editor.getPreferences().getDefaultToolProfile(diagramType);
-			TargetRuntime rt = editor.getTargetRuntime();
-			modelEnablements = editor.getModelEnablements();
-			featureProvider = (BPMNFeatureProvider)getFeatureProvider();
-			modelDescriptor = rt.getModelDescriptor();
-			
-			PaletteCompartmentEntry compartmentEntry = null;
-			categories.clear();
-			ToolPaletteDescriptor toolPaletteDescriptor = rt.getToolPalette(diagramType, profile);
-			if (toolPaletteDescriptor!=null) {
-				for (CategoryDescriptor category : toolPaletteDescriptor.getCategories()) {
-					if (DEFAULT_PALETTE_ID.equals(category.getId())) {
-						createDefaultpalette();
-						continue;
-					}
-					
-					category = getRealCategory(rt, category);
-					compartmentEntry = categories.get(category.getName());
-					for (ToolDescriptor tool : category.getTools()) {
-						tool = getRealTool(rt, tool);
-						IFeature feature = getCreateFeature(tool);
-						if (feature!=null) {
-							if (compartmentEntry==null) {
-								compartmentEntry = new PaletteCompartmentEntry(category.getName(), category.getIcon());
-								compartmentEntry.setInitiallyOpen(false);
-								categories.put(category.getName(), compartmentEntry);
-							}
-							createEntry(feature, compartmentEntry);
-						}
-					}
-					// if there are no tools defined for this category, check if it will be
-					// used for only Custom Tasks. If so, create the category anyway.
-					if (compartmentEntry==null) {
-						for (CustomTaskDescriptor tc : rt.getCustomTasks()) {
-							if (category.getName().equals(tc.getCategory())) {
-								compartmentEntry = new PaletteCompartmentEntry(category.getName(), category.getIcon());
-								compartmentEntry.setInitiallyOpen(false);
-								categories.put(category.getName(), compartmentEntry);
-								palette.add(compartmentEntry);
-								break;
-							}
-						}
-					}
-					else if (compartmentEntry.getToolEntries().size()>0)
-						palette.add(compartmentEntry);
+		palette = new ArrayList<IPaletteCompartmentEntry>();
+		Bpmn2DiagramType diagramType = ModelUtil.getDiagramType(editor.getBpmnDiagram());
+		String profile = editor.getPreferences().getDefaultToolProfile(targetRuntime, diagramType);
+		
+		PaletteCompartmentEntry compartmentEntry = null;
+		categories.clear();
+		ToolPaletteDescriptor toolPaletteDescriptor = targetRuntime.getToolPalette(diagramType, profile);
+		if (toolPaletteDescriptor!=null) {
+			for (CategoryDescriptor category : toolPaletteDescriptor.getCategories()) {
+				if (ToolPaletteDescriptor.DEFAULT_PALETTE_ID.equals(category.getId())) {
+					createDefaultpalette();
+					continue;
 				}
-				createCustomTasks(palette);
+				
+				category = getRealCategory(targetRuntime, category);
+				compartmentEntry = categories.get(category.getName());
+				for (ToolDescriptor tool : category.getTools()) {
+					tool = getRealTool(targetRuntime, tool);
+					IFeature feature = getCreateFeature(tool);
+					if (feature!=null) {
+						if (compartmentEntry==null) {
+							compartmentEntry = new PaletteCompartmentEntry(category.getName(), category.getIcon());
+							compartmentEntry.setInitiallyOpen(false);
+							categories.put(category.getName(), compartmentEntry);
+						}
+						createEntry(feature, compartmentEntry);
+					}
+				}
+				// if there are no tools defined for this category, check if it will be
+				// used for only Custom Tasks. If so, create the category anyway.
+				if (compartmentEntry==null) {
+					for (CustomTaskDescriptor tc : targetRuntime.getCustomTasks()) {
+						if (category.getName().equals(tc.getCategory())) {
+							compartmentEntry = new PaletteCompartmentEntry(category.getName(), category.getIcon());
+							compartmentEntry.setInitiallyOpen(false);
+							categories.put(category.getName(), compartmentEntry);
+							palette.add(compartmentEntry);
+							break;
+						}
+					}
+				}
+				else if (compartmentEntry.getToolEntries().size()>0)
+					palette.add(compartmentEntry);
 			}
-			else
-			{
-				// create a default toolpalette
-				createDefaultpalette();
-			}
+			createCustomTasks(palette);
+		}
+		else
+		{
+			// create a default toolpalette
+			createDefaultpalette();
 		}
 		
 		return palette.toArray(new IPaletteCompartmentEntry[palette.size()]);
@@ -346,7 +341,7 @@ public class BPMNToolBehaviorProvider extends DefaultToolBehaviorProvider implem
 	private IFeature getCreateFeature(ToolDescriptor tool, CompoundCreateFeature root, CompoundCreateFeaturePart node, ToolPart toolPart) {
 		IFeature parentFeature = null;
 		String name = toolPart.getName();
-		EClassifier eClass = modelDescriptor.getClassifier(name);
+		EClassifier eClass = targetRuntime.getModelDescriptor().getClassifier(name);
 		if (eClass!=null) {
 			parentFeature = featureProvider.getCreateFeatureForBusinessObject(eClass.getInstanceClass());
 		}

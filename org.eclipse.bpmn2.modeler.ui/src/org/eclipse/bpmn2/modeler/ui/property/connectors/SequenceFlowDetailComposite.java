@@ -106,7 +106,7 @@ public class SequenceFlowDetailComposite extends AbstractDetailComposite {
 			
 			if (exp != null) {
 				addRemoveConditionButton.setText(Messages.SequenceFlowDetailComposite_Remove_Button);
-				AbstractDetailComposite composite = PropertiesCompositeFactory.createDetailComposite(Expression.class, this, SWT.BORDER);
+				AbstractDetailComposite composite = PropertiesCompositeFactory.INSTANCE.createDetailComposite(Expression.class, this, SWT.BORDER);
 				composite.setBusinessObject(exp);
 				// force the property page to resize to adjust for new expression section
 				Point size = composite.computeSize(-1, -1);

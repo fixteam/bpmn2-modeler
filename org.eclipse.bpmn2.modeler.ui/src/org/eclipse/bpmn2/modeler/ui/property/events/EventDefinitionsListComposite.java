@@ -428,7 +428,7 @@ public class EventDefinitionsListComposite extends DefaultListComposite {
 		return new Tuple(element,association);
 	}
 
-	public AbstractDetailComposite createDetailComposite(Composite parent, Class eClass) {
+	public AbstractDetailComposite createDetailComposite(Class eClass, Composite parent, int style) {
 		return new EventDefinitionsDetailComposite(parent, (Event)getBusinessObject());
 	}
 	

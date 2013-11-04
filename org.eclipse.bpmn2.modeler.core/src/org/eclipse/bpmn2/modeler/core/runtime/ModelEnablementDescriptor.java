@@ -59,7 +59,7 @@ public class ModelEnablementDescriptor extends BaseRuntimeDescriptor {
 	
 	public ModelEnablementDescriptor(TargetRuntime rt) {
 		super(rt);
-		modelEnablements = new ModelEnablements(rt);
+		modelEnablements = new ModelEnablements(rt, null, null);
 //		modelEnablements.setEnabledAll(true);
 	}
 

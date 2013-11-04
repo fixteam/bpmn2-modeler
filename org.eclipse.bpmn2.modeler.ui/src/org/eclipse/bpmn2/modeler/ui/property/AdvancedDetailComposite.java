@@ -214,7 +214,7 @@ public class AdvancedDetailComposite extends AbstractDetailComposite {
 				detailsDetailComposite = new DefaultDetailComposite(detailsComposite,SWT.NONE);
 			}
 			else {
-				detailsDetailComposite = PropertiesCompositeFactory.createDetailComposite(obj.getClass(), detailsComposite, SWT.NONE);
+				detailsDetailComposite = PropertiesCompositeFactory.INSTANCE.createDetailComposite(obj.getClass(), detailsComposite, SWT.NONE);
 			}
 			detailsDetailComposite.setLayoutData(new GridData(SWT.FILL,SWT.TOP,true,false,3,1));
 

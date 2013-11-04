@@ -148,7 +148,7 @@ public class JbpmActivityDetailComposite extends ActivityDetailComposite {
 		}
 
 		@Override
-		public AbstractDetailComposite createDetailComposite(final Composite parent, Class eClass) {
+		public AbstractDetailComposite createDetailComposite(Class eClass, final Composite parent, int style) {
 			return new JbpmScriptTaskDetailComposite(parent, SWT.NONE) {
 				@Override
 				public Composite getAttributesParent() {

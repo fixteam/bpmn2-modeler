@@ -172,7 +172,7 @@ public class DefinitionsPropertyComposite extends DefaultDetailComposite  {
 		}
 
 		@Override
-		public AbstractDetailComposite createDetailComposite(final Composite parent, Class eClass) {
+		public AbstractDetailComposite createDetailComposite(Class eClass, final Composite parent, int style) {
 			detailSection.setText(Messages.DefinitionsPropertyComposite_Namespace_Details_Title);
 			AbstractDetailComposite composite = new DefaultDetailComposite(parent, SWT.NONE) {
 				

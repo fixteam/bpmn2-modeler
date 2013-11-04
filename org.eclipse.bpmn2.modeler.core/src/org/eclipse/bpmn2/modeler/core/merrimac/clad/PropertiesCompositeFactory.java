@@ -41,11 +41,13 @@ import org.eclipse.swt.widgets.Display;
  *
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class PropertiesCompositeFactory {
+public class PropertiesCompositeFactory implements IPropertiesCompositeFactory {
 
 	protected final static Hashtable<TargetRuntime, Hashtable<Class,Class>> detailRegistry = new Hashtable<TargetRuntime,Hashtable<Class,Class>>();
 	protected final static Hashtable<TargetRuntime, Hashtable<Class,Class>> listRegistry = new Hashtable<TargetRuntime,Hashtable<Class,Class>>();
 	protected final static Hashtable<TargetRuntime, Hashtable<Class,Class>> dialogRegistry = new Hashtable<TargetRuntime,Hashtable<Class,Class>>();
+	
+	public static IPropertiesCompositeFactory INSTANCE = new PropertiesCompositeFactory();
 	
 	public static void register(Class eClass, Class composite) {
 		TargetRuntime rt = TargetRuntime.getCurrentRuntime();
@@ -112,12 +114,12 @@ public class PropertiesCompositeFactory {
 		return composite;
 	}
 
-	public static AbstractDetailComposite createDetailComposite(Class eClass, AbstractBpmn2PropertySection section) {
+	public AbstractDetailComposite createDetailComposite(Class eClass, AbstractBpmn2PropertySection section) {
 		Class clazz = findDetailCompositeClass(eClass);
 		return (AbstractDetailComposite)createComposite(clazz, eClass, section);
 	}
 	
-	public static AbstractDetailComposite createDetailComposite(Class eClass, Composite parent, int style) {
+	public AbstractDetailComposite createDetailComposite(Class eClass, Composite parent, int style) {
 		Class clazz = findDetailCompositeClass(eClass);
 		return (AbstractDetailComposite)createComposite(clazz, eClass, parent, style);
 	}
@@ -136,12 +138,12 @@ public class PropertiesCompositeFactory {
 		return composite;
 	}
 
-	public static AbstractListComposite createListComposite(Class eClass, AbstractBpmn2PropertySection section) {
+	public AbstractListComposite createListComposite(Class eClass, AbstractBpmn2PropertySection section) {
 		Class clazz = findListCompositeClass(eClass);
 		return (AbstractListComposite)createComposite(clazz, eClass, section);
 	}
 	
-	public static AbstractListComposite createListComposite(Class eClass, Composite parent, int style) {
+	public AbstractListComposite createListComposite(Class eClass, Composite parent, int style) {
 		Class clazz = findListCompositeClass(eClass);
 		return (AbstractListComposite)createComposite(clazz, eClass, parent, style);
 	}
@@ -160,7 +162,7 @@ public class PropertiesCompositeFactory {
 		return composite;
 	}
 	
-	public static AbstractDialogComposite createDialogComposite(EClass eClass, Composite parent, int style) {
+	public AbstractDialogComposite createDialogComposite(EClass eClass, Composite parent, int style) {
 		Class clazz = findDialogCompositeClass(eClass.getInstanceClass());
 		Composite composite = null;
 		for (int i=0; i<2 && composite==null; ++i) {

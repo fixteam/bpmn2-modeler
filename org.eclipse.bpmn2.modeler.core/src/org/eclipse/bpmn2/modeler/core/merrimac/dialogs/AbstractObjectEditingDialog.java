@@ -14,6 +14,8 @@
 package org.eclipse.bpmn2.modeler.core.merrimac.dialogs;
 
 import org.eclipse.bpmn2.modeler.core.Activator;
+import org.eclipse.bpmn2.modeler.core.merrimac.clad.IPropertiesCompositeFactory;
+import org.eclipse.bpmn2.modeler.core.merrimac.clad.PropertiesCompositeFactory;
 import org.eclipse.bpmn2.modeler.core.validation.LiveValidationListener;
 import org.eclipse.bpmn2.modeler.core.validation.ValidationErrorHandler;
 import org.eclipse.core.runtime.IStatus;
@@ -57,6 +59,7 @@ public abstract class AbstractObjectEditingDialog extends FormDialog implements 
 	protected Transaction transaction;
 	protected Composite dialogContent;
     private Text errorMessageText;
+    private IPropertiesCompositeFactory compositeFactory = null;
     
 	public AbstractObjectEditingDialog(DiagramEditor editor, EObject object) {
 		super(editor.getEditorSite().getShell());
@@ -68,6 +71,10 @@ public abstract class AbstractObjectEditingDialog extends FormDialog implements 
 		this.object = object;
 	}
 
+	public void setCompositeFactory(IPropertiesCompositeFactory compositeFactory) {
+		this.compositeFactory = compositeFactory;
+	}
+	
 	@Override
 	protected void createFormContent(IManagedForm mform) {
 		super.createFormContent(mform); 
@@ -88,6 +95,8 @@ public abstract class AbstractObjectEditingDialog extends FormDialog implements 
 		body.setLayout(new FormLayout());
 		
 		dialogContent = createDialogContent(body);
+		if (compositeFactory!=null)
+			dialogContent.setData("factory", compositeFactory);
 		
 		data = new FormData();
 		data.top = new FormAttachment(0, 0);
@@ -96,6 +105,15 @@ public abstract class AbstractObjectEditingDialog extends FormDialog implements 
 		data.right = new FormAttachment(100, 0);
 		dialogContent.setLayoutData(data);
 		
+		// The AbstractDetailComposite controls don't actually get constructed until
+		// setBusinessObject() is called - the business object determines which controls
+		// are required.
+		// We can now safely set the background color of all controls to match the dialog.
+		dialogContent.setBackground(form.getBackground());
+		for (Control k : dialogContent.getChildren()) {
+			k.setBackground(form.getBackground());
+		}
+
 		form.setContent(body);
 		getShell().pack();
 	}

@@ -768,7 +768,7 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 					InsertionAdapter.add(association, PACKAGE.getDataAssociation_Transformation(), transformation);
 				}
 				if (transformationDetailsComposite==null) {
-					transformationDetailsComposite = PropertiesCompositeFactory.createDetailComposite(
+					transformationDetailsComposite = PropertiesCompositeFactory.INSTANCE.createDetailComposite(
 							Expression.class, transformationComposite, SWT.NONE);
 				}
 				transformationDetailsComposite.setBusinessObject(transformation);
@@ -840,7 +840,7 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 				}
 	
 				if (expressionDetailsComposite==null) {
-					expressionDetailsComposite = PropertiesCompositeFactory.createDetailComposite(
+					expressionDetailsComposite = PropertiesCompositeFactory.INSTANCE.createDetailComposite(
 							Expression.class, expressionComposite, SWT.NONE);
 				}
 				expressionDetailsComposite.setBusinessObject(expression);//association.getexpression());
@@ -888,7 +888,7 @@ public class DataAssociationDetailComposite extends ItemAwareElementDetailCompos
 				}
 	
 				if (transformationDetailsComposite==null) {
-					transformationDetailsComposite = PropertiesCompositeFactory.createDetailComposite(
+					transformationDetailsComposite = PropertiesCompositeFactory.INSTANCE.createDetailComposite(
 							Expression.class, transformationComposite, SWT.NONE);
 				}
 				transformationDetailsComposite.setBusinessObject(transformation);//association.getTransformation());

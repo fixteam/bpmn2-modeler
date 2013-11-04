@@ -134,7 +134,7 @@ public class IoSetsListComposite extends DefaultListComposite {
 		}
 	}
 	
-	public AbstractDetailComposite createDetailComposite(Composite parent, Class eClass) {
+	public AbstractDetailComposite createDetailComposite(Class eClass, Composite parent, int style) {
 		AbstractDetailComposite composite = new IoSetsDetailComposite(parent, SWT.NONE);
 		return composite;
 	}

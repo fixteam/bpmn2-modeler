@@ -79,6 +79,7 @@ import org.eclipse.swt.widgets.Display;
 public abstract class AbstractAppendNodeFeature<T extends FlowNode> extends AbstractCustomFeature {
 	
 	protected boolean changesDone = false;
+	protected Bpmn2Preferences preferences;
 	
 	// label provider for the popup menu that displays allowable Activity subclasses
 	private static ILabelProvider labelProvider = new ILabelProvider() {
@@ -155,6 +156,7 @@ public abstract class AbstractAppendNodeFeature<T extends FlowNode> extends Abst
 		if (pes != null && pes.length == 1) {
 			PictogramElement pe = pes[0];
 			Object bo = getBusinessObjectForPictogramElement(pe);
+			preferences = Bpmn2Preferences.getInstance((EObject)bo);
 			if (pe instanceof ContainerShape && bo instanceof FlowNode) {
 				ContainerShape oldShape = (ContainerShape)pe;
 				
@@ -283,7 +285,7 @@ public abstract class AbstractAppendNodeFeature<T extends FlowNode> extends Abst
 	
 	protected ContainerShape createNewShape(ContainerShape oldShape, ICreateFeature createFeature, CreateContext createContext) {
 		ILayoutService layoutService = Graphiti.getLayoutService();
-		boolean horz = Bpmn2Preferences.getInstance().isHorizontalDefault();
+		boolean horz = preferences.isHorizontalDefault();
 
 		ILocation loc = layoutService.getLocationRelativeToDiagram(oldShape);
 		int x = loc.getX();

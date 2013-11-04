@@ -227,7 +227,7 @@ public class DefaultDetailComposite extends AbstractDetailComposite {
 					expression = createModelObject(FormalExpression.class);
 					InsertionAdapter.add(object, reference, expression);
 				}
-				AbstractDetailComposite composite = PropertiesCompositeFactory.createDetailComposite(Expression.class, getAttributesParent(), SWT.BORDER);
+				AbstractDetailComposite composite = PropertiesCompositeFactory.INSTANCE.createDetailComposite(Expression.class, getAttributesParent(), SWT.BORDER);
 				composite.setBusinessObject(expression);
 				composite.setTitle(displayName);
 			}

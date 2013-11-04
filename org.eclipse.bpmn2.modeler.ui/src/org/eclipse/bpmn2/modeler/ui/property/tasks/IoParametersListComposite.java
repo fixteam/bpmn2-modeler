@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.eclipse.bpmn2.Activity;
 import org.eclipse.bpmn2.CallableElement;
+import org.eclipse.bpmn2.DataAssociation;
 import org.eclipse.bpmn2.DataInput;
 import org.eclipse.bpmn2.DataInputAssociation;
 import org.eclipse.bpmn2.DataOutput;
@@ -22,16 +23,25 @@ import org.eclipse.bpmn2.DataOutputAssociation;
 import org.eclipse.bpmn2.InputOutputSpecification;
 import org.eclipse.bpmn2.InputSet;
 import org.eclipse.bpmn2.OutputSet;
+import org.eclipse.bpmn2.di.BPMNEdge;
 import org.eclipse.bpmn2.modeler.core.adapters.InsertionAdapter;
+import org.eclipse.bpmn2.modeler.core.di.DIUtils;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultListComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.ListCompositeColumnProvider;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.TableColumn;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
+import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
+import org.eclipse.dd.di.Diagram;
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.graphiti.mm.pictograms.Connection;
+import org.eclipse.graphiti.mm.pictograms.PictogramElement;
+import org.eclipse.graphiti.services.Graphiti;
 
 public class IoParametersListComposite extends DefaultListComposite {
 
@@ -150,23 +160,46 @@ public class IoParametersListComposite extends DefaultListComposite {
 		if (activity!=null) {
 			// this is an Activity
 			// remove Input or Output DataAssociations
+			List<DataAssociation> dataAssociationsRemoved = new ArrayList<DataAssociation>();
+			List<BPMNEdge> edgesRemoved = new ArrayList<BPMNEdge>();
+			
 			if (item instanceof DataInput) {
 				List<DataInputAssociation> dataInputAssociations = activity.getDataInputAssociations();
-				List<DataInputAssociation> removed = new ArrayList<DataInputAssociation>();
-				for (DataInputAssociation dia : dataInputAssociations) {
-					if (dia.getTargetRef()!=null && dia.getTargetRef().equals(item))
-						removed.add(dia);
+				for (DataInputAssociation da : dataInputAssociations) {
+					if (da.getTargetRef()!=null && da.getTargetRef().equals(item)) {
+						dataAssociationsRemoved.add(da);
+						BPMNEdge edge = DIUtils.findBPMNEdge(da);
+						if (edge!=null) {
+							edgesRemoved.add(edge);
+						}
+					}
 				}
-				dataInputAssociations.removeAll(removed);
+				dataInputAssociations.removeAll(dataAssociationsRemoved);
 			}
 			else if (item instanceof DataOutput) {
 				List<DataOutputAssociation> dataOutputAssociations = activity.getDataOutputAssociations();
-				List<DataOutputAssociation> removed = new ArrayList<DataOutputAssociation>();
-				for (DataOutputAssociation doa : dataOutputAssociations) {
-					if (doa.getSourceRef()!=null && doa.getSourceRef().contains(item))
-						removed.add(doa);
+				for (DataOutputAssociation da : dataOutputAssociations) {
+					if (da.getSourceRef()!=null && da.getSourceRef().contains(item)) {
+						dataAssociationsRemoved.add(da);
+						BPMNEdge edge = DIUtils.findBPMNEdge(da);
+						if (edge!=null) {
+							edgesRemoved.add(edge);
+						}
+					}
 				}
-				dataOutputAssociations.removeAll(removed);
+				dataOutputAssociations.removeAll(dataAssociationsRemoved);
+			}
+
+			// If the Data Association has a BPMNEdge and Connection line
+			// associated with it, remove that too.
+			for (BPMNEdge edge : edgesRemoved) {
+				org.eclipse.graphiti.mm.pictograms.Diagram diagram = getDiagramEditor().getDiagramTypeProvider().getDiagram();
+				for (Object pe : Graphiti.getPeService().getLinkedPictogramElements(new EObject[] {edge}, diagram)) {
+					if (pe instanceof Connection) {
+						Graphiti.getPeService().deletePictogramElement((Connection)pe);
+					}
+				}
+				EcoreUtil.delete(edge);
 			}
 		}
 		else if (element!=null) {

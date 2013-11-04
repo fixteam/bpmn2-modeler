@@ -35,7 +35,7 @@ public class ObjectEditingDialog extends AbstractObjectEditingDialog {
 		super(editor, object);
 		this.featureEType = eclass;
 	}
-	
+
 	public void setFeatureEType(EClass eclass) {
 		this.featureEType = eclass;
 	}
@@ -45,7 +45,7 @@ public class ObjectEditingDialog extends AbstractObjectEditingDialog {
 	}
 	
 	protected Composite createDialogContent(Composite parent) {
-		Composite content = PropertiesCompositeFactory.createDialogComposite(
+		Composite content = PropertiesCompositeFactory.INSTANCE.createDialogComposite(
 				featureEType, parent, SWT.NONE);
 		return content;
 	}

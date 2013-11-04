@@ -340,7 +340,7 @@ public class BPMN2DiagramWizardPage2 extends WizardPage {
 			return false;
 		}
 		URI uri = URI.createURI(targetNamespace);
-		if (!(uri.hasAuthority() &&uri.hasAbsolutePath())) {
+		if (!(uri.hasAuthority() && uri.scheme()!=null)) {
 			setErrorMessage(Messages.BPMN2DiagramWizardPage2_Error_Invalid_TargetNamespace);
 			return false;
 		}

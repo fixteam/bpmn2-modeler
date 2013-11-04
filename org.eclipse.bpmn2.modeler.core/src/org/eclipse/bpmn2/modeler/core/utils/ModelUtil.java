@@ -984,18 +984,27 @@ public class ModelUtil {
 		return false;
 	}
 	
+	/**
+	 * Given an EObject always returns the BPMN2 Resource that is associated with that object.
+	 * This may involve searching for all Resources in the ResourceSet that the EObject belongs to.
+	 * This also searches for a Resource in the object's InsertionAdapter if the object is not yet
+	 * contained in any Resource.
+	 * 
+	 * @param object
+	 * @return
+	 */
 	public static Resource getResource(EObject object) {
 		Resource resource = null;
-		if (object instanceof Shape) {
-			ResourceSet rs = object.eResource().getResourceSet();
-			for (Resource r : rs.getResources()) {
-				if (r instanceof Bpmn2Resource) {
-					return r;
+		if (object!=null) {
+			resource = object.eResource();
+			if (resource!=null) {
+				ResourceSet rs = resource.getResourceSet();
+				for (Resource r : rs.getResources()) {
+					if (r instanceof Bpmn2Resource) {
+						return r;
+					}
 				}
 			}
-		}
-		else  if (object!=null) {
-			resource = object.eResource();
 			if (resource==null) {
 				InsertionAdapter insertionAdapter = AdapterUtil.adapt(object, InsertionAdapter.class);
 				if (insertionAdapter!=null)
@@ -1031,7 +1040,7 @@ public class ModelUtil {
 	}
 	
 	public static Definitions getDefinitions(Resource resource) {
-		if (resource!=null) {
+		if (resource!=null && !resource.getContents().isEmpty() && !resource.getContents().get(0).eContents().isEmpty()) {
 			Object defs = resource.getContents().get(0).eContents().get(0);
 			if (defs instanceof Definitions)
 				return (Definitions)defs;
@@ -1331,10 +1340,6 @@ public class ModelUtil {
 		if (feature==null)
 			return null;
 		
-		ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object, feature);
-		if (adapter!=null)
-			return adapter.getFeatureDescriptor(feature).getChoiceOfValues(object);
-		
 		if (feature.getEType() instanceof EEnum) {
 			EEnum en = (EEnum)feature.getEType();
 			Hashtable<String,Object> choices = new Hashtable<String,Object>();
@@ -1343,6 +1348,10 @@ public class ModelUtil {
 			}
 			return choices;
 		}
+		
+		ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object, feature);
+		if (adapter!=null)
+			return adapter.getFeatureDescriptor(feature).getChoiceOfValues(object);
 		return null;
 	}
 
@@ -1592,6 +1601,12 @@ public class ModelUtil {
 
 	public static DiagramEditor getEditor(EObject object) {
 		Resource resource = InsertionAdapter.getResource(object);
+		if(resource!=null)
+			return getEditor(resource.getResourceSet());
+		return null;
+	}
+
+	public static DiagramEditor getEditor(Resource resource) {
 		if(resource!=null)
 			return getEditor(resource.getResourceSet());
 		return null;

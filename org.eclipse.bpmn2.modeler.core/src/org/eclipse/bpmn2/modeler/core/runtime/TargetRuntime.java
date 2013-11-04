@@ -419,61 +419,6 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 		return targetRuntimes;
 	}
 	
-	/**
-	 * Reload the <modelEnablement> elements from the plugin configurations.
-	 * 
-	 * @param modelEnablements - the possibly modified list of model enablements which is only used to
-	 * identify the runtimeId, type and profile of the configuration element to search for.
-	 * 
-	 * @return a new ModelEnablementDescriptor with the original enablement settings.
-	 */
-	public static ModelEnablementDescriptor reloadModelEnablements(ModelEnablementDescriptor modelEnablements) {
-		IConfigurationElement[] config = Platform.getExtensionRegistry().getConfigurationElementsFor(
-				RUNTIME_EXTENSION_ID);
-
-		String runtimeId = modelEnablements.getRuntime().getId();
-		Bpmn2DiagramType type = modelEnablements.getDiagramType();
-		String profile = modelEnablements.getProfile();
-		ModelEnablementDescriptor me = null;
-		try {
-			for (IConfigurationElement e : config) {
-				if (e.getName().equals("modelEnablement")) { //$NON-NLS-1$
-					String t = e.getAttribute("type"); //$NON-NLS-1$
-					String p = e.getAttribute("profile"); //$NON-NLS-1$
-					String id = e.getAttribute("runtimeId"); //$NON-NLS-1$
-					if (runtimeId.equals(id) && type.equals(t) && profile.equals(p)) {
-						TargetRuntime rt = getRuntime(id);
-						me = new ModelEnablementDescriptor(rt);
-						me.setDiagramType(Bpmn2DiagramType.fromString(t));
-						me.setProfile(p);
-						String ref = e.getAttribute("ref"); //$NON-NLS-1$
-						if (ref!=null) {
-							String a[] = ref.split(":");
-							rt = TargetRuntime.getRuntime(a[0]);
-							t = a[1];
-							p = a[2];
-							me.initializeFromTargetRuntime(rt, Bpmn2DiagramType.fromString(t), p);
-						}
-						
-						for (IConfigurationElement c : e.getChildren()) {
-							String object = c.getAttribute("object"); //$NON-NLS-1$
-							String feature = c.getAttribute("feature"); //$NON-NLS-1$
-							if (c.getName().equals("enable")) { //$NON-NLS-1$
-								me.setEnabled(object, feature, true);
-							} else if (c.getName().equals("disable")) { //$NON-NLS-1$
-								me.setEnabled(object, feature, false);
-							}
-						}
-						break;
-					}
-				}
-			}
-		} catch (Exception ex) {
-			Activator.logError(ex);
-		}
-		return me;
-	}
-	
 	private static Object getModelExtensionProperties(ModelExtensionDescriptor ct, IConfigurationElement e) {
 		
 		String elem = e.getName();
@@ -659,14 +604,22 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 		return modelEnablements;
 	}
 	
+	/**
+	 * @param object
+	 * @return
+	 * @deprecated
+	 */
 	public ModelEnablementDescriptor getModelEnablements(EObject object)
 	{
 		// TODO: At some point the separation of "Core" and "UI" plugins is going to become
 		// an unmanageable problem: I am having to resort to using DiagramEditor.getAdapter()
 		// more and more just to get things done.
 		// Think about either reorganizing these two plugins, or simply combining them...
+		TargetRuntime rt = this;
 		DiagramEditor diagramEditor = ModelUtil.getEditor(object);
-		TargetRuntime rt = (TargetRuntime) diagramEditor.getAdapter(TargetRuntime.class);
+		if (diagramEditor!=null) {
+			rt = (TargetRuntime) diagramEditor.getAdapter(TargetRuntime.class);
+		}
 		ArrayList<ModelEnablementDescriptor> meds = rt.getModelEnablements();
 		if (meds.size()>0)
 			return meds.get(0);
@@ -884,6 +837,10 @@ public class TargetRuntime extends AbstractPropertyChangeListenerProvider {
 	    		}
 			}
 		}
+	}
+	
+	public Bpmn2Resource getResource() {
+		return bpmnResource;
 	}
 	
 	protected void setProblemMarkerId(String id) {

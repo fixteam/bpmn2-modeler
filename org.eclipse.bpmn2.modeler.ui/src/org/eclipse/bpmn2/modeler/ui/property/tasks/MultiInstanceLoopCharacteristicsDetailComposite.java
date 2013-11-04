@@ -600,7 +600,7 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 			if (isModelObjectEnabled(lc.eClass(), reference)) {
 				// use a FormalExpression detail composite here
 				if (completionConditionEditor==null) {
-					completionConditionEditor = PropertiesCompositeFactory.createDetailComposite(
+					completionConditionEditor = PropertiesCompositeFactory.INSTANCE.createDetailComposite(
 							Expression.class, completionConditionWidgets, SWT.BORDER);
 					((DefaultDetailComposite)completionConditionEditor).setPropertiesProvider( new AbstractPropertiesProvider(getBO()) {
 						String[] properties = new String[] {
@@ -668,7 +668,7 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 			if (isModelObjectEnabled(lc.eClass(), reference)) {
 				// use a FormalExpression detail composite here
 				if (loopCardinalityEditor==null) {
-					loopCardinalityEditor = PropertiesCompositeFactory.createDetailComposite(
+					loopCardinalityEditor = PropertiesCompositeFactory.INSTANCE.createDetailComposite(
 							Expression.class, loopCardinalityWidgets, SWT.BORDER);
 				}
 				

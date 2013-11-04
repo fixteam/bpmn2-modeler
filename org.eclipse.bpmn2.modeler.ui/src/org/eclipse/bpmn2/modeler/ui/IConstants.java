@@ -141,4 +141,8 @@ public interface IConstants {
 	public final String ICON_BUSINESS_MODEL = "20/BusinessModel.png"; //$NON-NLS-1$
 	public final String ICON_INTERCHANGE_MODEL = "20/InterchangeModel.png"; //$NON-NLS-1$
 	public final String ICON_THUMBNAIL = "20/Thumbnail.png"; //$NON-NLS-1$
+	
+	public final String ICON_DISABLED = "16/disabled.png"; //$NON-NLS-1$
+	public final String ICON_FOLDER = "16/folder.png"; //$NON-NLS-1$
+	public final String ICON_FOLDER_DISABLED = "16/folder_disabled.png"; //$NON-NLS-1$
 }

@@ -47,7 +47,7 @@ public class ShowPropertiesFeature extends AbstractCustomFeature {
 		PictogramElement[] pes = context.getPictogramElements();
 		EObject businessObject = BusinessObjectUtil.getBusinessObjectForPictogramElement(pes[0]);
 		if (pes.length==1) {
-			return Bpmn2Preferences.getInstance().hasPopupConfigDialog(businessObject);
+			return Bpmn2Preferences.getInstance(businessObject).hasPopupConfigDialog(businessObject);
 		}
 		return false;
 	}

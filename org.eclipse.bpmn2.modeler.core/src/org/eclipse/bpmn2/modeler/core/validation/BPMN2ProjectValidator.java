@@ -294,6 +294,5 @@ public class BPMN2ProjectValidator extends AbstractValidator {
 	
     protected void loadPreferences(IProject project) {
 		preferences = Bpmn2Preferences.getInstance(project);
-		preferences.load();
 	}
 }

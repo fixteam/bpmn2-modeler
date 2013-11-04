@@ -15,6 +15,7 @@ package org.eclipse.bpmn2.modeler.ui.preferences;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.preferences.ModelEnablementTreeEntry;
@@ -22,21 +23,33 @@ import org.eclipse.bpmn2.modeler.core.preferences.ModelEnablements;
 import org.eclipse.bpmn2.modeler.core.preferences.ToolProfilesPreferencesHelper;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelEnablementDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
+import org.eclipse.bpmn2.modeler.core.runtime.ToolPaletteDescriptor;
+import org.eclipse.bpmn2.modeler.core.runtime.ToolPaletteDescriptor.CategoryDescriptor;
+import org.eclipse.bpmn2.modeler.core.runtime.ToolPaletteDescriptor.ToolDescriptor;
+import org.eclipse.bpmn2.modeler.core.runtime.ToolPaletteDescriptor.ToolPart;
+import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil.Bpmn2DiagramType;
 import org.eclipse.bpmn2.modeler.ui.Activator;
+import org.eclipse.bpmn2.modeler.ui.FeatureMap;
+import org.eclipse.bpmn2.modeler.ui.IConstants;
+import org.eclipse.bpmn2.modeler.ui.editor.BPMN2Editor;
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.ICheckStateListener;
+import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ControlAdapter;
-import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -47,6 +60,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -71,11 +86,23 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 	private Button btnUseAsDefaultProfile;
 	private Button btnCreateProfile;
 	private Button btnDeleteProfile;
+	private TabFolder folder;
 	private Button btnShowIds;
 	private ModelEnablementTreeViewer bpmnTreeViewer;
 	private Tree bpmnTree;
 	private ModelEnablementTreeViewer extensionTreeViewer;
 	private Tree extensionTree;
+	private TreeViewer paletteTreeViewer;
+	private Tree paletteTree;
+	private Button btnAddDrawer;
+	private Button btnDeleteDrawer;
+	private Button btnAddTool;
+	private Button btnDeleteTool;
+	private Button btnEditTool;
+
+	private static ToolPaletteDescriptor defaultToolPalette = null;
+	
+
 
 	// a list of ToolProfilesPreferencesHelpers, one for each permutation of Target Runtime, Diagram Type
 	// and Tool Profiles defined in the Preferences. Helpers contain the Model Enablement list and are used
@@ -169,7 +196,10 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 		container.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false, 1, 1));
 
 		currentRuntime = TargetRuntime.getCurrentRuntime();
-		currentDiagramType = Bpmn2DiagramType.NONE;
+		if (BPMN2Editor.getActiveEditor()!=null)
+			currentDiagramType = ModelUtil.getDiagramType(BPMN2Editor.getActiveEditor().getBpmnDiagram());
+		else
+			currentDiagramType = Bpmn2DiagramType.PROCESS;
 		currentProfile = "";
 		
 		final Label lblRuntime = new Label(container, SWT.NONE);
@@ -185,6 +215,7 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 				currentRuntime = (TargetRuntime) cboRuntimes.getData(s);
 				fillProfilesCombo();
 				fillModelEnablementTrees();
+				fillPaletteTree();
 			}
 		});
 		fillRuntimesCombo();
@@ -202,6 +233,7 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 				currentDiagramType = (Bpmn2DiagramType) cboDiagramTypes.getData(s);
 				fillProfilesCombo();
 				fillModelEnablementTrees();
+				fillPaletteTree();
 			}
 		});
 		fillDiagramTypesCombo();
@@ -217,6 +249,7 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 			public void widgetSelected(SelectionEvent e) {
 				currentProfile = cboProfiles.getText();
 				fillModelEnablementTrees();
+				fillPaletteTree();
 			}
 		});
 		
@@ -264,6 +297,7 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 					currentProfile = dlg.getValue();
 					fillProfilesCombo();
 					fillModelEnablementTrees();
+					fillPaletteTree();
 				}
 			}
 		});
@@ -281,30 +315,58 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 					preferences.deleteToolProfile(currentRuntime, currentDiagramType, currentProfile);
 					fillProfilesCombo();
 					fillModelEnablementTrees();
+					fillPaletteTree();
 				}
 			}
 		});
 
 		fillProfilesCombo();
 		
-		btnShowIds = new Button(buttonContainer, SWT.CHECK);
+		// Create a Tab Folder for the Model Enablements Trees and the Tool Palette definition
+		folder = new TabFolder(container, SWT.NONE);
+		folder.setBackground(parent.getBackground());
+		GridLayout layout = new GridLayout(2, false);
+		layout.horizontalSpacing = 0;
+		layout.marginHeight = 0;
+		layout.marginWidth = 0;
+		layout.verticalSpacing = 0;
+		folder.setLayout(layout);
+		folder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1));
+		folder.addSelectionListener(new SelectionAdapter() {
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				super.widgetSelected(e);
+				fillPaletteTree();
+			}
+			
+		});
+
+		final TabItem elementsTab = new TabItem(folder, SWT.NONE);
+		elementsTab.setText("Enabled Model Elements and Attributes");
+		final TabItem paletteTab = new TabItem(folder, SWT.NONE);
+		paletteTab.setText("Tool Palette");
+
+		final Composite elementsContainer = new Composite(folder, SWT.NONE);
+		elementsContainer.setLayout(new GridLayout(2, false));
+		elementsContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1));
+		
+		btnShowIds = new Button(elementsContainer, SWT.CHECK);
 		btnShowIds.setText("Show ID attributes (Advanced Behavior)");
-		btnShowIds.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
+		btnShowIds.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
 		btnShowIds.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				ToolProfilesPreferencesHelper.setEnableIdAttribute(btnShowIds.getSelection());
 				getHelper(currentRuntime, currentDiagramType, currentProfile);
 				fillModelEnablementTrees();
+				fillPaletteTree();
 			}
 		});
 		btnShowIds.setSelection(preferences.getShowIdAttribute());
 		
-		final Composite treesContainer = new Composite(container, SWT.NONE);
-		treesContainer.setLayout(new GridLayout(2, false));
-		treesContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1));
-		
-		// Create Checkbox Tree Viwers for standard BPMN 2.0 elements and any extension elements
+		// Create Checkbox Tree Viewers for standard BPMN 2.0 elements and any extension elements
+		// this listener updates the helper's Model Enablements as changes are made in the Tree Viewers
 		ICheckStateListener checkStateListener = new ICheckStateListener() {
 			@Override
 			public void checkStateChanged(CheckStateChangedEvent event) {
@@ -318,29 +380,63 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 			}
 		};
 		
-		bpmnTreeViewer = new ModelEnablementTreeViewer(treesContainer, Messages.ToolProfilePreferencePage_Standard_Elements_Label);
+		bpmnTreeViewer = new ModelEnablementTreeViewer(elementsContainer, Messages.ToolProfilePreferencePage_Standard_Elements_Label);
 		bpmnTree = bpmnTreeViewer.getTree();
 		bpmnTreeViewer.addCheckStateListener(checkStateListener);
 
-		extensionTreeViewer = new ModelEnablementTreeViewer(treesContainer, Messages.ToolProfilePreferencePage_Extension_Elements_Label);
+		extensionTreeViewer = new ModelEnablementTreeViewer(elementsContainer, Messages.ToolProfilePreferencePage_Extension_Elements_Label);
 		extensionTree = extensionTreeViewer.getTree();
 		extensionTreeViewer.addCheckStateListener(checkStateListener);
 
-		// adjust height of the tree viewers to fill their container when dialog is resized
-		// oddly enough, setting GridData.widthHint still causes the controls to fill available
-		// horizontal space, but setting heightHint just keeps them the same height. Probably
-		// because a GridLayout has a fixed number of columns, but variable number of rows.
-		parent.addControlListener(new ControlAdapter() {
-			@Override
-			public void controlResized(ControlEvent e) {
-				GridData gd = (GridData) bpmnTree.getLayoutData();
-				gd.heightHint = 1000;
-				gd = (GridData) extensionTree.getLayoutData();
-				gd.heightHint = 1000;
-				treesContainer.layout();
-			}
-		});
+		// Create a Tree control for Tool Palette definition widgets
+		final Composite paletteContainer = new Composite(folder, SWT.NONE);
+		paletteContainer.setLayout(new GridLayout(2, false));
+		paletteContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1));
 
+		paletteTreeViewer = new TreeViewer(paletteContainer, SWT.BORDER);
+		paletteTree = paletteTreeViewer.getTree();
+		paletteTree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		final Composite paletteButtonsContainer = new Composite(paletteContainer, SWT.NONE);
+		paletteButtonsContainer.setLayout(new GridLayout(1, false));
+		GridData data = new GridData(SWT.RIGHT, SWT.TOP, false, false, 1, 1);
+		data.exclude = true;
+		paletteButtonsContainer.setLayoutData(data);
+		paletteButtonsContainer.setVisible(false);
+		
+		btnAddDrawer = new Button(paletteButtonsContainer, SWT.PUSH);
+		btnAddDrawer.setText("Add Drawer");
+		btnAddDrawer.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 1, 1));
+		btnAddDrawer.setEnabled(false);
+		
+		btnDeleteDrawer = new Button(paletteButtonsContainer, SWT.PUSH);
+		btnDeleteDrawer.setText("Delete Drawer");
+		btnDeleteDrawer.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 1, 1));
+		btnDeleteDrawer.setEnabled(false);
+		
+		btnAddTool = new Button(paletteButtonsContainer, SWT.PUSH);
+		btnAddTool.setText("Add Tool");
+		btnAddTool.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 1, 1));
+		btnAddTool.setEnabled(false);
+		
+		btnDeleteTool = new Button(paletteButtonsContainer, SWT.PUSH);
+		btnDeleteTool.setText("Delete Tool");
+		btnDeleteTool.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 1, 1));
+		btnDeleteTool.setEnabled(false);
+		
+		btnEditTool = new Button(paletteButtonsContainer, SWT.PUSH);
+		btnEditTool.setText("Edit Tool");
+		btnEditTool.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 1, 1));
+		btnEditTool.setEnabled(false);
+		
+		
+		// define the Tabs
+		elementsTab.setControl(elementsContainer);
+		elementsContainer.setBackground(parent.getBackground());
+		paletteTab.setControl(paletteContainer);
+		paletteContainer.setBackground(parent.getBackground());
+		
+		// Create the Import/Export buttons below the Tab Folder
 		Composite importExportButtons = new Composite(container, SWT.NONE);
 		importExportButtons.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 4, 1));
 		importExportButtons.setLayout(new FillLayout());
@@ -357,6 +453,7 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 						extensionEntries.clear();
 						getHelper(currentRuntime, currentDiagramType, currentProfile).importProfile(path);
 						fillModelEnablementTrees();
+						fillPaletteTree();
 					} catch (Exception e1) {
 						Activator.showErrorWithLogging(e1);
 					}
@@ -383,6 +480,7 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 		btnExportProfile.setText(Messages.ToolProfilePreferencePage_Export);
 
 		fillModelEnablementTrees();
+		fillPaletteTree();
 		
 		bpmnTree.setEnabled(true);
 		extensionTree.setEnabled(true);
@@ -403,8 +501,6 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 	
 	private void fillDiagramTypesCombo() {
 		int i = 0;
-		currentDiagramType = Bpmn2DiagramType.PROCESS;
-
 		for (Bpmn2DiagramType t : Bpmn2DiagramType.values()) {
 			cboDiagramTypes.add(t.toString());
 			cboDiagramTypes.setData(t.toString(), t);
@@ -449,6 +545,214 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 		}
 	}
 	
+	private boolean isEnabled(ToolDescriptor td) {
+		ToolProfilesPreferencesHelper helper = getHelper(currentRuntime, currentDiagramType, currentProfile);
+		for (ToolPart tp : td.getToolParts()) {
+			if (!isEnabled(helper, tp))
+				return false;
+		}
+		return true;
+	}
+	
+	private boolean isEnabled(ToolPart tp) {
+		ToolProfilesPreferencesHelper helper = getHelper(currentRuntime, currentDiagramType, currentProfile);
+		return isEnabled(helper,tp);
+	}
+	
+	private boolean isEnabled(ToolProfilesPreferencesHelper helper, ToolPart tp) {
+		String name = tp.getName();
+		if (name!=null && !name.isEmpty()) {
+			if (!helper.isEnabled(name))
+				return false;
+		}
+		for (ToolPart child : tp.getChildren()) {
+			if (!isEnabled(helper,child))
+				return false;
+		}
+		return true;
+	}
+	
+	private void fillPaletteTree() {
+		if (paletteTreeViewer==null)
+			return;
+		
+		loadPalette();
+		ToolPaletteDescriptor toolPaletteDescriptor = currentRuntime.getToolPalette(currentDiagramType, currentProfile);
+		if (toolPaletteDescriptor==null)
+			toolPaletteDescriptor = defaultToolPalette;
+		
+		if (paletteTreeViewer.getContentProvider()==null) {
+			paletteTreeViewer.setContentProvider(new ITreeContentProvider() {
+
+				@Override
+				public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+				}
+
+				@Override
+				public void dispose() {
+				}
+
+				@Override
+				public boolean hasChildren(Object element) {
+					return getChildren(element) != null;
+				}
+
+				@Override
+				public Object getParent(Object element) {
+					if (element instanceof ToolPaletteDescriptor) {
+						return null;
+					}
+					else if (element instanceof CategoryDescriptor) {
+						return ((CategoryDescriptor) element).getParent();
+					}
+					else if (element instanceof ToolDescriptor) {
+						return ((ToolDescriptor) element).getParent();
+					}
+					else if (element instanceof ToolPart) {
+						return ((ToolPart) element).getParent();
+					}
+					return null;
+				}
+
+				@Override
+				public Object[] getElements(Object inputElement) {
+					return getChildren(inputElement);
+				}
+
+				@Override
+				public Object[] getChildren(Object element) {
+					if (element instanceof ToolPaletteDescriptor) {
+						List<CategoryDescriptor> kids = new ArrayList<CategoryDescriptor>();
+						for (CategoryDescriptor cd : ((ToolPaletteDescriptor) element).getCategories()) {
+							if (cd.getName()==null && ToolPaletteDescriptor.DEFAULT_PALETTE_ID.equals(cd.getId())) {
+								kids.addAll(defaultToolPalette.getCategories());
+							}
+							else if (cd.getFromPalette()!=null) {
+								for (TargetRuntime rt : TargetRuntime.getAllRuntimes()) {
+									for (ToolPaletteDescriptor td : rt.getToolPalettes()) {
+										if (cd.getFromPalette().equals(td.getId())) {
+											for (CategoryDescriptor cd2 : td.getCategories()) {
+												if (cd.getId().equals(cd2.getId())) {
+													kids.add(cd2);
+													break;
+												}
+											}
+										}
+									}
+								}
+							}
+							else
+								kids.add(cd);
+						}
+						return kids.toArray();
+					}
+					else if (element instanceof CategoryDescriptor) {
+						return ((CategoryDescriptor) element).getTools().toArray();
+					}
+//					else if (element instanceof ToolDescriptor) {
+//						return ((ToolDescriptor) element).getToolParts().toArray();
+//					}
+//					else if (element instanceof ToolPart) {
+//						return ((ToolPart) element).getChildren().toArray();
+//					}
+					return null;
+				}
+			});
+
+			paletteTreeViewer.setLabelProvider(new ILabelProvider() {
+				@Override
+				public void removeListener(ILabelProviderListener listener) {
+				}
+
+				@Override
+				public boolean isLabelProperty(Object element, String property) {
+					return false;
+				}
+
+				@Override
+				public void dispose() {
+
+				}
+
+				@Override
+				public void addListener(ILabelProviderListener listener) {
+				}
+
+				@Override
+				public Image getImage(Object element) {
+					if (element instanceof CategoryDescriptor) {
+						CategoryDescriptor cd = (CategoryDescriptor) element;
+						int enabled = 0;
+						for (ToolDescriptor td : cd.getTools()) {
+							if (isEnabled(td))
+								++enabled;
+						}
+						if (enabled==0)
+							return Activator.getDefault().getImage(IConstants.ICON_FOLDER_DISABLED);
+						return Activator.getDefault().getImage(IConstants.ICON_FOLDER);
+					}
+					else if (element instanceof ToolDescriptor) {
+						ToolDescriptor td = (ToolDescriptor) element;
+						if (!isEnabled(td))
+							return Activator.getDefault().getImage(IConstants.ICON_DISABLED);
+						List<ToolPart> tps = td.getToolParts();
+						if (!tps.isEmpty()) {
+							if (tps.size()>2) {
+								return Activator.getDefault().getImage(IConstants.ICON_PROCESS);
+							}
+							ToolPart tp = tps.get(0);
+							String name = "16/" + tp.getName() + ".png";
+							if (!tp.getChildren().isEmpty()) {
+								name = "16/" + tp.getChildren().get(0).getName() + ".png";
+							}
+							return Activator.getDefault().getImage(name);
+						}
+					}
+					else if (element instanceof ToolPart) {
+//						ToolPart tp = (ToolPart) element;
+//						if (!isEnabled(tp))
+//							return Activator.getDefault().getImage(IConstants.ICON_SCREW_DISABLED);
+//						if (tp.getProperties().get(ToolPaletteDescriptor.TOOLPART_OPTIONAL)!=null)
+//							return Activator.getDefault().getImage(IConstants.ICON_NUT);
+//						return Activator.getDefault().getImage(IConstants.ICON_SCREW);
+					}
+					return null;
+				}
+
+				@Override
+				public String getText(Object element) {
+					if (element instanceof ToolPaletteDescriptor) {
+						return ((ToolPaletteDescriptor) element).getProfiles().get(0);
+					}
+					else if (element instanceof CategoryDescriptor) {
+						CategoryDescriptor cd = (CategoryDescriptor) element;
+						if (cd.getFromPalette()!=null)
+							return cd.getFromPalette();
+						if (cd.getName()==null)
+							return cd.getId();
+						return cd.getName();
+					}
+					else if (element instanceof ToolDescriptor) {
+						return ((ToolDescriptor) element).getName();
+					}
+					else if (element instanceof ToolPart) {
+						ToolPart tp = (ToolPart) element;
+						String props = "";
+						for (Entry<String, String> entry : tp.getProperties().entrySet()) {
+							if (props.isEmpty())
+								props = entry.getKey() + "=" + entry.getValue();
+							else
+								props += "," + entry.getKey() + "=" + entry.getValue();
+						}
+						return tp.getName() + "[" + props + "]";
+					}
+					return "";
+				}
+			});
+		}
+		paletteTreeViewer.setInput(toolPaletteDescriptor);
+	}
+	
 	@Override
 	protected void performDefaults() {
 		super.performDefaults();
@@ -461,6 +765,7 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 		ToolProfilesPreferencesHelper helper = getHelper(currentRuntime, currentDiagramType, currentProfile);
 		helper.setModelEnablements(null);
 		fillModelEnablementTrees();
+		fillPaletteTree();
 	}
 
 	private void loadModelEnablements() {
@@ -494,6 +799,57 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 		return enabled.toArray();
 	}
 
+	private void loadPalette() {
+		if (defaultToolPalette == null) {
+			defaultToolPalette = new ToolPaletteDescriptor();
+			
+			CategoryDescriptor cd;
+			
+			cd = new CategoryDescriptor(defaultToolPalette,null,"Connectors",null,null);
+			defaultToolPalette.getCategories().add(cd);
+			for (Class c : FeatureMap.CONNECTORS) {
+				loadCategory(cd,c);
+			}
+			cd = new CategoryDescriptor(defaultToolPalette,null,"Tasks",null,null);
+			defaultToolPalette.getCategories().add(cd);
+			for (Class c : FeatureMap.TASKS) {
+				loadCategory(cd,c);
+			}
+			cd = new CategoryDescriptor(defaultToolPalette,null,"Gateways",null,null);
+			defaultToolPalette.getCategories().add(cd);
+			for (Class c : FeatureMap.GATEWAYS) {
+				loadCategory(cd,c);
+			}
+			cd = new CategoryDescriptor(defaultToolPalette,null,"Events",null,null);
+			defaultToolPalette.getCategories().add(cd);
+			for (Class c : FeatureMap.EVENTS) {
+				loadCategory(cd,c);
+			}
+			cd = new CategoryDescriptor(defaultToolPalette,null,"Event Definitions",null,null);
+			defaultToolPalette.getCategories().add(cd);
+			for (Class c : FeatureMap.EVENT_DEFINITIONS) {
+				loadCategory(cd,c);
+			}
+			cd = new CategoryDescriptor(defaultToolPalette,null,"Data Items",null,null);
+			defaultToolPalette.getCategories().add(cd);
+			for (Class c : FeatureMap.DATA) {
+				loadCategory(cd,c);
+			}
+			cd = new CategoryDescriptor(defaultToolPalette,null,"Other",null,null);
+			defaultToolPalette.getCategories().add(cd);
+			for (Class c : FeatureMap.OTHER) {
+				loadCategory(cd,c);
+			}
+		}
+	}
+	
+	private void loadCategory(CategoryDescriptor cd, Class c) {
+		ToolDescriptor td = new ToolDescriptor(cd, null, ModelUtil.toDisplayName(c.getSimpleName()),null,null);
+		cd.getTools().add(td);
+		ToolPart tp = new ToolPart(td,c.getSimpleName());
+		td.getToolParts().add(tp);
+	}
+	
 	@Override
 	public boolean performOk() {
 		setErrorMessage(null);
@@ -513,7 +869,7 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 			if (btnUseAsDefaultProfile.getSelection())
 				preferences.setDefaultToolProfile(currentRuntime, currentDiagramType, currentProfile);
 
-			preferences.save();
+			preferences.flush();
 		} catch (BackingStoreException e) {
 			Activator.showErrorWithLogging(e);
 		}

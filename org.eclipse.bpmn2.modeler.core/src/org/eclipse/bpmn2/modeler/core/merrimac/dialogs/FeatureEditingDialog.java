@@ -80,7 +80,7 @@ public class FeatureEditingDialog extends ObjectEditingDialog {
 	}
 	
 	protected Composite createDialogContent(Composite parent) {
-		Composite content = PropertiesCompositeFactory.createDetailComposite(
+		Composite content = PropertiesCompositeFactory.INSTANCE.createDetailComposite(
 				featureEType.getInstanceClass(), parent, SWT.NONE);
 		return content;
 	}

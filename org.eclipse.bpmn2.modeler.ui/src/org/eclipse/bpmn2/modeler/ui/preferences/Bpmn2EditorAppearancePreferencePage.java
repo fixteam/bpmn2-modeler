@@ -54,6 +54,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FontDialog;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IWorkbench;
@@ -119,14 +120,22 @@ public class Bpmn2EditorAppearancePreferencePage extends PreferencePage implemen
 	protected Control createContents(Composite parent) {
 		
 		GridLayout layout = (GridLayout)parent.getLayout();
+		GridData data;
 		
 		container = new Composite(parent, SWT.NONE);
 		container.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		container.setLayout(new GridLayout(2, false));
         
-        elementsTreeViewer = new TreeViewer(container, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+		final Group elementsGroup = new Group(container, SWT.NONE);
+		elementsGroup.setText("Graphical Elements");
+        data = new GridData(SWT.FILL,SWT.TOP,true,true,1,1);
+		data.heightHint = 50;
+		elementsGroup.setLayoutData(data);
+		elementsGroup.setLayout(new GridLayout(1,false));
+        
+        elementsTreeViewer = new TreeViewer(elementsGroup, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
         Tree elementsTree = elementsTreeViewer.getTree();
-        GridData data = new GridData(SWT.FILL,SWT.TOP,true,true,1,1);
+        data = new GridData(SWT.FILL,SWT.TOP,true,true,1,1);
 		data.heightHint = 50;
         elementsTree.setLayoutData(data);
         
@@ -136,13 +145,20 @@ public class Bpmn2EditorAppearancePreferencePage extends PreferencePage implemen
 		parent.addControlListener(new ControlAdapter() {
 			@Override
 			public void controlResized(ControlEvent e) {
-				GridData gd = (GridData) elementsTreeViewer.getTree().getLayoutData();
+				GridData gd = (GridData) elementsGroup.getLayoutData();
+				gd.heightHint = 1000;
+				gd = (GridData) elementsTreeViewer.getTree().getLayoutData();
 				gd.heightHint = 1000;
 				container.layout();
 			}
 		});
         
-        styleEditors = new Composite(container, SWT.NONE);
+		Group styleGroup = new Group(container, SWT.NONE);
+		styleGroup.setText("Colors, Fonts and Line Styles");
+		styleGroup.setLayoutData(new GridData(SWT.FILL,SWT.TOP,true,false,1,1));
+		styleGroup.setLayout(new GridLayout(1,false));
+
+        styleEditors = new Composite(styleGroup, SWT.NONE);
         styleEditors.setLayoutData(new GridData(SWT.FILL,SWT.TOP,true,false,1,1));
         layout = new GridLayout(1,false);
         layout.verticalSpacing = 0;
@@ -315,7 +331,7 @@ public class Bpmn2EditorAppearancePreferencePage extends PreferencePage implemen
 			preferences.setToDefault(Bpmn2Preferences.PREF_SHAPE_STYLE);
 			allShapeStyles = null;
 			loadStyleEditors();
-			preferences.save();
+			preferences.flush();
 		}
 		catch(Exception e) {
 		}
@@ -329,7 +345,7 @@ public class Bpmn2EditorAppearancePreferencePage extends PreferencePage implemen
 			preferences.setShapeStyle(entry.getKey(), entry.getValue());
 		}
 		try {
-			preferences.save();
+			preferences.flush();
 		} catch (BackingStoreException e) {
 			e.printStackTrace();
 		}

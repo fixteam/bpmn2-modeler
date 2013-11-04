@@ -175,6 +175,9 @@ public class BusinessObjectUtil {
 					return (EObject)editPart.getModel();
 				}
 			}
+			else if (firstElement instanceof EObject) {
+				return (EObject)firstElement;
+			}
 		}
 		return null;
 	}

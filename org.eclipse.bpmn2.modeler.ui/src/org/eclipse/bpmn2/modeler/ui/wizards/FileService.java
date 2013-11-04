@@ -220,7 +220,7 @@ public class FileService {
 					}
 				} else if (uri.isPlatformResource()) {
 					IFile file = ResourcesPlugin.getWorkspace().getRoot()
-							.getFile(new Path(uri.toPlatformString(false)));
+							.getFile(new Path(uri.toPlatformString(true)));
 
 					if (file.exists()) {
 						return file.getContents();

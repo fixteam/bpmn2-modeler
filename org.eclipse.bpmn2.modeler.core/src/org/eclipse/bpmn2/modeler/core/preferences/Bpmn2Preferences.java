@@ -13,6 +13,7 @@
 package org.eclipse.bpmn2.modeler.core.preferences;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -47,8 +48,8 @@ import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.preferences.ShapeStyle.RoutingStyle;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelEnablementDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
+import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil.Bpmn2DiagramType;
-import org.eclipse.core.internal.resources.ProjectPreferences;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -57,8 +58,12 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.ISafeRunnable;
+import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.SafeRunner;
 import org.eclipse.core.runtime.preferences.DefaultScope;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
 import org.eclipse.core.runtime.preferences.IPreferencesService;
@@ -79,6 +84,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.eclipse.ui.views.navigator.ResourceNavigator;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
@@ -86,14 +92,15 @@ import org.osgi.service.prefs.Preferences;
 import com.founder.fix.bpmn2extensions.style.Style;
 import com.founder.fix.designer.base.util.StyleConfigUtil;
 
-@SuppressWarnings("restriction")
-public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyChangeListener, IResourceChangeListener {
+
+public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChangeListener {
 	public final static String PREF_TARGET_RUNTIME = "target.runtime"; //$NON-NLS-1$
 	public final static String PREF_TARGET_RUNTIME_LABEL = Messages.Bpmn2Preferences_Target_Runtime;
 	public final static String PREF_SHOW_ADVANCED_PROPERTIES = "show.advanced.properties"; //$NON-NLS-1$
 	public final static String PREF_SHOW_ADVANCED_PROPERTIES_LABEL = Messages.Bpmn2Preferences_Show_Advanced_Properties;
 	public final static String PREF_SHOW_DESCRIPTIONS = "show.descriptions"; //$NON-NLS-1$
 	public final static String PREF_SHOW_DESCRIPTIONS_LABEL = Messages.Bpmn2Preferences_Show_Descriptions;
+	public final static String PREF_TOOL_PALETTE = "tool.palette"; //$NON-NLS-1$
 	public final static String PREF_TOOL_PROFILE = "tool.profile"; //$NON-NLS-1$
 	public final static String PREF_MODEL_ENABLEMENT = "model.enablement"; //$NON-NLS-1$
 	public final static String PREF_IS_HORIZONTAL = "is.horizontal"; //$NON-NLS-1$
@@ -110,6 +117,9 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 
 	public final static String PREF_CONNECTION_TIMEOUT = "connection.timeout"; //$NON-NLS-1$
 	public final static String PREF_CONNECTION_TIMEOUT_LABEL = Messages.Bpmn2Preferences_Timeout;
+
+	public final static String PREF_USE_POPUP_DIALOG_FOR_LISTS = "popup.detail.dialog"; //$NON-NLS-1$
+	public final static String PREF_USE_POPUP_DIALOG_FOR_LISTS_LABEL = Messages.Bpmn2Preferences_Use_Popup_Dialog_For_Lists;
 
 	public final static String PREF_POPUP_CONFIG_DIALOG = "popup.config.dialog"; //$NON-NLS-1$
 	public final static String PREF_POPUP_CONFIG_DIALOG_LABEL = Messages.Bpmn2Preferences_Config_Dialog;
@@ -138,15 +148,15 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 
 	private static Hashtable<IProject,Bpmn2Preferences> instances = null;
 	private static IProject activeProject;
+	private static ListenerList preferenceChangeListeners;
+	private static IPreferenceStore preferenceStore;
 
 	private IProject project;
-	private static IPreferencesService preferenceService;
-	private static IPreferenceStore preferenceStore;
 	private boolean useProjectPreferences;
-	private Preferences projectPreferences;
-	private static Preferences instancePreferences;
-	private static Preferences defaultPreferences;
-	private boolean loaded;
+	private IEclipsePreferences projectPreferences;
+	private static IEclipsePreferences instancePreferences;
+	private static IEclipsePreferences defaultPreferences;
+	private boolean cached;
 	private boolean dirty;
 	
 	public enum BPMNDIAttributeDefault {
@@ -162,6 +172,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	private boolean showIdAttribute;
 	private boolean checkProjectNature;
 	private boolean simplifyLists;
+	private boolean usePopupDialogForLists;
 	private boolean doCoreValidation;
 	private BPMNDIAttributeDefault isHorizontal;
 	private BPMNDIAttributeDefault isExpanded;
@@ -172,54 +183,38 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	private boolean popupConfigDialogFor[] = new boolean[6];
 
 	private HashMap<Class, ShapeStyle> shapeStyles = new HashMap<Class, ShapeStyle>();
-	
-	// TODO: stuff like colors, fonts, etc.
 
 	private Bpmn2Preferences(IProject project) {
 		this.project = project;
-		if (preferenceService==null)
-			preferenceService = Platform.getPreferencesService();
-		if (instancePreferences==null)
-			instancePreferences = preferenceService.getRootNode().node(InstanceScope.SCOPE).node(Activator.PLUGIN_ID);
-		if (defaultPreferences==null)
-			defaultPreferences = preferenceService.getRootNode().node(DefaultScope.SCOPE).node(Activator.PLUGIN_ID);
+		
+		IPreferencesService preferenceService = Platform.getPreferencesService();
 		if (preferenceStore==null)
 			preferenceStore = Activator.getDefault().getPreferenceStore();
+		if (instancePreferences==null)
+			instancePreferences = (IEclipsePreferences) preferenceService.getRootNode().node(InstanceScope.SCOPE).node(Activator.PLUGIN_ID);
+		if (defaultPreferences==null)
+			defaultPreferences = (IEclipsePreferences) preferenceService.getRootNode().node(DefaultScope.SCOPE).node(Activator.PLUGIN_ID);
 
-		projectPreferences = getProjectPreferences(project);
-		
-		preferenceStore.addPropertyChangeListener(this);
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
-
-		loadDefaults();
-		load();
-	}
-	
-	private Preferences[] getAllPreferences() {
-		if (projectPreferences!=null) {
-			return new Preferences[] {projectPreferences, instancePreferences, defaultPreferences};
-		}
-		else {
-			return new Preferences[] {instancePreferences, defaultPreferences};
-		}
-	}
-
-	private Preferences getProjectPreferences(IProject project) {
 		if (project != null) {
-			projectPreferences = preferenceService.getRootNode().node(ProjectScope.SCOPE).node(project.getName()).node(Activator.PLUGIN_ID);
-			((ProjectPreferences) projectPreferences).addPreferenceChangeListener(this);
+			projectPreferences = (IEclipsePreferences) preferenceService.getRootNode().node(ProjectScope.SCOPE).node(project.getName()).node(Activator.PLUGIN_ID);
+			preferenceStore.addPropertyChangeListener(this);
 			
 			try {
 				projectPreferences.sync();
 			}
 			catch (Exception e) {
-				return null;
 			}
 		}
-		return projectPreferences;
+		
+		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+
+		loadDefaults();
+		cache();
 	}
 	
+	////////////////////////////////////////////////////////////////////////////////
 	// various preference instance getters
+	////////////////////////////////////////////////////////////////////////////////
 	
 	/**
 	 * Return the Preferences for the currently active project. This should be used
@@ -239,7 +234,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	 * @return project preferences
 	 */
 	public static Bpmn2Preferences getInstance(EObject object) {
-		return getInstance(object.eResource());
+		return getInstance(ModelUtil.getResource(object));
 	}
 	
 	public static Bpmn2Preferences getInstance(Resource resource) {
@@ -294,21 +289,22 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 		return pref;
 	}
 	
-	public IPreferenceStore getPreferenceStore()
-	{
-		return preferenceStore;
-	}
-	
 	public void useProjectPreferences() {
 		Assert.isNotNull(projectPreferences);
 		useProjectPreferences = true;
 	}
-
-	public Preferences getProjectPreferences()
-	{
-		return projectPreferences;
+	
+	public void dispose() {
+		if (project!=null)
+			instances.remove(project);
+		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+		preferenceStore.removePropertyChangeListener(this);
 	}
 	
+	////////////////////////////////////////////////////////////////////////////////
+	// Cache initialization
+	////////////////////////////////////////////////////////////////////////////////
+
 	private void loadDefaults() {
 		if (defaultPreferences.get(PREF_TARGET_RUNTIME, null)==null) {
 			String rid = TargetRuntime.getFirstNonDefaultId();
@@ -316,6 +312,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 			defaultPreferences.putBoolean(PREF_SHOW_ADVANCED_PROPERTIES, false);
 			defaultPreferences.putBoolean(PREF_CHECK_PROJECT_NATURE, true);
 			defaultPreferences.putBoolean(PREF_SIMPLIFY_LISTS, true);
+			defaultPreferences.putBoolean(PREF_USE_POPUP_DIALOG_FOR_LISTS, false);
 			defaultPreferences.putBoolean(PREF_SHOW_DESCRIPTIONS, true);
 			defaultPreferences.put(PREF_IS_HORIZONTAL, BPMNDIAttributeDefault.DEFAULT_TRUE.name());
 			defaultPreferences.put(PREF_IS_EXPANDED, BPMNDIAttributeDefault.ALWAYS_TRUE.name());
@@ -389,10 +386,10 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 		}
 	}
 	
-	public boolean shouldSaveToProjectPreference(String key) {
+	private boolean shouldSaveToProjectPreference(String key) {
 		if (projectPreferences!=null) {
 			if (useProjectPreferences) {
-				// if saving to project preferences, create the preference node
+				// if saving to project preferences, set the preference node
 				projectPreferences.node(key);
 				return true;
 			}
@@ -408,26 +405,15 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 		return false;
 	}
 	
-	public void dispose() {
-		if (projectPreferences instanceof ProjectPreferences)
-			((ProjectPreferences)projectPreferences).removePreferenceChangeListener(this);
-		preferenceStore.removePropertyChangeListener(this);
-		if (project!=null)
-			instances.remove(project);
-		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+	public void reload() {
+		cached = false;
+		cache();
 	}
 	
-	public synchronized void reload() {
-		loaded = false;
-		load();
-		dirty = false;
-	}
-	
-	public void load() {
-		
-		if (!loaded) {
+	private void cache() {
+		if (!cached) {
 			// cache all preferences as Bpmn2Preferences instance variables for faster access
-			String id = getString(PREF_TARGET_RUNTIME,TargetRuntime.getFirstNonDefaultId());
+			String id = get(PREF_TARGET_RUNTIME,TargetRuntime.getFirstNonDefaultId());
 			if (id==null || id.isEmpty())
 				id = TargetRuntime.getFirstNonDefaultId();
 			targetRuntime = TargetRuntime.getRuntime(id);
@@ -436,6 +422,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 			showIdAttribute = getBoolean(PREF_SHOW_ID_ATTRIBUTE, false);
 			checkProjectNature = getBoolean(PREF_CHECK_PROJECT_NATURE, false);
 			simplifyLists = getBoolean(PREF_SIMPLIFY_LISTS, true);
+			usePopupDialogForLists = getBoolean(PREF_USE_POPUP_DIALOG_FOR_LISTS, false);
 			isHorizontal = getBPMNDIAttributeDefault(PREF_IS_HORIZONTAL, BPMNDIAttributeDefault.USE_DI_VALUE);
 			isExpanded = getBPMNDIAttributeDefault(PREF_IS_EXPANDED, BPMNDIAttributeDefault.USE_DI_VALUE);
 			isMessageVisible = getBPMNDIAttributeDefault(PREF_IS_MESSAGE_VISIBLE, BPMNDIAttributeDefault.USE_DI_VALUE);
@@ -452,34 +439,35 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 
 			doCoreValidation = getBoolean(PREF_DO_CORE_VALIDATION, true);
 
-			loaded = true;
+			cached = true;
 		}
 	}
 	
-	public synchronized void save() throws BackingStoreException {
+	public synchronized void flush() throws BackingStoreException {
 		if (dirty) {
-			setString(PREF_TARGET_RUNTIME,getRuntime().getId());
-			setBoolean(PREF_SHOW_ADVANCED_PROPERTIES, showAdvancedPropertiesTab);
-			setBoolean(PREF_SHOW_DESCRIPTIONS, showDescriptions);
-			setBoolean(PREF_SHOW_ID_ATTRIBUTE, showIdAttribute);
-			setBoolean(PREF_CHECK_PROJECT_NATURE, checkProjectNature);
-			setBoolean(PREF_SIMPLIFY_LISTS, simplifyLists);
+			put(PREF_TARGET_RUNTIME,getRuntime().getId());
+			putBoolean(PREF_SHOW_ADVANCED_PROPERTIES, showAdvancedPropertiesTab);
+			putBoolean(PREF_SHOW_DESCRIPTIONS, showDescriptions);
+			putBoolean(PREF_SHOW_ID_ATTRIBUTE, showIdAttribute);
+			putBoolean(PREF_CHECK_PROJECT_NATURE, checkProjectNature);
+			putBoolean(PREF_SIMPLIFY_LISTS, simplifyLists);
+			putBoolean(PREF_USE_POPUP_DIALOG_FOR_LISTS, usePopupDialogForLists);
 			setBPMNDIAttributeDefault(PREF_IS_HORIZONTAL, isHorizontal);
 
 			setBPMNDIAttributeDefault(PREF_IS_EXPANDED, isExpanded);
 			setBPMNDIAttributeDefault(PREF_IS_MESSAGE_VISIBLE, isMessageVisible);
 			setBPMNDIAttributeDefault(PREF_IS_MARKER_VISIBLE, isMarkerVisible);
 			
-			setInt(PREF_CONNECTION_TIMEOUT, connectionTimeout);
+			putInt(PREF_CONNECTION_TIMEOUT, connectionTimeout);
 
-			setInt(PREF_POPUP_CONFIG_DIALOG, popupConfigDialog);
-			setBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_ACTIVITIES, popupConfigDialogFor[0]);
-			setBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_GATEWAYS, popupConfigDialogFor[1]);
-			setBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_EVENTS, popupConfigDialogFor[2]);
-			setBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_EVENT_DEFS, popupConfigDialogFor[3]);
-			setBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS, popupConfigDialogFor[4]);
-			setBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS, popupConfigDialogFor[5]);
-			setBoolean(PREF_DO_CORE_VALIDATION, doCoreValidation);
+			putInt(PREF_POPUP_CONFIG_DIALOG, popupConfigDialog);
+			putBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_ACTIVITIES, popupConfigDialogFor[0]);
+			putBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_GATEWAYS, popupConfigDialogFor[1]);
+			putBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_EVENTS, popupConfigDialogFor[2]);
+			putBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_EVENT_DEFS, popupConfigDialogFor[3]);
+			putBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS, popupConfigDialogFor[4]);
+			putBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS, popupConfigDialogFor[5]);
+			putBoolean(PREF_DO_CORE_VALIDATION, doCoreValidation);
 		}
 		
 		for (Entry<Class, ShapeStyle> entry : shapeStyles.entrySet()) {
@@ -489,9 +477,14 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 		if (projectPreferences!=null) {
 			projectPreferences.flush();
 		}
+		instancePreferences.flush();
 
 		dirty = false;
 	}
+	
+	////////////////////////////////////////////////////////////////////////////////
+	// Getters and setters for Graphical Styles (Colors, Fonts, etc.)
+	////////////////////////////////////////////////////////////////////////////////
 	
 	public String getShapeStyleId(EObject object) {
 		return getShapeStyleId(getRuntime(), object);
@@ -500,13 +493,13 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	public static String getShapeStyleId(TargetRuntime rt, EObject object) {
 		try {
 			Class clazz = Class.forName(object.eClass().getInstanceClassName());
-			return getShapeStyleId(rt, clazz);
+			return getShapeStyleKey(rt, clazz);
 		} catch (ClassNotFoundException e) {
-			return getShapeStyleId(rt, object.getClass());
+			return getShapeStyleKey(rt, object.getClass());
 		}
 	}
 	
-	public static String getShapeStyleId(TargetRuntime rt, Class clazz) {
+	public static String getShapeStyleKey(TargetRuntime rt, Class clazz) {
 		return getShapeStylePath(rt) + "/" + clazz.getSimpleName(); //$NON-NLS-1$
 	}
 	
@@ -527,8 +520,8 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 /*	public ShapeStyle getShapeStyle(Class clazz) {
 		ShapeStyle ss = shapeStyles.get(clazz);
 		if (ss==null) {
-			String key = getShapeStyleId(getRuntime(), clazz);
-			String value = getString(key, "");
+			String key = getShapeStyleKey(getRuntime(), clazz);
+			String value = get(key, "");
 			ss = ShapeStyle.decode(value);
 			shapeStyles.put(clazz, ss);
 		}
@@ -566,102 +559,18 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	}
 	
 	public void setShapeStyle(Class clazz, ShapeStyle style) {
-		if (style!=null && style.isDirty()) {
-			String key = getShapeStyleId(getRuntime(),clazz);
+		if (style.isDirty()) {
+			String key = getShapeStyleKey(getRuntime(), clazz);
 			String value = ShapeStyle.encode(style);
-			setString(key, value);
+			put(key, value);
 			shapeStyles.put(clazz, style);
 			style.setDirty(false);
 		}
 	}
 	
-	public TargetRuntime getRuntime() {
-		load();
-		if (targetRuntime==null) {
-			targetRuntime = TargetRuntime.getDefaultRuntime();
-			Display.getDefault().asyncExec( new Runnable() {
-				@Override
-				public void run() {
-					String id = getString(PREF_TARGET_RUNTIME,TargetRuntime.getFirstNonDefaultId());
-					if (id==null || id.isEmpty())
-						id = TargetRuntime.getFirstNonDefaultId();
-
-					targetRuntime = TargetRuntime.getDefaultRuntime();
-					MessageDialog.openError(
-						Display.getDefault().getActiveShell(),
-						Messages.Bpmn2Preferences_No_Runtime_Plugin_Title,
-						NLS.bind(
-							Messages.Bpmn2Preferences_No_Runtime_Plugin_Message,
-							id,
-							targetRuntime.getDescription()
-						)
-					);
-				}
-				
-			});
-					
-		}
-		return targetRuntime;
-	}
-
-	public void setRuntime(TargetRuntime rt) {
-		Assert.isTrue(rt!=null);
-		setString(PREF_TARGET_RUNTIME, rt.getId());
-		targetRuntime = rt;
-	}
-	
-	public boolean getShowAdvancedPropertiesTab() {
-		return showAdvancedPropertiesTab;
-	}
-	
-	public void setShowAdvancedPropertiesTab(boolean show) {
-		setBoolean(PREF_SHOW_ADVANCED_PROPERTIES, show);
-		showAdvancedPropertiesTab = show;
-	}
-	
-	public boolean getShowDescriptions() {
-		return showDescriptions;
-	}
-	
-	public void setShowDescriptions(boolean show) {
-		setBoolean(PREF_SHOW_DESCRIPTIONS, show);
-		showDescriptions = show;
-	}
-	
-	public boolean getShowIdAttribute() {
-		return showIdAttribute;
-	}
-	
-	public void setShowIdAttribute(boolean show) {
-		setBoolean(PREF_SHOW_ID_ATTRIBUTE, show);
-		showIdAttribute = show;
-	}
-	
-	public boolean getCheckProjectNature() {
-		return checkProjectNature;
-	}
-	
-	public void setCheckProjectNature(boolean show) {
-		setBoolean(PREF_CHECK_PROJECT_NATURE, show);
-		checkProjectNature = show;
-	}
-	
-	public boolean getSimplifyLists() {
-		return simplifyLists;
-	}
-	
-	public void setSimplifyLists(boolean simplify) {
-		setBoolean(PREF_SIMPLIFY_LISTS,simplify);
-		simplifyLists = simplify;
-	}
-
-	public String getDefaultToolProfile(Bpmn2DiagramType diagramType) {
-		return getDefaultToolProfile(getRuntime(), diagramType);
-	}
-	
-	public void setDefaultToolProfile(Bpmn2DiagramType diagramType, String profile) {
-		setDefaultToolProfile(getRuntime(), diagramType, profile);
-	}
+	////////////////////////////////////////////////////////////////////////////////
+	// Getters and setters for Tool Profiles
+	////////////////////////////////////////////////////////////////////////////////
 
 	public static String getToolProfilePath(TargetRuntime rt, Bpmn2DiagramType diagramType) {
 		return PREF_TOOL_PROFILE + "/" + rt.getId() + "/" + diagramType;
@@ -721,6 +630,8 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 						prefs.putBoolean(p, false);
 					}
 				}
+				
+				firePreferenceEvent(prefs, path, null, profile);
 			}
 			catch (BackingStoreException e) {
 				// TODO Auto-generated catch block
@@ -766,6 +677,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 				}
 				if (result) {
 					prefs.putBoolean(profile, true);
+					firePreferenceEvent(prefs, path, null, profile);
 				}
 			}
 			catch (BackingStoreException e) {
@@ -811,6 +723,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 				}
 				if (result && prefs.keys().length>0) {
 					prefs.putBoolean(prefs.keys()[0], true);
+					firePreferenceEvent(prefs, path, profile, null);
 				}
 			}
 			catch (BackingStoreException e) {
@@ -835,12 +748,9 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 			if (prefs!=null) {
 				int i = 1;
 				for (String p : prefs.keys()) {
-					if (prefs.getBoolean(p, false))
-						profiles.add(0, p);
-					else {
-						profiles.add(p);
-					}
+					profiles.add(p);
 				}
+				Collections.sort(profiles);
 			}
 		}
 		catch (BackingStoreException e) {
@@ -850,6 +760,10 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 		return profiles.toArray(new String[profiles.size()]);
 	}
 	
+	////////////////////////////////////////////////////////////////////////////////
+	// Getters and setters for Model Enablements
+	////////////////////////////////////////////////////////////////////////////////
+
 	public static String getModelEnablementsPath(TargetRuntime rt, Bpmn2DiagramType diagramType, String profile) {
 		return PREF_MODEL_ENABLEMENT + "/" + rt.getId() + "/" + diagramType + "/" + profile;
 	}
@@ -859,7 +773,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	}
 	
 	public ModelEnablements getModelEnablements(TargetRuntime rt, Bpmn2DiagramType diagramType, String profile) {
-		ModelEnablements me = new ModelEnablements(rt);
+		ModelEnablements me = new ModelEnablements(rt, diagramType, profile);
 		if (profile!=null && !profile.isEmpty()) {
 			try {
 				Preferences prefs = null;
@@ -874,8 +788,10 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 				if (prefs!=null) {
 					me.setEnabledAll(false);
 					for (String k : prefs.keys()) {
-						if (prefs.getBoolean(k, false))
-							me.setEnabled(k, true);
+						if (k.indexOf(".")>0) {
+							if (prefs.getBoolean(k, false))
+								me.setEnabled(k, true);
+						}
 					}
 				}
 			}
@@ -905,6 +821,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 				for (String s : me.getAllEnabled()) {
 					prefs.putBoolean(s, true);
 				}
+				firePreferenceEvent(prefs, path, null, profile);
 				return true;
 			}
 			catch (BackingStoreException e) {
@@ -912,6 +829,98 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 			}
 		}
 		return false;
+	}
+	
+	////////////////////////////////////////////////////////////////////////////////
+	// Getters and setters for miscellaneous preferences
+	////////////////////////////////////////////////////////////////////////////////
+
+	public TargetRuntime getRuntime() {
+		if (targetRuntime==null) {
+			targetRuntime = TargetRuntime.getDefaultRuntime();
+			Display.getDefault().asyncExec( new Runnable() {
+				@Override
+				public void run() {
+					String id = get(PREF_TARGET_RUNTIME,TargetRuntime.getFirstNonDefaultId());
+					if (id==null || id.isEmpty())
+						id = TargetRuntime.getFirstNonDefaultId();
+
+					targetRuntime = TargetRuntime.getDefaultRuntime();
+					MessageDialog.openError(
+						Display.getDefault().getActiveShell(),
+						Messages.Bpmn2Preferences_No_Runtime_Plugin_Title,
+						NLS.bind(
+							Messages.Bpmn2Preferences_No_Runtime_Plugin_Message,
+							id,
+							targetRuntime.getDescription()
+						)
+					);
+				}
+				
+			});
+					
+		}
+		return targetRuntime;
+	}
+
+	public void setRuntime(TargetRuntime rt) {
+		Assert.isTrue(rt!=null);
+		put(PREF_TARGET_RUNTIME, rt.getId());
+		targetRuntime = rt;
+	}
+	
+	public boolean getShowAdvancedPropertiesTab() {
+		return showAdvancedPropertiesTab;
+	}
+	
+	public void setShowAdvancedPropertiesTab(boolean show) {
+		putBoolean(PREF_SHOW_ADVANCED_PROPERTIES, show);
+		showAdvancedPropertiesTab = show;
+	}
+	
+	public boolean getShowDescriptions() {
+		return showDescriptions;
+	}
+	
+	public void setShowDescriptions(boolean show) {
+		putBoolean(PREF_SHOW_DESCRIPTIONS, show);
+		showDescriptions = show;
+	}
+	
+	public boolean getShowIdAttribute() {
+		return showIdAttribute;
+	}
+	
+	public void setShowIdAttribute(boolean show) {
+		putBoolean(PREF_SHOW_ID_ATTRIBUTE, show);
+		showIdAttribute = show;
+	}
+	
+	public boolean getCheckProjectNature() {
+		return checkProjectNature;
+	}
+	
+	public void setCheckProjectNature(boolean show) {
+		putBoolean(PREF_CHECK_PROJECT_NATURE, show);
+		checkProjectNature = show;
+	}
+	
+	public boolean getSimplifyLists() {
+		return simplifyLists;
+	}
+	
+	public void setSimplifyLists(boolean simplify) {
+		putBoolean(PREF_SIMPLIFY_LISTS,simplify);
+		simplifyLists = simplify;
+	}
+	
+	public boolean getUsePopupDialogForLists() {
+		return usePopupDialogForLists;
+	}
+	
+	public void setUsePopupDialogForLists(boolean enable) {
+		putBoolean(PREF_USE_POPUP_DIALOG_FOR_LISTS,enable);
+		usePopupDialogForLists = enable;
 	}
 	
 	public boolean getShowPopupConfigDialog(Object context) {
@@ -967,7 +976,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	}
 	
 	public void setShowPopupConfigDialog(Object context, boolean value) {
-		setInt(PREF_POPUP_CONFIG_DIALOG,  value ? 1 : 0);
+		putInt(PREF_POPUP_CONFIG_DIALOG,  value ? 1 : 0);
 		popupConfigDialog = value ? 1 : 0;
 	}
 	
@@ -976,7 +985,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	}
 	
 	public void setDoCoreValidation(boolean enable) {
-		setBoolean(PREF_DO_CORE_VALIDATION,enable);
+		putBoolean(PREF_DO_CORE_VALIDATION,enable);
 		doCoreValidation = enable;
 	}
 
@@ -1031,7 +1040,7 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	}
 	
 	public void setConnectionTimeout(int value) {
-		setInt(PREF_CONNECTION_TIMEOUT, value);
+		putInt(PREF_CONNECTION_TIMEOUT, value);
 		connectionTimeout = value;
 	}
 	
@@ -1043,128 +1052,6 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 	
 	public void setEnableConnectionRouting(boolean enable) {
 		this.enableConnectionRouting = enable;
-	}
-	
-	@Override
-	public void preferenceChange(PreferenceChangeEvent event) {
-		reload();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.util.IPropertyChangeListener#propertyChange(org.eclipse.jface.util.PropertyChangeEvent)
-	 */
-	@Override
-	public void propertyChange(PropertyChangeEvent event) {
-		reload();
-	}
-
-	// preference/property getters and setters
-	public boolean getBoolean(String key, boolean defaultValue) {
-		String value = preferenceService.get(key, null, getAllPreferences());
-		if (value!=null)
-			return Boolean.parseBoolean(value);
-		return false;
-	}
-	
-	public void setBoolean(String key, boolean value) {
-		if (shouldSaveToProjectPreference(key))
-			projectPreferences.putBoolean(key, value);
-		else
-			instancePreferences.putBoolean(key, value);
-		dirty = true;
-	}
-
-	public int getInt(String key, int defaultValue) {
-		String value = preferenceService.get(key, null, getAllPreferences());
-		if (value!=null)
-			return Integer.parseInt(value);
-		return -1;
-	}
-	
-	public void setInt(String key, int value) {
-		if (shouldSaveToProjectPreference(key))
-			projectPreferences.putInt(key, value);
-		else
-			instancePreferences.putInt(key, value);
-		dirty = true;
-	}
-	
-	public String getString(String key, String defaultValue) {
-		try {
-			Preferences prefs = null;
-			String path = null;
-			int i = key.lastIndexOf("/");
-			if (i>0) {
-				path = key.substring(0, i);
-				key = key.substring(i+1);
-				if (projectPreferences!=null && projectPreferences.nodeExists(path))
-					prefs = projectPreferences.node(path);
-				else if (instancePreferences.nodeExists(path))
-					prefs = instancePreferences.node(path);
-				else if (defaultPreferences.nodeExists(path))
-					prefs = defaultPreferences.node(path);
-			}
-			else {
-				if (projectPreferences!=null)
-					prefs = projectPreferences;
-				else if (instancePreferences.get(key, null)!=null)
-					prefs = instancePreferences;
-				else if (defaultPreferences.get(key,null)!=null)
-					prefs = defaultPreferences;
-			}
-			
-			if (prefs!=null) {
-				String value = prefs.get(key, defaultValue);
-				return value;
-			}
-		}
-		catch (BackingStoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return defaultValue;
-	}
-	
-	public void setString(String key, String value) {
-		Preferences prefs = null;
-		String path = null;
-		int i = key.lastIndexOf("/");
-		if (i>0) {
-			path = key.substring(0, i);
-			key = key.substring(i+1);
-			if (shouldSaveToProjectPreference(key))
-				prefs = projectPreferences.node(path);
-			else
-				prefs = instancePreferences.node(path);
-		}
-		else {
-			if (shouldSaveToProjectPreference(key))
-				prefs = projectPreferences;
-			else
-				prefs = instancePreferences;
-		}		
-		prefs.put(key, value);
-		dirty = true;
-
-	}
-
-	public BPMNDIAttributeDefault getBPMNDIAttributeDefault(String key, BPMNDIAttributeDefault defaultValue) {
-		BPMNDIAttributeDefault value = null;
-		if (shouldSaveToProjectPreference(key))
-			value = BPMNDIAttributeDefault.valueOf(projectPreferences.get(key, defaultValue.name()));
-		else if (preferenceStore.contains(key))
-			value = BPMNDIAttributeDefault.valueOf(preferenceStore.getString(key));
-		else
-			value = defaultValue;
-		return value;
-	}
-	
-	public void setBPMNDIAttributeDefault(String key, BPMNDIAttributeDefault value) {
-		if (shouldSaveToProjectPreference(key))
-			projectPreferences.put(key, value.name());
-		else
-			instancePreferences.put(key, value.name());
-		dirty = true;
 	}
 
 	public static String[] getBPMNDIAttributeDefaultChoices() {
@@ -1391,12 +1278,79 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 				}
 			}
 			else {
-				instancePreferences.put(key, defaultPreferences.get(key,""));
+				if (projectPreferences!=null)
+					projectPreferences.remove(key);
+				instancePreferences.remove(key);
 			}
 		}
 		catch (BackingStoreException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+	}
+	
+	////////////////////////////////////////////////////////////////////////////////
+	// Listeners
+	////////////////////////////////////////////////////////////////////////////////
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.resources.IResourceChangeListener#resourceChanged(org.eclipse.core.resources.IResourceChangeEvent)
+	 */
+	@Override
+	public void resourceChanged(IResourceChangeEvent event) {
+		int type = event.getType();
+		if (type==IResourceChangeEvent.PRE_CLOSE) {
+			try {
+				flush();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			dispose();
+		}
+		if (type==IResourceChangeEvent.PRE_DELETE)
+			dispose();
+	}
+	
+	public void addPreferenceChangeListener(IPreferenceChangeListener listener) {
+		if (preferenceChangeListeners == null)
+			preferenceChangeListeners = new ListenerList();
+		preferenceChangeListeners.add(listener);
+	}
+	
+	public void removePreferenceChangeListener(IPreferenceChangeListener listener) {
+		if (preferenceChangeListeners == null)
+			return;
+		preferenceChangeListeners.remove(listener);
+		if (preferenceChangeListeners.size() == 0)
+			preferenceChangeListeners = null;
+	}
+	
+	protected void firePreferenceEvent(Preferences node, String key, Object oldValue, Object newValue) {
+		if (preferenceChangeListeners == null)
+			return;
+		if (oldValue==null) {
+			if (newValue==null)
+				return;
+		}
+		else {
+			if (oldValue.equals(newValue))
+				return;
+		}
+		Object[] listeners = preferenceChangeListeners.getListeners();
+		final String absolutePath = node.absolutePath() + "/" + key;
+		final PreferenceChangeEvent event = new PreferenceChangeEvent(node, absolutePath, oldValue, newValue);
+		for (int i = 0; i < listeners.length; i++) {
+			final IPreferenceChangeListener listener = (IPreferenceChangeListener) listeners[i];
+			ISafeRunnable job = new ISafeRunnable() {
+				public void handleException(Throwable exception) {
+					// already logged in Platform#run()
+				}
+
+				public void run() throws Exception {
+					listener.preferenceChange(event);
+				}
+			};
+			SafeRunner.run(job);
 		}
 	}
 	
@@ -1432,21 +1386,189 @@ public class Bpmn2Preferences implements IPreferenceChangeListener, IPropertyCha
 		activeProject = project;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.core.resources.IResourceChangeListener#resourceChanged(org.eclipse.core.resources.IResourceChangeEvent)
+	////////////////////////////////////////////////////////////////////////////////
+	// General getters and setters
+	////////////////////////////////////////////////////////////////////////////////
+	/**
+	 * Helper class that parses a Preferences path string into a node path and key.
+	 * This can then be used to get or set the preference using the search order:
+	 * 
+	 *    Project Preferences - only used if explicitly set using {@link Bpmn2Preferences#useProjectPreferences()}
+	 *    Instance Preferences - used when setting a Preference; used when getting if the node and key exist
+	 *    Default Preferences - used only when getting a Preference
 	 */
-	@Override
-	public void resourceChanged(IResourceChangeEvent event) {
-		int type = event.getType();
-		if (type==IResourceChangeEvent.PRE_CLOSE) {
+	private class PreferencesHelper {
+		public IEclipsePreferences root;
+		public Preferences node;
+		public String key;
+		public String path;
+		private boolean set;
+		
+		public PreferencesHelper(String key, boolean set) {
+			this.set = set;
 			try {
-				save();
-			} catch (Exception e) {
+				path = "";
+				if (set) {
+					int i = key.lastIndexOf("/");
+					if (i>0) {
+						path = key.substring(0, i);
+						this.key = key = key.substring(i+1);
+						if (shouldSaveToProjectPreference(key))
+							root = projectPreferences;
+						else
+							root = instancePreferences;
+						node = root.node(path);
+					}
+					else {
+						this.key = key;
+						if (shouldSaveToProjectPreference(key))
+							node = root = projectPreferences;
+						else
+							node = root = instancePreferences;
+					}		
+				}
+				else {
+					int i = key.lastIndexOf("/");
+					if (i>0) {
+						path = key.substring(0, i);
+						this.key = key = key.substring(i+1);
+						if (projectPreferences!=null && projectPreferences.nodeExists(path) && keyExists(projectPreferences.node(path),key)) {
+							root = projectPreferences;
+						}
+						else if (instancePreferences.nodeExists(path) && keyExists(instancePreferences.node(path),key)) {
+							root = instancePreferences;
+						}
+						else if (defaultPreferences.nodeExists(path) && keyExists(defaultPreferences.node(path),key)) {
+							root = defaultPreferences;
+						}
+						if (root!=null)
+							node = root.node(path);
+					}
+					else {
+						this.key = key;
+						if (projectPreferences!=null && keyExists(projectPreferences,key))
+							node = root = projectPreferences;
+						else if (keyExists(instancePreferences,key))
+							node = root = instancePreferences;
+						else if (keyExists(defaultPreferences,key))
+							node = root = defaultPreferences;
+					}
+				}
+			}
+			catch (BackingStoreException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			dispose();
 		}
-		if (type==IResourceChangeEvent.PRE_DELETE)
-			dispose();
+		
+		public Preferences unset() {
+			node.remove(key);
+			if (!path.isEmpty()) {
+				node = root.node(path + "/" + key);
+			}
+			return node;
+		}
+		
+		public String getString(String defaultValue) {
+			Assert.isTrue(!set);
+			if (node!=null)
+				return node.get(key, defaultValue);
+			return defaultValue;
+		}
+		
+		public void put(String value) {
+			Assert.isTrue(set && node!=null);
+			String oldValue = node.get(key, null);
+			node.put(key, value);
+			firePreferenceEvent(node, key, oldValue, value);
+			dirty = true;
+		}
+		
+		public Boolean getBoolean(boolean defaultValue) {
+			return Boolean.parseBoolean( getString("false") );
+		}
+		
+		public void putBoolean(boolean value) {
+			put(Boolean.toString(value));
+		}
+		
+		public int getInt(int defaultValue) {
+			return Integer.parseInt( getString("0") );
+		}
+		
+		public void putInt(int value) {
+			put(Integer.toString(value));
+		}
+		
+		private boolean keyExists(Preferences prefs, String key) {
+			try {
+				for (String k : prefs.keys()) {
+					if (k.equals(key)) {
+						return true;
+					}
+				}
+			}
+			catch (BackingStoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return false;
+		}
+	}
+
+	public boolean getBoolean(String key, boolean defaultValue) {
+		PreferencesHelper helper = new PreferencesHelper(key, false);
+		return helper.getBoolean(defaultValue);
+	}
+	
+	public void putBoolean(String key, boolean value) {
+		PreferencesHelper helper = new PreferencesHelper(key, true);
+		helper.putBoolean(value);
+	}
+
+	public int getInt(String key, int defaultValue) {
+		PreferencesHelper helper = new PreferencesHelper(key, false);
+		return helper.getInt(defaultValue);
+	}
+	
+	public void putInt(String key, int value) {
+		PreferencesHelper helper = new PreferencesHelper(key, true);
+		helper.putInt(value);
+	}
+	
+	public String get(String key, String defaultValue) {
+		PreferencesHelper helper = new PreferencesHelper(key, false);
+		return helper.getString(defaultValue);
+	}
+	
+	public void put(String key, String value) {
+		PreferencesHelper helper = new PreferencesHelper(key, true);
+		helper.put(value);
+
+	}
+
+	public BPMNDIAttributeDefault getBPMNDIAttributeDefault(String key, BPMNDIAttributeDefault defaultValue) {
+		PreferencesHelper helper = new PreferencesHelper(key, false);
+		String str = helper.getString(defaultValue.name());
+		return BPMNDIAttributeDefault.valueOf(str);
+	}
+	
+	public void setBPMNDIAttributeDefault(String key, BPMNDIAttributeDefault value) {
+		PreferencesHelper helper = new PreferencesHelper(key, true);
+		helper.put(value.name());
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent event) {
+		firePreferenceEvent(instancePreferences, event.getProperty(), event.getOldValue(), event.getNewValue());
+	
+		// notify all other Bpmn2Preferences instances (if any)
+		if (instances!=null) {
+			for (Entry<IProject, Bpmn2Preferences> entry : instances.entrySet()) {
+				Bpmn2Preferences pref = entry.getValue();
+				if (pref!=this)
+					pref.firePreferenceEvent(instancePreferences, event.getProperty(), event.getOldValue(), event.getNewValue());
+			}
+		}
 	}
 }

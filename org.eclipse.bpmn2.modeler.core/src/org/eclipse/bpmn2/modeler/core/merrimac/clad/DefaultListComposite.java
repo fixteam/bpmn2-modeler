@@ -108,8 +108,8 @@ public class DefaultListComposite extends AbstractListComposite {
 	/* (non-Javadoc)
 	 * @see org.eclipse.bpmn2.modeler.ui.property.AbstractListComposite#createDetailComposite(org.eclipse.swt.widgets.Composite, java.lang.Class)
 	 */
-	public AbstractDetailComposite createDetailComposite(Composite parent, Class eClass) {
-		AbstractDetailComposite composite = PropertiesCompositeFactory.createDetailComposite(eClass, parent, SWT.NONE);
+	public AbstractDetailComposite createDetailComposite(Class eClass, Composite parent, int style) {
+		AbstractDetailComposite composite = PropertiesCompositeFactory.INSTANCE.createDetailComposite(eClass, parent, SWT.NONE);
 		return composite;
 	}
 

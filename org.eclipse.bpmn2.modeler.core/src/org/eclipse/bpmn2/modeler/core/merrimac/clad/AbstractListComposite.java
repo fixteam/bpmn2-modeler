@@ -19,7 +19,9 @@ import java.util.List;
 
 import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.merrimac.IConstants;
+import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ObjectEditingDialog;
 import org.eclipse.bpmn2.modeler.core.merrimac.providers.TableCursor;
+import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.util.EList;
@@ -44,6 +46,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.ControlAdapter;
@@ -228,12 +231,13 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 	 * Override this to create your own Details section. This composite will be displayed
 	 * in a twistie section whenever the user selects an item from the table. The section
 	 * is automatically hidden when the table is collapsed.
-	 * 
-	 * @param parent
 	 * @param eClass
+	 * @param parent
+	 * @param style TODO
+	 * 
 	 * @return
 	 */
-	abstract public AbstractDetailComposite createDetailComposite(Composite parent, Class eClass);
+	abstract public AbstractDetailComposite createDetailComposite(Class eClass, Composite parent, int style);
 	
 	public ListCompositeContentProvider getContentProvider(EObject object, EStructuralFeature feature, EList<EObject>list) {
 		if (contentProvider==null)
@@ -476,7 +480,51 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 	}
 	
 	private void showDetails(boolean enable) {
-		if (detailSection!=null) {
+		if (detailSection==null)
+			return;
+		
+		boolean useDialog = preferenceStore.getBoolean(Bpmn2Preferences.PREF_USE_POPUP_DIALOG_FOR_LISTS);
+		
+		if (useDialog) {
+			// Use a popup dialog instead of the old "sliding detail panel"
+			if (enable) {
+				IStructuredSelection selection = (IStructuredSelection)tableViewer.getSelection();
+				if (selection.getFirstElement() instanceof EObject) {
+					EObject o = (EObject)selection.getFirstElement();
+					ObjectEditingDialog dialog = new ObjectEditingDialog(getDiagramEditor(), o);
+					// Our clients can provide their own Detail panels, so we'll pass along a IPropertiesCompositeFactory
+					// to the ObjectEditingDialog and delegate construction of the Detail Composite to our clients.
+					IPropertiesCompositeFactory factory = new IPropertiesCompositeFactory() {
+						@Override
+						public AbstractDetailComposite createDetailComposite(Class eClass, AbstractBpmn2PropertySection section) {
+							return null;
+						}
+						@Override
+						public AbstractDetailComposite createDetailComposite(Class eClass, Composite parent, int style) {
+							// this is the only one that's required!
+							return AbstractListComposite.this.createDetailComposite(eClass, parent, style);
+						}
+						@Override
+						public AbstractListComposite createListComposite(Class eClass, AbstractBpmn2PropertySection section) {
+							return null;
+						}
+						@Override
+						public AbstractListComposite createListComposite(Class eClass, Composite parent, int style) {
+							return null;
+						}
+						@Override
+						public AbstractDialogComposite createDialogComposite(EClass eClass, Composite parent, int style) {
+							return null;
+						}
+					};
+					
+					dialog.setCompositeFactory(factory);
+					if (dialog.open() == Window.OK)
+						System.out.println();
+				}
+			}
+		}
+		else {
 			if (enable) {
 	
 				IStructuredSelection selection = (IStructuredSelection)tableViewer.getSelection();
@@ -485,7 +533,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 					
 					if (detailComposite!=null)
 						detailComposite.dispose();
-					detailComposite = createDetailComposite(detailSection, o.eClass().getInstanceClass());
+					detailComposite = createDetailComposite(o.eClass().getInstanceClass(), detailSection, 0);
 					detailSection.setClient(detailComposite);
 					toolkit.adapt(detailComposite);
 	

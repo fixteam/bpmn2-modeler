@@ -119,6 +119,6 @@ public class Bpmn2PropertyPage extends PropertyPage {
 		preferences.setRuntime(rt);
 		preferences.setCheckProjectNature(btnCheckProjectNature.getSelection());
 		
-		preferences.save();
+		preferences.flush();
 	}
 }

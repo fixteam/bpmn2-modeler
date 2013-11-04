@@ -15,18 +15,12 @@ package org.eclipse.bpmn2.modeler.ui.features.activity.subprocess;
 import static org.eclipse.bpmn2.modeler.ui.features.activity.subprocess.SubProcessFeatureContainer.IS_EXPANDED;
 import static org.eclipse.bpmn2.modeler.ui.features.activity.subprocess.SubProcessFeatureContainer.TRIGGERED_BY_EVENT;
 
-import java.io.IOException;
-
 import org.eclipse.bpmn2.Activity;
-import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.SubProcess;
 import org.eclipse.bpmn2.di.BPMNShape;
-import org.eclipse.bpmn2.modeler.core.ModelHandlerLocator;
 import org.eclipse.bpmn2.modeler.core.di.DIUtils;
 import org.eclipse.bpmn2.modeler.core.features.activity.AbstractAddActivityFeature;
-import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
-import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IAddContext;
@@ -34,9 +28,6 @@ import org.eclipse.graphiti.mm.algorithms.Text;
 import org.eclipse.graphiti.mm.algorithms.styles.Orientation;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.Shape;
-import org.eclipse.graphiti.services.Graphiti;
-import org.eclipse.graphiti.services.IGaService;
-import org.eclipse.graphiti.services.IPeService;
 
 public class AddExpandableActivityFeature<T extends Activity>
 	extends AbstractAddActivityFeature<T> {
@@ -81,14 +72,14 @@ public class AddExpandableActivityFeature<T extends Activity>
 
 	@Override
 	public int getWidth() {
-		if (Bpmn2Preferences.getInstance().isExpandedDefault())
+		if (preferences.isExpandedDefault())
 			return GraphicsUtil.SUB_PROCEESS_DEFAULT_WIDTH;
 		return GraphicsUtil.TASK_DEFAULT_WIDTH;
 	}
 
 	@Override
 	public int getHeight() {
-		if (Bpmn2Preferences.getInstance().isExpandedDefault())
+		if (preferences.isExpandedDefault())
 			return GraphicsUtil.SUB_PROCESS_DEFAULT_HEIGHT;
 		return GraphicsUtil.TASK_DEFAULT_HEIGHT;
 	}

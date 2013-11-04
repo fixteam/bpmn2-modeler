@@ -9,6 +9,7 @@ public class Messages extends NLS {
 	public static String Bpmn2Preferences_Always_False;
 	public static String Bpmn2Preferences_Always_true;
 	public static String Bpmn2Preferences_Check_Project_Nature;
+	public static String Bpmn2Preferences_Use_Popup_Dialog_For_Lists;
 	public static String Bpmn2Preferences_Config_Dialog;
 	public static String Bpmn2Preferences_Containers;
 	public static String Bpmn2Preferences_Data_Items;

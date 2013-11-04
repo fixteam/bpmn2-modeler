@@ -83,14 +83,14 @@ public class DataAssignmentDetailComposite extends DefaultDetailComposite {
 			}
 			
 			if (toDetails==null) {
-				toDetails = PropertiesCompositeFactory.createDetailComposite(
+				toDetails = PropertiesCompositeFactory.INSTANCE.createDetailComposite(
 						Expression.class, this, SWT.NONE);
 			}
 			toDetails.setBusinessObject(toExp);
 			toDetails.setTitle(Messages.DataAssignmentDetailComposite_From_Title);
 	
 			if (fromDetails==null) {
-				fromDetails = PropertiesCompositeFactory.createDetailComposite(
+				fromDetails = PropertiesCompositeFactory.INSTANCE.createDetailComposite(
 						Expression.class, this, SWT.NONE);
 			}
 			fromDetails.setBusinessObject(fromExp);

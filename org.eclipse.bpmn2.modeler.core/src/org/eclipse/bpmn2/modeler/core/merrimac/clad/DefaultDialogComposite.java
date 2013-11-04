@@ -20,6 +20,7 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -27,6 +28,7 @@ import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.ui.IWorkbenchPart;
@@ -34,6 +36,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
+import org.eclipse.ui.views.properties.PropertySheet;
 import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.eclipse.ui.views.properties.tabbed.ITabDescriptorProvider;
 
@@ -46,72 +49,88 @@ public class DefaultDialogComposite extends AbstractDialogComposite {
 	protected Composite control;
 	protected ITabDescriptor[] tabDescriptors;
 	protected AbstractBpmn2PropertySection section;
+    private IPropertiesCompositeFactory compositeFactory = null;
 	
 	public DefaultDialogComposite(Composite parent, EClass eclass, int style) {
 		super(parent, eclass, style);
-		
+	}
+	
+	protected void init() {
+		Composite parent = getParent();
 		setLayout(new FormLayout());
 		
-		ITabDescriptor[] tabDescriptors = getTabDescriptors();
-		int detailsCount = getDetailsCount();
-		
-		if (detailsCount>0) {
-			folder = new TabFolder(this, SWT.NONE);
-			folder.setLayout(new FormLayout());
-			folder.setBackground(parent.getBackground());
-
-			for (ITabDescriptor td : tabDescriptors) {
-				if (td instanceof Bpmn2TabDescriptor && !((Bpmn2TabDescriptor)td).isPopup()) {
-					// exclude this tab if not intended for popup dialog
-					continue;
-				}
-				for (Object o : td.getSectionDescriptors()) {
-					if (o instanceof Bpmn2SectionDescriptor) {
-						Bpmn2SectionDescriptor sd = (Bpmn2SectionDescriptor)o;
-			
-						TabItem tab = new TabItem(folder, SWT.NONE);
-						ScrolledForm form = new ScrolledForm(folder, SWT.V_SCROLL);
-						form.setBackground(parent.getBackground());
-						FormData data = new FormData();
-						data.top = new FormAttachment(0, 0);
-						data.bottom = new FormAttachment(100, 0);
-						data.left = new FormAttachment(0, 0);
-						data.right = new FormAttachment(100, 0);
-	
-						form.setLayoutData(data);
-						form.setExpandVertical(true);
-						form.setExpandHorizontal(true);
-						form.setBackground(parent.getBackground());
-						
-						Composite body = form.getBody();
-						TableWrapLayout tableWrapLayout = new TableWrapLayout();
-						tableWrapLayout.numColumns = 1;
-						tableWrapLayout.verticalSpacing = 1;
-						tableWrapLayout.horizontalSpacing = 1;
-						TableWrapData twd = new TableWrapData(TableWrapData.FILL_GRAB);
-						body.setLayout(tableWrapLayout);
-						body.setLayoutData(twd);
-						
-						section = (AbstractBpmn2PropertySection)sd.getSectionClass();
-						AbstractDetailComposite detail = getDetail(section, body);
-						detail.setLayoutData(new TableWrapData(TableWrapData.FILL_GRAB));
-	
-						form.setContent(body);
-						
-						tab.setText(td.getLabel());
-						tab.setControl(form);
-						details.add(detail);
-					}
-				}
-			}
-			control = folder;
-			control.setBackground(parent.getBackground());
-		}
-		else if (section!=null) {
-			control = section.createSectionRoot(parent,SWT.NONE);
+		if (compositeFactory!=null) {
+			// client provided us with a IPropertiesCompositeFactory:
+			// use it to create the Property Sheet composite
+			control = compositeFactory.createDetailComposite(eclass.getInstanceClass(), this, SWT.NONE);
 		}
 		else {
-			control = PropertiesCompositeFactory.createDetailComposite(eclass.getInstanceClass(), parent, SWT.NONE);
+			// Get a list of Property Sheet tabs using the current selection from the active WorkbenchPart
+			// and build a TabFolder that looks like the normal tabbed Property View, except the tabs
+			// are laid out horizontally instead of vertically.
+			ITabDescriptor[] tabDescriptors = getTabDescriptors();
+			int detailsCount = getDetailsCount();
+			
+			if (detailsCount>0) {
+				folder = new TabFolder(this, SWT.NONE);
+				folder.setLayout(new FormLayout());
+				folder.setBackground(parent.getBackground());
+	
+				for (ITabDescriptor td : tabDescriptors) {
+					if (td instanceof Bpmn2TabDescriptor && !((Bpmn2TabDescriptor)td).isPopup()) {
+						// exclude this tab if not intended for popup dialog
+						continue;
+					}
+					for (Object o : td.getSectionDescriptors()) {
+						if (o instanceof Bpmn2SectionDescriptor) {
+							Bpmn2SectionDescriptor sd = (Bpmn2SectionDescriptor)o;
+				
+							TabItem tab = new TabItem(folder, SWT.NONE);
+							ScrolledForm form = new ScrolledForm(folder, SWT.V_SCROLL);
+							form.setBackground(parent.getBackground());
+							FormData data = new FormData();
+							data.top = new FormAttachment(0, 0);
+							data.bottom = new FormAttachment(100, 0);
+							data.left = new FormAttachment(0, 0);
+							data.right = new FormAttachment(100, 0);
+		
+							form.setLayoutData(data);
+							form.setExpandVertical(true);
+							form.setExpandHorizontal(true);
+							form.setBackground(parent.getBackground());
+							
+							Composite body = form.getBody();
+							TableWrapLayout tableWrapLayout = new TableWrapLayout();
+							tableWrapLayout.numColumns = 1;
+							tableWrapLayout.verticalSpacing = 1;
+							tableWrapLayout.horizontalSpacing = 1;
+							TableWrapData twd = new TableWrapData(TableWrapData.FILL_GRAB);
+							body.setLayout(tableWrapLayout);
+							body.setLayoutData(twd);
+							
+							section = (AbstractBpmn2PropertySection)sd.getSectionClass();
+							AbstractDetailComposite detail = getDetail(section, body);
+							detail.setLayoutData(new TableWrapData(TableWrapData.FILL_GRAB));
+		
+							form.setContent(body);
+							
+							tab.setText(td.getLabel());
+							tab.setControl(form);
+							details.add(detail);
+						}
+					}
+				}
+				control = folder;
+				control.setBackground(parent.getBackground());
+			}
+			else if (section!=null) {
+				control = section.createSectionRoot(this,SWT.NONE);
+			}
+		}
+		if (control==null) {
+			// Unable to get the current selection from the WorkbenchPart?
+			// Look up the Property Sheet composite in the global registry.
+			control = PropertiesCompositeFactory.INSTANCE.createDetailComposite(eclass.getInstanceClass(), this, SWT.NONE);
 		}
 		
 		FormData data = new FormData();
@@ -125,8 +144,12 @@ public class DefaultDialogComposite extends AbstractDialogComposite {
 	protected ITabDescriptor[] getTabDescriptors() {
 		if (tabDescriptors==null) {
 			IWorkbenchPart part = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getPartService().getActivePart();
+			part.getAdapter(ITabDescriptorProvider.class);
 			ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();
 			ITabDescriptorProvider tabDescriptorProvider = (ITabDescriptorProvider)part.getAdapter(ITabDescriptorProvider.class);
+			if (selection.isEmpty()) {
+				selection = new StructuredSelection(businessObject);
+			}
 			tabDescriptors = tabDescriptorProvider.getTabDescriptors(part,selection);
 		}
 		return tabDescriptors;
@@ -155,10 +178,18 @@ public class DefaultDialogComposite extends AbstractDialogComposite {
 	protected AbstractDetailComposite getDetail(AbstractBpmn2PropertySection section, Composite parent) {
 		return section.createSectionRoot(parent,SWT.NONE);
 	}
-
+	
+	@Override
+	public void setData(String key, Object object) {
+		if ("factory".equals(key) && object instanceof IPropertiesCompositeFactory)
+			compositeFactory = (IPropertiesCompositeFactory) object;
+	}
+	
 	@Override
 	public void setData(Object object) {
 		businessObject = (EObject)object;
+		init();
+		
 		if (details!=null && details.size()>0) {
 			for (AbstractDetailComposite detail : details) {
 				detail.setIsPopupDialog(true);
@@ -166,6 +197,7 @@ public class DefaultDialogComposite extends AbstractDialogComposite {
 			}
 		}
 		else if (control instanceof AbstractDetailComposite) {
+			((AbstractDetailComposite)control).setIsPopupDialog(true);
 			((AbstractDetailComposite)control).setBusinessObject(businessObject);
 		}
 		

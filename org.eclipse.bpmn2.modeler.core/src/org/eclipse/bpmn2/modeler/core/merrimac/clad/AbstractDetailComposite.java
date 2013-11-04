@@ -542,10 +542,10 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 					listItemClass.getInstanceClass() :
 					feature.getEType().getInstanceClass();
 			if (propertySection!=null) {
-				tableComposite = PropertiesCompositeFactory.createListComposite(clazz, propertySection);
+				tableComposite = PropertiesCompositeFactory.INSTANCE.createListComposite(clazz, propertySection);
 			}
 			else {
-				tableComposite = PropertiesCompositeFactory.createListComposite(clazz, this, AbstractListComposite.DEFAULT_STYLE);
+				tableComposite = PropertiesCompositeFactory.INSTANCE.createListComposite(clazz, this, AbstractListComposite.DEFAULT_STYLE);
 			}
 			
 			tableComposite.setListItemClass(listItemClass);
@@ -561,7 +561,7 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 			Class clazz = (listItemClass!=null) ?
 					listItemClass.getInstanceClass() :
 					feature.getEType().getInstanceClass();
-			tableComposite = PropertiesCompositeFactory.createListComposite(clazz, parent, AbstractListComposite.DEFAULT_STYLE);
+			tableComposite = PropertiesCompositeFactory.INSTANCE.createListComposite(clazz, parent, AbstractListComposite.DEFAULT_STYLE);
 			tableComposite.setListItemClass(listItemClass);
 			tableComposite.bindList(object, feature);
 		}

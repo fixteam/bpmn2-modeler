@@ -11,6 +11,7 @@ import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.di.BpmnDiPackage;
 import org.eclipse.bpmn2.modeler.core.features.IBpmn2CreateFeature;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
+import org.eclipse.bpmn2.modeler.core.utils.ModelUtil.Bpmn2DiagramType;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
@@ -26,14 +27,18 @@ public class ModelEnablements {
 	// Map of enabled EClasses and their enabled Features
 	private Hashtable<String, HashSet<String>> classes = new Hashtable<String, HashSet<String>>();
 	private TargetRuntime targetRuntime = null;
+	private Bpmn2DiagramType diagramType;
+	private String profile;
 	private int enableIdAttribute = -1;
 	
 	// require a TargetRuntime!
 	private ModelEnablements() {
 	}
 
-	public ModelEnablements(TargetRuntime targetRuntime) {
+	public ModelEnablements(TargetRuntime targetRuntime,  Bpmn2DiagramType diagramType, String profile) {
 		this.targetRuntime = targetRuntime;
+		this.diagramType = diagramType;
+		this.profile = profile;
 	}
 
 	public void setEnableIdAttribute(boolean enabled) {
@@ -339,7 +344,7 @@ public class ModelEnablements {
 			// before all of the TargetRuntimes have been loaded by TargetRuntime.getAllRuntimes().
 			// See Bpmn2Preferences#loadDefaults()
 			if (enableIdAttribute== -1) {
-				Bpmn2Preferences prefs = Bpmn2Preferences.getInstance();
+				Bpmn2Preferences prefs = Bpmn2Preferences.getInstance(targetRuntime.getResource());
 				setEnableIdAttribute(prefs.getShowIdAttribute());
 			}
 			if (!getEnableIdAttribute())

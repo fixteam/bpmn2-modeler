@@ -293,7 +293,7 @@ public abstract class AbstractBpmn2AddElementFeature<T extends BaseElement>
 					return laneShape.isIsHorizontal();
 			}
 		}
-		return Bpmn2Preferences.getInstance().isHorizontalDefault();
+		return Bpmn2Preferences.getInstance(context.getTargetContainer()).isHorizontalDefault();
 	}
 	
 	public abstract int getHeight();

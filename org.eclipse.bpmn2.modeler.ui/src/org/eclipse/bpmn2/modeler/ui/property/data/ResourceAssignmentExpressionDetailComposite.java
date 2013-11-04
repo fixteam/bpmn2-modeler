@@ -62,7 +62,7 @@ public class ResourceAssignmentExpressionDetailComposite extends ExpressionDetai
 			}
 			
 			if (exprDetails==null) {
-				exprDetails = PropertiesCompositeFactory.createDetailComposite(
+				exprDetails = PropertiesCompositeFactory.INSTANCE.createDetailComposite(
 						Expression.class, this, SWT.NONE);
 			}
 			exprDetails.setBusinessObject(expr);

@@ -21,6 +21,7 @@ public class ToolPaletteDescriptor extends BaseRuntimeDescriptor {
 
 	public final static String TOOLPART_ID = "ToolPartID"; //$NON-NLS-1$
 	public final static String TOOLPART_OPTIONAL = "ToolPartOptional"; //$NON-NLS-1$
+	public final static String DEFAULT_PALETTE_ID = "org.bpmn2.modeler.toolpalette.default.categories"; //$NON-NLS-1$
 	
 	// The Drawers
 	public static class CategoryDescriptor {
@@ -115,8 +116,6 @@ public class ToolPaletteDescriptor extends BaseRuntimeDescriptor {
 		private List<ToolPart> toolParts = new ArrayList<ToolPart>() {
 			@Override
 			public boolean add(ToolPart tp) {
-				if (tp.getName().isEmpty())
-					System.out.println(""); //$NON-NLS-1$
 				return super.add(tp);
 			}
 		};

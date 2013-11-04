@@ -34,6 +34,7 @@ import org.eclipse.bpmn2.DataObjectReference;
 import org.eclipse.bpmn2.DataOutput;
 import org.eclipse.bpmn2.DataStore;
 import org.eclipse.bpmn2.DataStoreReference;
+import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.EndEvent;
 import org.eclipse.bpmn2.ErrorEventDefinition;
 import org.eclipse.bpmn2.EscalationEventDefinition;
@@ -168,6 +169,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
 import org.eclipse.emf.common.command.BasicCommandStack;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.util.BasicDiagnostic;
@@ -196,8 +199,6 @@ import org.eclipse.graphiti.ui.editor.DiagramBehavior;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.graphiti.ui.editor.DiagramEditorInput;
 import org.eclipse.graphiti.ui.internal.editor.GFPaletteRoot;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -227,7 +228,7 @@ import org.eclipse.wst.sse.ui.StructuredTextEditor;
  * 
  */
 @SuppressWarnings("restriction")
-public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListener, IGotoMarker {
+public class BPMN2Editor extends DiagramEditor implements IPreferenceChangeListener, IGotoMarker {
 	
 	static {
 		TargetRuntime.getAllRuntimes();
@@ -547,8 +548,7 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 	
 	private void loadPreferences(IProject project) {
 		preferences = Bpmn2Preferences.getInstance(project);
-		preferences.load();
-		preferences.getPreferenceStore().addPropertyChangeListener(this);
+		preferences.addPreferenceChangeListener(this);
 	}
 
 	/**
@@ -576,8 +576,8 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 	public ModelEnablements getModelEnablements() {
 		if (modelEnablements==null) {
 			Bpmn2DiagramType diagramType = ModelUtil.getDiagramType(bpmnDiagram);
-			String profile = getPreferences().getDefaultToolProfile(diagramType);
-			modelEnablements = getPreferences().getModelEnablements(diagramType, profile);
+			String profile = getPreferences().getDefaultToolProfile(getTargetRuntime(), diagramType);
+			modelEnablements = getPreferences().getModelEnablements(getTargetRuntime(), diagramType, profile);
 		}
 		return modelEnablements;
 	}
@@ -609,6 +609,8 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 	public void updatePalette() {
 		GFPaletteRoot pr = (GFPaletteRoot)getPaletteRoot();
 		if (pr!=null) {
+			// force a reload of this
+			modelEnablements = null;
 			pr.updatePaletteEntries();
 			BPMNToolBehaviorProvider toolBehaviorProvider = 
 					(BPMNToolBehaviorProvider)getDiagramTypeProvider().
@@ -823,7 +825,7 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 		}
 		if (required == ToolPaletteDescriptor.class) {
 			Bpmn2DiagramType diagramType = ModelUtil.getDiagramType(bpmnDiagram);
-			String profile = getPreferences().getDefaultToolProfile(diagramType);
+			String profile = getPreferences().getDefaultToolProfile(getTargetRuntime(), diagramType);
 			return getTargetRuntime().getToolPalette(diagramType, profile);
 		}
 		if (required == NotificationFilter.class) {
@@ -854,7 +856,7 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 			}
 		}
 		ModelUtil.clearIDs(modelHandler.getResource(), instances==0);
-		getPreferences().getPreferenceStore().removePropertyChangeListener(this);
+		getPreferences().removePreferenceChangeListener(this);
 		
 		getResourceSet().eAdapters().remove(getEditorAdapter());
 		removeSelectionListener();
@@ -927,8 +929,11 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 	}
 	
 	public BPMNDiagram getBpmnDiagram() {
-		if (bpmnDiagram==null)
-			bpmnDiagram = getModelHandler().getDefinitions().getDiagrams().get(0);
+		if (bpmnDiagram==null) {
+			Definitions definitions = ModelUtil.getDefinitions(bpmnResource);
+			if (definitions!=null && definitions.getDiagrams().size()>0)
+				bpmnDiagram = definitions.getDiagrams().get(0);
+		}
 
 //		if (bpmnDiagram!=null) {
 //			GraphicalViewer viewer = getGraphicalViewer();
@@ -1078,7 +1083,7 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 			ModelHandlerLocator.remove(modelUri);
 			modelUri = newURI;
 			if (preferences!=null) {
-				preferences.getPreferenceStore().removePropertyChangeListener(this);
+				preferences.removePreferenceChangeListener(this);
 				preferences.dispose();
 				preferences = null;
 			}
@@ -1190,12 +1195,14 @@ public class BPMN2Editor extends DiagramEditor implements IPropertyChangeListene
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.util.IPropertyChangeListener#propertyChange(org.eclipse.jface.util.PropertyChangeEvent)
-	 */
 	@Override
-	public void propertyChange(PropertyChangeEvent event) {
-		if (event.getProperty().endsWith(Bpmn2Preferences.PREF_SHAPE_STYLE)) {
+	public void preferenceChange(PreferenceChangeEvent event) {
+		getPreferences().reload();
+		
+		if (event.getKey().contains("/"+Bpmn2Preferences.PREF_MODEL_ENABLEMENT+"/"))
+			modelEnablements = null;
+
+		if (event.getKey().contains("/"+Bpmn2Preferences.PREF_SHAPE_STYLE+"/")) {
 			getEditingDomain().getCommandStack().execute(new RecordingCommand(getEditingDomain()) {
 				@Override
 				protected void doExecute() {

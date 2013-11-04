@@ -72,7 +72,7 @@ public class ResourceParameterBindingDetailComposite extends DefaultDetailCompos
 			}
 			
 			if (exprDetails==null) {
-				exprDetails = PropertiesCompositeFactory.createDetailComposite(
+				exprDetails = PropertiesCompositeFactory.INSTANCE.createDetailComposite(
 						Expression.class, this, SWT.NONE);
 			}
 			exprDetails.setBusinessObject(expr);

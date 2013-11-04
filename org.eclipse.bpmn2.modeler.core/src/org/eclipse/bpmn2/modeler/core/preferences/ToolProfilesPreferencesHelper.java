@@ -98,7 +98,6 @@ public class ToolProfilesPreferencesHelper {
 						EClassifier ec = pkg.getEClassifier(name);
 						if (ec instanceof EClass && !elementSet.contains(ec)) {
 							elementSet.add((EClass)ec);
-							System.out.println(ec.getName());
 						}
 					}
 				}
@@ -126,7 +125,7 @@ public class ToolProfilesPreferencesHelper {
 
 	public void copyModelEnablements(ModelEnablements copyMe) {
 		if (modelEnablements==null) {
-			modelEnablements = new ModelEnablements(targetRuntime);
+			modelEnablements = new ModelEnablements(targetRuntime, diagramType, profile);
 		}
 		modelEnablements.setEnabledAll(false);
 		for (String name : copyMe.getAllEnabled()) {
@@ -379,7 +378,7 @@ public class ToolProfilesPreferencesHelper {
 		Properties p = new Properties();
 		p.load(new FileInputStream(path));
 		
-		ModelEnablements me = new ModelEnablements(targetRuntime);
+		ModelEnablements me = new ModelEnablements(targetRuntime, diagramType, profile);
 
 		for (Object key : p.keySet()) {
 			Object value = p.get(key);

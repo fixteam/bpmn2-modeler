@@ -74,7 +74,8 @@ public class BPMN2PersistencyBehavior extends DefaultPersistencyBehavior {
 				try {
 					savedResources.addAll(save(diagramBehavior.getEditingDomain(), saveOptions, monitor));
 				} catch (final WrappedException e) {
-					final String msg = e.getMessage().replaceAll("\tat .*", "").replaceFirst(".*Exception: ","").trim(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+					String emsg = e.getMessage().replaceAll("\tat .*", "").replaceFirst(".*Exception: ","").trim(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+					final String msg = emsg.replace("\r\n\r\n", "").replace("\n\n", ""); 
 					Display.getDefault().asyncExec(new Runnable() {
 						@Override
 						public void run() {
