@@ -10,17 +10,42 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.features;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.bpmn2.BaseElement;
+import org.eclipse.bpmn2.Definitions;
+import org.eclipse.bpmn2.FlowElement;
+import org.eclipse.bpmn2.FlowNode;
+import org.eclipse.bpmn2.Process;
+import org.eclipse.bpmn2.RootElement;
+import org.eclipse.bpmn2.di.BPMNDiagram;
+import org.eclipse.bpmn2.modeler.core.ModelHandler;
+import org.eclipse.bpmn2.modeler.core.di.DIUtils;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
+import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
+import org.eclipse.bpmn2.util.Bpmn2Resource;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.dd.di.DiagramElement;
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.xmi.XMLResource;
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
+import org.eclipse.emf.transaction.RecordingCommand;
+import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.ICopyContext;
 import org.eclipse.graphiti.mm.pictograms.Anchor;
 import org.eclipse.graphiti.mm.pictograms.Connection;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
+import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
+import org.eclipse.graphiti.services.Graphiti;
+import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.graphiti.ui.features.AbstractCopyFeature;
 
 public class DefaultCopyBPMNElementFeature extends AbstractCopyFeature {
@@ -31,7 +56,7 @@ public class DefaultCopyBPMNElementFeature extends AbstractCopyFeature {
 
 	@Override
 	public boolean canCopy(ICopyContext context) {
-        final PictogramElement[] pes = context.getPictogramElements();
+      /*  final PictogramElement[] pes = context.getPictogramElements();
         if (pes == null || pes.length == 0) {  // nothing selected
             return false;
         }
@@ -42,7 +67,7 @@ public class DefaultCopyBPMNElementFeature extends AbstractCopyFeature {
             if (!(bo instanceof BaseElement)) {
                 return false;
             }
-        }
+        }*/
         return true;
 	}
 
@@ -92,6 +117,37 @@ public class DefaultCopyBPMNElementFeature extends AbstractCopyFeature {
         copied.removeAll(ignored);
         
         // copy all PictogramElements to the clipboard
+       /* ResourceSet resourceSet = new ResourceSetImpl();
+
+		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("xml", new XMIResourceFactoryImpl());
+
+		String path = ResourcesPlugin.getWorkspace().getRoot().getProject("fixflow-expand").getLocation().toString() + "/template/process_demo_2.bpmn";
+		
+		XMLResource resource = (XMLResource) resourceSet.getResource(URI.createFileURI(path), true);
+		
+		try {
+			resource.load(null);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		List<PictogramElement> pictogramElements = new ArrayList<PictogramElement>();
+		
+		Definitions definitions = ModelUtil.getDefinitions(resource);
+		Process process = (Process) definitions.getRootElements().get(0);
+		final BPMNDiagram bpmnDiagram = definitions.getDiagrams().get(0);
+		final Diagram diagram = Graphiti.getPeCreateService().createDiagram("BPMN2", bpmnDiagram.getName(), true);
+		TransactionalEditingDomain domain = ((DiagramEditor) getDiagramEditor()).getEditingDomain();
+		domain.getCommandStack().execute(new RecordingCommand(domain) {
+			protected void doExecute() {
+				getFeatureProvider().link(diagram, bpmnDiagram);
+			}
+		});
+		
+		for (BaseElement baseElement : ModelHandler.getAll(resource, FlowNode.class)) {
+			pictogramElements.add(getFeatureProvider().getPictogramElementForBusinessObject(baseElement));
+		}
+		putToClipboard(pictogramElements.toArray());*/
         putToClipboard(copied.toArray());
 	}
 	

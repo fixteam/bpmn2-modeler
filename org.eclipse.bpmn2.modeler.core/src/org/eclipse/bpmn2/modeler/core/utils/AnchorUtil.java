@@ -232,24 +232,10 @@ public class AnchorUtil {
 		BoundaryAnchor targetRight = targetBoundaryAnchors.get(AnchorLocation.RIGHT);
 		FixPointAnchor newStartAnchor = null;
 		FixPointAnchor newEndAnchor = null;
-		Point p1 = null;
-		Point p2 = null;
-		
-		EList<Point> bendpoints = null;
-		if(connection!=null) {
-			bendpoints = ((FreeFormConnection) connection).getBendpoints();
-		}
 
 		if (connection==null) {
-		//choose the correct anchor   --20130528 wy
-			if(bendpoints!=null) {
-				p1 = bendpoints.get(bendpoints.size()-1);
-				p2 = bendpoints.get(0);
-			}else{
-				p1 = GraphicsUtil.getShapeCenter(source);
-				p2 = GraphicsUtil.getShapeCenter(target);
-			}
-			
+			Point p1 = GraphicsUtil.getShapeCenter(source);
+			Point p2 = GraphicsUtil.getShapeCenter(target);
 			newStartAnchor = findNearestAnchor(source, p2);
 			newEndAnchor = findNearestAnchor(target,p1);
 			return new Tuple<FixPointAnchor, FixPointAnchor>(newStartAnchor,newEndAnchor);
@@ -315,10 +301,11 @@ public class AnchorUtil {
 				newEndAnchor = ba.anchor;
 		}
 		else {
-			if(bendpoints!=null && bendpoints.size()>0) {
-				p2 = bendpoints.get(0);
-			} else {
-				p2 = GraphicsUtil.getShapeCenter(target);
+			if (oldEndAnchor instanceof FixPointAnchor)
+				newEndAnchor = (FixPointAnchor)oldEndAnchor;
+			else {
+				Point p = GraphicsUtil.getShapeCenter(source);
+				newEndAnchor = findNearestBoundaryAnchor(target, p).anchor;
 			}
 		}
 		
@@ -348,80 +335,8 @@ public class AnchorUtil {
 				newStartAnchor = ba.anchor;
 		}
 		else {
-			if(bendpoints!=null && bendpoints.size()>0) {
-				p1 = bendpoints.get(bendpoints.size()-1);
-			} else {
-				p1 = GraphicsUtil.getShapeCenter(source);
-			}
-		}
-		newEndAnchor = findNearestBoundaryAnchor(target, p1).anchor;
-		
-		if (oldStartAnchor==null) {
-			oldStartAnchor = newStartAnchor;
-		}
-		if (oldEndAnchor==null) {
-			oldEndAnchor = newEndAnchor;
-		}
-
-		// if the source and/or target anchors are "Ad Hoc" anchors (e.g., the shape is a participant)
-		// the Connection should have the CONNECTION_SOURCE_LOCATION and/or CONNECTION_TARGET_LOCATION
-		// properties set - these are the locations at which the connection was started and/or terminated.
-		if (targetLoc!=null && useAdHocAnchors(target,connection)) {
-			// ensure that the new anchor is located on the edge of the shape
-			if (newEndAnchor == targetTop.anchor || newEndAnchor == targetBottom.anchor)
-				targetLoc.setY(newEndAnchor.getLocation().getY());
-			else if (newEndAnchor == targetLeft.anchor || newEndAnchor == targetRight.anchor)
-				targetLoc.setX(newEndAnchor.getLocation().getX());
-			adjustPoint(target,targetLoc);
-			// if this is a newly created connection, adjust the source location if necessary:
-			// if the calculated boundary of the source and target figures are above/below or
-			// left/right of each other, align the source location so that the connection line
-			// is vertical/horizontal
-			if (peService.getPropertyValue(connection, CONNECTION_CREATED)!=null && sourceLoc!=null) {
-				FixPointAnchor sourceAnchor = (FixPointAnchor) newStartAnchor;
-				if ((newEndAnchor == targetTop.anchor && sourceAnchor == sourceBottom.anchor) ||
-					(newEndAnchor == targetBottom.anchor && sourceAnchor == sourceTop.anchor)) {
-					// ensure a vertical connection line
-					sourceLoc.setX(targetLoc.getX());
-				}
-				else if ((newEndAnchor == targetRight.anchor && sourceAnchor == sourceLeft.anchor) ||
-					(newEndAnchor == targetLeft.anchor && sourceAnchor == sourceRight.anchor)) {
-					// ensure a horizontal line
-					sourceLoc.setY(targetLoc.getY());
-				}
-				peService.removeProperty(connection, CONNECTION_CREATED);
-			}
-			peService.setPropertyValue(connection, AnchorUtil.CONNECTION_TARGET_LOCATION,
-					AnchorUtil.pointToString(targetLoc));
-
-			newEndAnchor = createAdHocAnchor(target, targetLoc);
-		}
-		else if (isAdHocAnchor(oldEndAnchor) && oldEndAnchor != newEndAnchor) {
-			// don't replace an AdHoc anchor with a BoundaryAnchor unless the target shape is different
-			if (oldEndAnchor.getParent() == target) {
-				// connection's old end anchor parent is the same shape as the new parent shape,
-				// so use the existing AdHoc anchor instead of replacing it with a BoundaryAnchor
-				newEndAnchor = (FixPointAnchor)oldEndAnchor;
-			}
-		}
-
-		if (sourceLoc!=null && useAdHocAnchors(source,connection)) {
-			if (newStartAnchor == sourceTop.anchor || newStartAnchor == sourceBottom.anchor)
-				sourceLoc.setY(newStartAnchor.getLocation().getY());
-			else if (newStartAnchor == sourceLeft.anchor || newStartAnchor == sourceRight.anchor)
-				sourceLoc.setX(newStartAnchor.getLocation().getX());
-			adjustPoint(source, sourceLoc);
-			newStartAnchor = createAdHocAnchor(source, sourceLoc);
-			
-			peService.setPropertyValue(connection,
-					AnchorUtil.CONNECTION_SOURCE_LOCATION,
-					AnchorUtil.pointToString(sourceLoc));
-		}
-		else if (isAdHocAnchor(oldStartAnchor) && oldStartAnchor != newStartAnchor) {
-			// same deal as above for source anchor
-			if (oldStartAnchor.getParent() == source) {
+			if (oldStartAnchor instanceof FixPointAnchor)
 				newStartAnchor = (FixPointAnchor)oldStartAnchor;
-			}
 			else {
 				Point p = GraphicsUtil.getShapeCenter(target);
 				newStartAnchor = findNearestBoundaryAnchor(source, p).anchor;

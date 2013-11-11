@@ -10,11 +10,13 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.features;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.Map.Entry;
 
 import org.eclipse.bpmn2.Activity;
@@ -25,6 +27,7 @@ import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.Collaboration;
 import org.eclipse.bpmn2.ConversationLink;
 import org.eclipse.bpmn2.Definitions;
+import org.eclipse.bpmn2.EndEvent;
 import org.eclipse.bpmn2.FlowElement;
 import org.eclipse.bpmn2.FlowElementsContainer;
 import org.eclipse.bpmn2.FlowNode;
@@ -35,11 +38,15 @@ import org.eclipse.bpmn2.MessageFlow;
 import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.Process;
 import org.eclipse.bpmn2.SequenceFlow;
+import org.eclipse.bpmn2.UserTask;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.di.BPMNEdge;
 import org.eclipse.bpmn2.di.BPMNShape;
+import org.eclipse.bpmn2.di.BpmnDiFactory;
+import org.eclipse.bpmn2.modeler.core.ModelHandlerLocator;
 import org.eclipse.bpmn2.modeler.core.di.DIUtils;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
+import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil.AnchorLocation;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil.BoundaryAnchor;
@@ -47,6 +54,9 @@ import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
+import org.eclipse.dd.dc.Bounds;
+import org.eclipse.dd.dc.DcFactory;
+import org.eclipse.dd.di.Plane;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
@@ -73,6 +83,7 @@ import org.eclipse.graphiti.mm.pictograms.FreeFormConnection;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
+import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.graphiti.ui.features.AbstractPasteFeature;
 
 public class DefaultPasteBPMNElementFeature extends AbstractPasteFeature {
@@ -203,6 +214,46 @@ public class DefaultPasteBPMNElementFeature extends AbstractPasteFeature {
 		}
 		
 		this.getDiagramEditor().setPictogramElementsForSelection(newPes);
+		
+		EndEvent endEvent = null;
+		UserTask userTask = null;
+		try {
+			endEvent = ModelHandlerLocator.getModelHandler(resource).create(EndEvent.class);
+			userTask = ModelHandlerLocator.getModelHandler(resource).create(UserTask.class);
+			userTask.setId(java.util.UUID.randomUUID().toString());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		Plane plane = definitions.getDiagrams().get(0).getPlane();
+		
+		// EndEvent shape
+		BPMNShape shape = BpmnDiFactory.eINSTANCE.createBPMNShape();
+		ModelUtil.setID(shape,resource);
+
+		shape.setBpmnElement(userTask);
+		Bounds bounds = DcFactory.eINSTANCE.createBounds();
+		bounds.setX(x);
+		bounds.setY(y);
+		bounds.setWidth(GraphicsUtil.EVENT_SIZE);
+		bounds.setHeight(GraphicsUtil.EVENT_SIZE);
+		shape.setBounds(bounds);
+		plane.getPlaneElement().add(shape);
+		Bpmn2Preferences.getInstance(resource).applyBPMNDIDefaults(shape, null);
+		
+		((Process)definitions.getRootElements().get(0)).getFlowElements().add(userTask);
+		getFeatureProvider().link(getDiagram(), definitions.getDiagrams().get(0));
+		
+		AddContext ac = new AddContext(new AreaContext(), userTask);
+		ac.setTargetContainer(targetContainerShape);
+		ac.setNewObject(userTask);
+		ac.setLocation(x, y);
+		IAddFeature af = getFeatureProvider().getAddFeature(ac);
+		af.add(ac);
+		
+		/*UpdateContext updateContext = new UpdateContext(getDiagram().getGraphicsAlgorithm().getPictogramElement());
+	    IUpdateFeature updateFeature = getFeatureProvider().getUpdateFeature(updateContext);
+	    updateFeature.update(updateContext);*/
 	}
 	
 	protected Object[] getFromClipboard() {
@@ -357,14 +408,18 @@ public class DefaultPasteBPMNElementFeature extends AbstractPasteFeature {
 		EStructuralFeature feature = newObject.eClass().getEStructuralFeature("id"); //$NON-NLS-1$
 		if (feature != null) {
 			oldId = (String) newObject.eGet(feature);
-			if (idMap.contains(oldId)) {
-				newId = idMap.get(oldId);
-				newObject.eSet(feature, newId);
-			}
-			else {
-				newObject.eUnset(feature);
-				newId = ModelUtil.setID(newObject);
-				idMap.put(oldId, newId);
+			if(oldId!=null){
+				if (idMap.size()>0 && idMap.contains(oldId)) {
+					newId = idMap.get(oldId);
+					newObject.eSet(feature, newId);
+				}
+				else {
+					newObject.eUnset(feature);
+					newId = ModelUtil.setID(newObject);
+					idMap.put(oldId, newId);
+				}
+			} else {
+				oldId = ModelUtil.setID(newObject);
 			}
 		}
 		return oldId;

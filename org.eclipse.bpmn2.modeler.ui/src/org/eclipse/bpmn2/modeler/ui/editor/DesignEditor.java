@@ -11,7 +11,9 @@
 package org.eclipse.bpmn2.modeler.ui.editor;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.Bpmn2Package;
@@ -20,9 +22,10 @@ import org.eclipse.bpmn2.Collaboration;
 import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.FlowElement;
 import org.eclipse.bpmn2.FlowElementsContainer;
+import org.eclipse.bpmn2.FlowNode;
 import org.eclipse.bpmn2.Participant;
-import org.eclipse.bpmn2.Process;
 import org.eclipse.bpmn2.RootElement;
+import org.eclipse.bpmn2.SequenceFlow;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.di.BPMNPlane;
 import org.eclipse.bpmn2.modeler.core.di.DIUtils;
@@ -31,7 +34,6 @@ import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.ui.Activator;
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.notify.Notification;
-import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -43,14 +45,13 @@ import org.eclipse.emf.transaction.ResourceSetListener;
 import org.eclipse.emf.transaction.RollbackException;
 import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.emf.transaction.util.TransactionUtil;
-import org.eclipse.gef.ContextMenuProvider;
 import org.eclipse.gef.ui.actions.ActionRegistry;
 import org.eclipse.gef.ui.actions.WorkbenchPartAction;
+import org.eclipse.graphiti.mm.pictograms.Connection;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
-import org.eclipse.graphiti.ui.editor.DiagramEditorContextMenuProvider;
+import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.osgi.util.NLS;
@@ -66,6 +67,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.contentoutline.ContentOutline;
@@ -432,6 +434,55 @@ public class DesignEditor extends BPMN2Editor {
 						});
 					}
 				}
+			}
+		};
+		registry.registerAction(action);
+		
+		//自己添加右键菜单
+		action = new WorkbenchPartAction(multipageEditor.getDesignEditor()) {
+
+			@Override
+			protected void init() {
+				super.init();
+				setId("add.to.model"); //$NON-NLS-1$
+			}
+
+			@Override
+			public String getText() {
+				return "创建到模板...";
+			}
+
+			@Override
+			protected boolean calculateEnabled() {
+				return true;
+			}
+
+			public void run() {
+				PictogramElement pictogramElement[] = getDiagramTypeProvider().getDiagramEditor().getSelectedPictogramElements();
+				/*for (PictogramElement pictogramElement2 : pictogramElement) {
+					EObject eObject = BusinessObjectUtil.getBusinessObjectForPictogramElement(pictogramElement2);
+					if(eObject instanceof FlowNode) {
+						MessageDialog.openInformation(null, "提示", "选中了元素 "+((FlowNode)eObject).getId());
+					}
+					if(eObject instanceof SequenceFlow) {
+						MessageDialog.openInformation(null, "提示", "选中了元素 "+((SequenceFlow)eObject).getId());
+					}
+				}*/
+				Set<EObject> set = new HashSet<EObject>();
+				for (PictogramElement pictogramElement2 : pictogramElement) {
+					EObject eObject = BusinessObjectUtil.getBusinessObjectForPictogramElement(pictogramElement2);
+					if(set.contains(eObject)) {
+						continue;
+					} else{
+						set.add(eObject);
+					}
+				}
+				
+				for (Object object : set.toArray())  {
+					BaseElement baseElement = (BaseElement) object;
+					MessageDialog.openInformation(null, "提示", "选中了元素 "+baseElement.getId());
+				}
+				
 			}
 		};
 		registry.registerAction(action);

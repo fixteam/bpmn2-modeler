@@ -69,7 +69,7 @@ public class BPMN2EditorDiagramBehavior extends DiagramBehavior {
 				IAction action = getDiagramContainer().getActionRegistry().getAction("show.or.hide.source.view"); //$NON-NLS-1$
 				action.setText(action.getText());
 				manager.add(action);
-
+				
 				int pageIndex = bpmn2Editor.getMultipageEditor().getActivePage();
 				int lastPage = bpmn2Editor.getMultipageEditor().getDesignPageCount();
 				if (pageIndex > 0 && pageIndex < lastPage) {
@@ -78,6 +78,11 @@ public class BPMN2EditorDiagramBehavior extends DiagramBehavior {
 					action.setEnabled(action.isEnabled());
 					manager.add(action);
 				}
+				
+				//加入创建模板命令
+				action = getDiagramContainer().getActionRegistry().getAction("add.to.model"); //$NON-NLS-1$
+				action.setText(action.getText());
+				manager.add(action);
 			}
 		};
 	}
