@@ -1,5 +1,6 @@
 package org.eclipse.bpmn2.modeler.ui.editor;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.bpmn2.FlowElement;
@@ -17,6 +18,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import com.founder.fix.designer.base.util.FixFlowConfigUtil;
 import com.founder.fix.designer.base.util.TemplateUtil;
 
 public class FixFlowCreateModelDialog extends TitleAreaDialog {
@@ -24,8 +26,7 @@ public class FixFlowCreateModelDialog extends TitleAreaDialog {
 	private Text text_1;
 	private Text text_2;
 	private Text text_3;
-	private List<FlowElement> flowElements;
-	private List<DiagramElement> diagramElements;
+	private HashMap<String, Object> map;
 
 	/**
 	 * Create the dialog.
@@ -41,8 +42,6 @@ public class FixFlowCreateModelDialog extends TitleAreaDialog {
 		super(parentShell);
 		setHelpAvailable(false);
 		setShellStyle(SWT.BORDER | SWT.CLOSE | SWT.RESIZE | SWT.PRIMARY_MODAL);
-		this.flowElements = flowElements;
-		this.diagramElements = diagramElements;
 	}
 
 	/**
@@ -78,6 +77,7 @@ public class FixFlowCreateModelDialog extends TitleAreaDialog {
 		imageLabel.setText("图片地址");
 		
 		text_2 = new Text(container, SWT.BORDER);
+		text_2.setText(FixFlowConfigUtil.getResourcePath("fixflow-repository-node-template"));
 		text_2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
 		Label descriptionLabel = new Label(container, SWT.NONE);
@@ -113,16 +113,17 @@ public class FixFlowCreateModelDialog extends TitleAreaDialog {
 
 	@Override
 	protected void okPressed() {
-		TemplateUtil.createNodeTemplate(text.getText(), text_1.getText(), text_3.getText(), text_2.getText(), flowElements, diagramElements);
+		HashMap<String, Object> map = TemplateUtil.createNodeTemplate(text.getText(), text_1.getText(), text_3.getText(), text_2.getText());
+		setMap(map);
 		super.okPressed();
 	}
 
-	public List<FlowElement> getFlowElements() {
-		return flowElements;
+	public HashMap<String, Object> getMap() {
+		return map;
 	}
 
-	public List<DiagramElement> getDiagramElements() {
-		return diagramElements;
+	public void setMap(HashMap<String, Object> map) {
+		this.map = map;
 	}
 
 }

@@ -83,6 +83,10 @@ public class BPMN2EditorDiagramBehavior extends DiagramBehavior {
 				action = getDiagramContainer().getActionRegistry().getAction("add.to.model"); //$NON-NLS-1$
 				action.setText(action.getText());
 				manager.add(action);
+				
+				action = getDiagramContainer().getActionRegistry().getAction("paste.from.model"); //$NON-NLS-1$
+				action.setText(action.getText());
+				manager.add(action);
 			}
 		};
 	}
