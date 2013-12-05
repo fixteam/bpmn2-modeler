@@ -33,6 +33,7 @@ import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.di.BPMNEdge;
 import org.eclipse.bpmn2.di.BPMNPlane;
 import org.eclipse.bpmn2.di.BPMNShape;
+import org.eclipse.bpmn2.modeler.core.ModelHandler;
 import org.eclipse.bpmn2.modeler.core.di.DIUtils;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
@@ -43,6 +44,7 @@ import org.eclipse.dd.di.DiagramElement;
 import org.eclipse.dd.di.Plane;
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.notify.Notification;
+import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -472,9 +474,8 @@ public class DesignEditor extends BPMN2Editor {
 			}
 
 			public void run() {
-				FixFlowCreateModelDialog fixFlowCreateModelDialog = new FixFlowCreateModelDialog(null);
-				fixFlowCreateModelDialog.open();
-
+				
+				
 				PictogramElement pictogramElement[] = getDiagramTypeProvider().getDiagramEditor().getSelectedPictogramElements();
 				final HashSet<EObject> set = new HashSet<EObject>();
 				for (PictogramElement pictogramElement2 : pictogramElement) {
@@ -482,9 +483,27 @@ public class DesignEditor extends BPMN2Editor {
 					if (set.contains(eObject)) {
 						continue;
 					} else {
-						set.add(eObject);
+						if(eObject instanceof SequenceFlow || eObject instanceof FlowNode){
+							set.add(eObject);
+						}
+						
 					}
 				}
+				
+				if(set.size()==0){
+					MessageDialog.openInformation(null, "模板信息", "必须选中一个节点才能创建模板");
+					return;
+				}
+				
+				if(set.size()!=1){
+					MessageDialog.openInformation(null, "模板信息", "模板只支持一个节点");
+					return;
+				}
+				
+				FixFlowCreateModelDialog fixFlowCreateModelDialog = new FixFlowCreateModelDialog(null);
+				fixFlowCreateModelDialog.open();
+
+				//
 
 				String id = fixFlowCreateModelDialog.getMap().get("id").toString();
 				String name = fixFlowCreateModelDialog.getMap().get("name").toString();
@@ -597,6 +616,60 @@ public class DesignEditor extends BPMN2Editor {
 
 					@Override
 					protected void doExecute() {
+						
+						
+						
+						for (FlowElement flowElement :  templateProcess.getFlowElements()) {
+							FlowElement newFlowElement=EcoreUtil.copy(flowElement);
+							newFlowElement.setId(null);
+							ModelUtil.setID(newFlowElement,process.eResource());
+							
+					
+							
+							TreeIterator<EObject> contents = newFlowElement.eAllContents();
+							for (; contents.hasNext();) {
+								EObject t = contents.next();
+								if (t instanceof BaseElement) {
+									((BaseElement)t ).setId(null);
+									ModelUtil.setID(t ,process.eResource());
+								}
+							}
+							
+							/*
+							for (BaseElement eObject : ModelHandler.getAll(process.eResource(), BaseElement.class)) {
+								if(eObject instanceof BaseElement){
+									((BaseElement)eObject).setId(null);
+									ModelUtil.setID(eObject,process.eResource());
+								}
+							}
+							*/
+							process.getFlowElements().add(newFlowElement);
+							
+							BPMNShape bpmnShape =DIUtils.findBPMNShape(flowElement);
+							
+							BPMNShape newBpmnShape=EcoreUtil.copy(bpmnShape);
+							newBpmnShape.setId(null);
+							ModelUtil.setID(newBpmnShape,process.eResource());
+							newBpmnShape.setBpmnElement(newFlowElement);
+							plane.getPlaneElement().add(newBpmnShape);
+							
+							
+							AddContext ac = new AddContext(new AreaContext(), newFlowElement);
+							ac.setTargetContainer(diagram);
+							ac.setNewObject(newFlowElement);
+							if (null != newBpmnShape) {
+								float x1 = newBpmnShape.getBounds().getX();
+								float y1 = newBpmnShape.getBounds().getY();
+								int x = (int) x1;
+								int y = (int) y1;
+								ac.setLocation(x, y);
+							}
+							IAddFeature af = getDiagramTypeProvider().getFeatureProvider().getAddFeature(ac);
+							af.add(ac);
+						}
+						
+						
+						/*
 						process.getFlowElements().addAll(EcoreUtil.copyAll(templateProcess.getFlowElements()));
 						plane.getPlaneElement().addAll(EcoreUtil.copyAll(templatePlane.getPlaneElement()));
 						
@@ -639,7 +712,7 @@ public class DesignEditor extends BPMN2Editor {
 								}
 							}
 
-						}
+						}*/
 					}
 				});
 			}
