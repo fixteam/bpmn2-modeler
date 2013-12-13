@@ -76,6 +76,8 @@ import org.eclipse.emf.validation.EMFEventType;
 import org.eclipse.emf.validation.IValidationContext;
 import org.eclipse.osgi.util.NLS;
 
+import com.founder.fix.designer.base.util.StringUtil;
+
 public class BPMN2ValidationConstraints extends AbstractModelConstraint {
 
 	public final static String ERROR_ID = "org.eclipse.bpmn2.modeler.core.validation.error"; //$NON-NLS-1$
@@ -127,7 +129,7 @@ public class BPMN2ValidationConstraints extends AbstractModelConstraint {
 	}
 
 	public IStatus createFailureStatus(IValidationContext ctx, EObject object, Object... messageArgs) {
-		IStatus status = ctx.createFailureStatus(messageArgs);
+		IStatus status = ctx.createFailureStatus(StringUtil.getUtf(StringUtil.getString(messageArgs)));
 		ctx.addResult(object);
 		return status;
 	}
@@ -140,7 +142,7 @@ public class BPMN2ValidationConstraints extends AbstractModelConstraint {
 			message = NLS.bind(Messages.BPMN2ValidationConstraints_Missing_Connection, ModelUtil.getLabel(object), ModelUtil.getLabel(object, feature));
 		else
 			message = NLS.bind(Messages.BPMN2ValidationConstraints_Missing_Feature, ModelUtil.getLabel(object), ModelUtil.getLabel(object, feature));
-		IStatus status = ctx.createFailureStatus(message);
+		IStatus status = ctx.createFailureStatus(StringUtil.getUtf(message));
 		ctx.addResult(object);
 		return status;
 	}
