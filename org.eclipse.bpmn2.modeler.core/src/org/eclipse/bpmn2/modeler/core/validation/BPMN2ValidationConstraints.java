@@ -76,6 +76,8 @@ import org.eclipse.emf.validation.EMFEventType;
 import org.eclipse.emf.validation.IValidationContext;
 import org.eclipse.osgi.util.NLS;
 
+import com.founder.fix.bpmn2extensions.fixflow.FixFlowFactory;
+import com.founder.fix.bpmn2extensions.fixflow.FixFlowPackage;
 import com.founder.fix.designer.base.util.StringUtil;
 
 public class BPMN2ValidationConstraints extends AbstractModelConstraint {
@@ -141,7 +143,7 @@ public class BPMN2ValidationConstraints extends AbstractModelConstraint {
 		if (feature.getEType() == Bpmn2Package.eINSTANCE.getSequenceFlow())
 			message = NLS.bind(Messages.BPMN2ValidationConstraints_Missing_Connection, ModelUtil.getLabel(object), ModelUtil.getLabel(object, feature));
 		else
-			message = NLS.bind(Messages.BPMN2ValidationConstraints_Missing_Feature, ModelUtil.getLabel(object), ModelUtil.getLabel(object, feature));
+			message = NLS.bind(StringUtil.getUtf(StringUtil.getString(Messages.BPMN2ValidationConstraints_Missing_Feature)), ModelUtil.getLabel(object), ModelUtil.getLabel(object, feature));
 		IStatus status = ctx.createFailureStatus(StringUtil.getUtf(message));
 		ctx.addResult(object);
 		return status;
@@ -259,7 +261,7 @@ public class BPMN2ValidationConstraints extends AbstractModelConstraint {
 		}
 		else if (be instanceof SendTask) {
 			SendTask elem = (SendTask) be;
-
+			/*
 			if (!warnings) {
 				if (elem.getOperationRef() == null) {
 					return createMissingFeatureStatus(ctx,be,"operationRef"); //$NON-NLS-1$
@@ -267,7 +269,7 @@ public class BPMN2ValidationConstraints extends AbstractModelConstraint {
 				if (elem.getMessageRef() == null) {
 					return createMissingFeatureStatus(ctx,be,"messageRef"); //$NON-NLS-1$
 				}
-			}
+			}*/
 		}
 		else if (be instanceof CatchEvent) {
 			CatchEvent elem = (CatchEvent) be;
@@ -329,7 +331,7 @@ public class BPMN2ValidationConstraints extends AbstractModelConstraint {
 			Gateway elem = (Gateway) be;
 
 			if (!warnings) {
-				if (elem.getGatewayDirection() == null
+				/*if (elem.getGatewayDirection() == null
 						|| elem.getGatewayDirection().getValue() == GatewayDirection.UNSPECIFIED.getValue()) {
 					ctx.addResult(Bpmn2Package.eINSTANCE.getGateway_GatewayDirection());
 					return createMissingFeatureStatus(ctx,be,"gatewayDirection"); //$NON-NLS-1$
@@ -346,14 +348,14 @@ public class BPMN2ValidationConstraints extends AbstractModelConstraint {
 						return createFailureStatus(ctx,be,
 								Messages.BPMN2ValidationConstraints_30);
 					}
-				}
+				}*/
 				if (elem instanceof ParallelGateway) {
 					if (elem.getGatewayDirection().getValue() != GatewayDirection.DIVERGING.getValue()
 							&& elem.getGatewayDirection().getValue() != GatewayDirection.CONVERGING.getValue()) {
 						return createFailureStatus(ctx,be,
-								Messages.BPMN2ValidationConstraints_31);
+								StringUtil.getUtf(StringUtil.getString(Messages.BPMN2ValidationConstraints_31)));
 					}
-				}
+				}/*
 				if (elem instanceof InclusiveGateway) {
 					if (elem.getGatewayDirection().getValue() != GatewayDirection.DIVERGING.getValue()
 							&& elem.getGatewayDirection().getValue() != GatewayDirection.CONVERGING.getValue()) {
@@ -367,14 +369,15 @@ public class BPMN2ValidationConstraints extends AbstractModelConstraint {
 						return createFailureStatus(ctx,be,
 								Messages.BPMN2ValidationConstraints_33);
 					}
-				}
+				}*/
 			}
 		}
 		else if (be instanceof CallActivity) {
 			CallActivity elem = (CallActivity) be;
 
 			if (!warnings) {
-				if (elem.getCalledElementRef() == null) {
+			
+				if (elem.eGet(FixFlowPackage.Literals.DOCUMENT_ROOT__CALLABLE_ELEMENT_ID) == null) {
 					return createMissingFeatureStatus(ctx,be,"calledElementRef"); //$NON-NLS-1$
 				}
 			}
