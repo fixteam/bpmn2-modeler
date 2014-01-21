@@ -13,6 +13,7 @@ import org.eclipse.bpmn2.modeler.examples.customtask.MyModel.MyModelPackage;
 import org.eclipse.bpmn2.modeler.examples.customtask.MyModel.Parameter;
 import org.eclipse.bpmn2.modeler.examples.customtask.MyModel.TaskConfig;
 
+import org.eclipse.bpmn2.modeler.examples.customtask.MyModel.TemporalDependency;
 import org.eclipse.dd.dc.DcPackage;
 
 import org.eclipse.dd.di.DiPackage;
@@ -58,6 +59,13 @@ public class MyModelPackageImpl extends EPackageImpl implements MyModelPackage {
 	 * @generated
 	 */
 	private EClass myEventDefinitionEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass temporalDependencyEClass = null;
 
 	/**
 	 * Creates an instance of the model <b>Package</b>, registered with
@@ -149,6 +157,15 @@ public class MyModelPackageImpl extends EPackageImpl implements MyModelPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EReference getDocumentRoot_TemporalDependency() {
+		return (EReference)documentRootEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public EClass getParameter() {
 		return parameterEClass;
 	}
@@ -212,6 +229,42 @@ public class MyModelPackageImpl extends EPackageImpl implements MyModelPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EClass getTemporalDependency() {
+		return temporalDependencyEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EReference getTemporalDependency_SourceRef() {
+		return (EReference)temporalDependencyEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EReference getTemporalDependency_TargetRef() {
+		return (EReference)temporalDependencyEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getTemporalDependency_LagTime() {
+		return (EAttribute)temporalDependencyEClass.getEStructuralFeatures().get(2);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public MyModelFactory getMyModelFactory() {
 		return (MyModelFactory)getEFactoryInstance();
 	}
@@ -237,6 +290,7 @@ public class MyModelPackageImpl extends EPackageImpl implements MyModelPackage {
 		// Create classes and their features
 		documentRootEClass = createEClass(DOCUMENT_ROOT);
 		createEReference(documentRootEClass, DOCUMENT_ROOT__TASK_CONFIG);
+		createEReference(documentRootEClass, DOCUMENT_ROOT__TEMPORAL_DEPENDENCY);
 
 		parameterEClass = createEClass(PARAMETER);
 		createEAttribute(parameterEClass, PARAMETER__NAME);
@@ -247,6 +301,11 @@ public class MyModelPackageImpl extends EPackageImpl implements MyModelPackage {
 
 		myEventDefinitionEClass = createEClass(MY_EVENT_DEFINITION);
 		createEAttribute(myEventDefinitionEClass, MY_EVENT_DEFINITION__VALUE);
+
+		temporalDependencyEClass = createEClass(TEMPORAL_DEPENDENCY);
+		createEReference(temporalDependencyEClass, TEMPORAL_DEPENDENCY__SOURCE_REF);
+		createEReference(temporalDependencyEClass, TEMPORAL_DEPENDENCY__TARGET_REF);
+		createEAttribute(temporalDependencyEClass, TEMPORAL_DEPENDENCY__LAG_TIME);
 	}
 
 	/**
@@ -281,10 +340,12 @@ public class MyModelPackageImpl extends EPackageImpl implements MyModelPackage {
 
 		// Add supertypes to classes
 		myEventDefinitionEClass.getESuperTypes().add(theBpmn2Package.getEventDefinition());
+		temporalDependencyEClass.getESuperTypes().add(theBpmn2Package.getFlowElement());
 
 		// Initialize classes and features; add operations and parameters
 		initEClass(documentRootEClass, DocumentRoot.class, "DocumentRoot", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getDocumentRoot_TaskConfig(), this.getTaskConfig(), null, "taskConfig", null, 0, -2, null, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getDocumentRoot_TemporalDependency(), this.getTemporalDependency(), null, "temporalDependency", null, 0, -2, null, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(parameterEClass, Parameter.class, "Parameter", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getParameter_Name(), ecorePackage.getEString(), "name", null, 0, 1, Parameter.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -295,6 +356,11 @@ public class MyModelPackageImpl extends EPackageImpl implements MyModelPackage {
 
 		initEClass(myEventDefinitionEClass, MyEventDefinition.class, "MyEventDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getMyEventDefinition_Value(), ecorePackage.getEString(), "value", null, 0, 1, MyEventDefinition.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(temporalDependencyEClass, TemporalDependency.class, "TemporalDependency", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEReference(getTemporalDependency_SourceRef(), theBpmn2Package.getBoundaryEvent(), null, "sourceRef", null, 0, 1, TemporalDependency.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getTemporalDependency_TargetRef(), theBpmn2Package.getBoundaryEvent(), null, "targetRef", null, 0, 1, TemporalDependency.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getTemporalDependency_LagTime(), ecorePackage.getEString(), "lagTime", null, 0, 1, TemporalDependency.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		// Create resource
 		createResource(eNS_URI);
@@ -324,6 +390,14 @@ public class MyModelPackageImpl extends EPackageImpl implements MyModelPackage {
 		   source, 
 		   new String[] {
 			 "name", "taskConfig",
+			 "kind", "element",
+			 "namespace", "##targetNamespace"
+		   });		
+		addAnnotation
+		  (getDocumentRoot_TemporalDependency(), 
+		   source, 
+		   new String[] {
+			 "name", "temporalDependency",
 			 "kind", "element",
 			 "namespace", "##targetNamespace"
 		   });		

@@ -17,6 +17,7 @@ import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.preferences.TristateCheckboxFieldEditor;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
+import org.eclipse.bpmn2.modeler.help.IHelpContexts;
 import org.eclipse.bpmn2.modeler.ui.Messages;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
@@ -34,6 +35,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.PlatformUI;
 
 /**
  * This class represents a preference page that
@@ -62,6 +64,12 @@ public class Bpmn2HomePreferencePage
 		preferences = Bpmn2Preferences.getInstance();
 	}
 	
+	@Override
+	public void createControl(Composite parent) {
+		super.createControl(parent);
+		PlatformUI.getWorkbench().getHelpSystem().setHelp(getShell(), IHelpContexts.User_Preferences);
+	}
+
 	/**
 	 * Creates the field editors. Field editors are abstractions of
 	 * the common GUI blocks needed to manipulate various types

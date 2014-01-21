@@ -364,6 +364,7 @@ public class ManhattanConnectionRouter extends BendpointConnectionRouter {
 			p.setX( m.getX() );
 			break;
 		default:
+			points.add(p);
 			return points;
 		}
 		

@@ -51,7 +51,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -216,7 +215,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 				}
 			}
 			if (columnProvider.getColumns().size()==0) {
-				if (idAttribute!=null && getPreferences().getShowIdAttribute())
+				if (idAttribute!=null)
 					columnProvider.addRaw(object, idAttribute);
 			}
 		}
@@ -307,7 +306,8 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 			int realIndex = 0;
 			for (EObject o : list) {
 				EClass ec = o.eClass();
-				if (ec == listItemClass) {
+				boolean isSubType = ec.getESuperTypes().contains(listItemClass);
+				if (ec == listItemClass || isSubType) {
 					tempMap[index] = realIndex;
 					++index;
 				}
@@ -477,6 +477,11 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 		boolean expanded = preferenceStore.getBoolean(prefName);
 		if (expanded && tableSection!=null)
 			tableSection.setExpanded(true);
+	}
+	
+	public void setBusinessObject(EObject object) {
+		super.setBusinessObject(object);
+		showDetails(false);
 	}
 	
 	private void showDetails(boolean enable) {
@@ -683,6 +688,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 					});
 				}
 			};
+			addAction.setId("add"); //$NON-NLS-1$
 			tableToolBarManager.add(addAction);
 		}
 		
@@ -729,6 +735,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 					});
 				}
 			};
+			removeAction.setId("remove"); //$NON-NLS-1$
 			tableToolBarManager.add(removeAction);
 			removeAction.setEnabled(false);
 		}
@@ -751,6 +758,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 					});
 				}
 			};
+			upAction.setId("up"); //$NON-NLS-1$
 			tableToolBarManager.add(upAction);
 			upAction.setEnabled(false);
 	
@@ -771,6 +779,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 					});
 				}
 			};
+			downAction.setId("down"); //$NON-NLS-1$
 			tableToolBarManager.add(downAction);
 			downAction.setEnabled(false);
 		}
@@ -804,6 +813,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 					}
 				}
 			};
+			editAction.setId("edit"); //$NON-NLS-1$
 			tableToolBarManager.add(editAction);
 			editAction.setEnabled(false);
 		}
@@ -848,6 +858,7 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 		// AbstractDetailComposite.refresh(), then set the new input into the table
 		if (table.contains(n) || notification.getEventType() == -1) {
 			tableViewer.setInput(table);
+			tableViewer.refresh(true);
 			return; // quick exit before the exhaustive search that follows
 		}
 		if (n instanceof EObject) {
@@ -855,6 +866,10 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 			if (refreshIfNeededRecursive((EObject)n, table, visited))
 				return;
 		}
+	}
+	
+	public ToolBarManager getToolBarManager() {
+		return tableToolBarManager;
 	}
 	
 	@SuppressWarnings("rawtypes")

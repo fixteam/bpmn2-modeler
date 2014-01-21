@@ -15,7 +15,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.emf.common.ui.URIEditorInput;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.graphiti.ui.editor.DiagramEditorInput;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorMatchingStrategy;
 import org.eclipse.ui.IEditorReference;
@@ -28,20 +27,20 @@ public class BPMN2EditorMatchingStrategy implements IEditorMatchingStrategy {
 
 	@Override
 	public boolean matches(IEditorReference editorRef, IEditorInput input) {
-		IWorkbenchPart part = editorRef.getPart(true);
+		IWorkbenchPart part = editorRef.getPart(false);
 		if (part instanceof BPMN2MultiPageEditor) {
 			BPMN2Editor editor = ((BPMN2MultiPageEditor) part).getDesignEditor();
 			URI editorUri = editor.getModelUri();
 			if (input instanceof Bpmn2DiagramEditorInput) {
 				URI inputUri = ((Bpmn2DiagramEditorInput) input).getModelUri();
-				if (editorUri.equals(inputUri)) {
+				if (inputUri!=null && inputUri.equals(editorUri)) {
 					return true;
 				}
 			}
 			else if (input instanceof URIEditorInput) {
 				final URIEditorInput uriInput = (URIEditorInput) input;
 				URI inputUri = uriInput.getURI();
-				if (editorUri.equals(inputUri)) {
+				if (inputUri!=null && inputUri.equals(editorUri)) {
 					return true;
 				}
 			}

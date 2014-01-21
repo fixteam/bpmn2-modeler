@@ -15,14 +15,12 @@
 package org.eclipse.bpmn2.modeler.ui.property.tasks;
 
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
-import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultDetailComposite;
-import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ObjectEditor;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.TextObjectEditor;
+import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
-public class ScriptTaskDetailComposite extends DefaultDetailComposite {
+public class ScriptTaskDetailComposite extends ActivityDetailComposite {
 
 	private TextObjectEditor scriptEditor;
 	
@@ -42,19 +40,14 @@ public class ScriptTaskDetailComposite extends DefaultDetailComposite {
 		super.cleanBindings();
 		scriptEditor = null;
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.eclipse.bpmn2.modeler.ui.property.AbstractBpmn2DetailComposite
-	 * #createBindings(org.eclipse.emf.ecore.EObject)
-	 */
-	@Override
-	public void createBindings(EObject be) {
-		bindAttribute(be,"scriptFormat"); //$NON-NLS-1$
-//		bindAttribute(be,"script");
-		scriptEditor = new TextObjectEditor(this,be,be.eClass().getEStructuralFeature("script")); //$NON-NLS-1$
-		scriptEditor.createControl(getAttributesParent(),Messages.ScriptTaskDetailComposite_Script_Label);
+	
+	protected void bindAttribute(Composite parent, EObject object, EAttribute attribute) {
+		if ("script".equals(attribute.getName())) { //$NON-NLS-1$
+			scriptEditor = new TextObjectEditor(this,object,attribute);
+			scriptEditor.createControl(getAttributesParent(),Messages.ScriptTaskDetailComposite_Script_Label);
+		}
+		else
+			super.bindAttribute(parent,object,attribute);
 	}
+
 }

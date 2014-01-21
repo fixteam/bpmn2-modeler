@@ -54,7 +54,7 @@ public class ResourceAssignmentExpressionDetailComposite extends ExpressionDetai
 			
 			final ResourceAssignmentExpression rae = (ResourceAssignmentExpression) be;
 			
-			// an Assignment is not really valid without both a From and To
+			// an MultipleAssignments is not really valid without both a From and To
 			Expression expr = rae.getExpression();
 			if (expr==null) {
 				expr = createModelObject(FormalExpression.class);

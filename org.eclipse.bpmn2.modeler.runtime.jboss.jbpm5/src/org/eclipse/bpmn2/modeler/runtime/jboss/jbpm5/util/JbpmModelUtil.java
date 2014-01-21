@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.eclipse.bpmn2.BaseElement;
-import org.eclipse.bpmn2.Bpmn2Factory;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.CatchEvent;
 import org.eclipse.bpmn2.Definitions;
@@ -40,6 +39,7 @@ import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatyp
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.DataTypeRegistry;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.impl.type.EnumDataType;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.drools.process.core.datatype.impl.type.UndefinedDataType;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.BPSimDataType;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.BpsimFactory;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.BpsimPackage;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.ControlParameters;
@@ -60,13 +60,14 @@ import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.DroolsFactory;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.DroolsPackage;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.GlobalType;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.ImportType;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.BPSimDataType;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.ItemDefinitionPropertiesAdapter;
+import org.eclipse.bpmn2.modeler.ui.property.dialogs.DefaultSchemaImportDialog;
 import org.eclipse.bpmn2.modeler.ui.property.dialogs.SchemaImportDialog;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.transaction.RecordingCommand;
 import org.eclipse.emf.transaction.TransactionalEditingDomain;
+import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
@@ -80,9 +81,9 @@ public class JbpmModelUtil {
 		private boolean createVariables = false;
 		private IType importedType = null;
 		
-	    public Interface createInterface(Definitions definitions, Import imp, IType type) {
+	    public Interface createInterface(Definitions definitions, Import imp, IType type, IMethod[] methods) {
 	    	importedType = type;
-	    	return super.createInterface(definitions, imp, type);
+	    	return super.createInterface(definitions, imp, type, methods);
 	    }
 	    
 		public ItemDefinition createItemDefinition(Definitions definitions, Import imp, IType clazz) {
@@ -141,7 +142,7 @@ public class JbpmModelUtil {
 	 */
 	public static IType showImportDialog(EObject object) {
 		Shell shell = Display.getDefault().getActiveShell();
-		SchemaImportDialog dialog = new SchemaImportDialog(shell, SchemaImportDialog.ALLOW_JAVA);
+		DefaultSchemaImportDialog dialog = new DefaultSchemaImportDialog(shell, SchemaImportDialog.ALLOW_JAVA);
 		if (dialog.open() == Window.OK) {
 			Object result[] = dialog.getResult();
 			if (result.length == 1 && result[0] instanceof IType) {
@@ -152,10 +153,11 @@ public class JbpmModelUtil {
 	}
 	
 	public static ImportType addImport(final IType type, final EObject object) {
-		return addImport(type,object,true, false);
+		return addImport(type,object,true,false);
 	}
 	
-	public static ImportType addImport(final IType type, final EObject object, final boolean recursive, final boolean createVariables) {
+	public static ImportType addImport(final IType type, final EObject object,
+			final boolean recursive, final boolean createVariables) {
 		if (type==null)
 			return null;
 		
@@ -226,7 +228,6 @@ public class JbpmModelUtil {
 						oldItemDef.setItemKind(ItemKind.INFORMATION);
 						EObject structureRef = ModelUtil.createStringWrapper(className);
 						oldItemDef.setStructureRef(structureRef);
-						importer.createInterface(definitions, null, type);
 					}
 					else {
 						// create a new ItemDefinition

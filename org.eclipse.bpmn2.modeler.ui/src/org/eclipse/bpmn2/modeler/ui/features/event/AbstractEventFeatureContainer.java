@@ -14,7 +14,7 @@ package org.eclipse.bpmn2.modeler.ui.features.event;
 
 import org.eclipse.bpmn2.modeler.core.features.BaseElementFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.features.ContextConstants;
-import org.eclipse.bpmn2.modeler.core.features.DirectEditFlowElementFeature;
+import org.eclipse.bpmn2.modeler.core.features.DirectEditBaseElementFeature;
 import org.eclipse.bpmn2.modeler.core.features.MoveFlowNodeFeature;
 import org.eclipse.bpmn2.modeler.core.features.label.UpdateLabelFeature;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
@@ -39,11 +39,6 @@ public abstract class AbstractEventFeatureContainer extends BaseElementFeatureCo
 	@Override
 	public IUpdateFeature getUpdateFeature(IFeatureProvider fp) {
 		return new UpdateLabelFeature(fp);
-	}
-
-	@Override
-	public IDirectEditingFeature getDirectEditingFeature(IFeatureProvider fp) {
-		return new DirectEditFlowElementFeature(fp);
 	}
 
 	@Override

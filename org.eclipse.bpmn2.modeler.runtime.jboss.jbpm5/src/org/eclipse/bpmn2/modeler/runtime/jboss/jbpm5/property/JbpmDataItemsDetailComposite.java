@@ -29,6 +29,7 @@ import org.eclipse.bpmn2.modeler.ui.property.ExtensionValueListComposite;
 import org.eclipse.bpmn2.modeler.ui.property.diagrams.DataItemsDetailComposite;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 
 /**
@@ -114,7 +115,9 @@ public class JbpmDataItemsDetailComposite extends DataItemsDetailComposite {
 						}
 					};
 					globalsTable.bindList(process, DroolsPackage.eINSTANCE.getDocumentRoot_Global());
-					globalsTable.setTitle(Messages.JbpmDataItemsDetailComposite_Title+ModelUtil.getLongDisplayName(process));
+					globalsTable.setTitle(
+							NLS.bind(Messages.JbpmDataItemsDetailComposite_Title
+									,ModelUtil.getLongDisplayName(process)));
 				}
 			}
 		}

@@ -24,7 +24,7 @@ import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IAddContext;
-import org.eclipse.graphiti.mm.algorithms.Text;
+import org.eclipse.graphiti.mm.algorithms.MultiText;
 import org.eclipse.graphiti.mm.algorithms.styles.Orientation;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.Shape;
@@ -54,11 +54,11 @@ public class AddExpandableActivityFeature<T extends Activity>
 		peService.setPropertyValue(containerShape, IS_EXPANDED, Boolean.toString(isExpanded));
 
 		Shape textShape = peService.createShape(containerShape, false);
-		Text text = gaService.createDefaultText(getDiagram(), textShape, businessObject.getName());
+		MultiText text = gaService.createDefaultMultiText(getDiagram(), textShape, businessObject.getName());
 		gaService.setLocationAndSize(text, 5, 5, context.getWidth() - 10, 15);
 		StyleUtil.applyStyle(text, businessObject);
 		text.setHorizontalAlignment(Orientation.ALIGNMENT_CENTER);
-		text.setVerticalAlignment(Orientation.ALIGNMENT_CENTER);
+		text.setVerticalAlignment(Orientation.ALIGNMENT_TOP);
 //		text.setFont(gaService.manageFont(getDiagram(), GaServiceImpl.DEFAULT_FONT, 8, false, true));
 		link(textShape, businessObject);
 		

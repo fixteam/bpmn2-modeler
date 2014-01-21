@@ -303,4 +303,28 @@ public abstract class ObjectEditor implements INotifyChangedListener {
 	public Control getControl() {
 		return label;
 	}
+
+	protected boolean canEdit() {
+		return ModelUtil.canEdit(object,feature);
+	}
+
+	protected boolean canCreateNew() {
+		return ModelUtil.canCreateNew(object,feature);
+	}
+
+	protected boolean canEditInline() {
+		return ModelUtil.canEditInline(object,feature);
+	}
+
+	protected boolean canSetNull() {
+		return ModelUtil.canSetNull(object,feature);
+	}
+
+	protected boolean canAdd() {
+		return false;
+	}
+
+	protected boolean canRemove() {
+		return false;
+	}
 }

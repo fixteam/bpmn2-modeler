@@ -188,6 +188,7 @@ public class EventDefinitionsListComposite extends DefaultListComposite {
 	@Override
 	public ListCompositeColumnProvider getColumnProvider(EObject object, EStructuralFeature feature) {
 		columnProvider = super.getColumnProvider(object,feature);
+		columnProvider.remove(0); // get rid of the ID column
 		columnProvider.add(
 				new TableColumn(object,feature) {
 					public String getText(Object element) {
@@ -391,7 +392,8 @@ public class EventDefinitionsListComposite extends DefaultListComposite {
 						if (!inTransaction)
 							throw new IllegalStateException(Messages.EventDefinitionsListComposite_No_Transaction);
 						association = Bpmn2ModelerFactory.create(resource, DataOutputAssociation.class);
-						association.getSourceRef().add(element);
+						if (element!=null)
+							association.getSourceRef().add(element);
 						associations.add(association);
 					}
 				}

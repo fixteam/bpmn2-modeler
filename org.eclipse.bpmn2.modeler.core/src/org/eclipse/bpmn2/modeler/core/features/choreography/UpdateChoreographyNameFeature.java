@@ -21,7 +21,7 @@ import org.eclipse.graphiti.features.IReason;
 import org.eclipse.graphiti.features.context.IUpdateContext;
 import org.eclipse.graphiti.features.impl.AbstractUpdateFeature;
 import org.eclipse.graphiti.features.impl.Reason;
-import org.eclipse.graphiti.mm.algorithms.Text;
+import org.eclipse.graphiti.mm.algorithms.AbstractText;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
@@ -59,14 +59,14 @@ public class UpdateChoreographyNameFeature extends AbstractUpdateFeature {
 		return true;
 	}
 
-	private Text getBodyText(IUpdateContext context) {
+	private AbstractText getBodyText(IUpdateContext context) {
 		Iterator<Shape> iterator = peService.getAllContainedShapes((ContainerShape) context.getPictogramElement())
 				.iterator();
 		while (iterator.hasNext()) {
 			Shape shape = (Shape) iterator.next();
 			String property = peService.getPropertyValue(shape, ChoreographyProperties.CHOREOGRAPHY_NAME);
 			if (property != null && Boolean.parseBoolean(property)) {
-				return (Text) shape.getGraphicsAlgorithm();
+				return (AbstractText) shape.getGraphicsAlgorithm();
 			}
 		}
 		return null;

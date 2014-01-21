@@ -62,7 +62,7 @@ public class DirectEditParticipantFeature extends AbstractDirectEditingFeature {
 		PictogramElement pe = context.getPictogramElement();
 		Object bo = getBusinessObjectForPictogramElement(pe);
 		GraphicsAlgorithm ga = context.getGraphicsAlgorithm();
-		return bo instanceof Participant && ga instanceof Text;
+		return bo instanceof Participant;
 	}
 
 	public boolean stretchFieldToFitText() {

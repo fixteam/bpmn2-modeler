@@ -91,7 +91,11 @@ public class ImportUtil {
 			kind = ""; //$NON-NLS-1$
 		else
 			return null;
-		uri = URI.createURI( imp.getLocation() );
+		String location = imp.getLocation();
+		if (location==null) {
+			location = ""; //$NON-NLS-1$
+		}
+		uri = URI.createURI(location);
 		return loadImport(uri,kind);
 	}
 	
@@ -485,7 +489,7 @@ public class ImportUtil {
 					if (ref instanceof EObject) {
 						URI uri = EcoreUtil.getURI((EObject)ref);
 						String uriString = uri.trimFragment().toString();
-						if (loc.equals(uriString))
+						if (uriString.equals(loc))
 							deleteInterface(definitions, intf);
 					}
 				}
@@ -497,7 +501,7 @@ public class ImportUtil {
 					if (ref instanceof EObject) {
 						URI uri = EcoreUtil.getURI((EObject)ref);
 						String uriString = uri.trimFragment().toString();
-						if (loc.equals(uriString))
+						if (uriString.equals(loc))
 							EcoreUtil.delete(itemDef);
 					}
 				}
@@ -509,7 +513,7 @@ public class ImportUtil {
 					if (ref instanceof EObject) {
 						URI uri = EcoreUtil.getURI((EObject) ref);
 						String uriString = uri.trimFragment().toString();
-						if (loc.equals(uriString))
+						if (uriString.equals(loc))
 							deleteInterface(definitions, intf);
 					}
 				}
@@ -579,7 +583,7 @@ public class ImportUtil {
      * @param type - the Java type that corresponds to this Interface
      * @return the newly created object, or an existing Interface with the same name and implementation reference
      */
-    public Interface createInterface(Definitions definitions, Import imp, IType type) {
+    public Interface createInterface(Definitions definitions, Import imp, IType type, IMethod[] methods) {
         Interface intf = Bpmn2ModelerFactory.create(Interface.class);
         intf.setName(type.getElementName());
         intf.setImplementationRef(ModelUtil.createStringWrapper(type.getFullyQualifiedName('.')));
@@ -589,7 +593,7 @@ public class ImportUtil {
         
         definitions.getRootElements().add(intf);
         ModelUtil.setID(intf);
-        createOperations(definitions, imp, intf, type);
+        createOperations(definitions, imp, intf, type, methods);
         
         return intf;
     }
@@ -673,13 +677,24 @@ public class ImportUtil {
      * @param intf - the Interface to which this Operation will be added
      * @param type - the Java type that corresponds to this Interface
      */
-    public void createOperations(Definitions definitions, Import imp, Interface intf, IType type) {
+    public void createOperations(Definitions definitions, Import imp, Interface intf, IType type, IMethod[] methods) {
         try {
-            for (IMethod method : type.getMethods()) {
+        	if (methods==null)
+        		methods = type.getMethods();
+            for (IMethod method : methods) {
             	if (method.isConstructor()) {
             		// don't create Operations for Constructors
             		continue;
             	}
+            	if (method.getElementName().contains("<")) { //$NON-NLS-1$
+            		continue;
+            	}
+            	if ((method.getFlags() & Flags.AccPublic) == 0) {
+            		continue;
+            	}
+				if (method.getNumberOfParameters()!=1) {
+					continue;
+				}
                 org.eclipse.bpmn2.Operation bpmn2op = Bpmn2ModelerFactory.create(org.eclipse.bpmn2.Operation.class);
                 bpmn2op.setImplementationRef(ModelUtil.createStringWrapper(method.getElementName()));
                 bpmn2op.setName(method.getElementName());
@@ -1143,13 +1158,15 @@ public class ImportUtil {
 	 * @param structName - the type string that defines the structure of the ItemDefinition
 	 */
 	public static void deleteItemDefinition(Definitions definitions, Import imp, String structName) {
-		EObject structureRef = ModelUtil.createStringWrapper(structName);
-		ItemDefinition itemDef = findItemDefinition(definitions, imp, structureRef, ItemKind.INFORMATION);
-		if (itemDef==null)
-			itemDef = findItemDefinition(definitions, imp, structureRef, ItemKind.INFORMATION);
-		
-		if (itemDef!=null) {
-			EcoreUtil.delete(itemDef);
+		if (structName!=null && !structName.isEmpty()) {
+			EObject structureRef = ModelUtil.createStringWrapper(structName);
+			ItemDefinition itemDef = findItemDefinition(definitions, imp, structureRef, ItemKind.INFORMATION);
+			if (itemDef==null)
+				itemDef = findItemDefinition(definitions, imp, structureRef, ItemKind.INFORMATION);
+			
+			if (itemDef!=null) {
+				EcoreUtil.delete(itemDef);
+			}
 		}
 	}
 }

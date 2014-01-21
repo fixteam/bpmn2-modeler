@@ -38,8 +38,7 @@ public abstract class AbstractTaskFeatureContainer extends AbstractActivityFeatu
 			@Override
 			protected boolean layoutHook(Shape shape, GraphicsAlgorithm ga, Object bo, int newWidth, int newHeight) {
 				if (bo != null && bo instanceof Task && ga instanceof MultiText) {
-					int padding = GraphicsUtil.TASK_IMAGE_SIZE;
-					Graphiti.getGaService().setLocationAndSize(ga, 3, padding, newWidth - 6, newHeight - padding);
+					Graphiti.getGaService().setLocationAndSize(ga, 0, 0, newWidth, newHeight);
 					return true;
 				}
 				return false;

@@ -29,7 +29,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 public class Bpmn2EditorBehaviorPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
 	// Page ID must be the same as defined in plugin.xml
-	public static String PAGE_ID = "org.eclipse.bpmn2.modeler.Behavior";
+	public static String PAGE_ID = "org.eclipse.bpmn2.modeler.Behavior"; //$NON-NLS-1$
 
 	private Bpmn2Preferences preferences;
 	private SettableBooleanFieldEditor btnShowIds;
@@ -76,10 +76,16 @@ public class Bpmn2EditorBehaviorPreferencePage extends FieldEditorPreferencePage
 //		addField(simplifyLists);
 
 		BooleanFieldEditor usePopupDialogForLists = new BooleanFieldEditor(
-		Bpmn2Preferences.PREF_USE_POPUP_DIALOG_FOR_LISTS,
-		Bpmn2Preferences.PREF_USE_POPUP_DIALOG_FOR_LISTS_LABEL,
-		getFieldEditorParent());
+				Bpmn2Preferences.PREF_USE_POPUP_DIALOG_FOR_LISTS,
+				Bpmn2Preferences.PREF_USE_POPUP_DIALOG_FOR_LISTS_LABEL,
+				getFieldEditorParent());
 		addField(usePopupDialogForLists);
+
+		BooleanFieldEditor propagateGroupCategories = new BooleanFieldEditor(
+				Bpmn2Preferences.PREF_PROPAGATE_GROUP_CATEGORIES,
+				Bpmn2Preferences.PREF_PROPAGATE_GROUP_CATEGORIES_LABEL,
+				getFieldEditorParent());
+		addField(propagateGroupCategories);
 
 		//////////////////////////////////////////////////////////////////////////////
 		

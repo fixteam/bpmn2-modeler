@@ -292,6 +292,7 @@ public class DefaultSchemaImportDialog extends SelectionStatusDialog {
 					fLoaderJob.cancel();
 				}
 			}
+			setSelectionResult(null);
 			break;
 		}
 
@@ -732,7 +733,7 @@ public class DefaultSchemaImportDialog extends SelectionStatusDialog {
 	
 	 
 	@SuppressWarnings("boxing")
-	void loadDone () {				
+	protected void loadDone () {
 		
 		long elapsed = System.currentTimeMillis() - fRunnableStart;
 		
@@ -996,7 +997,7 @@ public class DefaultSchemaImportDialog extends SelectionStatusDialog {
 		};
 		FILTER_NAMES = wsdl_FILTER_NAMES;
 
-		resourceFilter = ".bpmn, .bpmn2"; //$NON-NLS-1$
+		resourceFilter = ".bpmn,.bpmn2"; //$NON-NLS-1$
 		if (fResourceComposite!=null)
 			fResourceComposite.setFileFilter(resourceFilter);
 	}

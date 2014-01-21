@@ -460,7 +460,7 @@ public class ToolPaletteDescriptor extends BaseRuntimeDescriptor {
 	}
 	
 	public List<String> getProfiles() {
-		String a[] = profile.split(",");
+		String a[] = profile.split(","); //$NON-NLS-1$
 		List<String> profiles = new ArrayList<String>();
 		for (String p : a) {
 			profiles.add(p.trim());

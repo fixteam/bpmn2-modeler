@@ -11,7 +11,6 @@
 package org.eclipse.bpmn2.modeler.ui.property.diagrams;
 
 import org.eclipse.bpmn2.BaseElement;
-import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.Process;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;

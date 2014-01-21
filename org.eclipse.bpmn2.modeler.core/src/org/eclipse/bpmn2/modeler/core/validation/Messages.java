@@ -8,6 +8,7 @@ public class Messages extends NLS {
 	public static String BPMN2ProjectValidator_Dont_Ask_Again;
 	public static String BPMN2ProjectValidator_Invalid_File;
 	public static String BPMN2ProjectValidator_Title;
+	public static String BPMN2ValidationConstraints_0;
 	public static String BPMN2ValidationConstraints_2;
 	public static String BPMN2ValidationConstraints_29;
 	public static String BPMN2ValidationConstraints_Missing_Connection;

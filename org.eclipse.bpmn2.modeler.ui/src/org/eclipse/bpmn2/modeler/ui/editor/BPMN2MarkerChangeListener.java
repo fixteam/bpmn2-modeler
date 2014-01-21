@@ -44,6 +44,8 @@ public class BPMN2MarkerChangeListener implements IResourceChangeListener {
 
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {
+		if (editor.getModelFile()==null)
+			return;
         final IResourceDelta modelFileDelta = event.getDelta().findMember(editor.getModelFile().getFullPath());
         if (modelFileDelta == null) {
             return;

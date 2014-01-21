@@ -142,11 +142,6 @@ public class MessageFeatureContainer extends BaseElementFeatureContainer {
 	}
 
 	@Override
-	public IDirectEditingFeature getDirectEditingFeature(IFeatureProvider fp) {
-		return null;
-	}
-
-	@Override
 	public ILayoutFeature getLayoutFeature(IFeatureProvider fp) {
 		return new LayoutBaseElementTextFeature(fp) {
 			@Override

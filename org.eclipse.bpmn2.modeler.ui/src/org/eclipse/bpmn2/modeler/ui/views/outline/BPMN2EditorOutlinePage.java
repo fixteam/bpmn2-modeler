@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.bpmn2.modeler.ui.views.outline;
 
+import org.eclipse.bpmn2.modeler.help.IHelpContexts;
 import org.eclipse.bpmn2.modeler.ui.Activator;
 import org.eclipse.bpmn2.modeler.ui.IConstants;
 import org.eclipse.bpmn2.modeler.ui.editor.BPMN2Editor;
@@ -43,6 +44,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IPropertyListener;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.part.PageBook;
 
@@ -165,6 +167,8 @@ public class BPMN2EditorOutlinePage extends ContentOutlinePage implements IPrope
 		// register listeners
 		selectionSynchronizer.addViewer(getViewer());
 		diagramEditor.addPropertyListener(this);
+		
+		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, IHelpContexts.Outline_View);
 	}
 
 	private void removeKeyListeners(Tree tree) {

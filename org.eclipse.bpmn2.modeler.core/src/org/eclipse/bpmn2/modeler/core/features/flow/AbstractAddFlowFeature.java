@@ -23,6 +23,7 @@ import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2AddElementFeature;
 import org.eclipse.bpmn2.modeler.core.features.label.UpdateLabelFeature;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
+import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
 import org.eclipse.bpmn2.modeler.core.utils.Tuple;
@@ -138,6 +139,8 @@ public abstract class AbstractAddFlowFeature<T extends BaseElement>
 			Text text = gaService.createText(labelDecorator, ModelUtil.getName(businessObject));
 			peService.setPropertyValue(labelDecorator, UpdateLabelFeature.TEXT_ELEMENT, Boolean.toString(true));
 			StyleUtil.applyStyle(text, businessObject);
+			peService.setPropertyValue(labelDecorator, GraphicsUtil.LABEL_PROPERTY, Boolean.toString(true));
+			link(labelDecorator, businessObject);
 		}
 
 		createDIEdge(connection, businessObject);

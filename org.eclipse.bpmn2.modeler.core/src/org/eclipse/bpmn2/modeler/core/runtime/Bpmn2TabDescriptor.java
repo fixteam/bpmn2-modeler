@@ -117,18 +117,35 @@ public class Bpmn2TabDescriptor extends AbstractTabDescriptor {
 
 	@Override
 	public Object clone() {
-		Bpmn2TabDescriptor clone = new Bpmn2TabDescriptor(id, category, label);
-		clone.afterTab = this.afterTab;
-		clone.replaceTab = this.replaceTab;
+		Bpmn2TabDescriptor td = new Bpmn2TabDescriptor(id, category, label);
+		td.afterTab = this.afterTab;
+		td.replaceTab = this.replaceTab;
 		if (image!=null)
-			clone.image = new Image(Display.getDefault(), this.image, SWT.IMAGE_COPY);
-		clone.indented = this.indented;
+			td.image = new Image(Display.getDefault(), this.image, SWT.IMAGE_COPY);
+		td.indented = this.indented;
 //		for (Bpmn2SectionDescriptor sd : (List<Bpmn2SectionDescriptor>)getSectionDescriptors()) {
 //			clone.getSectionDescriptors().add( new Bpmn2SectionDescriptor(sd) );
 //		}
-		return clone;
+		return td;
 	}
-	
+
+	public Bpmn2TabDescriptor copy() {
+		Bpmn2TabDescriptor td = new Bpmn2TabDescriptor(id, category, label);
+		td.id += td.hashCode();
+		td.afterTab = this.afterTab;
+		td.replaceTab = this.replaceTab;
+		if (image!=null)
+			td.image = new Image(Display.getDefault(), this.image, SWT.IMAGE_COPY);
+		td.indented = this.indented;
+		td.popup = this.popup;
+		td.image = this.image;
+		for (Bpmn2SectionDescriptor sd : (List<Bpmn2SectionDescriptor>)getSectionDescriptors()) {
+			td.getSectionDescriptors().add(new Bpmn2SectionDescriptor(td, sd));
+		}
+
+		return td;
+	}
+
 	public String getReplaceTab() {
 		if (replaceTab==null || replaceTab.trim().length()==0)
 			return null;

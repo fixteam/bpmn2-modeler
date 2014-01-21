@@ -16,7 +16,7 @@ import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
-import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.util.JbpmImportDialog;
+import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.util.JbpmInterfaceImportDialog;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.util.JbpmModelUtil;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.util.JbpmModelUtil.ImportHandler;
 import org.eclipse.bpmn2.modeler.ui.property.data.InterfacePropertySection;
@@ -97,7 +97,7 @@ public class JbpmInterfacePropertySection extends InterfacePropertySection {
         }
 
         protected EObject importListItem(EObject object, EStructuralFeature feature) {
-        	final JbpmImportDialog dialog = new JbpmImportDialog();
+        	final JbpmInterfaceImportDialog dialog = new JbpmInterfaceImportDialog();
         	dialog.open();
             final IType selectedType = dialog.getIType();
             final Definitions definitions = ModelUtil.getDefinitions(object);
@@ -111,7 +111,7 @@ public class JbpmInterfacePropertySection extends InterfacePropertySection {
     		ImportHandler importer = new ImportHandler();
     		importer.setCreateVariables( dialog.isCreateVariables() );
     		
-    		final Interface iface = importer.createInterface(definitions, null, selectedType);
+    		final Interface iface = importer.createInterface(definitions, null, selectedType, dialog.getIMethods());
             EList<EObject> list = (EList<EObject>) object.eGet(feature);
             list.add(iface);
             return iface;

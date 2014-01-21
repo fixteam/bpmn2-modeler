@@ -13,16 +13,18 @@
 
 package org.eclipse.bpmn2.modeler.ui.property;
 
-import org.eclipse.bpmn2.modeler.core.adapters.AdapterUtil;
+import org.eclipse.bpmn2.Group;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultDetailComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultPropertySection;
+import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.FeatureListObjectEditor;
+import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ObjectEditor;
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.swt.custom.StyledText;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.tabbed.ITabbedPropertyConstants;
 
@@ -37,24 +39,24 @@ public class DescriptionPropertySection extends DefaultPropertySection implement
 	 */
 	@Override
 	protected AbstractDetailComposite createSectionRoot() {
-		return new DescriptionPropertyComposite(this);		
+		return new DescriptionDetailComposite(this);		
 	}
 
 	@Override
 	public AbstractDetailComposite createSectionRoot(Composite parent, int style) {
-		 return new DescriptionPropertyComposite(parent, style);
+		 return new DescriptionDetailComposite(parent, style);
 	}
 
-	public class DescriptionPropertyComposite extends DefaultDetailComposite {
+	public class DescriptionDetailComposite extends DefaultDetailComposite {
 
 		/**
 		 * @param section
 		 */
-		public DescriptionPropertyComposite(AbstractBpmn2PropertySection section) {
+		public DescriptionDetailComposite(AbstractBpmn2PropertySection section) {
 			super(section);
 		}
 		
-		public DescriptionPropertyComposite(Composite parent, int style) {
+		public DescriptionDetailComposite(Composite parent, int style) {
 			super(parent,style);
 		}
 
@@ -72,13 +74,28 @@ public class DescriptionPropertySection extends DefaultPropertySection implement
 		 * #createBindings(org.eclipse.emf.ecore.EObject)
 		 */
 		@Override
-		public void createBindings(EObject be) {
+		public void createBindings(EObject object) {
 
-			bindDescription(be);
-			bindAttribute(be,"id"); //$NON-NLS-1$
-			bindAttribute(be,"name"); //$NON-NLS-1$
-			bindList(be, "documentation"); //$NON-NLS-1$
-			redrawPage();
+			bindDescription(object);
+			bindAttribute(object,"id"); //$NON-NLS-1$
+			bindAttribute(object,"name"); //$NON-NLS-1$
+			bindList(object, "documentation"); //$NON-NLS-1$
+			if (!(object instanceof Group)) {
+				EStructuralFeature reference = object.eClass().getEStructuralFeature("categoryValueRef");
+				if (reference!=null) {
+					if (isModelObjectEnabled(object.eClass(), reference)) {
+						String displayName = getPropertiesProvider().getLabel(object, reference);
+		
+						ObjectEditor editor = new FeatureListObjectEditor(this,object,reference) {
+							@Override
+							protected boolean canEdit() {
+								return !Bpmn2Preferences.getInstance(object).getPropagateGroupCategories();
+							}
+						};
+						editor.createControl(getAttributesParent(),displayName);
+					}
+				}
+			}
 		}
 
 		protected boolean isModelObjectEnabled(String className, String featureName) {
@@ -90,7 +107,7 @@ public class DescriptionPropertySection extends DefaultPropertySection implement
 		protected void bindDescription(EObject be) {
 			// don't display the description text if disabled in preferences,
 			// or if this is a popup configuration dialog.
-			if (Bpmn2Preferences.getInstance(be).getShowDescriptions() && !isPopupDialog) {
+			if (Bpmn2Preferences.getInstance(be).getShowDescriptions()) {
 				String description = getDescription(be);
 	
 				if (description != null) {

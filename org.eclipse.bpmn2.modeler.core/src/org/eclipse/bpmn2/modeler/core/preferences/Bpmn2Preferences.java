@@ -145,6 +145,8 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 	public final static String PREF_SIMPLIFY_LISTS_LABEL = Messages.Bpmn2Preferences_Simplify_Lists;
 	public final static String PREF_DO_CORE_VALIDATION = "do.core.validation"; //$NON-NLS-1$
 	public final static String PREF_DO_CORE_VALIDATION_LABEL = Messages.Bpmn2Preferences_Do_Core_Validation;
+	public final static String PREF_PROPAGATE_GROUP_CATEGORIES = "propagate.group.categories"; //$NON-NLS-1$
+	public final static String PREF_PROPAGATE_GROUP_CATEGORIES_LABEL = Messages.Bpmn2Preferences_Propagate_Group_Categories;
 
 	private static Hashtable<IProject,Bpmn2Preferences> instances = null;
 	private static IProject activeProject;
@@ -174,6 +176,7 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 	private boolean simplifyLists;
 	private boolean usePopupDialogForLists;
 	private boolean doCoreValidation;
+	private boolean propagateGroupCategories;
 	private BPMNDIAttributeDefault isHorizontal;
 	private BPMNDIAttributeDefault isExpanded;
 	private BPMNDIAttributeDefault isMessageVisible;
@@ -238,7 +241,9 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 	}
 	
 	public static Bpmn2Preferences getInstance(Resource resource) {
-		return getInstance(resource.getURI());
+		if (resource!=null)
+			return getInstance(resource.getURI());
+		return getInstance();
 	}
 	
 	/**
@@ -327,6 +332,7 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 			defaultPreferences.putBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS, false);
 			defaultPreferences.putBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS, false);
 			defaultPreferences.putBoolean(PREF_DO_CORE_VALIDATION, true);
+			defaultPreferences.putBoolean(PREF_PROPAGATE_GROUP_CATEGORIES, true);
 
 			defaultPreferences.put(PREF_CONNECTION_TIMEOUT, "1000"); //$NON-NLS-1$
 			
@@ -438,6 +444,7 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 			popupConfigDialogFor[5] = getBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS, false);
 
 			doCoreValidation = getBoolean(PREF_DO_CORE_VALIDATION, true);
+			propagateGroupCategories = getBoolean(PREF_PROPAGATE_GROUP_CATEGORIES, true);
 
 			cached = true;
 		}
@@ -468,6 +475,7 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 			putBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_DATA_DEFS, popupConfigDialogFor[4]);
 			putBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS, popupConfigDialogFor[5]);
 			putBoolean(PREF_DO_CORE_VALIDATION, doCoreValidation);
+			putBoolean(PREF_PROPAGATE_GROUP_CATEGORIES, propagateGroupCategories);
 		}
 		
 		for (Entry<Class, ShapeStyle> entry : shapeStyles.entrySet()) {
@@ -521,7 +529,7 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 		ShapeStyle ss = shapeStyles.get(clazz);
 		if (ss==null) {
 			String key = getShapeStyleKey(getRuntime(), clazz);
-			String value = get(key, "");
+			String value = get(key, ""); //$NON-NLS-1$
 			ss = ShapeStyle.decode(value);
 			shapeStyles.put(clazz, ss);
 		}
@@ -573,7 +581,7 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 	////////////////////////////////////////////////////////////////////////////////
 
 	public static String getToolProfilePath(TargetRuntime rt, Bpmn2DiagramType diagramType) {
-		return PREF_TOOL_PROFILE + "/" + rt.getId() + "/" + diagramType;
+		return PREF_TOOL_PROFILE + "/" + rt.getId() + "/" + diagramType; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	
 	public String getDefaultToolProfile(TargetRuntime rt, Bpmn2DiagramType diagramType) {
@@ -597,7 +605,7 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 		catch (BackingStoreException e) {
 			e.printStackTrace();
 		}
-		return "";
+		return ""; //$NON-NLS-1$
 	}
 	
 	public boolean setDefaultToolProfile(TargetRuntime rt, Bpmn2DiagramType diagramType, String profile) {
@@ -765,7 +773,7 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 	////////////////////////////////////////////////////////////////////////////////
 
 	public static String getModelEnablementsPath(TargetRuntime rt, Bpmn2DiagramType diagramType, String profile) {
-		return PREF_MODEL_ENABLEMENT + "/" + rt.getId() + "/" + diagramType + "/" + profile;
+		return PREF_MODEL_ENABLEMENT + "/" + rt.getId() + "/" + diagramType + "/" + profile; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
 
 	public ModelEnablements getModelEnablements(Bpmn2DiagramType diagramType, String profile) {
@@ -788,7 +796,7 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 				if (prefs!=null) {
 					me.setEnabledAll(false);
 					for (String k : prefs.keys()) {
-						if (k.indexOf(".")>0) {
+						if (k.indexOf(".")>0) { //$NON-NLS-1$
 							if (prefs.getBoolean(k, false))
 								me.setEnabled(k, true);
 						}
@@ -987,6 +995,15 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 	public void setDoCoreValidation(boolean enable) {
 		putBoolean(PREF_DO_CORE_VALIDATION,enable);
 		doCoreValidation = enable;
+	}
+	
+	public boolean getPropagateGroupCategories() {
+		return propagateGroupCategories;
+	}
+	
+	public void setPropagateGroupCategories(boolean enable) {
+		putBoolean(PREF_PROPAGATE_GROUP_CATEGORIES,enable);
+		propagateGroupCategories = enable;
 	}
 
 	public boolean isHorizontalDefault() {
@@ -1337,7 +1354,7 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 				return;
 		}
 		Object[] listeners = preferenceChangeListeners.getListeners();
-		final String absolutePath = node.absolutePath() + "/" + key;
+		final String absolutePath = node.absolutePath() + "/" + key; //$NON-NLS-1$
 		final PreferenceChangeEvent event = new PreferenceChangeEvent(node, absolutePath, oldValue, newValue);
 		for (int i = 0; i < listeners.length; i++) {
 			final IPreferenceChangeListener listener = (IPreferenceChangeListener) listeners[i];
@@ -1407,9 +1424,9 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 		public PreferencesHelper(String key, boolean set) {
 			this.set = set;
 			try {
-				path = "";
+				path = ""; //$NON-NLS-1$
 				if (set) {
-					int i = key.lastIndexOf("/");
+					int i = key.lastIndexOf("/"); //$NON-NLS-1$
 					if (i>0) {
 						path = key.substring(0, i);
 						this.key = key = key.substring(i+1);
@@ -1428,7 +1445,7 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 					}		
 				}
 				else {
-					int i = key.lastIndexOf("/");
+					int i = key.lastIndexOf("/"); //$NON-NLS-1$
 					if (i>0) {
 						path = key.substring(0, i);
 						this.key = key = key.substring(i+1);
@@ -1464,7 +1481,7 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 		public Preferences unset() {
 			node.remove(key);
 			if (!path.isEmpty()) {
-				node = root.node(path + "/" + key);
+				node = root.node(path + "/" + key); //$NON-NLS-1$
 			}
 			return node;
 		}
@@ -1485,7 +1502,7 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 		}
 		
 		public Boolean getBoolean(boolean defaultValue) {
-			return Boolean.parseBoolean( getString("false") );
+			return Boolean.parseBoolean( getString("false") ); //$NON-NLS-1$
 		}
 		
 		public void putBoolean(boolean value) {
@@ -1493,7 +1510,7 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 		}
 		
 		public int getInt(int defaultValue) {
-			return Integer.parseInt( getString("0") );
+			return Integer.parseInt( getString("0") ); //$NON-NLS-1$
 		}
 		
 		public void putInt(int value) {

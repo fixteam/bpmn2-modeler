@@ -16,6 +16,7 @@ import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.di.BPMNShape;
 import org.eclipse.bpmn2.modeler.core.di.DIImport;
 import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2AddElementFeature;
+import org.eclipse.bpmn2.modeler.core.features.DefaultPasteBPMNElementFeature;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
@@ -71,6 +72,10 @@ public class AddParticipantFeature extends AbstractBpmn2AddElementFeature<Partic
 		boolean isImport = context.getProperty(DIImport.IMPORT_PROPERTY) != null;
 		BPMNShape bpmnShape = createDIShape(containerShape, businessObject, !isImport);
 		boolean horz = bpmnShape.isIsHorizontal();
+		Object copiedBpmnShape = context.getProperty(DefaultPasteBPMNElementFeature.COPIED_BPMN_SHAPE);
+		if (copiedBpmnShape instanceof BPMNShape) {
+			horz = ((BPMNShape) copiedBpmnShape).isIsHorizontal();
+		}
 		FeatureSupport.setHorizontal(containerShape, horz);
 
 		Shape lineShape = peCreateService.createShape(containerShape, false);

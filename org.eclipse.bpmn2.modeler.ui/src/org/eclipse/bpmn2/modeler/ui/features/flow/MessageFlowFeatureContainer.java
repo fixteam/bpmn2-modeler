@@ -29,7 +29,6 @@ import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.ModelHandler;
 import org.eclipse.bpmn2.modeler.core.features.BaseElementConnectionFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.features.DefaultDeleteBPMNShapeFeature;
-import org.eclipse.bpmn2.modeler.core.features.DefaultMoveBPMNShapeFeature;
 import org.eclipse.bpmn2.modeler.core.features.flow.AbstractAddFlowFeature;
 import org.eclipse.bpmn2.modeler.core.features.flow.AbstractCreateFlowFeature;
 import org.eclipse.bpmn2.modeler.core.features.flow.AbstractReconnectFlowFeature;
@@ -58,7 +57,6 @@ import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.ICreateConnectionContext;
 import org.eclipse.graphiti.features.context.IDeleteContext;
-import org.eclipse.graphiti.features.context.IMoveShapeContext;
 import org.eclipse.graphiti.features.context.IPictogramElementContext;
 import org.eclipse.graphiti.features.context.IUpdateContext;
 import org.eclipse.graphiti.features.context.impl.AddContext;
@@ -473,25 +471,41 @@ public class MessageFlowFeatureContainer extends BaseElementConnectionFeatureCon
 
 		@Override
 		public void delete(IDeleteContext context) {
-			ContainerShape messageShape = (ContainerShape) context.getPictogramElement();
-			for (Shape child : messageShape.getChildren()) {
-				peService.deletePictogramElement(child);
+			Message message = null;
+			PictogramElement pe = context.getPictogramElement();
+			if (pe instanceof ContainerShape) {
+				ContainerShape messageShape = (ContainerShape) pe;
+				messageFlowConnection = getMessageFlowConnection(messageShape);
+				message = BusinessObjectUtil.getFirstElementOfType(messageShape, Message.class);
+			}
+			else if (pe instanceof Connection) {
+				messageFlowConnection = (Connection)pe;
+				MessageFlow messageFlow = (MessageFlow) BusinessObjectUtil.getFirstBaseElement(messageFlowConnection);
+				message = messageFlow.getMessageRef();
 			}
 			
-			messageFlowConnection = getMessageFlowConnection(messageShape);
-			Message message = BusinessObjectUtil.getFirstElementOfType(messageShape, Message.class);
-			List<EObject> list = FeatureSupport.findMessageReferences(getDiagram(), message);
-			if (list.size()>2)
-				canDeleteMessage = false;
-
-			if (canDeleteMessage) {
-				EcoreUtil.delete(message, true);
+			if (message!=null) {
+				List<EObject> list = FeatureSupport.findMessageReferences(getDiagram(), message);
+				if (list.size()>2)
+					canDeleteMessage = false;
+	
+				if (canDeleteMessage) {
+					EcoreUtil.delete(message, true);
+				}
+	
+				ConnectionDecorator decorator = findMessageDecorator(messageFlowConnection);
+				if (decorator!=null) {
+					ContainerShape messageShape = BusinessObjectUtil.getFirstElementOfType(decorator, ContainerShape.class);
+					if (messageShape!=null) {
+						ContainerShape labelShape = BusinessObjectUtil.getFirstElementOfType(messageShape, ContainerShape.class);
+						if (labelShape!=null)
+							peService.deletePictogramElement(labelShape);
+						peService.deletePictogramElement(messageShape);
+					}
+					peService.deletePictogramElement(decorator);
+				}
 			}
-
-			ConnectionDecorator decorator = findMessageDecorator(messageFlowConnection);
-			if (decorator!=null) {
-				peService.deletePictogramElement(decorator);
-			}
+			
 			super.delete(context);
 		}
 		
@@ -505,8 +519,10 @@ public class MessageFlowFeatureContainer extends BaseElementConnectionFeatureCon
 		@Override
 		public void postDelete(IDeleteContext context) {
 			MessageFlow messageFlow = (MessageFlow) BusinessObjectUtil.getFirstBaseElement(messageFlowConnection);
-			messageFlow.setMessageRef(null);
-			peService.setPropertyValue(messageFlowConnection, MESSAGE_REF, ""); //$NON-NLS-1$
+			if (messageFlow!=null) {
+				messageFlow.setMessageRef(null);
+				peService.setPropertyValue(messageFlowConnection, MESSAGE_REF, ""); //$NON-NLS-1$
+			}
 		}
 
 	}

@@ -18,6 +18,7 @@ import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.BoundaryEvent;
 import org.eclipse.bpmn2.FlowNode;
 import org.eclipse.bpmn2.Lane;
+import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.SequenceFlow;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.di.DIUtils;
@@ -104,6 +105,10 @@ public class ShapeLayoutManager {
 		List<ContainerShape> middleShapes = new ArrayList<ContainerShape>();
 		List<ContainerShape> endShapes = new ArrayList<ContainerShape>();
 		for (ContainerShape child : childShapes) {
+			BaseElement be = BusinessObjectUtil.getFirstBaseElement(child);
+			if (be instanceof Participant && ModelUtil.isParticipantBand((Participant)be))
+				continue;
+
 			List<SequenceFlow> incomingFlows = getIncomingSequenceFlows(child);
 			List<SequenceFlow> outgoingFlows = getOutgoingSequenceFlows(child);
 			int incomingCount = 0;

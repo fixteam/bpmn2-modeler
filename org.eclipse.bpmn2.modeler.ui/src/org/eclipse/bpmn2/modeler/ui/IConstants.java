@@ -81,6 +81,7 @@ public interface IConstants {
 	public final String ICON_DATAOUTPUTASSOCIATION = "16/DataOutputAssociation.png"; //$NON-NLS-1$
 	public final String ICON_DATAINPUT = "16/DataInput.png"; //$NON-NLS-1$
 	public final String ICON_DATAOBJECT = "16/DataObject.png"; //$NON-NLS-1$
+	public final String ICON_DATAOBJECTREFERENCE = "16/DataObjectReference.png"; //$NON-NLS-1$
 	public final String ICON_DATAOUTPUT = "16/DataOutput.png"; //$NON-NLS-1$
 	public final String ICON_DATASTORE = "16/DataStore.png"; //$NON-NLS-1$
 	public final String ICON_DATASTOREREFERENCE = "16/DataStoreReference.png"; //$NON-NLS-1$

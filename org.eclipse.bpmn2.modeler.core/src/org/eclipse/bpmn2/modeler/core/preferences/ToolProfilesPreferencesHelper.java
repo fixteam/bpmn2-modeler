@@ -92,7 +92,7 @@ public class ToolProfilesPreferencesHelper {
 			for (TargetRuntime rt : TargetRuntime.getAllRuntimes()) {
 				for (ModelEnablementDescriptor med : rt.getModelEnablements()) {
 					for (String name : med.getAllEnabled()) {
-						int i = name.indexOf(".");
+						int i = name.indexOf("."); //$NON-NLS-1$
 						if (i>0)
 							name = name.substring(i);
 						EClassifier ec = pkg.getEClassifier(name);

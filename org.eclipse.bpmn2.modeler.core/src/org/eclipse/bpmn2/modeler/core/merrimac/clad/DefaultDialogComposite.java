@@ -181,7 +181,7 @@ public class DefaultDialogComposite extends AbstractDialogComposite {
 	
 	@Override
 	public void setData(String key, Object object) {
-		if ("factory".equals(key) && object instanceof IPropertiesCompositeFactory)
+		if ("factory".equals(key) && object instanceof IPropertiesCompositeFactory) //$NON-NLS-1$
 			compositeFactory = (IPropertiesCompositeFactory) object;
 	}
 	

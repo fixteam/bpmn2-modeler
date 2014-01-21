@@ -20,6 +20,7 @@ import org.eclipse.bpmn2.ChoreographyTask;
 import org.eclipse.bpmn2.MessageFlow;
 import org.eclipse.bpmn2.di.BPMNShape;
 import org.eclipse.bpmn2.modeler.core.features.DefaultDeleteBPMNShapeFeature;
+import org.eclipse.bpmn2.modeler.core.features.DirectEditBaseElementFeature;
 import org.eclipse.bpmn2.modeler.core.features.MultiUpdateFeature;
 import org.eclipse.bpmn2.modeler.core.features.PropertyBasedFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.features.choreography.ChoreographyProperties;
@@ -99,7 +100,7 @@ public class ChoreographyMessageLinkFeatureContainer extends PropertyBasedFeatur
 
 	@Override
 	public IDirectEditingFeature getDirectEditingFeature(IFeatureProvider fp) {
-		return null;
+		return new DirectEditBaseElementFeature(fp);
 	}
 
 	@Override

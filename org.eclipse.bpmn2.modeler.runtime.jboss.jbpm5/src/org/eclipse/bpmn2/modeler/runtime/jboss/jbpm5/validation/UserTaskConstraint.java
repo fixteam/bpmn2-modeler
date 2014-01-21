@@ -38,18 +38,20 @@ public class UserTaskConstraint extends AbstractModelConstraint {
 			
 			try {
 				String taskName = null;
-				Iterator<FeatureMap.Entry> utiter = ut.getAnyAttribute().iterator();
-				for (DataInput di : ut.getIoSpecification().getDataInputs()) {
-					if ("TaskName".equalsIgnoreCase(di.getName())) { //$NON-NLS-1$
-						for (DataInputAssociation dia : ut.getDataInputAssociations()) {
-							if (dia.getTargetRef() == di) {
-								if (dia.getAssignment().size()!=0) {
-									Assignment a = dia.getAssignment().get(0);
-									if (a.getFrom() instanceof FormalExpression) {
-										String body = ((FormalExpression)a.getFrom()).getBody();
-										if (body!=null && !body.isEmpty()) {
-											taskName = body;
-											break;
+				if (ut.getIoSpecification()!=null) {
+					Iterator<FeatureMap.Entry> utiter = ut.getAnyAttribute().iterator();
+					for (DataInput di : ut.getIoSpecification().getDataInputs()) {
+						if ("TaskName".equalsIgnoreCase(di.getName())) { //$NON-NLS-1$
+							for (DataInputAssociation dia : ut.getDataInputAssociations()) {
+								if (dia.getTargetRef() == di) {
+									if (dia.getAssignment().size()!=0) {
+										Assignment a = dia.getAssignment().get(0);
+										if (a.getFrom() instanceof FormalExpression) {
+											String body = ((FormalExpression)a.getFrom()).getBody();
+											if (body!=null && !body.isEmpty()) {
+												taskName = body;
+												break;
+											}
 										}
 									}
 								}

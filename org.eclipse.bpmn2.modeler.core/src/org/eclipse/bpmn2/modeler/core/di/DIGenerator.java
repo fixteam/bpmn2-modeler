@@ -12,21 +12,21 @@ package org.eclipse.bpmn2.modeler.core.di;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.bpmn2.Artifact;
 import org.eclipse.bpmn2.Association;
 import org.eclipse.bpmn2.BaseElement;
+import org.eclipse.bpmn2.ChoreographyActivity;
 import org.eclipse.bpmn2.Collaboration;
 import org.eclipse.bpmn2.ConversationNode;
-import org.eclipse.bpmn2.DataObject;
-import org.eclipse.bpmn2.DataObjectReference;
 import org.eclipse.bpmn2.DataStore;
-import org.eclipse.bpmn2.DataStoreReference;
 import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.FlowElement;
 import org.eclipse.bpmn2.FlowElementsContainer;
 import org.eclipse.bpmn2.FlowNode;
+import org.eclipse.bpmn2.ItemAwareElement;
 import org.eclipse.bpmn2.Lane;
 import org.eclipse.bpmn2.LaneSet;
 import org.eclipse.bpmn2.MessageFlow;
@@ -41,6 +41,7 @@ import org.eclipse.bpmn2.di.BPMNEdge;
 import org.eclipse.bpmn2.di.BPMNPlane;
 import org.eclipse.bpmn2.di.BPMNShape;
 import org.eclipse.bpmn2.di.BpmnDiFactory;
+import org.eclipse.bpmn2.di.ParticipantBandKind;
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
@@ -56,12 +57,15 @@ import org.eclipse.dd.dc.Point;
 import org.eclipse.dd.di.DiagramElement;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.transaction.RecordingCommand;
+import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.FixPointAnchor;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.jface.window.Window;
+import org.eclipse.swt.widgets.Display;
 
 public class DIGenerator {
 
@@ -94,17 +98,30 @@ public class DIGenerator {
 		if (hasMissingDIElements()) {
 			// Display a dialog of the missing elements and allow user
 			// to choose which ones to create
-			MissingDIElementsDialog dlg = new MissingDIElementsDialog(missingElements);
-			if (dlg.open()==Window.OK) {
-				createMissingDIElements(missingElements);
-				
-				ShapeLayoutManager layoutManager = new ShapeLayoutManager(editor);
-				for (DiagramElementTreeNode node : missingElements.getChildren()) {
-					if (node.getChecked()) {
-						layoutManager.layout(node.getBaseElement());
+			Display.getDefault().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					MissingDIElementsDialog dlg = new MissingDIElementsDialog(missingElements);
+					if (dlg.open()==Window.OK) {
+						TransactionalEditingDomain domain = editor.getEditingDomain();
+						domain.getCommandStack().execute(new RecordingCommand(domain) {
+							@Override
+							protected void doExecute() {
+								createMissingDIElements(missingElements);
+								
+								ShapeLayoutManager layoutManager = new ShapeLayoutManager(editor);
+								Iterator<DiagramElementTreeNode> iter = missingElements.iterator();
+								while (iter.hasNext()) {
+									DiagramElementTreeNode node = iter.next();
+									if (node.getChecked()) {
+										layoutManager.layout(node.getBaseElement());
+									}
+								}
+							}
+						});
 					}
 				}
-			}
+			});
 		}
 	}
 	
@@ -116,18 +133,69 @@ public class DIGenerator {
 		for (BaseElement be : definitions.getRootElements()) {
 			findMissingDIElements(missing, be);
 		}
+		
+		removeDuplicates(missing.getChildren());
 		return missing;
 	}
 	
+	private void removeDuplicates(List<DiagramElementTreeNode> children) {
+		List<DiagramElementTreeNode> duplicates = new ArrayList<DiagramElementTreeNode>();
+		for (DiagramElementTreeNode node : children) {
+			if (node.hasChildren())
+				removeDuplicates(node.getChildren());
+			
+			BaseElement be = node.getBaseElement();
+			if (be instanceof Collaboration) {
+				Collaboration c = (Collaboration)be;
+				for (Participant p : c.getParticipants()) {
+					for (DiagramElementTreeNode n : children) {
+						if (n.getBaseElement() == p.getProcessRef()) {
+							duplicates.add(n);
+						}
+					}
+				}
+			}
+			else if (be instanceof ChoreographyActivity) {
+				ChoreographyActivity c = (ChoreographyActivity)be;
+				for (Participant p : c.getParticipantRefs()) {
+					for (DiagramElementTreeNode n : children) {
+						if (n.getBaseElement() == p) {
+							duplicates.add(n);
+						}
+					}
+				}
+			}
+		}
+		if (!duplicates.isEmpty())
+			children.removeAll(duplicates);
+	}
+	
 	private boolean isMissingDIElement(BaseElement be) {
-		// ignore DataObjects and DataStores - there are bound to be references
+		// ignore DataStores - there are bound to be references
 		// to these, which *should* be rendered
-		if (be instanceof DataObject || be instanceof DataStore)
+		if (be instanceof DataStore)
 			return false;
 		BPMNDiagram bpmnDiagram = DIUtils.findBPMNDiagram(be);
 		if (bpmnDiagram!=null)
 			return false;
-		return elements.get(be) == null && diagnostics.get(be) == null;
+		// couldn't find a BPMNDiagram entry for this BaseElement
+		// check its container to see if it has a BPMNDiagram
+		FlowElementsContainer container = this.getRootElementContainer(be);
+		bpmnDiagram = DIUtils.findBPMNDiagram(container);
+		if (bpmnDiagram!=null) {
+			// is the BaseElement defined as a BPMNShape or BPMNEdge in its
+			// container's BPMNDiagram?
+			if (bpmnDiagram.getPlane().getPlaneElement().contains(be))
+				return false;
+		}
+		boolean missing = (elements.get(be) == null && diagnostics.get(be) == null);
+		if (missing)
+			GraphicsUtil.dump("Missing DI element for: "+be.eClass().getName()+" '"+ModelUtil.getDisplayName(be)+"'");
+		return missing;
+	}
+	
+	private boolean isDataElement(BaseElement be) {
+		return be instanceof ItemAwareElement && be instanceof FlowElement;
 	}
 	
 	private int findMissingDIElements(DiagramElementTreeNode missing, LaneSet laneSet, List<FlowElement> laneElements) {
@@ -162,6 +230,7 @@ public class DIGenerator {
 	
 	private void findMissingDIElements(DiagramElementTreeNode missing, BaseElement be) {
 		if (be instanceof FlowElementsContainer) {
+			// handles Process/SubProcess and Choreography/SubChoreography
 			FlowElementsContainer container = (FlowElementsContainer)be;
 			DiagramElementTreeNode parentNode = null;
 			
@@ -176,7 +245,7 @@ public class DIGenerator {
 						if (parentNode==null)
 							parentNode = missing.addChild(container);
 						parentNode.addChild(fe);
-						if (fe instanceof FlowElementsContainer) {
+						if (fe instanceof FlowElementsContainer || fe instanceof ChoreographyActivity) {
 							findMissingDIElements(parentNode, fe);
 						}
 					}
@@ -193,7 +262,10 @@ public class DIGenerator {
 				}
 			}
 		}
-		else if (be instanceof Collaboration) {
+		
+		// Choreography inherits both Collaboration and FlowElementsContainer
+		if (be instanceof Collaboration) {
+			// also handle Choreography
 			Collaboration container = (Collaboration)be;
 			DiagramElementTreeNode parentNode = null;
 			for (Artifact a : container.getArtifacts()) {
@@ -204,12 +276,12 @@ public class DIGenerator {
 				}
 			}
 			for (Participant p : container.getParticipants()) {
-				if (isMissingDIElement(p)) {
-					if (p.getProcessRef()==null) {
-						if (parentNode==null)
-							parentNode = missing.addChild(container);
-						parentNode.addChild(p);
-					}
+				if (isMissingDIElement(p) && p.getProcessRef()!=null) {
+					if (parentNode==null)
+						parentNode = missing.addChild(container);
+					DiagramElementTreeNode child = parentNode.addChild(p);
+					if (p.getProcessRef()!=null)
+						findMissingDIElements(child, p.getProcessRef());
 				}
 			}
 			for (ConversationNode c : container.getConversations()) {
@@ -220,7 +292,27 @@ public class DIGenerator {
 				}
 			}
 		}
-		else if (be instanceof DataStore) {
+		else if (be instanceof Participant) {
+			Participant container = (Participant) be;
+			if (container.getProcessRef()!=null) {
+				DiagramElementTreeNode parentNode = missing.addChild(container);
+				parentNode.addChild(container.getProcessRef());
+			}
+		}
+		else if (be instanceof ChoreographyActivity) {
+			ChoreographyActivity container = (ChoreographyActivity)be;
+			DiagramElementTreeNode parentNode = null;
+			for (Participant p : container.getParticipantRefs()) {
+				if (isMissingDIElement(p)) {
+					if (parentNode==null)
+						parentNode = missing.addChild(container);
+					DiagramElementTreeNode child = parentNode.addChild(p);
+					if (p.getProcessRef()!=null)
+						findMissingDIElements(child, p.getProcessRef());
+				}
+			}
+		}
+		else if (isDataElement(be)) {
 			if (isMissingDIElement(be)) {
 				missing.addChild(be);
 			}
@@ -261,79 +353,82 @@ public class DIGenerator {
 		if (element instanceof Lane) {
 			Lane lane = (Lane)element;
 			bpmnShape = createDIShape(bpmnDiagram, lane, x, y);
+			node.setBpmnShape(bpmnShape);
 
-			for (DiagramElementTreeNode childNode : node.getChildren()) {
-				if (childNode.getChecked()) {
-					BPMNShape shape = createMissingDIElement(childNode, x, y, created);
-					if (shape!=null) {
-						y += shape.getBounds().getHeight() + 10;
-					}
-				}
-			}
+			y = createMissingDIElementChildren(node, x, y, created);
 			created.add(lane);
 		}
 		else if (element instanceof FlowElementsContainer) {
 			FlowElementsContainer container = (FlowElementsContainer)element;
 
-			for (DiagramElementTreeNode childNode : node.getChildren()) {
-				if (childNode.getChecked()) {
-					BPMNShape shape = createMissingDIElement(childNode, x, y, created);
-					if (shape!=null) {
-						y += shape.getBounds().getHeight() + 10;
-					}
-				}
-			}
-			
-			if (!(container instanceof RootElement)) {
-				// This can only be either a SubChoreography or SubProcess.
+			if (container instanceof SubProcess || container instanceof SubChoreography) {
+				bpmnShape = createDIShape(bpmnDiagram, container, x, y);
+				node.setBpmnShape(bpmnShape);
 				created.add(container);
-			}			
+			}
+
+			y = createMissingDIElementChildren(node, x, y, created);
 		}
 		else if (element instanceof Collaboration) {
-			for (DiagramElementTreeNode childNode : node.getChildren()) {
-				if (childNode.getChecked()) {
-					BPMNShape shape = createMissingDIElement(childNode, x, y, created);
-					if (shape!=null) {
-						y += shape.getBounds().getHeight() + 10;
-					}
-				}
-			}
+			y = createMissingDIElementChildren(node, x, y, created);
 		}
 		else if (element instanceof Artifact) {
-			Artifact participant = (Artifact)element;
 			bpmnShape = createDIShape(bpmnDiagram, element, x, y);
+			node.setBpmnShape(bpmnShape);
 			created.add(element);
 		}
 		else if (element instanceof Participant) {
-			Participant participant = (Participant)element;
-			bpmnShape = createDIShape(bpmnDiagram, element, x, y);
+			boolean doImport = true;
+			if (node.getParent().getBaseElement() instanceof ChoreographyActivity) {
+				// this is a Participant Band in a Choreography Activity
+				doImport = false;
+			}
+			
+			bpmnShape = createDIShape(bpmnDiagram, element, x, y, doImport);
+			node.setBpmnShape(bpmnShape);
 			created.add(element);
+			if (!doImport) {
+				ChoreographyActivity ca = (ChoreographyActivity) node.getParent().getBaseElement();
+				bpmnShape.setChoreographyActivityShape(node.getParent().getBpmnShape());
+				if (ca.getParticipantRefs().get(0) == element)
+					bpmnShape.setParticipantBandKind(ParticipantBandKind.TOP_INITIATING);
+				else
+					bpmnShape.setParticipantBandKind(ParticipantBandKind.BOTTOM_NON_INITIATING);
+			}
+			createMissingDIElementChildren(node, x, y, created);
 		}
 		else if (element instanceof ConversationNode) {
 			bpmnShape = createDIShape(bpmnDiagram, element, x, y);
+			node.setBpmnShape(bpmnShape);
 			created.add(element);
 		}
 		else if (element instanceof FlowNode) {
-			bpmnShape = createDIShape(bpmnDiagram, element, x, y);
+			boolean doImport = !(element instanceof ChoreographyActivity);
+			bpmnShape = createDIShape(bpmnDiagram, element, x, y, doImport);
+			node.setBpmnShape(bpmnShape);
 			created.add(element);
+			y = createMissingDIElementChildren(node, x, y, created);
+			if (!doImport)
+				importer.importShape(bpmnShape);
 		}
-		else if (element instanceof DataObject) {
+		else if (isDataElement(element)) {
 			bpmnShape = createDIShape(bpmnDiagram, element, x, y);
-			created.add(element);
-		}
-		else if (element instanceof DataObjectReference) {
-			bpmnShape = createDIShape(bpmnDiagram, element, x, y);
-			created.add(element);
-		}
-		else if (element instanceof DataStore) {
-			bpmnShape = createDIShape(bpmnDiagram, element, x, y);
-			created.add(element);
-		}
-		else if (element instanceof DataStoreReference) {
-			bpmnShape = createDIShape(bpmnDiagram, element, x, y);
+			node.setBpmnShape(bpmnShape);
 			created.add(element);
 		}
 		return bpmnShape;
+	}
+	
+	private int createMissingDIElementChildren(DiagramElementTreeNode node, int x, int y, List<BaseElement> created) {
+		for (DiagramElementTreeNode childNode : node.getChildren()) {
+			if (childNode.getChecked()) {
+				BPMNShape bpmnShape = createMissingDIElement(childNode, x, y, created);
+				if (bpmnShape!=null) {
+					y += bpmnShape.getBounds().getHeight() + 10;
+				}
+			}
+		}
+		return y;
 	}
 	
 	private void createMissingDIElements(DiagramElementTree missing) {
@@ -345,9 +440,9 @@ public class DIGenerator {
 		List<BaseElement> shapes = new ArrayList<BaseElement>();
 		for (DiagramElementTreeNode node : missing.getChildren()) {
 			if (node.getChecked()) {
-				BPMNShape shape = createMissingDIElement(node, x, y, shapes);
-				if (shape!=null) {
-					y += shape.getBounds().getHeight() + 10;
+				BPMNShape bpmnShape = createMissingDIElement(node, x, y, shapes);
+				if (bpmnShape!=null) {
+					y += bpmnShape.getBounds().getHeight() + 10;
 				}
 			}
 		}
@@ -412,10 +507,42 @@ public class DIGenerator {
 		BPMNDiagram bpmnDiagram = DIUtils.findBPMNDiagram(bpmnElement, true);
 	
 		// if this container does not have a BPMNDiagram, create one
+		if (bpmnElement instanceof Process) {
+			if (bpmnDiagram==null) {
+				// unless this Process is referenced by a Pool
+				for (Collaboration c : ModelUtil.getAllObjectsOfType(bpmnElement.eResource(), Collaboration.class)) {
+					for (Participant p : c.getParticipants()) {
+						if (!ModelUtil.isParticipantBand(p)) {
+							if (p.getProcessRef() == bpmnElement) {
+								bpmnDiagram = DIUtils.findBPMNDiagram(p, true);
+								break;
+							}
+						}
+					}
+					if (bpmnDiagram!=null)
+						break;
+				}
+			}
+			else {
+				// Always create a new BPMNDiagram if this Process is being referenced by a Participant Band
+//				for (Collaboration c : ModelUtil.getAllObjectsOfType(bpmnElement.eResource(), Collaboration.class)) {
+//					for (Participant p : c.getParticipants()) {
+//						if (ModelUtil.isParticipantBand(p)) {
+//							if (p.getProcessRef() == bpmnElement) {
+//								bpmnDiagram = null;
+//								break;
+//							}
+//						}
+//					}
+//					if (bpmnDiagram==null)
+//						break;
+//				}
+			}
+		}
+		
 		if (bpmnDiagram==null) {
 			FlowElementsContainer container = getRootElementContainer(bpmnElement);
 			if (container==null) {
-				DIUtils.findBPMNDiagram(bpmnElement, true);
 				diagnostics.add(IStatus.ERROR, bpmnElement, Messages.DIGenerator_No_Diagram); 
 				return this.bpmnDiagram;
 			}
@@ -423,7 +550,7 @@ public class DIGenerator {
 			plane.setBpmnElement(container);
 
 			bpmnDiagram = BpmnDiFactory.eINSTANCE.createBPMNDiagram();
-			bpmnDiagram.setName(container.getId());
+			bpmnDiagram.setName(ModelUtil.getDisplayName(container));
 			bpmnDiagram.setPlane(plane);
 
 			definitions.getDiagrams().add(bpmnDiagram);
@@ -433,6 +560,10 @@ public class DIGenerator {
 	}
 	
 	private BPMNShape createDIShape(BPMNDiagram bpmnDiagram, BaseElement bpmnElement, float x, float y) {
+		return createDIShape(bpmnDiagram, bpmnElement, x, y, true);
+	}
+	
+	private BPMNShape createDIShape(BPMNDiagram bpmnDiagram, BaseElement bpmnElement, float x, float y, boolean doImport) {
 		
 		BPMNPlane plane = bpmnDiagram.getPlane();
 		BPMNShape bpmnShape = null;
@@ -459,7 +590,8 @@ public class DIGenerator {
 			Bpmn2Preferences.getInstance(bpmnDiagram.eResource()).applyBPMNDIDefaults(bpmnShape, null);
 
 			ModelUtil.setID(bpmnShape);
-			importer.importShape(bpmnShape);
+			if (doImport)
+				importer.importShape(bpmnShape);
 		}
 		
 		return bpmnShape;

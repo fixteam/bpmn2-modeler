@@ -127,7 +127,7 @@ public class Bpmn2EditorAppearancePreferencePage extends PreferencePage implemen
 		container.setLayout(new GridLayout(2, false));
         
 		final Group elementsGroup = new Group(container, SWT.NONE);
-		elementsGroup.setText("Graphical Elements");
+		elementsGroup.setText(Messages.Bpmn2EditorAppearancePreferencePage_GraphicalElements_Group);
         data = new GridData(SWT.FILL,SWT.TOP,true,true,1,1);
 		data.heightHint = 50;
 		elementsGroup.setLayoutData(data);
@@ -154,7 +154,7 @@ public class Bpmn2EditorAppearancePreferencePage extends PreferencePage implemen
 		});
         
 		Group styleGroup = new Group(container, SWT.NONE);
-		styleGroup.setText("Colors, Fonts and Line Styles");
+		styleGroup.setText(Messages.Bpmn2EditorAppearancePreferencePage_Colors_Group);
 		styleGroup.setLayoutData(new GridData(SWT.FILL,SWT.TOP,true,false,1,1));
 		styleGroup.setLayout(new GridLayout(1,false));
 

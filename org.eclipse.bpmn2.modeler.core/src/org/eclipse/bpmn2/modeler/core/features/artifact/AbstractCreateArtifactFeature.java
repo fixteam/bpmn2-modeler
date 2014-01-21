@@ -12,16 +12,20 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.features.artifact;
 
-import java.io.IOException;
-
 import org.eclipse.bpmn2.Artifact;
-import org.eclipse.bpmn2.modeler.core.Activator;
-import org.eclipse.bpmn2.modeler.core.ModelHandler;
+import org.eclipse.bpmn2.Collaboration;
+import org.eclipse.bpmn2.Lane;
+import org.eclipse.bpmn2.Participant;
+import org.eclipse.bpmn2.Process;
+import org.eclipse.bpmn2.SubProcess;
+import org.eclipse.bpmn2.SubChoreography;
+import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2CreateFeature;
+import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.ICreateContext;
-import org.eclipse.graphiti.features.context.impl.CreateContext;
 
 public abstract class AbstractCreateArtifactFeature<T extends Artifact> extends AbstractBpmn2CreateFeature<T> {
 
@@ -55,13 +59,30 @@ public abstract class AbstractCreateArtifactFeature<T extends Artifact> extends 
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public T createBusinessObject(ICreateContext context) {
-		T artifact = null;
-		try {
-			artifact = super.createBusinessObject(context);
-			ModelHandler handler = ModelHandler.getInstance(getDiagram());
-			handler.addArtifact(FeatureSupport.getTargetParticipant(context, handler), artifact);
-		} catch (IOException e) {
-			Activator.logError(e);
+		T artifact = super.createBusinessObject(context);
+		EObject bo = BusinessObjectUtil.getBusinessObjectForPictogramElement(context.getTargetContainer());
+		if (bo instanceof BPMNDiagram) {
+			bo = ((BPMNDiagram)bo).getPlane().getBpmnElement();
+		}
+		else if (bo instanceof Participant) {
+			bo = ((Participant)bo).getProcessRef();
+		}
+		else if (bo instanceof Lane) {
+			while (!(bo instanceof Process) && bo!=null) {
+				bo = bo.eContainer();
+			}
+		}
+		if (bo instanceof Collaboration) {
+			((Collaboration)bo).getArtifacts().add(artifact);
+		}
+		else if (bo instanceof Process) {
+			((Process)bo).getArtifacts().add(artifact);
+		}
+		else if (bo instanceof SubProcess) {
+			((SubProcess)bo).getArtifacts().add(artifact);
+		}
+		else if (bo instanceof SubChoreography) {
+			((SubChoreography)bo).getArtifacts().add(artifact);
 		}
 		return artifact;
 	}

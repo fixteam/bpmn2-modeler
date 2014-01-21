@@ -25,6 +25,7 @@ import org.eclipse.bpmn2.BoundaryEvent;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.CallActivity;
 import org.eclipse.bpmn2.CallableElement;
+import org.eclipse.bpmn2.ChoreographyActivity;
 import org.eclipse.bpmn2.ChoreographyTask;
 import org.eclipse.bpmn2.CorrelationPropertyRetrievalExpression;
 import org.eclipse.bpmn2.Definitions;
@@ -32,6 +33,7 @@ import org.eclipse.bpmn2.EndEvent;
 import org.eclipse.bpmn2.Event;
 import org.eclipse.bpmn2.FlowElement;
 import org.eclipse.bpmn2.FlowElementsContainer;
+import org.eclipse.bpmn2.FlowNode;
 import org.eclipse.bpmn2.Group;
 import org.eclipse.bpmn2.ImplicitThrowEvent;
 import org.eclipse.bpmn2.IntermediateCatchEvent;
@@ -45,7 +47,9 @@ import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.Process;
 import org.eclipse.bpmn2.ReceiveTask;
 import org.eclipse.bpmn2.SendTask;
+import org.eclipse.bpmn2.SequenceFlow;
 import org.eclipse.bpmn2.StartEvent;
+import org.eclipse.bpmn2.SubChoreography;
 import org.eclipse.bpmn2.SubProcess;
 import org.eclipse.bpmn2.TextAnnotation;
 import org.eclipse.bpmn2.Transaction;
@@ -61,6 +65,7 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.ILayoutFeature;
 import org.eclipse.graphiti.features.IUpdateFeature;
@@ -72,7 +77,6 @@ import org.eclipse.graphiti.features.context.impl.UpdateContext;
 import org.eclipse.graphiti.mm.algorithms.AbstractText;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.Polyline;
-import org.eclipse.graphiti.mm.algorithms.Text;
 import org.eclipse.graphiti.mm.algorithms.styles.Point;
 import org.eclipse.graphiti.mm.pictograms.Anchor;
 import org.eclipse.graphiti.mm.pictograms.AnchorContainer;
@@ -104,25 +108,42 @@ public class FeatureSupport {
 		boolean intoLane = isTargetLane(context) && isTargetLaneOnTop(context);
 		boolean intoParticipant = isTargetParticipant(context);
 		boolean intoSubProcess = isTargetSubProcess(context);
+		boolean intoSubChoreography = isTargetSubChoreography(context);
 		boolean intoGroup = isTargetGroup(context);
-		return (intoDiagram || intoLane || intoParticipant || intoSubProcess) && !intoGroup;
+		return (intoDiagram || intoLane || intoParticipant || intoSubProcess || intoSubChoreography) && !intoGroup;
 	}
-	
+
+	public static boolean isChoreographyParticipantBand(PictogramElement element) {
+		EObject container = element.eContainer();
+		if (container instanceof PictogramElement) {
+			PictogramElement containerElem = (PictogramElement) container;
+			Object bo = Graphiti.getLinkService().getBusinessObjectForLinkedPictogramElement(containerElem);
+			if (bo instanceof ChoreographyActivity) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public static boolean isValidDataTarget(ITargetContext context) {
 		Object containerBO = BusinessObjectUtil.getBusinessObjectForPictogramElement( context.getTargetContainer() );
 		boolean intoDiagram = containerBO instanceof BPMNDiagram;
-		boolean intoSubProcess = containerBO instanceof SubProcess;
+		boolean intoSubProcess = containerBO instanceof FlowElementsContainer;
 		if (intoSubProcess || intoDiagram)
 			return true;
-		if (FeatureSupport.isTargetLane(context) && FeatureSupport.isTargetLaneOnTop(context))
+		if (isTargetLane(context) && isTargetLaneOnTop(context))
 			return true;
-		if (FeatureSupport.isTargetParticipant(context))
+		if (isTargetParticipant(context))
 			return true;
 		return false;
 	}
 	
 	public static boolean isTargetSubProcess(ITargetContext context) {
 		return BusinessObjectUtil.containsElementOfType(context.getTargetContainer(), SubProcess.class);
+	}
+	
+	public static boolean isTargetSubChoreography(ITargetContext context) {
+		return BusinessObjectUtil.containsElementOfType(context.getTargetContainer(), SubChoreography.class);
 	}
 
 	public static boolean isTargetLane(ITargetContext context) {
@@ -144,7 +165,8 @@ public class FeatureSupport {
 	}
 	
 	public static boolean isTargetParticipant(ITargetContext context) {
-		return isParticipant(context.getTargetContainer());
+		return isParticipant(context.getTargetContainer()) &&
+				!isChoreographyParticipantBand(context.getTargetContainer());
 	}
 
 	public static boolean isParticipant(PictogramElement element) {
@@ -343,8 +365,8 @@ public class FeatureSupport {
 	
 				for (Shape s : children) {
 					GraphicsAlgorithm childGa = s.getGraphicsAlgorithm();
-					if (childGa instanceof Text) {
-						Text text = (Text)childGa;
+					if (childGa instanceof AbstractText) {
+						AbstractText text = (AbstractText)childGa;
 						text.setAngle(-90);
 						service.setLocationAndSize(text, 5, 0, 15, newHeight);
 					} else if (childGa instanceof Polyline) {
@@ -369,8 +391,8 @@ public class FeatureSupport {
 	
 				for (Shape s : children) {
 					GraphicsAlgorithm childGa = s.getGraphicsAlgorithm();
-					if (childGa instanceof Text) {
-						Text text = (Text)childGa;
+					if (childGa instanceof AbstractText) {
+						AbstractText text = (AbstractText)childGa;
 						text.setAngle(0);
 						service.setLocationAndSize(text, 0, 5, newWidth, 15);
 					} else if (childGa instanceof Polyline) {
@@ -409,14 +431,13 @@ public class FeatureSupport {
 			GraphicsAlgorithm ga = root.getGraphicsAlgorithm();
 			for (Shape s : root.getChildren()) {
 				GraphicsAlgorithm childGa = s.getGraphicsAlgorithm();
-				if (childGa instanceof Text) {
+				if (childGa instanceof AbstractText) {
+					AbstractText text = (AbstractText)childGa;
 					if (horz) {
-						Text text = (Text)childGa;
 						text.setAngle(-90);
 						service.setLocationAndSize(text, 5, 0, 15, ga.getHeight());
 					}
 					else {
-						Text text = (Text)childGa;
 						text.setAngle(0);
 						service.setLocationAndSize(text, 0, 5, ga.getWidth(), 15);
 					}
@@ -539,6 +560,11 @@ public class FeatureSupport {
 		} else if (o instanceof Lane) {
 			Lane l = (Lane) o;
 			return l.getName();
+		} else if (o instanceof Group) {
+			Group g = (Group) o;
+			if (g.getCategoryValueRef()!=null)
+				return ModelUtil.getDisplayName(g.getCategoryValueRef());
+			return "";
 		}
 		return null;
 	}
@@ -836,6 +862,8 @@ public class FeatureSupport {
 	}
 
 	public static boolean isLabelShape(Shape shape) {
+		if (shape==null)
+			return false;
 		return Graphiti.getPeService().getPropertyValue(shape, GraphicsUtil.LABEL_PROPERTY) != null;
 	}
 
@@ -1032,6 +1060,47 @@ public class FeatureSupport {
 			}
 		}
 		updateConnections(fp, ac, alreadyUpdated);
+	}
+
+	public static void updateCategoryValues(IFeatureProvider fp, PictogramElement pe) {
+		
+		Resource resource = ModelUtil.getResource(pe);
+		if (Bpmn2Preferences.getInstance(resource).getPropagateGroupCategories()) {
+			// only do this if User Preference is enabled: assign the Group's CategoryValue
+			// to the FlowElement represented by the given PictogramElement
+			Diagram diagram = fp.getDiagramTypeProvider().getDiagram();
+			FlowElement flowElement = BusinessObjectUtil.getFirstElementOfType(pe, FlowElement.class);
+			if (flowElement==null)
+				return;
+			// remove any previous Category Values from this FlowElement
+			flowElement.getCategoryValueRef().clear();
+			
+			// find all Groups in this Resource and check if it contains the given FlowElement
+			if (pe instanceof ContainerShape) {
+				for (Group group : ModelUtil.getAllObjectsOfType(resource, Group.class)) {
+					for (PictogramElement groupShape : Graphiti.getLinkService().getPictogramElements(diagram, group)) {
+						if (groupShape instanceof ContainerShape) {
+							for (ContainerShape flowElementShape : FeatureSupport.findGroupedShapes((ContainerShape) groupShape)) {
+								FlowElement fe = BusinessObjectUtil.getFirstElementOfType(flowElementShape, FlowElement.class);
+								if (fe==flowElement) {
+									fe.getCategoryValueRef().add(group.getCategoryValueRef());
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+			else if (pe instanceof Connection && flowElement instanceof SequenceFlow) {
+				SequenceFlow sf = (SequenceFlow) flowElement;
+				FlowNode source = sf.getSourceRef();
+				FlowNode target = sf.getTargetRef();
+				
+				sf.getCategoryValueRef().clear();
+				sf.getCategoryValueRef().addAll(source.getCategoryValueRef());
+				sf.getCategoryValueRef().addAll(target.getCategoryValueRef());
+			}
+		}
 	}
 	
 }

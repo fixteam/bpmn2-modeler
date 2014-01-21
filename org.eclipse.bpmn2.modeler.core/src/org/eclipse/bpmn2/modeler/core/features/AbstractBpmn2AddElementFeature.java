@@ -36,6 +36,7 @@ import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
+import org.eclipse.dd.dc.Bounds;
 import org.eclipse.dd.dc.DcFactory;
 import org.eclipse.dd.dc.Point;
 import org.eclipse.emf.common.util.EList;
@@ -268,18 +269,35 @@ public abstract class AbstractBpmn2AddElementFeature<T extends BaseElement>
 	}
 	
 	protected int getHeight(IAddContext context) {
+		Object copiedBpmnShape = context.getProperty(DefaultPasteBPMNElementFeature.COPIED_BPMN_SHAPE);
+		if (copiedBpmnShape instanceof BPMNShape) {
+			Bounds b = ((BPMNShape)copiedBpmnShape).getBounds();
+			if (b!=null)
+				return (int) b.getHeight();
+		}
 		return context.getHeight() > 0 ? context.getHeight() :
 			(isHorizontal(context) ? getHeight() : getWidth());
 	}
 	
 	protected int getWidth(IAddContext context) {
+		Object copiedBpmnShape = context.getProperty(DefaultPasteBPMNElementFeature.COPIED_BPMN_SHAPE);
+		if (copiedBpmnShape instanceof BPMNShape) {
+			Bounds b = ((BPMNShape)copiedBpmnShape).getBounds();
+			if (b!=null)
+				return (int) b.getWidth();
+		}
 		return context.getWidth() > 0 ? context.getWidth() :
 			(isHorizontal(context) ? getWidth() : getHeight());
 	}
 
 	protected boolean isHorizontal(ITargetContext context) {
 		if (context.getProperty(DIImport.IMPORT_PROPERTY) == null) {
-			// not importing - set isHorizontal to be the same as parent Pool
+			// not importing - set isHorizontal to be the same as copied element or parent
+			Object copiedBpmnShape = context.getProperty(DefaultPasteBPMNElementFeature.COPIED_BPMN_SHAPE);
+			if (copiedBpmnShape instanceof BPMNShape) {
+				return ((BPMNShape)copiedBpmnShape).isIsHorizontal();
+			}
+			
 			if (FeatureSupport.isTargetParticipant(context)) {
 				Participant targetParticipant = FeatureSupport.getTargetParticipant(context);
 				BPMNShape participantShape = findDIShape(targetParticipant);

@@ -54,6 +54,7 @@ public class ResourcePropertyTester extends PropertyTester {
 					expectedValue = expectedValue.toString();
 					return value.equals(expectedValue);
 				}
+				return true;
 			}
 		}
 		return false;

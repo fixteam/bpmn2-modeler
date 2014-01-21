@@ -11,16 +11,20 @@
 package org.eclipse.bpmn2.modeler.core.di;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.bpmn2.BaseElement;
+import org.eclipse.bpmn2.di.BPMNShape;
+import org.eclipse.emf.ecore.EObject;
 
-public class DiagramElementTreeNode {
+public class DiagramElementTreeNode implements Iterable<DiagramElementTreeNode> {
 	private static List<DiagramElementTreeNode> EMPTY = new ArrayList<DiagramElementTreeNode>();
 	private DiagramElementTreeNode parent;
 	private BaseElement baseElement;
 	private List<DiagramElementTreeNode> children;
 	private boolean checked = true;
+	private BPMNShape bpmnShape;
 	
 	public DiagramElementTreeNode(DiagramElementTreeNode parent, BaseElement element) {
 		this.parent = parent;
@@ -34,6 +38,14 @@ public class DiagramElementTreeNode {
 	public void setBaseElement(BaseElement baseElement) {
 		this.baseElement = baseElement;
 	}
+	public BPMNShape getBpmnShape() {
+		return bpmnShape;
+	}
+
+	public void setBpmnShape(BPMNShape bpmnShape) {
+		this.bpmnShape = bpmnShape;
+	}
+
 	
 	public DiagramElementTreeNode getParent() {
 		return parent;
@@ -115,5 +127,54 @@ public class DiagramElementTreeNode {
 		if (hasChildren())
 			return children;
 		return EMPTY;
+	}
+
+	/*
+	 * A simple depth-first tree iterator
+	 */
+	@Override
+	public Iterator<DiagramElementTreeNode> iterator() {
+		return new Iterator<DiagramElementTreeNode>() {
+			int iteratorIndex = -1;
+			int childIndex = 0;
+			List<Iterator<DiagramElementTreeNode>> iterators;
+			
+			@Override
+			public boolean hasNext() {
+				if (!hasChildren())
+					return false;
+				
+				if (iteratorIndex==-1) {
+					iteratorIndex = 0;
+					iterators = new ArrayList<Iterator<DiagramElementTreeNode>>();
+					for (DiagramElementTreeNode child : children) {
+						iterators.add(child.iterator());
+					}
+				}
+				return iteratorIndex<iterators.size() || childIndex<children.size();
+			}
+
+			@Override
+			public DiagramElementTreeNode next() {
+				if (!hasChildren())
+					return null;
+				while (iteratorIndex<iterators.size()) {
+					Iterator<DiagramElementTreeNode> iter = iterators.get(iteratorIndex);
+					if (iter.hasNext())
+						return iter.next();
+					++iteratorIndex;
+				}
+				if (childIndex<children.size()) {
+					return children.get(childIndex++);
+				}
+				return null;
+			}
+
+			@Override
+			public void remove() {
+				throw new UnsupportedOperationException();
+			}
+			
+		};
 	}
 }

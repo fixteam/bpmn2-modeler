@@ -781,7 +781,7 @@ public interface BpsimPackage extends EPackage {
 	int DOCUMENT_ROOT__ERLANG_DISTRIBUTION = 11;
 
 	/**
-	 * The feature id for the '<em><b>Expression Parameter</b></em>' containment reference.
+	 * The feature id for the '<em><b>SingleAssignment Parameter</b></em>' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
@@ -1335,7 +1335,7 @@ public interface BpsimPackage extends EPackage {
 	int ERLANG_DISTRIBUTION_TYPE_FEATURE_COUNT = DISTRIBUTION_PARAMETER_FEATURE_COUNT + 2;
 
 	/**
-	 * The meta object id for the '{@link org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.impl.ExpressionParameterTypeImpl <em>Expression Parameter Type</em>}' class.
+	 * The meta object id for the '{@link org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.impl.ExpressionParameterTypeImpl <em>SingleAssignment Parameter Type</em>}' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.impl.ExpressionParameterTypeImpl
@@ -1381,7 +1381,7 @@ public interface BpsimPackage extends EPackage {
 	int EXPRESSION_PARAMETER_TYPE__VALUE = PARAMETER_VALUE_FEATURE_COUNT + 0;
 
 	/**
-	 * The number of structural features of the '<em>Expression Parameter Type</em>' class.
+	 * The number of structural features of the '<em>SingleAssignment Parameter Type</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
@@ -3661,10 +3661,10 @@ public interface BpsimPackage extends EPackage {
 	EReference getDocumentRoot_ErlangDistribution();
 
 	/**
-	 * Returns the meta object for the containment reference '{@link org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.DocumentRoot#getExpressionParameter <em>Expression Parameter</em>}'.
+	 * Returns the meta object for the containment reference '{@link org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.DocumentRoot#getExpressionParameter <em>SingleAssignment Parameter</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @return the meta object for the containment reference '<em>Expression Parameter</em>'.
+	 * @return the meta object for the containment reference '<em>SingleAssignment Parameter</em>'.
 	 * @see org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.DocumentRoot#getExpressionParameter()
 	 * @see #getDocumentRoot()
 	 * @generated
@@ -4041,10 +4041,10 @@ public interface BpsimPackage extends EPackage {
 	EAttribute getErlangDistributionType_Mean();
 
 	/**
-	 * Returns the meta object for class '{@link org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.ExpressionParameterType <em>Expression Parameter Type</em>}'.
+	 * Returns the meta object for class '{@link org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.ExpressionParameterType <em>SingleAssignment Parameter Type</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @return the meta object for class '<em>Expression Parameter Type</em>'.
+	 * @return the meta object for class '<em>SingleAssignment Parameter Type</em>'.
 	 * @see org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.ExpressionParameterType
 	 * @generated
 	 */
@@ -5605,7 +5605,7 @@ public interface BpsimPackage extends EPackage {
 		EReference DOCUMENT_ROOT__ERLANG_DISTRIBUTION = eINSTANCE.getDocumentRoot_ErlangDistribution();
 
 		/**
-		 * The meta object literal for the '<em><b>Expression Parameter</b></em>' containment reference feature.
+		 * The meta object literal for the '<em><b>SingleAssignment Parameter</b></em>' containment reference feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
 		 * @generated
@@ -5895,7 +5895,7 @@ public interface BpsimPackage extends EPackage {
 		EAttribute ERLANG_DISTRIBUTION_TYPE__MEAN = eINSTANCE.getErlangDistributionType_Mean();
 
 		/**
-		 * The meta object literal for the '{@link org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.impl.ExpressionParameterTypeImpl <em>Expression Parameter Type</em>}' class.
+		 * The meta object literal for the '{@link org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.impl.ExpressionParameterTypeImpl <em>SingleAssignment Parameter Type</em>}' class.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
 		 * @see org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.impl.ExpressionParameterTypeImpl

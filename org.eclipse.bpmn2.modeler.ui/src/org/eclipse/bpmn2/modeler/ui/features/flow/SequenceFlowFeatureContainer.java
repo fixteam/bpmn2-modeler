@@ -12,23 +12,21 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.ui.features.flow;
 
-import java.io.IOException;
 import java.util.Iterator;
 
 import org.eclipse.bpmn2.Activity;
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.Bpmn2Package;
+import org.eclipse.bpmn2.CatchEvent;
 import org.eclipse.bpmn2.ComplexGateway;
 import org.eclipse.bpmn2.ExclusiveGateway;
 import org.eclipse.bpmn2.FlowNode;
 import org.eclipse.bpmn2.InclusiveGateway;
-import org.eclipse.bpmn2.InteractionNode;
-import org.eclipse.bpmn2.MessageFlow;
+import org.eclipse.bpmn2.Process;
 import org.eclipse.bpmn2.SequenceFlow;
+import org.eclipse.bpmn2.SubProcess;
 import org.eclipse.bpmn2.modeler.core.Activator;
-import org.eclipse.bpmn2.modeler.core.ModelHandler;
 import org.eclipse.bpmn2.modeler.core.features.BaseElementConnectionFeatureContainer;
-import org.eclipse.bpmn2.modeler.core.features.DefaultLayoutBPMNShapeFeature;
 import org.eclipse.bpmn2.modeler.core.features.DefaultLayoutBPMNConnectionFeature;
 import org.eclipse.bpmn2.modeler.core.features.MultiUpdateFeature;
 import org.eclipse.bpmn2.modeler.core.features.flow.AbstractAddFlowFeature;
@@ -52,14 +50,16 @@ import org.eclipse.graphiti.features.IUpdateFeature;
 import org.eclipse.graphiti.features.context.IAddConnectionContext;
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.ICreateConnectionContext;
-import org.eclipse.graphiti.features.context.ICreateContext;
+import org.eclipse.graphiti.features.context.IReconnectionContext;
 import org.eclipse.graphiti.features.context.IUpdateContext;
+import org.eclipse.graphiti.features.context.impl.ReconnectionContext;
 import org.eclipse.graphiti.features.impl.AbstractUpdateFeature;
 import org.eclipse.graphiti.features.impl.Reason;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.Polyline;
 import org.eclipse.graphiti.mm.algorithms.styles.Color;
 import org.eclipse.graphiti.mm.algorithms.styles.LineStyle;
+import org.eclipse.graphiti.mm.pictograms.AnchorContainer;
 import org.eclipse.graphiti.mm.pictograms.Connection;
 import org.eclipse.graphiti.mm.pictograms.ConnectionDecorator;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
@@ -173,6 +173,36 @@ public class SequenceFlowFeatureContainer extends BaseElementConnectionFeatureCo
 		@Override
 		protected Class<FlowNode> getTargetClass() {
 			return FlowNode.class;
+		}
+
+		@Override
+		public boolean canCreate(ICreateConnectionContext context) {
+			if (!super.canCreate(context))
+				return false;
+			
+			FlowNode source = getSourceBo(context);
+			FlowNode target = getTargetBo(context);
+			if (source==null || target==null)
+				return false;
+			if (source==target)
+				return true;
+			
+			if (target instanceof CatchEvent)
+				return false;
+			
+			EObject sourceContainer = source.eContainer();
+			while (sourceContainer!=null) {
+				if (sourceContainer instanceof Process || sourceContainer instanceof SubProcess)
+					break;
+				sourceContainer = sourceContainer.eContainer();
+			}
+			EObject targetContainer = target.eContainer();
+			while (targetContainer!=null) {
+				if (targetContainer instanceof Process || targetContainer instanceof SubProcess)
+					break;
+				targetContainer = targetContainer.eContainer();
+			}
+			return sourceContainer==targetContainer;
 		}
 		
 		@Override
@@ -341,6 +371,18 @@ public class SequenceFlowFeatureContainer extends BaseElementConnectionFeatureCo
 			// TODO Auto-generated constructor stub
 		}
 
+		@Override
+		public boolean canReconnect(IReconnectionContext context) {
+			if (!super.canReconnect(context))
+				return false;
+			if (context.getReconnectType().equals(ReconnectionContext.RECONNECT_TARGET)) {
+				EObject o = BusinessObjectUtil.getBusinessObjectForPictogramElement(context.getTargetPictogramElement());
+				if (o instanceof CatchEvent)
+					return false;
+			}
+			return true;
+		}
+		
 		@Override
 		protected Class<? extends EObject> getTargetClass() {
 			return FlowNode.class;

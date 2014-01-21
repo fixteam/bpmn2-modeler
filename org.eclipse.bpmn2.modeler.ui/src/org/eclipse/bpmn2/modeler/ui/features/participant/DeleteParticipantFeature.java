@@ -57,7 +57,7 @@ public class DeleteParticipantFeature extends DefaultDeleteBPMNShapeFeature {
 			if (bpmnDiagram != null) {
 				DIUtils.deleteDiagram(getDiagramBehavior(), bpmnDiagram);
 			}
-			EcoreUtil.delete((EObject) bo);
+			EcoreUtil.delete((EObject) bo, true);
 		}
 
 		super.delete(context);

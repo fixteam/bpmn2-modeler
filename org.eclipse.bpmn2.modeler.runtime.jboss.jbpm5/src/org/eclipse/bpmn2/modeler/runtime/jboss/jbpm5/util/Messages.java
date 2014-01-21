@@ -5,6 +5,9 @@ import org.eclipse.osgi.util.NLS;
 public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.util.messages"; //$NON-NLS-1$
 	public static String JbpmImportDialog_Create_Process_Variables_Label;
+	public static String JbpmInterfaceImportDialog_Available_Methods;
+	public static String JbpmInterfaceImportDialog_Select_All;
+	public static String JbpmInterfaceImportDialog_Select_None;
 	public static String JbpmModelUtil_Duplicate_Import_Message;
 	public static String JbpmModelUtil_Duplicate_Import_Title;
 	public static String JbpmModelUtil_No_Process_Message;

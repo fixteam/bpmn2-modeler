@@ -24,6 +24,7 @@ import org.eclipse.bpmn2.AdHocSubProcess;
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.Choreography;
+import org.eclipse.bpmn2.ChoreographyActivity;
 import org.eclipse.bpmn2.Collaboration;
 import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.DocumentRoot;
@@ -591,6 +592,9 @@ public class ModelUtil {
 	}
 	
 	public static Bpmn2DiagramType getDiagramType(EObject object) {
+		if (object instanceof Diagram) {
+			object = BusinessObjectUtil.getBusinessObjectForPictogramElement((Diagram)object);
+		}
 		if (object instanceof BPMNDiagram)
 			return getDiagramType((BPMNDiagram)object);
 		DiagramEditor editor = getDiagramEditor(object);
@@ -944,6 +948,25 @@ public class ModelUtil {
 			public boolean eIsProxy() {
 				return false;
 			}
+
+			@Override
+			public boolean equals(Object object) {
+				if (object instanceof DynamicEObjectImpl) {
+					DynamicEObjectImpl that = (DynamicEObjectImpl) object;
+					if (eProxyURI()==null) {
+						return that.eProxyURI()==null;
+					}
+					String thisString = eProxyURI().toString();
+					String thatString = that.eProxyURI() == null ? null : that.eProxyURI().toString();
+					return thisString.equals(thatString);
+				}
+				else if (object instanceof String) {
+					String thisString = eProxyURI().toString();
+					return thisString.equals(object);
+				}
+				return super.equals(object);
+			}
+			
 		};
 		de.eSetClass(EcorePackage.eINSTANCE.getEObject());
 		de.eSetProxyURI(URI.createURI(value));
@@ -999,9 +1022,11 @@ public class ModelUtil {
 			resource = object.eResource();
 			if (resource!=null) {
 				ResourceSet rs = resource.getResourceSet();
-				for (Resource r : rs.getResources()) {
-					if (r instanceof Bpmn2Resource) {
-						return r;
+				if (rs!=null) {
+					for (Resource r : rs.getResources()) {
+						if (r instanceof Bpmn2Resource) {
+							return r;
+						}
 					}
 				}
 			}
@@ -1110,6 +1135,19 @@ public class ModelUtil {
 		return list;
 	}
 	
+	@SuppressWarnings("unchecked")
+	public static <T> List<T> getAllObjectsOfType(Resource resource, final Class<T> class1) {
+		ArrayList<T> l = new ArrayList<T>();
+		TreeIterator<EObject> iter = resource.getAllContents();
+		while (iter.hasNext()) {
+			Object t = iter.next();
+			if (class1.isInstance(t)) {
+				l.add((T) t);
+			}
+		}
+		return l;
+	}
+
 	public static boolean compare(Object v1, Object v2) {
 		if (v1==null) {
 			if (v2!=null)
@@ -1229,22 +1267,36 @@ public class ModelUtil {
 		return new ArrayList<ExtensionAttributeValue>();
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static void addExtensionAttributeValue(EObject object, EStructuralFeature feature, Object value) {
+		addExtensionAttributeValue(object, feature, value, false);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static void addExtensionAttributeValue(EObject object, EStructuralFeature feature, Object value, boolean delay) {
 		EStructuralFeature evf = object.eClass().getEStructuralFeature("extensionValues"); //$NON-NLS-1$
 		EList<EObject> list = (EList<EObject>)object.eGet(evf);
 		
 		if (list.size()==0) {
 			ExtensionAttributeValue newItem = Bpmn2ModelerFactory.create(ExtensionAttributeValue.class);
+			ModelUtil.setID(newItem);
 			FeatureMap map = newItem.getValue();
 			map.add(feature, value);
-			list.add(newItem);
-			ModelUtil.setID(newItem);
+			if (delay) {
+				InsertionAdapter.add(object, evf, newItem, feature, value);
+			}
+			else {
+				list.add(newItem);
+			}
 		}
 		else {
 			ExtensionAttributeValue oldItem = (ExtensionAttributeValue) list.get(0);
-			FeatureMap map = oldItem.getValue();
-			map.add(feature, value);
+			if (delay) {
+				InsertionAdapter.add(object, evf, oldItem, feature, value);
+			}
+			else {
+				FeatureMap map = oldItem.getValue();
+				map.add(feature, value);
+			}
 		}
 	}
 
@@ -1432,6 +1484,8 @@ public class ModelUtil {
 					return true;
 				if (Bpmn2Package.eINSTANCE.getRootElement().isSuperTypeOf((EClass)feature.getEType()))
 					return true;
+				if (feature.isMany())
+					return true;
 				return false;
 			}
 			return true;
@@ -1530,7 +1584,7 @@ public class ModelUtil {
 		if (feature!=null) {
 			String name = (String)object.eGet(feature);
 			if (name==null || name.isEmpty())
-				name = Messages.ModelUtil_Unnamed_Object + objName;
+				name = NLS.bind(Messages.ModelUtil_Unnamed_Object, objName);
 			else
 				name = objName + " \"" + name + "\""; //$NON-NLS-1$ //$NON-NLS-2$
 			return name;
@@ -1699,4 +1753,13 @@ public class ModelUtil {
 		return list;
 	}
 	
+	public static boolean isParticipantBand(Participant participant) {
+		Resource resource = ModelUtil.getResource(participant);
+		for (ChoreographyActivity ca : ModelUtil.getAllObjectsOfType(resource, ChoreographyActivity.class)) {
+			if (ca.getParticipantRefs().contains(participant)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

@@ -21,7 +21,7 @@ import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.ILayoutContext;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
-import org.eclipse.graphiti.mm.algorithms.Text;
+import org.eclipse.graphiti.mm.algorithms.AbstractText;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
@@ -54,7 +54,7 @@ public class LayoutChoreographyFeature extends DefaultLayoutBPMNShapeFeature {
 			String property = peService.getPropertyValue(s, ChoreographyProperties.CHOREOGRAPHY_NAME);
 			if (property != null && new Boolean(property)) {
 				GraphicsAlgorithm ga = s.getGraphicsAlgorithm();
-				setTextLocation(choreographyContainer, (Text) ga, newWidth, newHeight);
+				setTextLocation(choreographyContainer, (AbstractText) ga, newWidth, newHeight);
 			}
 			property = peService.getPropertyValue(s, ChoreographyProperties.CALL_CHOREO_BORDER);
 			if (property != null && new Boolean(property)) {
@@ -80,8 +80,7 @@ public class LayoutChoreographyFeature extends DefaultLayoutBPMNShapeFeature {
 		return super.layout(context);
 	}
 
-	protected void setTextLocation(ContainerShape choreographyContainer, Text text, int w, int h) {
-		int y = (h / 2) - (TEXT_H / 2);
-		gaService.setLocationAndSize(text, 0, y, w, TEXT_H);
+	protected void setTextLocation(ContainerShape choreographyContainer, AbstractText text, int w, int h) {
+		gaService.setLocationAndSize(text, 5, 5, w - 5, h);
 	}
 }

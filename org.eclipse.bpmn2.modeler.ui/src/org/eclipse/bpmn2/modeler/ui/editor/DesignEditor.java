@@ -445,7 +445,7 @@ public class DesignEditor extends BPMN2Editor {
 								BPMNPlane plane = bpmnDiagram.getPlane();
 								BaseElement process = plane.getBpmnElement();
 								DIUtils.deleteDiagram(DesignEditor.this.getDiagramBehavior(), bpmnDiagram);
-								EcoreUtil.delete(process);
+								EcoreUtil.delete(process, true);
 							}
 						});
 					}
@@ -768,7 +768,7 @@ public class DesignEditor extends BPMN2Editor {
 							multipageEditor.addDesignPage(bpmnDiagram);
 						else
 							addDesignPage(bpmnDiagram);
-						break;
+//						break;
 					}
 				} else if (et == Notification.REMOVE) {
 					if (debug) {
@@ -785,7 +785,7 @@ public class DesignEditor extends BPMN2Editor {
 							multipageEditor.removeDesignPage(bpmnDiagram);
 						else
 							removeDesignPage(bpmnDiagram);
-						break;
+//						break;
 					}
 				} else if (et == Notification.SET) {
 					// check if we need to change the tab names

@@ -87,6 +87,6 @@ public abstract class BaseElementConnectionFeatureContainer implements IConnecti
 
 	@Override
 	public IDirectEditingFeature getDirectEditingFeature(IFeatureProvider fp) {
-		return null;
+		return new DirectEditBaseElementFeature(fp);
 	}
 }

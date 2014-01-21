@@ -2,14 +2,14 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %pluginName
 Bundle-SymbolicName: org.eclipse.bpmn2.modeler.ui;singleton:=true
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 1.0.2.qualifier
 Bundle-Activator: org.eclipse.bpmn2.modeler.ui.Activator
 Bundle-Vendor: %providerName
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.ui.ide,
  org.eclipse.osgi,
- org.eclipse.graphiti;bundle-version="[0.10.0,0.11.0]",
- org.eclipse.graphiti.ui;bundle-version="[0.10.0,0.11.0]",
+ org.eclipse.graphiti;bundle-version="[0.10.0,0.12.0]",
+ org.eclipse.graphiti.ui;bundle-version="[0.10.0,0.12.0]",
  org.eclipse.bpmn2.modeler.core,
  org.eclipse.emf.transaction,
  org.eclipse.ui.views.properties.tabbed,
@@ -33,7 +33,8 @@ Require-Bundle: org.eclipse.ui.ide,
  org.eclipse.jdt.core,
  org.eclipse.emf.workspace,
  org.eclipse.bpmn2,
- com.founder.fix.designer.base;bundle-version="1.0.0"
+ com.founder.fix.designer.base;bundle-version="1.0.0",
+ org.eclipse.bpmn2.modeler.help
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Export-Package: org.eclipse.bpmn2.modeler.ui,

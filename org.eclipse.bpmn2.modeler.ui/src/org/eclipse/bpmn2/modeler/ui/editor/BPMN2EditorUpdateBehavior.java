@@ -29,6 +29,7 @@ import org.eclipse.graphiti.platform.IDiagramContainer;
 import org.eclipse.graphiti.ui.editor.DefaultUpdateBehavior;
 import org.eclipse.graphiti.ui.editor.DiagramBehavior;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
+import org.eclipse.graphiti.ui.editor.IDiagramContainerUI;
 import org.eclipse.graphiti.ui.editor.IDiagramEditorInput;
 import org.eclipse.graphiti.ui.internal.editor.DomainModelWorkspaceSynchronizerDelegate;
 import org.eclipse.graphiti.ui.internal.editor.GFWorkspaceCommandStackImpl;
@@ -46,6 +47,7 @@ import org.eclipse.emf.workspace.util.WorkspaceSynchronizer;
  */
 public class BPMN2EditorUpdateBehavior extends DefaultUpdateBehavior {
 
+	private DiagramBehavior diagramBehavior;
 	private TransactionalEditingDomain editingDomain;
 
 	/**
@@ -53,6 +55,7 @@ public class BPMN2EditorUpdateBehavior extends DefaultUpdateBehavior {
 	 */
 	public BPMN2EditorUpdateBehavior(DiagramBehavior diagramBehavior) {
 		super(diagramBehavior);
+		this.diagramBehavior = diagramBehavior;
 	}
 
 	public TransactionalEditingDomain getEditingDomain() {
@@ -64,11 +67,42 @@ public class BPMN2EditorUpdateBehavior extends DefaultUpdateBehavior {
 	@Override
 	public void createEditingDomain() {
 		if (editingDomain == null) {
-			editingDomain = createResourceSetAndEditingDomain();
+			// If another editor window is already open for this BPMN2 file
+			// then reuse its Editing Domain; otherwise create a new one.
+			IDiagramContainerUI dc = diagramBehavior.getDiagramContainer();
+			if (dc instanceof BPMN2Editor) {
+				BPMN2Editor editor = (BPMN2Editor) dc;
+				BPMN2Editor openEditor = BPMN2Editor.findOpenEditor(editor, editor.getCurrentInput());
+				if (openEditor!=null) {
+					BPMN2EditorUpdateBehavior updateBehavior = (BPMN2EditorUpdateBehavior) openEditor.getDiagramBehavior().getUpdateBehavior();
+					editingDomain = updateBehavior.editingDomain;
+				}
+			}
+			if (editingDomain==null) {
+				editingDomain = createResourceSetAndEditingDomain();
+			}
 			initializeEditingDomain(editingDomain);
 		}
 	}
 
+	@Override
+	public void dispose() {
+		// We can't dispose of the Editing Domain if another editor window
+		// is still open - Editing Domain is disposed in super()
+		IDiagramContainerUI dc = diagramBehavior.getDiagramContainer();
+		if (dc instanceof BPMN2Editor) {
+			BPMN2Editor editor = (BPMN2Editor) dc;
+			BPMN2Editor openEditor = BPMN2Editor.findOpenEditor(editor, editor.getCurrentInput());
+			if (openEditor==null)
+				super.dispose();
+		}
+	}
+
+	public void setEditingDomain(TransactionalEditingDomain editingDomain) {
+		this.editingDomain = editingDomain;
+		super.setEditingDomain(editingDomain);
+	}
+	
 	public TransactionalEditingDomain createResourceSetAndEditingDomain() {
 		// Argh!! This is the ONLY line of code that actually differs
 		// (significantly) from

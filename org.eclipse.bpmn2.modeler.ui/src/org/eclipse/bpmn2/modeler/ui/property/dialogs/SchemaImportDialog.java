@@ -20,9 +20,15 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.SelectionStatusDialog;
 
 /**
- * Browse for complex/simple types available in the process and choose that
- * simple type.
+ * This class is a delegate for a Schema Import Dialog which may be supplied by the currently
+ * active Target Runtime. The Target Runtime plugin is searched for an "importDialog" extension
+ * and, if found, the class defined by that extension is used as the import dialog.
  * 
+ * The class must be a subclass of org.eclipse.ui.dialogs.SelectionStatusDialog and may
+ * either build on the default implementation DefaultSchemaImportDialog, or may completely
+ * replace it.
+ * 
+ * See the extension point org.eclipse.bpmn2.modeler.ui for a complete description.
  */
 
 public class SchemaImportDialog {

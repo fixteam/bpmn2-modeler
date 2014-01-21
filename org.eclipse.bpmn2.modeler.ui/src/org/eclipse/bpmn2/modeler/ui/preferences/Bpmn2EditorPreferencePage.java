@@ -20,7 +20,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 public class Bpmn2EditorPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 	
 	public Bpmn2EditorPreferencePage() {
-		setDescription("Expand the tree to edit preferences for Editor.");
+		setDescription(Messages.Bpmn2EditorPreferencePage_Description);
 	}
 
 	@Override

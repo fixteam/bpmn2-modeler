@@ -8,7 +8,7 @@
 
 	<groupId>org.eclipse.bpmn2.modeler</groupId>
 	<artifactId>org.eclipse.bpmn2.modeler.parent</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>BPMN2 Modeler Parent</name>
@@ -90,10 +90,25 @@
 				<platform-version-name>kepler</platform-version-name>
 			</properties>
 		</profile>
+		<profile>
+			<id>platform-luna</id>
+			<activation>
+				<property>
+					<name>platform-version-name</name>
+					<value>luna</value>
+				</property>
+			</activation>
+			<properties>
+				<eclipse-site>http://download.eclipse.org/releases/luna</eclipse-site>
+				<platform-version>[4.4,4.5)</platform-version>
+				<platform-version-name>luna</platform-version-name>
+			</properties>
+		</profile>
 	</profiles>
 
 	<modules>
 		<module>org.eclipse.bpmn2.modeler.core</module>
+		<module>org.eclipse.bpmn2.modeler.help</module>
 		<module>org.eclipse.bpmn2.modeler.ui</module>
 		<module>org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5</module>
 		<module>org.eclipse.bpmn2.modeler.runtime.example</module>
@@ -174,6 +189,18 @@
 
 		<repository>
 			<id>eclipse-graphiti-kepler</id>
+			<url>http://download.eclipse.org/graphiti/updates/milestones/</url>
+			<layout>p2</layout>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
+
+		<repository>
+			<id>eclipse-graphiti-luna</id>
 			<url>http://download.eclipse.org/graphiti/updates/milestones/</url>
 			<layout>p2</layout>
 			<snapshots>

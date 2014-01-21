@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IDeleteContext;
 import org.eclipse.graphiti.features.context.impl.DeleteContext;
@@ -49,6 +50,14 @@ public class DefaultDeleteBPMNShapeFeature extends DefaultDeleteFeature {
 	
 	@Override
 	protected void deleteBusinessObject(Object bo) {
+		EStructuralFeature reference = ((EObject)bo).eClass().getEStructuralFeature("categoryValueRef");
+		if (reference!=null) {
+			Object v = ((EObject)bo).eGet(reference);
+			if (v instanceof EList) {
+				((EList)v).clear();
+			}
+		}
+
 		List<PictogramElement> pictElements = Graphiti.getLinkService().getPictogramElements(getDiagram(), (EObject) bo);
 		for (Iterator<PictogramElement> iterator = pictElements.iterator(); iterator.hasNext();) {
 			PictogramElement pe = iterator.next();

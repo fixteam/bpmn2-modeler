@@ -138,7 +138,7 @@ public interface SampleModelPackage extends EPackage {
 	int DOCUMENT_ROOT__ARTIFACT = Bpmn2Package.DOCUMENT_ROOT__ARTIFACT;
 
 	/**
-	 * The feature id for the '<em><b>Assignment</b></em>' containment reference.
+	 * The feature id for the '<em><b>MultipleAssignments</b></em>' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
@@ -426,7 +426,7 @@ public interface SampleModelPackage extends EPackage {
 	int DOCUMENT_ROOT__CORRELATION_PROPERTY_BINDING = Bpmn2Package.DOCUMENT_ROOT__CORRELATION_PROPERTY_BINDING;
 
 	/**
-	 * The feature id for the '<em><b>Correlation Property Retrieval Expression</b></em>' containment reference.
+	 * The feature id for the '<em><b>Correlation Property Retrieval SingleAssignment</b></em>' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
@@ -633,7 +633,7 @@ public interface SampleModelPackage extends EPackage {
 	int DOCUMENT_ROOT__EXCLUSIVE_GATEWAY = Bpmn2Package.DOCUMENT_ROOT__EXCLUSIVE_GATEWAY;
 
 	/**
-	 * The feature id for the '<em><b>Expression</b></em>' containment reference.
+	 * The feature id for the '<em><b>SingleAssignment</b></em>' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
@@ -669,7 +669,7 @@ public interface SampleModelPackage extends EPackage {
 	int DOCUMENT_ROOT__FLOW_NODE = Bpmn2Package.DOCUMENT_ROOT__FLOW_NODE;
 
 	/**
-	 * The feature id for the '<em><b>Formal Expression</b></em>' containment reference.
+	 * The feature id for the '<em><b>Formal SingleAssignment</b></em>' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
@@ -1110,7 +1110,7 @@ public interface SampleModelPackage extends EPackage {
 	int DOCUMENT_ROOT__RESOURCE = Bpmn2Package.DOCUMENT_ROOT__RESOURCE;
 
 	/**
-	 * The feature id for the '<em><b>Resource Assignment Expression</b></em>' containment reference.
+	 * The feature id for the '<em><b>Resource MultipleAssignments SingleAssignment</b></em>' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated

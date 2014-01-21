@@ -71,7 +71,7 @@ import org.osgi.service.prefs.BackingStoreException;
 public class ToolProfilesPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
 
 	// Page ID must be the same as defined in plugin.xml
-	public static String PAGE_ID = "org.eclipse.bpmn2.modeler.Profiles";
+	public static String PAGE_ID = "org.eclipse.bpmn2.modeler.Profiles"; //$NON-NLS-1$
 	
 	private Bpmn2Preferences preferences;
 	private TargetRuntime currentRuntime;
@@ -200,10 +200,10 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 			currentDiagramType = ModelUtil.getDiagramType(BPMN2Editor.getActiveEditor().getBpmnDiagram());
 		else
 			currentDiagramType = Bpmn2DiagramType.PROCESS;
-		currentProfile = "";
+		currentProfile = ""; //$NON-NLS-1$
 		
 		final Label lblRuntime = new Label(container, SWT.NONE);
-		lblRuntime.setText("Target Runtime");
+		lblRuntime.setText(Messages.ToolProfilesPreferencePage_TargetRuntime_Label);
 		lblRuntime.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
 
 		cboRuntimes = new Combo(container, SWT.READ_ONLY);
@@ -221,7 +221,7 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 		fillRuntimesCombo();
 
 		final Label lblDiagramType = new Label(container, SWT.NONE);
-		lblDiagramType.setText("Diagram Type");
+		lblDiagramType.setText(Messages.ToolProfilesPreferencePage_DiagramType_Label);
 		lblDiagramType.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 2, 1));
 
 		cboDiagramTypes = new Combo(container, SWT.READ_ONLY);
@@ -239,7 +239,7 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 		fillDiagramTypesCombo();
 
 		final Label lblProfile = new Label(container, SWT.NONE);
-		lblProfile.setText("Tool Profile");
+		lblProfile.setText(Messages.ToolProfilesPreferencePage_ToolProfile_Label);
 		lblProfile.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 3, 1));
 
 		cboProfiles = new Combo(container, SWT.READ_ONLY);
@@ -259,15 +259,15 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 		buttonContainer.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false, 4, 1));
 		
 		btnUseAsDefaultProfile = new Button(buttonContainer, SWT.CHECK);
-		btnUseAsDefaultProfile.setText("Use as default profile");
+		btnUseAsDefaultProfile.setText(Messages.ToolProfilesPreferencePage_SetDefaultProfile_Button);
 		btnUseAsDefaultProfile.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
 		
 		final Label lblFiller = new Label(buttonContainer, SWT.NONE);
-		lblFiller.setText("");
+		lblFiller.setText(""); //$NON-NLS-1$
 		lblFiller.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
 		btnCreateProfile = new Button(buttonContainer, SWT.PUSH);
-		btnCreateProfile.setText("Create Profile");
+		btnCreateProfile.setText(Messages.ToolProfilesPreferencePage_NewProfile_Button);
 		btnCreateProfile.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
 		btnCreateProfile.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -303,14 +303,14 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 		});
 		
 		btnDeleteProfile = new Button(buttonContainer, SWT.PUSH);
-		btnDeleteProfile.setText("Delete Profile");
+		btnDeleteProfile.setText(Messages.ToolProfilesPreferencePage_DeleteProfile_Button);
 		btnDeleteProfile.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
 		btnDeleteProfile.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				if (MessageDialog.openQuestion(getShell(),
-						"Confirm",
-						"This operation can not be undone.\nAre you sure you want to delete this Tool Profile?")) {
+						Messages.ToolProfilesPreferencePage_DeleteProfile_Title,
+						Messages.ToolProfilesPreferencePage_DeleteProfile_Message)) {
 					
 					preferences.deleteToolProfile(currentRuntime, currentDiagramType, currentProfile);
 					fillProfilesCombo();
@@ -343,16 +343,16 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 		});
 
 		final TabItem elementsTab = new TabItem(folder, SWT.NONE);
-		elementsTab.setText("Enabled Model Elements and Attributes");
+		elementsTab.setText(Messages.ToolProfilesPreferencePage_EnabledElements_Tab);
 		final TabItem paletteTab = new TabItem(folder, SWT.NONE);
-		paletteTab.setText("Tool Palette");
+		paletteTab.setText(Messages.ToolProfilesPreferencePage_ToolPalette_Tab);
 
 		final Composite elementsContainer = new Composite(folder, SWT.NONE);
 		elementsContainer.setLayout(new GridLayout(2, false));
 		elementsContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1));
 		
 		btnShowIds = new Button(elementsContainer, SWT.CHECK);
-		btnShowIds.setText("Show ID attributes (Advanced Behavior)");
+		btnShowIds.setText(Messages.ToolProfilesPreferencePage_ShowID_Button);
 		btnShowIds.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
 		btnShowIds.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -405,27 +405,27 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 		paletteButtonsContainer.setVisible(false);
 		
 		btnAddDrawer = new Button(paletteButtonsContainer, SWT.PUSH);
-		btnAddDrawer.setText("Add Drawer");
+		btnAddDrawer.setText(Messages.ToolProfilesPreferencePage_AddDrawer_Button);
 		btnAddDrawer.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 1, 1));
 		btnAddDrawer.setEnabled(false);
 		
 		btnDeleteDrawer = new Button(paletteButtonsContainer, SWT.PUSH);
-		btnDeleteDrawer.setText("Delete Drawer");
+		btnDeleteDrawer.setText(Messages.ToolProfilesPreferencePage_DeleteDrawer_Button);
 		btnDeleteDrawer.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 1, 1));
 		btnDeleteDrawer.setEnabled(false);
 		
 		btnAddTool = new Button(paletteButtonsContainer, SWT.PUSH);
-		btnAddTool.setText("Add Tool");
+		btnAddTool.setText(Messages.ToolProfilesPreferencePage_AddTool_Button);
 		btnAddTool.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 1, 1));
 		btnAddTool.setEnabled(false);
 		
 		btnDeleteTool = new Button(paletteButtonsContainer, SWT.PUSH);
-		btnDeleteTool.setText("Delete Tool");
+		btnDeleteTool.setText(Messages.ToolProfilesPreferencePage_DeleteTool_Button);
 		btnDeleteTool.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 1, 1));
 		btnDeleteTool.setEnabled(false);
 		
 		btnEditTool = new Button(paletteButtonsContainer, SWT.PUSH);
-		btnEditTool.setText("Edit Tool");
+		btnEditTool.setText(Messages.ToolProfilesPreferencePage_EditTool_Button);
 		btnEditTool.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 1, 1));
 		btnEditTool.setEnabled(false);
 		
@@ -701,9 +701,9 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 								return Activator.getDefault().getImage(IConstants.ICON_PROCESS);
 							}
 							ToolPart tp = tps.get(0);
-							String name = "16/" + tp.getName() + ".png";
+							String name = "16/" + tp.getName() + ".png"; //$NON-NLS-1$ //$NON-NLS-2$
 							if (!tp.getChildren().isEmpty()) {
-								name = "16/" + tp.getChildren().get(0).getName() + ".png";
+								name = "16/" + tp.getChildren().get(0).getName() + ".png"; //$NON-NLS-1$ //$NON-NLS-2$
 							}
 							return Activator.getDefault().getImage(name);
 						}
@@ -737,16 +737,16 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 					}
 					else if (element instanceof ToolPart) {
 						ToolPart tp = (ToolPart) element;
-						String props = "";
+						String props = ""; //$NON-NLS-1$
 						for (Entry<String, String> entry : tp.getProperties().entrySet()) {
 							if (props.isEmpty())
-								props = entry.getKey() + "=" + entry.getValue();
+								props = entry.getKey() + "=" + entry.getValue(); //$NON-NLS-1$
 							else
-								props += "," + entry.getKey() + "=" + entry.getValue();
+								props += "," + entry.getKey() + "=" + entry.getValue(); //$NON-NLS-1$ //$NON-NLS-2$
 						}
-						return tp.getName() + "[" + props + "]";
+						return tp.getName() + "[" + props + "]"; //$NON-NLS-1$ //$NON-NLS-2$
 					}
-					return "";
+					return ""; //$NON-NLS-1$
 				}
 			});
 		}
@@ -805,37 +805,37 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 			
 			CategoryDescriptor cd;
 			
-			cd = new CategoryDescriptor(defaultToolPalette,null,"Connectors",null,null);
+			cd = new CategoryDescriptor(defaultToolPalette,null,Messages.ToolProfilesPreferencePage_Connectors_Category,null,null);
 			defaultToolPalette.getCategories().add(cd);
 			for (Class c : FeatureMap.CONNECTORS) {
 				loadCategory(cd,c);
 			}
-			cd = new CategoryDescriptor(defaultToolPalette,null,"Tasks",null,null);
+			cd = new CategoryDescriptor(defaultToolPalette,null,Messages.ToolProfilesPreferencePage_Tasks_Category,null,null);
 			defaultToolPalette.getCategories().add(cd);
 			for (Class c : FeatureMap.TASKS) {
 				loadCategory(cd,c);
 			}
-			cd = new CategoryDescriptor(defaultToolPalette,null,"Gateways",null,null);
+			cd = new CategoryDescriptor(defaultToolPalette,null,Messages.ToolProfilesPreferencePage_Gateways_Category,null,null);
 			defaultToolPalette.getCategories().add(cd);
 			for (Class c : FeatureMap.GATEWAYS) {
 				loadCategory(cd,c);
 			}
-			cd = new CategoryDescriptor(defaultToolPalette,null,"Events",null,null);
+			cd = new CategoryDescriptor(defaultToolPalette,null,Messages.ToolProfilesPreferencePage_Events_Category,null,null);
 			defaultToolPalette.getCategories().add(cd);
 			for (Class c : FeatureMap.EVENTS) {
 				loadCategory(cd,c);
 			}
-			cd = new CategoryDescriptor(defaultToolPalette,null,"Event Definitions",null,null);
+			cd = new CategoryDescriptor(defaultToolPalette,null,Messages.ToolProfilesPreferencePage_EventDefinitions_Category,null,null);
 			defaultToolPalette.getCategories().add(cd);
 			for (Class c : FeatureMap.EVENT_DEFINITIONS) {
 				loadCategory(cd,c);
 			}
-			cd = new CategoryDescriptor(defaultToolPalette,null,"Data Items",null,null);
+			cd = new CategoryDescriptor(defaultToolPalette,null,Messages.ToolProfilesPreferencePage_DataItems_Category,null,null);
 			defaultToolPalette.getCategories().add(cd);
 			for (Class c : FeatureMap.DATA) {
 				loadCategory(cd,c);
 			}
-			cd = new CategoryDescriptor(defaultToolPalette,null,"Other",null,null);
+			cd = new CategoryDescriptor(defaultToolPalette,null,Messages.ToolProfilesPreferencePage_Other_Category,null,null);
 			defaultToolPalette.getCategories().add(cd);
 			for (Class c : FeatureMap.OTHER) {
 				loadCategory(cd,c);
@@ -882,18 +882,18 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 		
 		public CreateProfileDialog(Shell parentShell) {
 			super(parentShell,
-					"Create New Profile",
-					NLS.bind("Enter the name of the new Profile to create in Target Runtime \"{0}\"", currentRuntime.getName()),
-					"",
+					Messages.ToolProfilesPreferencePage_CreateProfile_Title,
+					NLS.bind(Messages.ToolProfilesPreferencePage_CreateProfile_Message, currentRuntime.getName()),
+					"", //$NON-NLS-1$
 					new IInputValidator() {
 
 				@Override
 				public String isValid(String newText) {
 					if (newText==null || newText.isEmpty())
-						return "Profile name can not be empty";
+						return Messages.ToolProfilesPreferencePage_Profile_Empty;
 					for (String p : cboProfiles.getItems()) {
 						if (newText.equals(p))
-							return "Profile "+p+" is already defined";
+							return NLS.bind(Messages.ToolProfilesPreferencePage_Profile_Duplicate,p);
 					}
 					return null;
 				}
@@ -902,16 +902,16 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 		}
 
 		public String getCopyProfile() {
-			if (copySelection!=null && copySelection.contains("/")) {
-				int i = copySelection.indexOf("/");
+			if (copySelection!=null && copySelection.contains("/")) { //$NON-NLS-1$
+				int i = copySelection.indexOf("/"); //$NON-NLS-1$
 				return copySelection.substring(i+1);
 			}
 			return null;
 		}
 
 		public Bpmn2DiagramType getCopyDiagramType() {
-			if (copySelection!=null && copySelection.contains("/")) {
-				int i = copySelection.indexOf("/");
+			if (copySelection!=null && copySelection.contains("/")) { //$NON-NLS-1$
+				int i = copySelection.indexOf("/"); //$NON-NLS-1$
 				String s = copySelection.substring(0,i);
 				return Bpmn2DiagramType.fromString(s);
 			}
@@ -927,7 +927,7 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 			container.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 			
 			final Button btnCopy = new Button(container, SWT.CHECK);
-			btnCopy.setText("Copy settings from this profile:");
+			btnCopy.setText(Messages.ToolProfilesPreferencePage_CopyProfile_Button);
 			btnCopy.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
 
 			final Combo cboCopy = new Combo(container, SWT.READ_ONLY);
@@ -941,7 +941,7 @@ public class ToolProfilesPreferencePage extends PreferencePage implements IWorkb
 			
 			for (Bpmn2DiagramType diagramType : Bpmn2DiagramType.values()) {
 				for (String profile : preferences.getAllToolProfiles(currentRuntime, diagramType)) {
-					String key = diagramType + "/" + profile;
+					String key = diagramType + "/" + profile; //$NON-NLS-1$
 					cboCopy.add(key);
 				}
 			}

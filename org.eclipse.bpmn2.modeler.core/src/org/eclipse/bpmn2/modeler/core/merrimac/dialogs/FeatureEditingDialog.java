@@ -139,7 +139,7 @@ public class FeatureEditingDialog extends ObjectEditingDialog {
 				}
 			}
 			else {
-				EcoreUtil.delete(newObject);
+				EcoreUtil.delete(newObject, true);
 			}
 		}
 		newObject = null;

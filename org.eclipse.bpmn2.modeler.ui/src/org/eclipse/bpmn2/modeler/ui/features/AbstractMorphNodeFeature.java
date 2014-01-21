@@ -31,6 +31,7 @@ import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil.AnchorLocation;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.ui.diagram.BPMNToolBehaviorProvider;
+import org.eclipse.bpmn2.modeler.ui.features.activity.task.CustomShapeFeatureContainer.CreateCustomShapeFeature;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
@@ -52,6 +53,7 @@ import org.eclipse.graphiti.features.custom.AbstractCustomFeature;
 import org.eclipse.graphiti.mm.pictograms.Anchor;
 import org.eclipse.graphiti.mm.pictograms.Connection;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
+import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.palette.IPaletteCompartmentEntry;
@@ -290,6 +292,12 @@ public abstract class AbstractMorphNodeFeature<T extends FlowNode> extends Abstr
 		IDimension size = GraphicsUtil.calculateSize(oldShape);
 		int x = loc.getX();
 		int y = loc.getY();
+		ContainerShape oldContainer = oldShape.getContainer();
+		if (oldContainer!=null && !(oldContainer instanceof Diagram)) {
+			loc = layoutService.getLocationRelativeToDiagram(oldContainer);
+			x -= loc.getX();
+			y -= loc.getY();
+		}
 		int w = size.getWidth();
 		int h = size.getHeight();
 		
@@ -384,7 +392,7 @@ public abstract class AbstractMorphNodeFeature<T extends FlowNode> extends Abstr
 				if (te instanceof ObjectCreationToolEntry) {
 					ObjectCreationToolEntry cte = (ObjectCreationToolEntry)te;
 					ICreateFeature f = cte.getCreateFeature();
-					if (f instanceof IBpmn2CreateFeature) {
+					if (f instanceof IBpmn2CreateFeature && !(f instanceof CreateCustomShapeFeature)) {
 						EClass type = ((IBpmn2CreateFeature)f).getBusinessObjectClass();
 						if (availableTypes.contains(type))
 							tools.add(te);

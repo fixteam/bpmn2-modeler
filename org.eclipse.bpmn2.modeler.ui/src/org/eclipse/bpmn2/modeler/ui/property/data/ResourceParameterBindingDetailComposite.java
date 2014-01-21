@@ -64,7 +64,7 @@ public class ResourceParameterBindingDetailComposite extends DefaultDetailCompos
 			
 			bindReference(this, be, PACKAGE.getResourceParameterBinding_ParameterRef());
 			
-			// an Assignment is not really valid without both a From and To
+			// an MultipleAssignments is not really valid without both a From and To
 			Expression expr = rpb.getExpression();
 			if (expr==null) {
 				expr = createModelObject(FormalExpression.class);

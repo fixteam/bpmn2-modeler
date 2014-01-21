@@ -77,6 +77,9 @@ import org.eclipse.graphiti.ui.features.AbstractPasteFeature;
 
 public class DefaultPasteBPMNElementFeature extends AbstractPasteFeature {
 
+	public static final String COPIED_BPMN_SHAPE = "copied.bpmn.shape";
+	public static final String COPIED_BPMN_OBJECT = "copied.bpmn.object";
+	
 	protected Resource resource;
 	protected Definitions definitions;
 	protected Hashtable<String, String> idMap;
@@ -427,6 +430,13 @@ public class DefaultPasteBPMNElementFeature extends AbstractPasteFeature {
 		ac.setSize(size.getWidth(), size.getHeight());
 		ac.setTargetContainer(targetContainerShape);
 
+		BPMNShape oldBpmnShape = null;
+		if (oldObject instanceof BaseElement) {
+			oldBpmnShape = DIUtils.findBPMNShape((BaseElement)oldObject);
+			ac.putProperty(COPIED_BPMN_SHAPE, oldBpmnShape);
+		}
+		ac.putProperty(COPIED_BPMN_OBJECT, oldObject);
+		
 		IAddFeature af = getFeatureProvider().getAddFeature(ac);
 		ContainerShape newShape = (ContainerShape) af.add(ac);
 
@@ -493,16 +503,13 @@ public class DefaultPasteBPMNElementFeature extends AbstractPasteFeature {
 		}
 		
 		// also copy the BPMNShape properties
-		if (oldObject instanceof BaseElement) {
-			BPMNShape oldBpmnShape = DIUtils.findBPMNShape((BaseElement)oldObject);
-			if (oldBpmnShape!=null) {
-				BPMNShape newBpmnShape = DIUtils.findBPMNShape((BaseElement)newObject);
-				newBpmnShape.setIsExpanded(oldBpmnShape.isIsExpanded());
-				newBpmnShape.setIsHorizontal(oldBpmnShape.isIsHorizontal());
-				newBpmnShape.setIsMarkerVisible(oldBpmnShape.isIsMarkerVisible());
-				newBpmnShape.setIsMessageVisible(oldBpmnShape.isIsMessageVisible());
-				newBpmnShape.setParticipantBandKind(oldBpmnShape.getParticipantBandKind());
-			}
+		if (oldBpmnShape!=null) {
+			BPMNShape newBpmnShape = DIUtils.findBPMNShape((BaseElement)newObject);
+			newBpmnShape.setIsExpanded(oldBpmnShape.isIsExpanded());
+			newBpmnShape.setIsHorizontal(oldBpmnShape.isIsHorizontal());
+			newBpmnShape.setIsMarkerVisible(oldBpmnShape.isIsMarkerVisible());
+			newBpmnShape.setIsMessageVisible(oldBpmnShape.isIsMessageVisible());
+			newBpmnShape.setParticipantBandKind(oldBpmnShape.getParticipantBandKind());
 		}
 
 		UpdateContext uc = new UpdateContext(newShape);

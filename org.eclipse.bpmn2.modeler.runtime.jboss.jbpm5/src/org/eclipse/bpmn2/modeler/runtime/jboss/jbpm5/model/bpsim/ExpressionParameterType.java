@@ -5,7 +5,7 @@ package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Expression Parameter Type</b></em>'.
+ * A representation of the model object '<em><b>SingleAssignment Parameter Type</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>

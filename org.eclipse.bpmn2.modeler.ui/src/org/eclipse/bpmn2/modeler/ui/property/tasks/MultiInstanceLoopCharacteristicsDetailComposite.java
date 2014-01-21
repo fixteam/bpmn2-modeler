@@ -793,15 +793,5 @@ public class MultiInstanceLoopCharacteristicsDetailComposite extends DefaultDeta
 				setText(newText);
 			}
 		}
-		
-		@Override
-		protected boolean canAdd() {
-			return false;
-		}
-		
-		@Override
-		protected boolean canRemove() {
-			return false;
-		}
 	}
 }

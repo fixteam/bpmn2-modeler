@@ -21,6 +21,7 @@ import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.bpmn2.modeler.core.utils.Tuple;
 import org.eclipse.dd.di.DiagramElement;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.graphiti.datatypes.ILocation;
 import org.eclipse.graphiti.features.IFeatureProvider;
@@ -46,7 +47,22 @@ public class ReconnectBaseElementFeature extends DefaultReconnectionFeature {
 
 	@Override
 	public boolean canReconnect(IReconnectionContext context) {
-		// TODO Auto-generated method stub
+		AnchorContainer sourceContainer = null;
+		AnchorContainer targetContainer = null;
+		EObject businessObject = BusinessObjectUtil.getBusinessObjectForPictogramElement(context.getConnection());
+		if (context.getReconnectType().equals(ReconnectionContext.RECONNECT_TARGET)) {
+			sourceContainer = context.getConnection().getStart().getParent();
+			if (context.getTargetPictogramElement() instanceof AnchorContainer)
+				targetContainer = (AnchorContainer) context.getTargetPictogramElement();
+		}
+		else {
+			targetContainer = context.getConnection().getEnd().getParent();
+			if (context.getTargetPictogramElement() instanceof AnchorContainer)
+				sourceContainer = (AnchorContainer) context.getTargetPictogramElement();
+		}
+		if (!AbstractBpmn2CreateConnectionFeature.canCreateConnection(sourceContainer, targetContainer, businessObject.eClass()))
+			return false;
+
 		return super.canReconnect(context);
 	}
 

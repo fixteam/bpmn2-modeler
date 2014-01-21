@@ -4,20 +4,20 @@
       Eclipse BPMN2 Modeler.
    </description>
    <feature url="features/org.eclipse.bpmn2.modeler.feature_0.0.0.jar" id="org.eclipse.bpmn2.modeler.feature" version="0.0.0">
-      <category name="Eclipse BPMN2 Modeler (Incubation)"/>
+      <category name="Eclipse BPMN2 Modeler"/>
    </feature>
    <feature url="features/org.eclipse.bpmn2.modeler.jboss.runtime.feature_0.0.0.jar" id="org.eclipse.bpmn2.modeler.jboss.runtime.feature" version="0.0.0">
-      <category name="Eclipse BPMN2 Modeler (Incubation)"/>
+      <category name="Eclipse BPMN2 Modeler"/>
    </feature>
    <feature url="features/org.eclipse.bpmn2.modeler.examples.feature_0.0.0.jar" id="org.eclipse.bpmn2.modeler.examples.feature" version="0.0.0">
-      <category name="Eclipse BPMN2 Modeler (Incubation)"/>
+      <category name="Eclipse BPMN2 Modeler"/>
    </feature>
-   <feature url="org.eclipse.bpmn2.modeler.wsil.feature_1.0.0.qualifier" id="org.eclipse.bpmn2.modeler.wsil.feature" version="1.0.0.qualifier">
-      <category name="Eclipse BPMN2 Modeler (Incubation)"/>
+   <feature url="org.eclipse.bpmn2.modeler.wsil.feature_1.0.2.qualifier" id="org.eclipse.bpmn2.modeler.wsil.feature" version="1.0.2.qualifier">
+      <category name="Eclipse BPMN2 Modeler"/>
    </feature>
-   <category-def name="Eclipse BPMN2 Modeler (Incubation)" label="Eclipse BPMN2 Modeler (Incubation)">
+   <category-def name="Eclipse BPMN2 Modeler" label="Eclipse BPMN2 Modeler">
       <description>
-         Eclipse BPMN2 Modeler (Incubation)
+         Eclipse BPMN2 Modeler
       </description>
    </category-def>
 </site>

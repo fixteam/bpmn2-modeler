@@ -25,6 +25,7 @@ import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2AddElementFeature;
 import org.eclipse.bpmn2.modeler.core.features.AbstractCreateFlowElementFeature;
 import org.eclipse.bpmn2.modeler.core.features.BaseElementFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.features.DefaultMoveBPMNShapeFeature;
+import org.eclipse.bpmn2.modeler.core.features.data.MoveDataFeature;
 import org.eclipse.bpmn2.modeler.core.features.label.UpdateLabelFeature;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
@@ -92,11 +93,6 @@ public class DataStoreReferenceFeatureContainer extends BaseElementFeatureContai
 	}
 
 	@Override
-	public IDirectEditingFeature getDirectEditingFeature(IFeatureProvider fp) {
-		return null;
-	}
-
-	@Override
 	public ILayoutFeature getLayoutFeature(IFeatureProvider fp) {
 		return new LayoutBaseElementTextFeature(fp) {
 
@@ -109,7 +105,7 @@ public class DataStoreReferenceFeatureContainer extends BaseElementFeatureContai
 
 	@Override
 	public IMoveShapeFeature getMoveFeature(IFeatureProvider fp) {
-		return new DefaultMoveBPMNShapeFeature(fp);
+		return new MoveDataFeature(fp);
 	}
 
 	@Override

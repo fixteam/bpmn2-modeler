@@ -19,7 +19,6 @@ import java.util.List;
 
 import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.IConstants;
-import org.eclipse.bpmn2.modeler.core.adapters.AdapterRegistry;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.emf.common.notify.Notification;
@@ -31,20 +30,20 @@ import org.eclipse.emf.edit.ui.celleditor.FeatureEditorDialog;
 import org.eclipse.emf.transaction.RecordingCommand;
 import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
@@ -63,6 +62,19 @@ public class FeatureListObjectEditor extends MultivalueObjectEditor {
 	Composite buttons;
 	Button editButton;
 	protected IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
+	
+	private class ListLabelProvider extends LabelProvider {
+
+		@Override
+		public Image getImage(Object element) {
+			return super.getImage(element);
+		}
+
+		@Override
+		public String getText(Object element) {
+			return ModelUtil.getDisplayName(element);
+		}
+	}
 	
 	/**
 	 * @param parent
@@ -87,8 +99,8 @@ public class FeatureListObjectEditor extends MultivalueObjectEditor {
 		references = getValue();
 		updateTextField();
 
-		boolean canEdit = ModelUtil.canEdit(object,feature);
-		boolean canCreateNew = ModelUtil.canCreateNew(object,feature);
+		boolean canEdit = canEdit();
+		boolean canCreateNew = canCreateNew();
 
 		if (canEdit || canCreateNew) {
 			buttons =  getToolkit().createComposite(composite);
@@ -121,7 +133,7 @@ public class FeatureListObjectEditor extends MultivalueObjectEditor {
 						values.addAll(choices.values());
 
 						FeatureEditorDialog featureEditorDialog = new FeatureEditorDialog(parent.getShell(),
-								AdapterRegistry.getLabelProvider(), object, feature, Messages.FeatureListObjectEditor_Title, values) {
+								new ListLabelProvider(), object, feature, Messages.FeatureListObjectEditor_Title, values) {
 
 							protected Control createContents(Composite parent) {
 								Composite control = (Composite)super.createContents(parent);
@@ -235,10 +247,10 @@ public class FeatureListObjectEditor extends MultivalueObjectEditor {
 		String listText = ""; //$NON-NLS-1$
 		if (references != null) {
 			for (int i = 0; i < references.size() - 1; i++) {
-				listText += AdapterRegistry.getLabelProvider().getText(references.get(i)) + ", "; //$NON-NLS-1$
+				listText += ModelUtil.getDisplayName(references.get(i)) + ", ";
 			}
 			if (references.size() > 0) {
-				listText += AdapterRegistry.getLabelProvider().getText(references.get(references.size() - 1));
+				listText += ModelUtil.getDisplayName(references.get(references.size() - 1));
 			}
 		}
 

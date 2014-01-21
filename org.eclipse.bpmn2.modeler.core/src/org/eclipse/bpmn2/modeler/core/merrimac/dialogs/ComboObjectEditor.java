@@ -65,6 +65,7 @@ public class ComboObjectEditor extends MultivalueObjectEditor {
 	protected boolean keyPressed = false;
 	protected Button editButton = null;
 	protected Button createButton = null;
+	protected Hashtable<String,Object> choices = null; // cache choices
 	
 	/**
 	 * @param parent
@@ -230,22 +231,6 @@ public class ComboObjectEditor extends MultivalueObjectEditor {
 		return combo;
 	}
 	
-	protected boolean canEdit() {
-		return ModelUtil.canEdit(object,feature);
-	}
-	
-	protected boolean canEditInline() {
-		return ModelUtil.canEditInline(object,feature);
-	}
-	
-	protected boolean canCreateNew() {
-		return ModelUtil.canCreateNew(object,feature);
-	}
-	
-	protected boolean canSetNull() {
-		return ModelUtil.canSetNull(object,feature);
-	}
-	
 	protected EObject createObject() throws Exception {
 		FeatureEditingDialog dialog = createFeatureEditingDialog(null);
 		dialog.setFeatureEType(featureEType);
@@ -290,7 +275,7 @@ public class ComboObjectEditor extends MultivalueObjectEditor {
 				while (comboViewer.getElementAt(0) != null)
 					comboViewer.remove(comboViewer.getElementAt(0));
 				
-				Hashtable<String,Object> choices = getChoiceOfValues(object, feature);
+				choices = getChoiceOfValues(object, feature);
 				if (canSetNull()) {
 					// selecting this one will set the target's value to null
 					comboViewer.add(""); //$NON-NLS-1$
@@ -342,39 +327,43 @@ public class ComboObjectEditor extends MultivalueObjectEditor {
 		Object newValue =  getValue();
 		ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(newValue);
 
-		isWidgetUpdating = false;
-		Hashtable<String,Object> oldChoices = new Hashtable<String,Object>();
-		int index = 0;
-		while (comboViewer.getElementAt(index) != null) {
-			String key = (String)comboViewer.getElementAt(index);
-			if (!key.isEmpty()) {
-				Object value = comboViewer.getData(key);
-				oldChoices.put(key, value);
-			}
-			++index;
-		}
-		isWidgetUpdating = false;
+//		isWidgetUpdating = false;
+//		Hashtable<String,Object> choices = new Hashtable<String,Object>();
+//		int index = 0;
+//		while (comboViewer.getElementAt(index) != null) {
+//			String key = (String)comboViewer.getElementAt(index);
+//			if (!key.isEmpty()) {
+//				Object value = comboViewer.getData(key);
+//				choices.put(key, value);
+//			}
+//			++index;
+//		}
+//		isWidgetUpdating = false;
 		
 		Hashtable<String,Object> newChoices = getChoiceOfValues(object, feature);
 
-		if (oldChoices.size()!=newChoices.size())
+		if (choices==null || choices.size()!=newChoices.size())
 			return true;
 		
 		StructuredSelection oldSelection = (StructuredSelection)comboViewer.getSelection();
 		Object oldValue = oldSelection.getFirstElement();
-		if (newValue==null) {
-			if (oldValue!=null)
+		if (oldValue instanceof String)
+			oldValue = comboViewer.getData((String)oldValue);
+		if (oldValue==null) {
+			if (newValue!=null)
 				return true;
+			else
+				return false;
 		}
 		else if (adapter!=null) {
 			if (!adapter.getObjectDescriptor().equals(oldValue))
 				return true;
 		}
-		else if (!newValue.equals(oldValue))
+		else if (!oldValue.equals(newValue))
 			return true;
 
 		for (Entry<String, Object> entry : newChoices.entrySet()) {
-			oldValue = oldChoices.get(entry.getKey());
+			oldValue = choices.get(entry.getKey());
 			newValue = entry.getValue();
 			adapter = ExtendedPropertiesAdapter.adapt(newValue);
 			if (newValue==null) {

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.bpmn2.modeler.core.merrimac.IConstants;
+import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.AbstractObjectEditingDialog;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.BooleanObjectEditor;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ComboObjectEditor;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.FeatureListObjectEditor;
@@ -80,7 +81,6 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 	protected Font descriptionFont = null;
 	protected AbstractPropertiesProvider propertiesProvider = null;
 	protected StyledText descriptionText = null;
-	
 	/**
 	 * Constructor for embedding this composite in an AbstractBpmn2PropertySection.
 	 * This is the "normal" method of creating this composite.
@@ -155,7 +155,7 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 				Messages.AbstractDetailComposite_Empty_Property_Sheet,
 				be.eClass().getName());
 			
-			String elements = "";
+			String elements = ""; //$NON-NLS-1$
 			String props[] = getPropertiesProvider().getProperties();
 			for (String s : props) {
 				elements += "    " + s + "\n"; //$NON-NLS-1$ //$NON-NLS-2$
@@ -327,6 +327,7 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 		
 		descriptionText.setBackground(display.getSystemColor(SWT.COLOR_INFO_BACKGROUND));
 		descriptionText.setForeground(display.getSystemColor(SWT.COLOR_INFO_FOREGROUND));
+		descriptionText.setData(AbstractObjectEditingDialog.DO_NOT_ADAPT , Boolean.TRUE);
 		
 		GridData d = new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1);
 		d.horizontalIndent = 4;
@@ -594,10 +595,6 @@ public abstract class AbstractDetailComposite extends ListAndDetailCompositeBase
 				}
 			}
 		});
-	}
-	
-	public boolean needRefresh(EObject be) {
-		return getBusinessObject() != be;
 	}
 	
 	public void setPropertiesProvider(AbstractPropertiesProvider provider) {

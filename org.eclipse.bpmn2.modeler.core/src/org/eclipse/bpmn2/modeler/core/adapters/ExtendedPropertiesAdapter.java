@@ -48,6 +48,10 @@ public class ExtendedPropertiesAdapter<T extends EObject> extends AdapterImpl {
 	// This is used in ComboObjectEditor (maybe others in the future)
 	public final static String UI_CAN_EDIT_INLINE = "ui.can.edit.inline"; //$NON-NLS-1$
 	public final static String UI_CAN_CREATE_NEW = "ui.can.create.new"; //$NON-NLS-1$
+	// For Combo boxes (ComboObjectEditor), this indicates that an empty selection will be added to the list of possible choices;
+	// For Text fields (TextObjectEditor), this indicates that the actual value of a feature should be used as the edit field text
+	// instead of its textual representation as returned by @link ModelUtil#getDisplayName(). In this case, if the value is null,
+	// it will be replaced with an empty string.
 	public final static String UI_CAN_SET_NULL = "ui.can.set.null"; //$NON-NLS-1$
 	public final static String UI_IS_MULTI_CHOICE = "ui.is.multi.choice"; //$NON-NLS-1$
 	public static final String PROPERTY_DESCRIPTOR = "property.descriptor"; //$NON-NLS-1$
@@ -104,8 +108,11 @@ public class ExtendedPropertiesAdapter<T extends EObject> extends AdapterImpl {
 			if (adapter==null)
 				adapter = (ExtendedPropertiesAdapter) AdapterUtil.adapt(eclass, ExtendedPropertiesAdapter.class);
 			if (adapter!=null) {
-				if (eObject instanceof EClass)
-					eObject = getDummyObject((EClass)eObject);
+				if (eObject instanceof EClass) {
+					EObject dummy = getDummyObject((EClass)eObject);
+					if (dummy!=null)
+						eObject = dummy;
+				}
 				adapter.setTarget(eObject);
 				adapter.getObjectDescriptor().setObject(eObject);
 				if (feature!=null)
@@ -128,7 +135,7 @@ public class ExtendedPropertiesAdapter<T extends EObject> extends AdapterImpl {
 	 */
 	public static EObject getDummyObject(EClass eclass) {
 		EObject object = dummyObjects.get(eclass);
-		if (object==null && eclass.eContainer() instanceof EPackage) {
+		if (object==null && eclass.eContainer() instanceof EPackage && !eclass.isAbstract()) {
 	    	EPackage pkg = (EPackage)eclass.eContainer();
 	    	object = pkg.getEFactoryInstance().create(eclass);
 			dummyObjects.put(eclass, object);
@@ -250,7 +257,7 @@ public class ExtendedPropertiesAdapter<T extends EObject> extends AdapterImpl {
 	protected String initializeDescription() {
 		EObject object = (EObject)target;
 		String name = ""; //$NON-NLS-1$
-		String description = "";
+		String description = ""; //$NON-NLS-1$
 		if (object instanceof BPMNDiagram) {
 			switch(ModelUtil.getDiagramType(object)) {
 			case NONE:
@@ -275,7 +282,7 @@ public class ExtendedPropertiesAdapter<T extends EObject> extends AdapterImpl {
 					if (fe instanceof ChoreographyActivity) {
 						ChoreographyActivity ca = (ChoreographyActivity) fe;
 						if (ca.getParticipantRefs().contains(participant)) {
-							name = "ParticipantBand";
+							name = "ParticipantBand"; //$NON-NLS-1$
 							break;
 						}
 					}

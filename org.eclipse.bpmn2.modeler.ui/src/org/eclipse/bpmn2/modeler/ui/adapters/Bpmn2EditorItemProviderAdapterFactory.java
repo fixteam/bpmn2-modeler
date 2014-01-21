@@ -14,10 +14,13 @@
 package org.eclipse.bpmn2.modeler.ui.adapters;
 
 import org.eclipse.bpmn2.Activity;
+import org.eclipse.bpmn2.BusinessRuleTask;
 import org.eclipse.bpmn2.CallActivity;
 import org.eclipse.bpmn2.CallChoreography;
 import org.eclipse.bpmn2.CallConversation;
 import org.eclipse.bpmn2.CatchEvent;
+import org.eclipse.bpmn2.CategoryValue;
+import org.eclipse.bpmn2.ChoreographyActivity;
 import org.eclipse.bpmn2.CompensateEventDefinition;
 import org.eclipse.bpmn2.CorrelationKey;
 import org.eclipse.bpmn2.CorrelationProperty;
@@ -32,9 +35,13 @@ import org.eclipse.bpmn2.Error;
 import org.eclipse.bpmn2.ErrorEventDefinition;
 import org.eclipse.bpmn2.Escalation;
 import org.eclipse.bpmn2.EscalationEventDefinition;
+import org.eclipse.bpmn2.Event;
 import org.eclipse.bpmn2.EventDefinition;
 import org.eclipse.bpmn2.FlowElement;
+import org.eclipse.bpmn2.FlowElementsContainer;
+import org.eclipse.bpmn2.FlowNode;
 import org.eclipse.bpmn2.FormalExpression;
+import org.eclipse.bpmn2.Gateway;
 import org.eclipse.bpmn2.GlobalScriptTask;
 import org.eclipse.bpmn2.Import;
 import org.eclipse.bpmn2.InputOutputSpecification;
@@ -43,6 +50,7 @@ import org.eclipse.bpmn2.Interface;
 import org.eclipse.bpmn2.ItemAwareElement;
 import org.eclipse.bpmn2.ItemDefinition;
 import org.eclipse.bpmn2.LinkEventDefinition;
+import org.eclipse.bpmn2.LoopCharacteristics;
 import org.eclipse.bpmn2.Message;
 import org.eclipse.bpmn2.MessageEventDefinition;
 import org.eclipse.bpmn2.MessageFlow;
@@ -74,10 +82,12 @@ import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.ui.Messages;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.ActivityPropertiesAdapter;
+import org.eclipse.bpmn2.modeler.ui.adapters.properties.BusinessRuleTaskPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.CallActivityPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.CallChoreographyPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.CallConversationPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.CatchEventPropertiesAdapter;
+import org.eclipse.bpmn2.modeler.ui.adapters.properties.CategoryValuePropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.CompensateEventDefinitionPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.CorrelationKeyPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.CorrelationPropertyBindingPropertiesAdapter;
@@ -93,6 +103,7 @@ import org.eclipse.bpmn2.modeler.ui.adapters.properties.ErrorPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.EscalationEventDefinitionPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.EscalationPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.EventDefinitionPropertiesAdapter;
+import org.eclipse.bpmn2.modeler.ui.adapters.properties.EventPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.FlowElementPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.FormalExpressionPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.ui.adapters.properties.GlobalScriptTaskPropertiesAdapter;
@@ -202,13 +213,43 @@ public class Bpmn2EditorItemProviderAdapterFactory extends Bpmn2ItemProviderAdap
 		public ExtendedPropertiesAdapter defaultCase(EObject object) {
         	ExtendedPropertiesAdapter adapter = null;
         	if (object instanceof EClass) {
+        		EClass eclass = (EClass)object;
         		// this is an EClass: search the current target runtime for an adapter that
         		// can handle this thing.
-        	    adapter = getTargetRuntimeAdapter((EClass)object);
+        	    adapter = getTargetRuntimeAdapter(eclass);
         	    if (adapter==null) {
         	    	// if none is found, create a dummy EObject and cache it
-   		    		object = ExtendedPropertiesAdapter.getDummyObject((EClass)object);
-   		    		adapter = doSwitch(object);
+        	    	if (eclass.getInstanceClass()==CatchEvent.class) {
+        	    		adapter = new CatchEventPropertiesAdapter(adapterFactory, null);
+        	    	}
+        	    	else if (eclass.getInstanceClass()==ChoreographyActivity.class) {
+        	    		adapter = new ExtendedPropertiesAdapter<CallChoreography> (adapterFactory, null);
+        	    	}
+        	    	else if (eclass.getInstanceClass()==Event.class) {
+        	    		adapter = new EventPropertiesAdapter(adapterFactory, null);
+        	    	}
+        	    	else if (eclass.getInstanceClass()==FlowElement.class) {
+        	    		adapter = new FlowElementPropertiesAdapter(adapterFactory, null);
+        	    	}
+        	    	else if (eclass.getInstanceClass()==FlowElementsContainer.class) {
+        	    		adapter = new ExtendedPropertiesAdapter<CallChoreography> (adapterFactory, null);
+        	    	}
+        	    	else if (eclass.getInstanceClass()==FlowNode.class) {
+        	    		adapter = new ExtendedPropertiesAdapter<CallChoreography> (adapterFactory, null);
+        	    	}
+        	    	else if (eclass.getInstanceClass()==Gateway.class) {
+        	    		adapter = new ExtendedPropertiesAdapter<CallChoreography> (adapterFactory, null);
+        	    	}
+        	    	else if (eclass.getInstanceClass()==LoopCharacteristics.class) {
+        	    		adapter = new ExtendedPropertiesAdapter<CallChoreography> (adapterFactory, null);
+        	    	}
+        	    	else if (eclass.getInstanceClass()==ThrowEvent.class) {
+        	    		adapter = new ThrowEventPropertiesAdapter(adapterFactory, null);
+        	    	}
+        	    	else {
+	   		    		object = ExtendedPropertiesAdapter.getDummyObject(eclass);
+	   		    		adapter = doSwitch(object);
+        	    	}
         	    }
         	}
         	else
@@ -470,6 +511,14 @@ public class Bpmn2EditorItemProviderAdapterFactory extends Bpmn2ItemProviderAdap
 		}
 
 		@Override
+		public ExtendedPropertiesAdapter caseBusinessRuleTask(BusinessRuleTask object) {
+			ExtendedPropertiesAdapter adapter = getTargetRuntimeAdapter(object);
+			if (adapter!=null)
+				return adapter;
+			return new BusinessRuleTaskPropertiesAdapter(adapterFactory,object);
+		}
+
+		@Override
 		public ExtendedPropertiesAdapter caseCompensateEventDefinition(CompensateEventDefinition object) {
 			ExtendedPropertiesAdapter adapter = getTargetRuntimeAdapter(object);
 			if (adapter!=null)
@@ -688,6 +737,14 @@ public class Bpmn2EditorItemProviderAdapterFactory extends Bpmn2ItemProviderAdap
 			if (adapter!=null)
 				return adapter;
 			return new CorrelationPropertyPropertiesAdapter(adapterFactory,object);
+        }
+
+		@Override
+        public ExtendedPropertiesAdapter caseCategoryValue(CategoryValue object) {
+			ExtendedPropertiesAdapter adapter = getTargetRuntimeAdapter(object);
+			if (adapter!=null)
+				return adapter;
+			return new CategoryValuePropertiesAdapter(adapterFactory,object);
         }
 
     };

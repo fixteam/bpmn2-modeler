@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: BPMN2 Modeler Help
+Bundle-SymbolicName: org.eclipse.bpmn2.modeler.help;singleton:=true
+Bundle-Version: 1.0.2.qualifier
+Bundle-Activator: org.eclipse.bpmn2.modeler.help.Activator
+Bundle-Vendor: Eclipse.org
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.help
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ActivationPolicy: lazy
+Export-Package: org.eclipse.bpmn2.modeler.help
