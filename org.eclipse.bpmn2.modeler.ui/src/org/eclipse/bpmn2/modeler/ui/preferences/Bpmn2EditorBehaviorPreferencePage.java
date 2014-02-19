@@ -86,6 +86,12 @@ public class Bpmn2EditorBehaviorPreferencePage extends FieldEditorPreferencePage
 				Bpmn2Preferences.PREF_PROPAGATE_GROUP_CATEGORIES_LABEL,
 				getFieldEditorParent());
 		addField(propagateGroupCategories);
+		
+		BooleanFieldEditor doCoreValidation = new BooleanFieldEditor(
+				Bpmn2Preferences.PREF_ALLOW_MULTIPLE_CONNECTIONS,
+				Bpmn2Preferences.PREF_ALLOW_MULTIPLE_CONNECTIONS_LABEL,
+				getFieldEditorParent());
+		addField(doCoreValidation);
 
 		//////////////////////////////////////////////////////////////////////////////
 		

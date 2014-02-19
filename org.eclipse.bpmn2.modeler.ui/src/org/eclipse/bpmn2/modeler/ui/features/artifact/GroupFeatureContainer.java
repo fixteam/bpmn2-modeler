@@ -43,6 +43,7 @@ import org.eclipse.graphiti.features.IMoveShapeFeature;
 import org.eclipse.graphiti.features.IResizeShapeFeature;
 import org.eclipse.graphiti.features.IUpdateFeature;
 import org.eclipse.graphiti.features.context.IAddContext;
+import org.eclipse.graphiti.features.context.IDeleteContext;
 import org.eclipse.graphiti.features.context.IMoveShapeContext;
 import org.eclipse.graphiti.features.context.IResizeShapeContext;
 import org.eclipse.graphiti.features.context.IUpdateContext;
@@ -88,7 +89,7 @@ public class GroupFeatureContainer extends BaseElementFeatureContainer {
 
 	@Override
 	public IDeleteFeature getDeleteFeature(IFeatureProvider fp) {
-		return new AbstractDefaultDeleteFeature(fp);
+		return new DeleteGroupFeature(fp);
 	}
 
 	@Override
@@ -248,9 +249,9 @@ public class GroupFeatureContainer extends BaseElementFeatureContainer {
 			super.update(context);
 			
 			ContainerShape groupShape = (ContainerShape)context.getPictogramElement();
-			for (ContainerShape cs : FeatureSupport.findGroupedShapes(groupShape)) {
-				FeatureSupport.updateCategoryValues(getFeatureProvider(), cs);
-			}
+			List<ContainerShape> containedShapes = FeatureSupport.findGroupedShapes(groupShape);
+			FeatureSupport.updateCategoryValues(getFeatureProvider(), containedShapes);
+
 			return true;
 		}
 		
@@ -311,27 +312,10 @@ public class GroupFeatureContainer extends BaseElementFeatureContainer {
 			}
 			for (ContainerShape cs : FeatureSupport.findGroupedShapes(groupShape)) {
 				if (!containedShapes.contains(cs)) {
-					FeatureSupport.updateCategoryValues(getFeatureProvider(), cs);
 					containedShapes.add(cs);
 				}
 			}
-			// Update CategoryValues for SequenceFlows also
-			List<Connection> connections = new ArrayList<Connection>();
-			for (ContainerShape cs : containedShapes) {
-				for (Anchor a : cs.getAnchors()) {
-					for (Connection c : a.getIncomingConnections()) {
-						if (!connections.contains(c))
-							connections.add(c);
-					}
-					for (Connection c : a.getOutgoingConnections()) {
-						if (!connections.contains(c))
-							connections.add(c);
-					}
-				}
-			}
-			for (Connection c : connections) {
-				FeatureSupport.updateCategoryValues(getFeatureProvider(), c);
-			}
+			FeatureSupport.updateCategoryValues(getFeatureProvider(), containedShapes);
 		}
 	}
 
@@ -370,46 +354,28 @@ public class GroupFeatureContainer extends BaseElementFeatureContainer {
 			DIUtils.updateDIShape(context.getPictogramElement());
 
 			List<ContainerShape> containedShapesAfterResize = FeatureSupport.findGroupedShapes(groupShape);
-			for (ContainerShape cs : containedShapesBeforeResize) {
-				if (!containedShapesAfterResize.contains(cs))
-					FeatureSupport.updateCategoryValues(getFeatureProvider(), cs);
-			}
-			for (ContainerShape cs : containedShapesAfterResize) {
-				if (!containedShapesBeforeResize.contains(cs))
-					FeatureSupport.updateCategoryValues(getFeatureProvider(), cs);
-			}
+			FeatureSupport.updateCategoryValues(getFeatureProvider(), containedShapesBeforeResize);
+			FeatureSupport.updateCategoryValues(getFeatureProvider(), containedShapesAfterResize);
 			
 			FeatureSupport.updateConnections(getFeatureProvider(), groupShape);
-
-			// Update CategoryValues for SequenceFlows also
-			List<Connection> connections = new ArrayList<Connection>();
-			for (ContainerShape cs : containedShapesBeforeResize) {
-				for (Anchor a : cs.getAnchors()) {
-					for (Connection c : a.getIncomingConnections()) {
-						if (!connections.contains(c))
-							connections.add(c);
-					}
-					for (Connection c : a.getOutgoingConnections()) {
-						if (!connections.contains(c))
-							connections.add(c);
-					}
-				}
-			}
-			for (ContainerShape cs : containedShapesAfterResize) {
-				for (Anchor a : cs.getAnchors()) {
-					for (Connection c : a.getIncomingConnections()) {
-						if (!connections.contains(c))
-							connections.add(c);
-					}
-					for (Connection c : a.getOutgoingConnections()) {
-						if (!connections.contains(c))
-							connections.add(c);
-					}
-				}
-			}
-			for (Connection c : connections) {
-				FeatureSupport.updateCategoryValues(getFeatureProvider(), c);
-			}
 		}
+	}
+	
+	public class DeleteGroupFeature extends AbstractDefaultDeleteFeature {
+
+		public DeleteGroupFeature(IFeatureProvider fp) {
+			super(fp);
+		}
+
+		@Override
+		public void delete(IDeleteContext context) {
+			ContainerShape groupShape = (ContainerShape) context.getPictogramElement();
+			List<ContainerShape> containedShapes = FeatureSupport.findGroupedShapes(groupShape);
+			
+			super.delete(context);
+
+			FeatureSupport.updateCategoryValues(getFeatureProvider(), containedShapes);
+		}
+		
 	}
 }

@@ -87,15 +87,17 @@ public class FlowElementTreeEditPart extends AbstractGraphicsTreeEditPart {
 		if (elem instanceof Activity) {
 			// Boundary Events are children nodes of Activities
 			Definitions definitions = ModelUtil.getDefinitions(elem);
-			TreeIterator<EObject> iter = definitions.eAllContents();
-			while (iter.hasNext()) {
-				EObject o = iter.next();
-				if (o instanceof BoundaryEvent && ((BoundaryEvent)o).getAttachedToRef() == elem) {
-					retList.add(o);
+			if (definitions!=null) {
+				TreeIterator<EObject> iter = definitions.eAllContents();
+				while (iter.hasNext()) {
+					EObject o = iter.next();
+					if (o instanceof BoundaryEvent && ((BoundaryEvent)o).getAttachedToRef() == elem) {
+						retList.add(o);
+					}
 				}
+				retList.addAll(((Activity)elem).getDataInputAssociations());
+				retList.addAll(((Activity)elem).getDataOutputAssociations());
 			}
-			retList.addAll(((Activity)elem).getDataInputAssociations());
-			retList.addAll(((Activity)elem).getDataOutputAssociations());
 		}
 		return retList;
 	}

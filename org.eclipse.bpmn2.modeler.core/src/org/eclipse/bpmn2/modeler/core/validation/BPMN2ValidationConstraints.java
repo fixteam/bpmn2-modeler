@@ -191,9 +191,10 @@ public class BPMN2ValidationConstraints extends AbstractModelConstraint {
 				}
 			}
 			else {
-				if (ProcessType.NONE.equals(process.getProcessType())) {
-					return createFailureStatus(ctx, be, Messages.BPMN2ValidationConstraints_0);
-				}
+				// see Bug 425903 - need to figure this out...
+//				if (ProcessType.NONE.equals(process.getProcessType())) {
+//					return createFailureStatus(ctx, be, Messages.BPMN2ValidationConstraints_0);
+//				}
 				// report errors only
 			}
 		}

@@ -51,6 +51,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -59,6 +62,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.events.IExpansionListener;
@@ -433,6 +437,32 @@ public abstract class AbstractListComposite extends ListAndDetailCompositeBase i
 		////////////////////////////////////////////////////////////
 		// Create handlers
 		////////////////////////////////////////////////////////////
+		table.addMouseListener(new MouseListener() {
+
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				Point p = new Point(e.x,e.y);
+				TableItem item = table.getItem(p);
+				if (item==null) {
+					if (addAction!=null && addAction.isEnabled()) {
+						addAction.run();
+					}
+				}
+			}
+
+			@Override
+			public void mouseDown(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseUp(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+		});
 		if ((style & SHOW_DETAILS)!=0) { // && (style & EDIT_BUTTON)==0) {
 			tableViewer.addDoubleClickListener( new IDoubleClickListener() {
 				@Override

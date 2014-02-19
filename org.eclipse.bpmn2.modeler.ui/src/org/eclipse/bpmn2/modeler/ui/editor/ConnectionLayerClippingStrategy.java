@@ -13,6 +13,8 @@ package org.eclipse.bpmn2.modeler.ui.editor;
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.MessageFlow;
 import org.eclipse.bpmn2.SubProcess;
+import org.eclipse.bpmn2.di.BPMNEdge;
+import org.eclipse.bpmn2.di.BPMNShape;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.ui.features.flow.MessageFlowFeatureContainer;
 import org.eclipse.draw2d.Figure;
@@ -77,19 +79,28 @@ public class ConnectionLayerClippingStrategy implements IClippingStrategy {
 							return getClip(outer,inner);
 						}
 					}
-					else {
+					else if (businessObject!=null) {
 						EObject container = businessObject.eContainer();
 						if (container instanceof SubProcess) {
-							for (PictogramElement pe : Graphiti.getLinkService().getPictogramElements(diagram, container)) {
-								if (pe instanceof ContainerShape) {
-									// don't clip connection if the source or target is this SubProcess
-									EObject sourceBo = BusinessObjectUtil.getFirstBaseElement(source);
-									EObject targetBo = BusinessObjectUtil.getFirstBaseElement(target);
-									if (sourceBo!=container && targetBo!=container)
-										return getClip((ContainerShape)pe);
+							// don't clip if contents of SubProcess have been moved to a different
+							// BPMNDiagram ("pushed down")
+							BPMNEdge bpmnEdge = BusinessObjectUtil.getFirstElementOfType(connection, BPMNEdge.class);
+							if (bpmnEdge!=null) {
+								for (PictogramElement pe : Graphiti.getLinkService().getPictogramElements(diagram, container)) {
+									if (pe instanceof ContainerShape) {
+										BPMNShape bpmnShape = BusinessObjectUtil.getFirstElementOfType(pe, BPMNShape.class);
+										if (bpmnShape!=null) {
+											if (bpmnShape.eContainer()!=bpmnEdge.eContainer())
+												continue;
+										}
+										// don't clip connection if the source or target is this SubProcess
+										EObject sourceBo = BusinessObjectUtil.getFirstBaseElement(source);
+										EObject targetBo = BusinessObjectUtil.getFirstBaseElement(target);
+										if (sourceBo!=container && targetBo!=container)
+											return getClip((ContainerShape)pe);
+									}
 								}
-							}
-							
+							}								
 						}
 					}
 				}

@@ -34,9 +34,12 @@ import org.eclipse.graphiti.features.context.IDeleteContext;
 import org.eclipse.graphiti.features.context.impl.AddConnectionContext;
 import org.eclipse.graphiti.features.context.impl.DeleteContext;
 import org.eclipse.graphiti.features.impl.AbstractAddShapeFeature;
+import org.eclipse.graphiti.mm.MmFactory;
+import org.eclipse.graphiti.mm.Property;
 import org.eclipse.graphiti.mm.algorithms.Polyline;
 import org.eclipse.graphiti.mm.algorithms.styles.LineStyle;
 import org.eclipse.graphiti.mm.algorithms.styles.Point;
+import org.eclipse.graphiti.mm.impl.PropertyImpl;
 import org.eclipse.graphiti.mm.pictograms.Anchor;
 import org.eclipse.graphiti.mm.pictograms.Connection;
 import org.eclipse.graphiti.mm.pictograms.ConnectionDecorator;
@@ -183,6 +186,7 @@ public class DefaultConnectionRouter extends AbstractConnectionRouter {
 	}
 	
 	protected List<Connection> findCrossings(Point start, Point end) {
+		// TODO: figure out why this isn't working!
 		List<Connection> crossings = new ArrayList<Connection>();
 		List<Connection> allConnections = fp.getDiagramTypeProvider().getDiagram().getConnections();
 		for (Connection connection : allConnections) {
@@ -286,6 +290,8 @@ public class DefaultConnectionRouter extends AbstractConnectionRouter {
 			arrowhead.setForeground(gaService.manageColor(diagram, foreground));
 			connectionLine.setForeground(gaService.manageColor(diagram,
 					foreground));
+
+			FeatureSupport.setToolTip(connection.getGraphicsAlgorithm(), route.toString());
 
 			return connection;
 		}

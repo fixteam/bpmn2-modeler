@@ -16,6 +16,7 @@ import java.util.Map;
 
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.DocumentRoot;
+import org.eclipse.bpmn2.EndPoint;
 import org.eclipse.bpmn2.Import;
 import org.eclipse.bpmn2.impl.DefinitionsImpl;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
@@ -26,10 +27,14 @@ import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultDetailComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultListComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.ListCompositeColumnProvider;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.ListCompositeContentProvider;
+import org.eclipse.bpmn2.modeler.core.merrimac.clad.PropertiesCompositeFactory;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.TableColumn;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.ObjectEditor;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.TextAndButtonObjectEditor;
 import org.eclipse.bpmn2.modeler.core.merrimac.dialogs.TextObjectEditor;
+import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor;
+import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor.Property;
+import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.core.utils.ImportUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.NamespaceUtil;
@@ -49,9 +54,7 @@ import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
 
 public class DefinitionsPropertyComposite extends DefaultDetailComposite  {
 
@@ -73,18 +76,19 @@ public class DefinitionsPropertyComposite extends DefaultDetailComposite  {
 		if (propertiesProvider==null) {
 			propertiesProvider = new AbstractPropertiesProvider(object) {
 				String[] properties = new String[] {
-						"imports", //$NON-NLS-1$
 						"name", //$NON-NLS-1$
 						"targetNamespace", //$NON-NLS-1$
 						"typeLanguage", //$NON-NLS-1$
 						"expressionLanguage", //$NON-NLS-1$
 						"exporter", //$NON-NLS-1$
 						"exporterVersion", //$NON-NLS-1$
+						"imports", //$NON-NLS-1$
+						"namespaces", //$NON-NLS-1$
 						"rootElements#ItemDefinition", //$NON-NLS-1$
 						"relationships", //$NON-NLS-1$
 						"rootElements#PartnerEntity", //$NON-NLS-1$
 						"rootElements#PartnerRole", //$NON-NLS-1$
-						"rootElements#EndPoint", //$NON-NLS-1$
+//						"rootElements#EndPoint", //$NON-NLS-1$
 						"rootElements#Resource", //$NON-NLS-1$
 						"rootElements#DataStore", //$NON-NLS-1$
 						"rootElements#Message", //$NON-NLS-1$
@@ -111,16 +115,18 @@ public class DefinitionsPropertyComposite extends DefaultDetailComposite  {
 	}
 
 	@Override
-	public void createBindings(EObject be) {
-		super.createBindings(be);
-		
-		namespacesTable = new NamespaceListComposite(getPropertySection());
-		DefinitionsImpl definitions = (DefinitionsImpl)getBusinessObject();
-		DocumentRoot root = (DocumentRoot) definitions.eContainer();
-		namespacesTable.bindList(root, Bpmn2Package.eINSTANCE.getDocumentRoot_XMLNSPrefixMap());
-		namespacesTable.setTitle("Namespaces"); //$NON-NLS-1$
+	protected Composite bindProperty(EObject be, String property) {
+		if ("namespaces".equals(property)) {
+			namespacesTable = new NamespaceListComposite(getPropertySection());
+			DefinitionsImpl definitions = (DefinitionsImpl)getBusinessObject();
+			DocumentRoot root = (DocumentRoot) definitions.eContainer();
+			namespacesTable.bindList(root, Bpmn2Package.eINSTANCE.getDocumentRoot_XMLNSPrefixMap());
+			namespacesTable.setTitle("Namespaces"); //$NON-NLS-1$
+			return namespacesTable;
+		}
+		return super.bindProperty(be, property);
 	}
-
+	
 	@Override
 	protected AbstractListComposite bindList(EObject object, EStructuralFeature feature, EClass listItemClass) {
 		if ("imports".equals(feature.getName())) { //$NON-NLS-1$
@@ -131,6 +137,11 @@ public class DefinitionsPropertyComposite extends DefaultDetailComposite  {
 		}
 		else if ("relationships".equals(feature.getName())) { //$NON-NLS-1$
 			DefaultListComposite table = new DefaultListComposite(getPropertySection());
+			table.bindList(getBusinessObject(), feature);
+			return table;
+		}
+		else if (listItemClass!=null && listItemClass.getName().equals("EndPoint")) {
+			EndPointListComposite table = new EndPointListComposite(getPropertySection());
 			table.bindList(getBusinessObject(), feature);
 			return table;
 		}
@@ -258,8 +269,8 @@ public class DefinitionsPropertyComposite extends DefaultDetailComposite  {
 		public ListCompositeColumnProvider getColumnProvider(EObject object, EStructuralFeature feature) {
 			if (columnProvider==null) {
 				columnProvider = new ListCompositeColumnProvider(this);
-				columnProvider.add(new NamespacesTableColumn(object, 0));
-				columnProvider.add(new NamespacesTableColumn(object, 1));
+				columnProvider.addRaw(new NamespacesTableColumn(object, 0));
+				columnProvider.addRaw(new NamespacesTableColumn(object, 1));
 			}
 			return columnProvider;
 		}
@@ -374,9 +385,6 @@ public class DefinitionsPropertyComposite extends DefaultDetailComposite  {
 	
 	public class ImportDetailComposite extends DefaultDetailComposite {
 
-		private Text text;
-		private Button button;
-		
 		public ImportDetailComposite(Composite parent, int style) {
 			super(parent, style);
 		}
@@ -469,6 +477,114 @@ public class DefinitionsPropertyComposite extends DefaultDetailComposite  {
 			if (prefix==null)
 				prefix = ""; //$NON-NLS-1$
 			return prefix;
+		}
+	}
+	
+	public class EndPointListComposite extends DefaultListComposite {
+
+		public EndPointListComposite(AbstractBpmn2PropertySection section) {
+			super(section);
+		}
+
+		@Override
+		public EClass getListItemClass(EObject object, EStructuralFeature feature) {
+			return Bpmn2Package.eINSTANCE.getEndPoint();
+		}
+		
+//		protected int createColumnProvider(EObject object, EStructuralFeature feature) {
+//			if (columnProvider==null) {
+//				columnProvider = new ListCompositeColumnProvider(this);
+//
+//				TargetRuntime rt = getTargetRuntime();
+//				for (ModelExtensionDescriptor md : rt.getModelExtensions()) {
+//					if ("EndPoint".equals(md.getType())) {
+//
+//						for (Property p : md.getProperties()) {
+//							final String name = p.name;
+//							TableColumn tableColumn = new TableColumn(object,(EStructuralFeature)null) {
+//								@Override
+//								public String getHeaderText() {
+//									return ModelUtil.toDisplayName(name);
+//								}
+//				
+//								@Override
+//								public String getText(Object element) {
+//									if (element instanceof EndPoint) {
+//										EndPoint ep = (EndPoint) element;
+//										EStructuralFeature feature = ModelUtil.getAnyAttribute(ep, name);
+//										Object v = ep.eGet(feature);
+//										if (v!=null)
+//											return v.toString();
+//									}
+//									return ""; //$NON-NLS-1$
+//								}
+//
+//								@Override
+//								public CellEditor createCellEditor (Composite parent) {
+//									CellEditor ce = null;
+//									return ce;
+//								}
+//							};
+//							columnProvider.add(tableColumn);
+//						}
+//					}
+//				}
+//			}
+//			return columnProvider.getColumns().size();
+//		}
+//		
+//		@Override
+//		public AbstractDetailComposite createDetailComposite(Class eClass, Composite parent, int style) {
+//			AbstractDetailComposite composite = new DefaultDetailComposite(parent, style) {
+//
+//				protected boolean isModelObjectEnabled(EClass eclass, EStructuralFeature feature) {
+//					return true;
+//				}
+//				
+//				@Override
+//				public AbstractPropertiesProvider getPropertiesProvider(EObject object) {
+//					if (propertiesProvider==null) {
+//						propertiesProvider = new AbstractPropertiesProvider(object) {
+//							String[] properties = null;
+//							
+//							@Override
+//							public String[] getProperties() {
+//								if (properties==null) {
+//									TargetRuntime rt = getTargetRuntime();
+//									for (ModelExtensionDescriptor md : rt.getModelExtensions()) {
+//										if ("EndPoint".equals(md.getType())) {
+//											properties = new String[md.getProperties().size()];
+//											int i=0;
+//											for (Property p : md.getProperties()) {
+//												properties[i++] = p.name;
+//											}
+//										}
+//									}
+//								}
+//								
+//								return properties; 
+//							}
+//						};
+//					}
+//					return propertiesProvider;
+//				}
+//				
+//			};
+//			
+//			return composite;
+//		}
+
+		@Override
+		protected EObject addListItem(EObject object, EStructuralFeature feature) {
+			EObject ep = super.addListItem(object, feature);
+//			TargetRuntime rt = getTargetRuntime();
+//			for (ModelExtensionDescriptor md : rt.getModelExtensions()) {
+//				if ("EndPoint".equals(md.getType())) {
+//					md.populateObject(ep, true);
+//				}
+//			}
+
+			return ep;
 		}
 	}
 }

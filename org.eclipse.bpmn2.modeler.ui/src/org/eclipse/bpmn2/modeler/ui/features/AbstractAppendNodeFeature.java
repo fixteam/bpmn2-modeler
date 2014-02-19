@@ -178,6 +178,12 @@ public abstract class AbstractAppendNodeFeature<T extends FlowNode> extends Abst
 						// .. then reroute the connection
 						FeatureSupport.updateConnections(getFeatureProvider(), newShape);
 
+						getFeatureProvider().
+							getDiagramTypeProvider().
+							getDiagramBehavior().
+							getDiagramContainer().
+							setPictogramElementForSelection(newShape);
+						
 						changesDone = true;
 					}
 				}

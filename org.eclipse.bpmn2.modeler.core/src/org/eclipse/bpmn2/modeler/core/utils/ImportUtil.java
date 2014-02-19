@@ -23,11 +23,11 @@ import org.eclipse.bpmn2.Interface;
 import org.eclipse.bpmn2.ItemDefinition;
 import org.eclipse.bpmn2.ItemKind;
 import org.eclipse.bpmn2.modeler.core.Activator;
-import org.eclipse.bpmn2.modeler.core.adapters.AdapterUtil;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerResourceSetImpl;
 import org.eclipse.bpmn2.util.Bpmn2Resource;
+import org.eclipse.bpmn2.util.ImportHelper;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.emf.common.util.TreeIterator;
@@ -88,7 +88,7 @@ public class ImportUtil {
 		else if (IMPORT_TYPE_JAVA.equals(type))
 			kind = IMPORT_KIND_JAVA;
 		else if (IMPORT_TYPE_BPMN2.equals(type))
-			kind = ""; //$NON-NLS-1$
+			kind = "bpmn"; //$NON-NLS-1$
 		else
 			return null;
 		String location = imp.getLocation();
@@ -351,7 +351,7 @@ public class ImportUtil {
 	
 				imp = Bpmn2ModelerFactory.create(Import.class);
 				imp.setImportType(IMPORT_TYPE_WSDL);
-				imp.setLocation(wsdlDefinition.getLocation());
+				imp.setLocation(makeURIRelative(resource.getURI(), wsdlDefinition.getLocation()));
 				imp.setNamespace(wsdlDefinition.getTargetNamespace());
 			}
 			else if (importObject instanceof XSDSchema){
@@ -360,7 +360,7 @@ public class ImportUtil {
 				
 				imp = Bpmn2ModelerFactory.create(Import.class);
 				imp.setImportType(IMPORT_TYPE_XML_SCHEMA);
-				imp.setLocation(schema.getSchemaLocation());
+				imp.setLocation(makeURIRelative(resource.getURI(), schema.getSchemaLocation()));
 				imp.setNamespace(schema.getTargetNamespace());
 			}
 			else if (importObject instanceof IType) {
@@ -382,7 +382,7 @@ public class ImportUtil {
 				
 				imp = Bpmn2ModelerFactory.create(Import.class);
 				imp.setImportType(IMPORT_TYPE_BPMN2);
-				imp.setLocation(defs.eResource().getURI().toString());
+				imp.setLocation(makeURIRelative(resource.getURI(), defs.eResource().getURI().toString()));
 				imp.setNamespace(defs.getTargetNamespace());
 			}
 
@@ -416,12 +416,14 @@ public class ImportUtil {
 
 					// create XSD types (if any) defined in the WSDL
 					Types t = wsdlDefinition.getETypes();
-					for (Object s : t.getSchemas()) {
-						if (s instanceof XSDSchema) {
-							XSDSchema schema = (XSDSchema)s;
-
-							for (XSDElementDeclaration elem : schema.getElementDeclarations()) {
-								createItemDefinition(definitions, imp, elem, ItemKind.INFORMATION);
+					if (t!=null) {
+						for (Object s : t.getSchemas()) {
+							if (s instanceof XSDSchema) {
+								XSDSchema schema = (XSDSchema)s;
+	
+								for (XSDElementDeclaration elem : schema.getElementDeclarations()) {
+									createItemDefinition(definitions, imp, elem, ItemKind.INFORMATION);
+								}
 							}
 						}
 					}
@@ -448,6 +450,14 @@ public class ImportUtil {
 		return imp;
 	}
 
+	public static String makeURIRelative(URI baseURI, String s) {
+		// convert platform URI to a relative URI string
+//		URI uri = URI.createURI(s);
+//		uri = uri.deresolve(baseURI, false, true, true);
+//		return uri.toString();
+		return s;
+	}
+	
 	/**
 	 * Remove the given Import object and delete all of its associated elements (i.e. ItemDefinition,
 	 * Message, Operation and Interface) that were defined in the Import.

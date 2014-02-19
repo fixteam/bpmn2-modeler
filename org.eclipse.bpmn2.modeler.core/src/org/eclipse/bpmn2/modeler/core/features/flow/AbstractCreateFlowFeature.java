@@ -64,7 +64,7 @@ public abstract class AbstractCreateFlowFeature<
 			// with the same source and target objects.
 			AnchorContainer sourceContainer = context.getSourceAnchor().getParent();
 			AnchorContainer targetContainer = context.getTargetAnchor().getParent();
-			if (!canCreateConnection(sourceContainer, targetContainer, getBusinessObjectClass()))
+			if (!canCreateConnection(sourceContainer, targetContainer, getBusinessObjectClass(), null))
 				return false;
 			return true;
 		}

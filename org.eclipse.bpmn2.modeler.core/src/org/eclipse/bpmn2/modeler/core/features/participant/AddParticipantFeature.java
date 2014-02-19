@@ -13,6 +13,7 @@
 package org.eclipse.bpmn2.modeler.core.features.participant;
 
 import org.eclipse.bpmn2.Participant;
+import org.eclipse.bpmn2.ParticipantMultiplicity;
 import org.eclipse.bpmn2.di.BPMNShape;
 import org.eclipse.bpmn2.modeler.core.di.DIImport;
 import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2AddElementFeature;
@@ -93,7 +94,9 @@ public class AddParticipantFeature extends AbstractBpmn2AddElementFeature<Partic
 		text.setHorizontalAlignment(Orientation.ALIGNMENT_CENTER);
 		link(textShape, businessObject);
 
-		peService.setPropertyValue(containerShape, MULTIPLICITY, Boolean.toString(businessObject.getParticipantMultiplicity()!=null));
+		// the decorator for Participant Multiplicity will be added by the update feature
+		// if necessary. Set this property to "false" here, to force an update.
+		peService.setPropertyValue(containerShape, MULTIPLICITY, Boolean.toString(false));
 		
 		decorateShape(context, containerShape, businessObject);
 		

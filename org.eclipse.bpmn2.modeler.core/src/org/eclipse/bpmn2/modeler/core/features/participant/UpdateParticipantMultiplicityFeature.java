@@ -14,6 +14,7 @@ package org.eclipse.bpmn2.modeler.core.features.participant;
 
 import org.eclipse.bpmn2.ChoreographyActivity;
 import org.eclipse.bpmn2.Participant;
+import org.eclipse.bpmn2.ParticipantMultiplicity;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
@@ -73,7 +74,12 @@ public class UpdateParticipantMultiplicityFeature extends AbstractUpdateFeature 
 
 		boolean multiplicityProperty = new Boolean(peService.getPropertyValue(containerShape,
 				AddParticipantFeature.MULTIPLICITY));
-		boolean hasMultiplicity = participant.getParticipantMultiplicity() != null;
+
+		boolean hasMultiplicity = false;
+		ParticipantMultiplicity pm = participant.getParticipantMultiplicity();
+		if (pm!=null && pm.getMaximum()>1) {
+			hasMultiplicity = true;
+		}
 
 		return multiplicityProperty != hasMultiplicity ? Reason.createTrueReason() : Reason.createFalseReason();
 	}
@@ -87,7 +93,9 @@ public class UpdateParticipantMultiplicityFeature extends AbstractUpdateFeature 
 				Participant.class);
 		ContainerShape containerShape = (ContainerShape) context.getPictogramElement();
 
-		if (participant.getParticipantMultiplicity() != null) {
+		boolean hasMultiplicity = false;
+		ParticipantMultiplicity pm = participant.getParticipantMultiplicity();
+		if (pm!=null && pm.getMaximum()>1) {
 			Shape shape = peService.createShape(containerShape, false);
 			peService.setPropertyValue(shape, MULTIPLICITY_MARKER, Boolean.toString(true));
 			Rectangle invisibleRectangle = gaService.createInvisibleRectangle(shape);
@@ -96,15 +104,16 @@ public class UpdateParticipantMultiplicityFeature extends AbstractUpdateFeature 
 			int y = parentGa.getHeight() - 20;
 			gaService.setLocationAndSize(invisibleRectangle, x, y, 20, 20);
 
-			Polyline line1 = gaService.createPolyline(invisibleRectangle, new int[] { 0, 0, 0, 20 });
+			Polyline line1 = gaService.createPolyline(invisibleRectangle, new int[] { 0, 0, 0, 15 });
 			line1.setLineWidth(2);
 			line1.setForeground(manageColor(StyleUtil.CLASS_FOREGROUND));
-			Polyline line2 = gaService.createPolyline(invisibleRectangle, new int[] { 9, 0, 9, 20 });
+			Polyline line2 = gaService.createPolyline(invisibleRectangle, new int[] { 5, 0, 5, 15 });
 			line2.setForeground(manageColor(StyleUtil.CLASS_FOREGROUND));
 			line2.setLineWidth(2);
-			Polyline line3 = gaService.createPolyline(invisibleRectangle, new int[] { 18, 0, 18, 20 });
+			Polyline line3 = gaService.createPolyline(invisibleRectangle, new int[] { 10, 0, 10, 15 });
 			line3.setForeground(manageColor(StyleUtil.CLASS_FOREGROUND));
 			line3.setLineWidth(2);
+			hasMultiplicity = true;
 		} else {
 			Shape shape = FeatureSupport.getShape(containerShape, MULTIPLICITY_MARKER, Boolean.toString(true));
 			if (shape != null) {
@@ -112,8 +121,8 @@ public class UpdateParticipantMultiplicityFeature extends AbstractUpdateFeature 
 			}
 		}
 
-		peService.setPropertyValue(containerShape, AddParticipantFeature.MULTIPLICITY,
-				participant.getParticipantMultiplicity() != null ? Boolean.toString(true) : Boolean.toString(false));
+		peService.setPropertyValue(containerShape, AddParticipantFeature.MULTIPLICITY, 
+				hasMultiplicity ? Boolean.toString(true) : Boolean.toString(false));
 		return true;
 	}
 }

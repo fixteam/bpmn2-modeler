@@ -139,11 +139,16 @@ public class BPMN2ProjectValidator extends AbstractValidator {
     public static boolean isBPMN2File(IResource resource) {
     	if (resource instanceof IFile) {
 	    	try {
-	    		IContentDescription cd = ((IFile)resource).getContentDescription();
+	    		IFile file = (IFile) resource;
+	    		IContentDescription cd = file.getContentDescription();
 	    		if (cd!=null) {
 					return Bpmn2ModelerResourceImpl.BPMN2_CONTENT_TYPE_ID.equals(
 							cd.getContentType().getId());
 	    		}
+	    		String ext = file.getFileExtension();
+	    		if ("bpmn".equals(ext) || "bpmn2".equals(ext))
+	    			return true;
+	    		
 			} catch (Exception e) {
 			}
     	}

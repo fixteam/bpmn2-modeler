@@ -55,9 +55,10 @@ public class ProcessDiagramPropertySection extends DefaultPropertySection {
 	
 	@Override
 	public boolean appliesTo(IWorkbenchPart part, ISelection selection) {
-		if (super.appliesTo(part, selection))
-			return true;
-		EObject bo = getBusinessObjectForSelection(selection);
-		return bo!=null;
+		if (super.appliesTo(part, selection)) {
+			EObject bo = getBusinessObjectForSelection(selection);
+			return bo!=null;
+		}
+		return false;
 	}
 }

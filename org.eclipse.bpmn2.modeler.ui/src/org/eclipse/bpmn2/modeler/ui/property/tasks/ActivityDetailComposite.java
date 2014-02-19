@@ -62,6 +62,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.wst.wsdl.WSDLElement;
 
 public class ActivityDetailComposite extends DefaultDetailComposite {
 
@@ -72,6 +73,8 @@ public class ActivityDetailComposite extends DefaultDetailComposite {
 	
 	protected DataAssociationDetailComposite inputComposite;
 	protected DataAssociationDetailComposite outputComposite;
+	
+	protected ServiceImplementationObjectEditor implementationEditor = null;
 	
 	public ActivityDetailComposite(Composite parent, int style) {
 		super(parent, style);
@@ -135,8 +138,8 @@ public class ActivityDetailComposite extends DefaultDetailComposite {
 	
 	protected void bindAttribute(Composite parent, EObject object, EAttribute attribute, String label) {
 		if ("implementation".equals(attribute.getName())) { //$NON-NLS-1$
-			ObjectEditor editor = new ServiceImplementationObjectEditor(this,object,attribute);
-			editor.createControl(parent,label);
+			implementationEditor = new ServiceImplementationObjectEditor(this,object,attribute);
+			implementationEditor.createControl(parent,label);
 		}
 		else
 			super.bindAttribute(parent, object, attribute, label);
@@ -323,6 +326,20 @@ public class ActivityDetailComposite extends DefaultDetailComposite {
 						createMessageAssociations(container, activity,
 								operationRef, operation,
 								messageRef, message);
+						
+						if (implementationEditor!=null) {
+							String imp = null;
+							if ( operation!=null) {
+								// If the Interface is defined by a WSDL set the default
+								// service implementation as ##WebService, otherwise
+								// use ##unspecified
+								if (operation.getImplementationRef() instanceof WSDLElement)
+									imp = ServiceImplementationObjectEditor.WEBSERVICE_VALUE;
+								else
+									imp = ServiceImplementationObjectEditor.UNSPECIFIED_VALUE;
+							}
+							implementationEditor.setValue(imp);
+						}
 					}
 				});
 				return true;

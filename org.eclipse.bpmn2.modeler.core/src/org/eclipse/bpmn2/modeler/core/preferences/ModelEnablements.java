@@ -27,8 +27,8 @@ public class ModelEnablements {
 	// Map of enabled EClasses and their enabled Features
 	private Hashtable<String, HashSet<String>> classes = new Hashtable<String, HashSet<String>>();
 	private TargetRuntime targetRuntime = null;
-	private Bpmn2DiagramType diagramType;
-	private String profile;
+	private Bpmn2DiagramType diagramType = Bpmn2DiagramType.NONE;
+	private String profile = "";
 	private int enableIdAttribute = -1;
 	
 	// require a TargetRuntime!
@@ -452,4 +452,11 @@ public class ModelEnablements {
 		return classList;
 	}
 
+	public Bpmn2DiagramType getDiagramType() {
+		return diagramType;
+	}
+
+	public String getProfile() {
+		return profile;
+	}
 }

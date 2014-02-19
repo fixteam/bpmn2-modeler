@@ -17,6 +17,7 @@ import java.util.List;
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.CallableElement;
+import org.eclipse.bpmn2.Collaboration;
 import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.Interface;
 import org.eclipse.bpmn2.Participant;
@@ -72,10 +73,10 @@ public class InterfacePropertySection extends DefaultPropertySection {
 	@Override
 	protected EObject getBusinessObjectForSelection(ISelection selection) {
 		EObject bo = super.getBusinessObjectForSelection(selection);
-		if (bo instanceof Participant) {
-			return bo;
-		} else if (bo instanceof BPMNDiagram) {
+		if (bo instanceof BPMNDiagram) {
 			BaseElement be = ((BPMNDiagram)bo).getPlane().getBpmnElement();
+			if (be instanceof Collaboration)
+				return be;
 			if (be instanceof Process)
 				return be;
 		} else if (bo instanceof CallableElement) {
@@ -182,7 +183,7 @@ public class InterfacePropertySection extends DefaultPropertySection {
 		}
 	}
 	
-	public class ProvidedInterfaceListComposite extends DefaultListComposite {
+	public static class ProvidedInterfaceListComposite extends DefaultListComposite {
 		
 		/**
 		 * @param section

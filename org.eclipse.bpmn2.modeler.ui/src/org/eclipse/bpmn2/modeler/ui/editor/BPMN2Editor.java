@@ -611,9 +611,16 @@ public class BPMN2Editor extends DiagramEditor implements IPreferenceChangeListe
 	}
 	
 	public ModelEnablements getModelEnablements() {
+		Bpmn2DiagramType diagramType = ModelUtil.getDiagramType(bpmnDiagram);
+		String profile = getPreferences().getDefaultToolProfile(getTargetRuntime(), diagramType);
+		if (modelEnablements!=null) {
+			if (	!modelEnablements.getProfile().equals(profile) ||
+					!modelEnablements.getDiagramType().equals(diagramType)) {
+				modelEnablements = null;
+			}
+				
+		}
 		if (modelEnablements==null) {
-			Bpmn2DiagramType diagramType = ModelUtil.getDiagramType(bpmnDiagram);
-			String profile = getPreferences().getDefaultToolProfile(getTargetRuntime(), diagramType);
 			modelEnablements = getPreferences().getModelEnablements(getTargetRuntime(), diagramType, profile);
 			if (modelEnablements.size()==0) {
 				// This Target Runtime doesn't define a profile for the current diagram type,

@@ -28,6 +28,7 @@ import org.eclipse.bpmn2.Bpmn2Factory;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.DataAssociation;
 import org.eclipse.bpmn2.Definitions;
+import org.eclipse.bpmn2.Documentation;
 import org.eclipse.bpmn2.Expression;
 import org.eclipse.bpmn2.FormalExpression;
 import org.eclipse.bpmn2.Import;
@@ -738,6 +739,25 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
             	}
             }
             
+            if (o!=null && o instanceof Documentation) {
+            	Documentation doc = (Documentation)o;
+            	if (doc.getText()==null || doc.getText().isEmpty())
+            		return false;
+            }
+            
+            if (f!=null && f.getEType() == Bpmn2Package.eINSTANCE.getDocumentation()) {
+            	EList<Documentation> docList = (EList<Documentation>)o.eGet(f);
+            	if (docList.isEmpty())
+            		return false;
+            	int empty = 0;
+            	for (Documentation doc : docList) {
+            		if (doc.getText()==null || doc.getText().isEmpty())
+            			++empty;
+            	}
+            	if (empty==docList.size())
+            		return false;
+            }            	
+            
             // don't serialize the "body" attribute of FormalExpressions because the expression text
             // is already in the CDATA section of the <bpmn2:expression> element. This would cause
             // the expression text to be duplicated on deserialization.
@@ -1142,14 +1162,14 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 				isTargetNamespacePrefix = xmlHelper.isTargetNamespace(prefix);
 			} catch (Exception e) {
 			}
+
 			if (!isTargetNamespacePrefix) {
-				EObject o;
 				String uriString = xmlHelper.getPathForPrefix(prefix).appendFragment(fragment).toString();
 				URI uri = URI.createURI(uriString);
 				ResourceSet rs = ModelUtil.slightlyHackedResourceSet(xmlHelper.getResource().getResourceSet());
 				Resource r = ((Bpmn2ModelerResourceSetImpl)rs).getResource(uri, true, "wsdl"); // the only problem here... //$NON-NLS-1$
 				if (r instanceof WSDLResourceImpl) {
-					o = r.getContents().get(0);
+					EObject o = r.getContents().get(0);
 					Definition def = (Definition)o;
 					// if eReference -- operation.implementationref
 					// search all of these:
@@ -1162,8 +1182,9 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 				}
 				return xmlHelper.getPathForPrefix(prefix).appendFragment(fragment).toString();
 			}
-			else
-				return baseURI.appendFragment(fragment).toString();
+			else {
+				return URI.createURI("").appendFragment(fragment).toString();
+			}
 		}
 	}
 	

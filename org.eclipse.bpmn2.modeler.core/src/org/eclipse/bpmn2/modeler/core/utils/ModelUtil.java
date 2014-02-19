@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.eclipse.bpmn2.AdHocSubProcess;
 import org.eclipse.bpmn2.BaseElement;
+import org.eclipse.bpmn2.Bpmn2Factory;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.Choreography;
 import org.eclipse.bpmn2.ChoreographyActivity;
@@ -49,6 +50,7 @@ import org.eclipse.bpmn2.modeler.core.adapters.INamespaceMap;
 import org.eclipse.bpmn2.modeler.core.adapters.InsertionAdapter;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerResourceSetImpl;
+import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.util.Bpmn2Resource;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.dd.dc.DcPackage;
@@ -702,17 +704,26 @@ public class ModelUtil {
 	/**
 	 * Removed "deprecated" annotation: ModelExtensionDescriptor.populateObject() needs this  
 	 */
-	public static EStructuralFeature addAnyAttribute(EObject childObject, String name, Object value) {
-		return addAnyAttribute(childObject, childObject.eClass().getEPackage().getNsURI(), name, value);
+	public static EStructuralFeature addAnyAttribute(EObject childObject, String name, String type, Object value) {
+		EPackage pkg = childObject.eClass().getEPackage();
+		String nsURI = pkg.getNsURI();
+		return addAnyAttribute(childObject, nsURI, name, type, value);
 	}
 	
 	/**
 	 * Removed "deprecated" annotation: ModelExtensionDescriptor.populateObject() needs this  
 	 */
 	@SuppressWarnings("unchecked")
-	public static EStructuralFeature addAnyAttribute(EObject childObject, String namespace, String name, Object value) {
+	public static EStructuralFeature addAnyAttribute(EObject childObject, String namespace, String name, String type, Object value) {
 		EStructuralFeature attr = null;
-		EStructuralFeature anyAttribute = childObject.eClass().getEStructuralFeature(Bpmn2Package.BASE_ELEMENT__ANY_ATTRIBUTE);
+		EClass eclass = null;
+		if (childObject instanceof EClass) {
+			eclass = (EClass)childObject;
+			childObject = ExtendedPropertiesAdapter.getDummyObject(eclass);
+		}
+		else
+			eclass = childObject.eClass();
+		EStructuralFeature anyAttribute = eclass.getEStructuralFeature(Bpmn2Package.BASE_ELEMENT__ANY_ATTRIBUTE);
 		List<BasicFeatureMap.Entry> anyMap = (List<BasicFeatureMap.Entry>)childObject.eGet(anyAttribute);
 		if (anyMap==null)
 			return null;
@@ -727,8 +738,9 @@ public class ModelUtil {
 		}
 		
 		// this featuremap can only hold attributes, not elements
-		String type = "E" + value.getClass().getSimpleName(); //$NON-NLS-1$
-		EDataType eDataType = (EDataType)EcorePackage.eINSTANCE.getEClassifier(type);
+		if (type==null)
+			type = "E" + value.getClass().getSimpleName(); //$NON-NLS-1$
+		EDataType eDataType = (EDataType)ModelUtil.getEClassifierFromString(null, type);//(EDataType)EcorePackage.eINSTANCE.getEClassifier(type);
 		if (eDataType!=null) {
 			if (attr==null) {
 				attr = ExtendedMetaData.INSTANCE.demandFeature(namespace, name, false);
@@ -768,6 +780,10 @@ public class ModelUtil {
 	
 	public static EAttribute createDynamicAttribute(EPackage pkg, EObject object, String name, String type) {
 		if (isBpmnPackage(pkg)) {
+			String namespace = TargetRuntime.getDefaultRuntime().getRuntimeExtension().getTargetNamespace(Bpmn2DiagramType.NONE);
+			EStructuralFeature feature = ModelUtil.addAnyAttribute(object, namespace, name, type, null);
+			if (feature instanceof EAttribute)
+				return (EAttribute) feature;
 			throw new IllegalArgumentException(NLS.bind(Messages.ModelUtil_Illegal_EPackage_For_Attribute, pkg.getName()));
 		}
 		EClass eClass = object instanceof EClass ? (EClass)object : object.eClass(); 

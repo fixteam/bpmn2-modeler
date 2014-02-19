@@ -19,6 +19,7 @@ import java.util.Map;
 import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
+import org.eclipse.bpmn2.util.Bpmn2ResourceFactoryImpl;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -44,6 +45,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.IProgressService;
+import org.eclipse.wst.wsdl.internal.util.WSDLResourceFactoryImpl;
+import org.eclipse.wst.wsdl.util.WSDLResourceFactoryRegistry;
+import org.eclipse.xsd.util.XSDResourceFactoryImpl;
 
 
 /**
@@ -270,9 +274,10 @@ public class Bpmn2ModelerResourceSetImpl extends ResourceSetImpl implements IRes
 					final Map<String, Object> extensionToFactoryMap =
 						Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap();
 					
-					final Object wsilFactory = extensionToFactoryMap.get("wsil"); //$NON-NLS-1$
-					final Object wsdlFactory = extensionToFactoryMap.get("wsdl"); //$NON-NLS-1$
-					final Object xsdFactory = extensionToFactoryMap.get("xsd"); //$NON-NLS-1$
+					Object wsilFactory = extensionToFactoryMap.get("wsil"); //$NON-NLS-1$
+					Object wsdlFactory = extensionToFactoryMap.get("wsdl"); //$NON-NLS-1$
+					Object xsdFactory = extensionToFactoryMap.get("xsd"); //$NON-NLS-1$
+					Object bpmnFactory = extensionToFactoryMap.get("bpmn"); //$NON-NLS-1$
 					
 					final Map<String, Object> contentTypeToFactoryMap = 
 						Resource.Factory.Registry.INSTANCE.getContentTypeToFactoryMap();
@@ -280,12 +285,22 @@ public class Bpmn2ModelerResourceSetImpl extends ResourceSetImpl implements IRes
 					if (null != wsilFactory) {
 						contentTypeToFactoryMap.put("wsil", wsilFactory); //$NON-NLS-1$
 					}
-					if (null != wsdlFactory) {
-						contentTypeToFactoryMap.put("wsdl", wsdlFactory); //$NON-NLS-1$
+					
+					if (wsdlFactory==null) {
+						wsdlFactory = WSDLResourceFactoryRegistry.INSTANCE.getExtensionToFactoryMap().get("wsdl"); 
 					}
-					if (null != xsdFactory) {
-						contentTypeToFactoryMap.put("xsd", xsdFactory); //$NON-NLS-1$
+					contentTypeToFactoryMap.put("wsdl", wsdlFactory); //$NON-NLS-1$
+					
+					if (xsdFactory==null) {
+						xsdFactory = new XSDResourceFactoryImpl();
 					}
+					contentTypeToFactoryMap.put("xsd", xsdFactory); //$NON-NLS-1$
+					
+					if (bpmnFactory==null) {
+						bpmnFactory = new Bpmn2ResourceFactoryImpl();;
+					}
+					contentTypeToFactoryMap.put("bpmn", bpmnFactory); //$NON-NLS-1$
+					contentTypeToFactoryMap.put("bpmn2", bpmnFactory); //$NON-NLS-1$
 
 					return convert(getFactory(uri,
 							Resource.Factory.Registry.INSTANCE.getProtocolToFactoryMap(),

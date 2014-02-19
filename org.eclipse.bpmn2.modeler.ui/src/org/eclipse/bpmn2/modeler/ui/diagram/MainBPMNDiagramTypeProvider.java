@@ -13,7 +13,9 @@
 package org.eclipse.bpmn2.modeler.ui.diagram;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 
+import org.eclipse.bpmn2.ParticipantMultiplicity;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.ui.Activator;
 import org.eclipse.bpmn2.modeler.ui.editor.BPMN2Editor;
@@ -21,10 +23,15 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.graphiti.dt.AbstractDiagramTypeProvider;
 import org.eclipse.graphiti.dt.IDiagramTypeProvider;
+import org.eclipse.graphiti.features.IFeatureProvider;
+import org.eclipse.graphiti.mm.pictograms.PictogramElement;
+import org.eclipse.graphiti.notification.DefaultNotificationService;
+import org.eclipse.graphiti.notification.INotificationService;
 import org.eclipse.graphiti.tb.IToolBehaviorProvider;
 
 public class MainBPMNDiagramTypeProvider extends AbstractDiagramTypeProvider {
 	private IToolBehaviorProvider[] toolBehaviorProviders;
+	private INotificationService notificationService;
 
 	public MainBPMNDiagramTypeProvider() {
 		super();
@@ -65,5 +72,43 @@ public class MainBPMNDiagramTypeProvider extends AbstractDiagramTypeProvider {
 			toolBehaviorProviders = new IToolBehaviorProvider[] { provider };
 		}
 		return toolBehaviorProviders;
+	}
+
+
+	public INotificationService getNotificationService() {
+		if (this.notificationService == null) {
+			this.notificationService = new BPMNNotificationService(this);
+		}
+		return this.notificationService;
+	}
+	
+	public class BPMNNotificationService extends DefaultNotificationService {
+		
+		public BPMNNotificationService(IDiagramTypeProvider diagramTypeProvider) {
+			super(diagramTypeProvider);
+		}
+
+		public PictogramElement[] calculateRelatedPictogramElements(Object[] changedBOs) {
+			PictogramElement[] pes = super.calculateRelatedPictogramElements(changedBOs);
+
+			final IFeatureProvider featureProvider = getDiagramTypeProvider().getFeatureProvider();
+			ArrayList<PictogramElement> changedAndRelatedBOs = new ArrayList<PictogramElement>();
+			for (PictogramElement pe : pes) {
+				changedAndRelatedBOs.add(pe);
+			}
+			
+			for (Object cbo : changedBOs) {
+				if (cbo instanceof ParticipantMultiplicity) {
+					cbo = ((ParticipantMultiplicity)cbo).eContainer();
+					if (cbo==null)
+						continue;
+				}
+				final PictogramElement[] allPictogramElementsForBusinessObject = featureProvider.getAllPictogramElementsForBusinessObject(cbo);
+				for (PictogramElement pe : allPictogramElementsForBusinessObject) {
+					changedAndRelatedBOs.add(pe);
+				}
+			}
+			return changedAndRelatedBOs.toArray(new PictogramElement[0]);
+		}
 	}
 }

@@ -13,7 +13,7 @@
 package org.eclipse.bpmn2.modeler.core.features;
 
 import org.eclipse.bpmn2.BaseElement;
-import org.eclipse.bpmn2.modeler.core.features.command.CustomMoveCommandFeature;
+import org.eclipse.bpmn2.modeler.core.features.command.CustomKeyCommandFeature;
 import org.eclipse.bpmn2.modeler.core.features.label.RemoveLabelFeature;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.graphiti.features.ICreateConnectionFeature;
@@ -73,8 +73,7 @@ public abstract class BaseElementFeatureContainer implements IShapeFeatureContai
 	@Override
 	public ICustomFeature[] getCustomFeatures(IFeatureProvider fp) {
 		return new ICustomFeature[] {
-			new ShowPropertiesFeature(fp),
-			new CustomMoveCommandFeature(fp)
+			new ShowPropertiesFeature(fp)
 		};
 	}
 	

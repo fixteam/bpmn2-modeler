@@ -57,17 +57,19 @@ public class RootElementTreeEditPart extends AbstractGraphicsTreeEditPart {
 		List<Object> retList = new ArrayList<Object>();
 		RootElement elem = getRootElement();
 		if (elem != null && elem.eResource() != null) {
-			if (elem instanceof FlowElementsContainer) {
-				FlowElementsContainer container = (FlowElementsContainer)elem;
-				return FlowElementTreeEditPart.getFlowElementsContainerChildren(container);
-			}
-			if (elem instanceof Collaboration) {
-				Collaboration collaboration = (Collaboration)elem;
-				retList.addAll(collaboration.getParticipants());
-				retList.addAll(collaboration.getConversations());
-				retList.addAll(collaboration.getConversationLinks());
-				retList.addAll(collaboration.getMessageFlows());
-				retList.addAll(collaboration.getArtifacts());
+			if (getParent() instanceof DiagramTreeEditPart) {
+				if (elem instanceof FlowElementsContainer) {
+					FlowElementsContainer container = (FlowElementsContainer)elem;
+					return FlowElementTreeEditPart.getFlowElementsContainerChildren(container);
+				}
+				if (elem instanceof Collaboration) {
+					Collaboration collaboration = (Collaboration)elem;
+					retList.addAll(collaboration.getParticipants());
+					retList.addAll(collaboration.getConversations());
+					retList.addAll(collaboration.getConversationLinks());
+					retList.addAll(collaboration.getMessageFlows());
+					retList.addAll(collaboration.getArtifacts());
+				}
 			}
 		}
 		return retList;

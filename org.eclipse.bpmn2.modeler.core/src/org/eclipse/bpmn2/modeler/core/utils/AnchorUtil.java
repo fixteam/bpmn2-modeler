@@ -31,6 +31,8 @@ import org.eclipse.bpmn2.modeler.core.features.AbstractConnectionRouter;
 import org.eclipse.bpmn2.modeler.core.utils.BoundaryEventPositionHelper.PositionOnLine;
 import org.eclipse.dd.di.DiagramElement;
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.TreeIterator;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.graphiti.datatypes.IDimension;
 import org.eclipse.graphiti.datatypes.ILocation;
 import org.eclipse.graphiti.features.IAddBendpointFeature;
@@ -650,20 +652,29 @@ public class AnchorUtil {
 				location.setY(py);
 			}
 
-			for (Shape s : diagram.getChildren()) {
-				if (isConnectionPointNear(s, location, 0)) {
-					// this is the connection point on the target connection line
-					// reuse this connection point if it's "close enough" to
-					// target location otherwise create a new connection point
-					if (isConnectionPointNear(s, location, 20)) {
-						bendPoint = p;
-						connectionPointShape = s;
-						location.setX(px);
-						location.setY(py);
+			TreeIterator<EObject> iter = diagram.eAllContents();
+			while (iter.hasNext()) {
+				EObject o = iter.next();
+				if (o instanceof ContainerShape) {
+					ContainerShape s = (ContainerShape) o;
+					if (FeatureSupport.isLabelShape(s))
+						continue;
+					if (isConnectionPointNear(s, location, 0)) {
+						// this is the connection point on the target connection line
+						// reuse this connection point if it's "close enough" to
+						// target location otherwise create a new connection point
+						if (isConnectionPointNear(s, location, 20)) {
+							bendPoint = p;
+							connectionPointShape = s;
+							location.setX(px);
+							location.setY(py);
+						}
+						break;
 					}
-					break;
 				}
 			}
+			if (bendPoint!=null)
+				break;
 		}
 
 		if (connectionPointShape == null) {

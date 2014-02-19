@@ -15,6 +15,7 @@ public class Messages extends NLS {
 	public static String Bpmn2Preferences_Data_Items;
 	public static String Bpmn2Preferences_Do_Core_Validation;
 	public static String Bpmn2Preferences_Propagate_Group_Categories;
+	public static String Bpmn2Preferences_Allow_Mutliple_Connections;
 	public static String Bpmn2Preferences_Event_Definitions;
 	public static String Bpmn2Preferences_Events;
 	public static String Bpmn2Preferences_Expand;

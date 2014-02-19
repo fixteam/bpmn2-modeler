@@ -13,11 +13,14 @@
 
 package org.eclipse.bpmn2.modeler.core.features;
 
+import org.eclipse.bpmn2.Activity;
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.EndEvent;
+import org.eclipse.bpmn2.Event;
 import org.eclipse.bpmn2.Group;
 import org.eclipse.bpmn2.ItemAwareElement;
+import org.eclipse.bpmn2.SequenceFlow;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.di.DIImport;
 import org.eclipse.bpmn2.modeler.core.features.activity.task.ICustomElementFeatureContainer;
@@ -39,6 +42,7 @@ import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.ICreateConnectionContext;
 import org.eclipse.graphiti.features.context.IReconnectionContext;
 import org.eclipse.graphiti.features.context.impl.AddConnectionContext;
+import org.eclipse.graphiti.features.context.impl.ReconnectionContext;
 import org.eclipse.graphiti.features.impl.AbstractCreateConnectionFeature;
 import org.eclipse.graphiti.mm.pictograms.Anchor;
 import org.eclipse.graphiti.mm.pictograms.AnchorContainer;
@@ -120,7 +124,7 @@ public abstract class AbstractBpmn2CreateConnectionFeature<
 		return getSourceBo(context) != null;
 	}
 
-	public static boolean canCreateConnection(AnchorContainer sourceContainer, AnchorContainer targetContainer, EClass connectionClass) {
+	public static boolean canCreateConnection(AnchorContainer sourceContainer, AnchorContainer targetContainer, EClass connectionClass, String reconnectType) {
 		if (sourceContainer!=null && targetContainer!=null) {
 			// Make sure only one connection of each type is created for the same
 			// source and target objects, i.e. you can't have two SequenceFlows
@@ -141,6 +145,40 @@ public abstract class AbstractBpmn2CreateConnectionFeature<
 					if (sourceObject!=null && sourceObject.eClass() == connectionClass) {
 						if (sourceConnection.getEnd().getParent() == targetContainer)
 							return false;
+					}
+				}
+			}
+			
+			Bpmn2Preferences prefs = Bpmn2Preferences.getInstance(sourceContainer);
+			if (!prefs.getAllowMultipleConnections() && connectionClass==Bpmn2Package.eINSTANCE.getSequenceFlow()) {
+				// if User Preferences don't allow multiple incoming/outgoing
+				// connections on Activities, enforce it here.
+				EObject businessObject;
+				if (!ReconnectionContext.RECONNECT_TARGET.equals(reconnectType)) {
+					businessObject = BusinessObjectUtil.getBusinessObjectForPictogramElement(sourceContainer);
+					if (businessObject instanceof Activity || businessObject instanceof Event) {
+						for (Anchor a : sourceContainer.getAnchors()) {
+							for (Connection c : a.getOutgoingConnections()) {
+								EObject o = BusinessObjectUtil.getBusinessObjectForPictogramElement(c);
+								if (o instanceof SequenceFlow) {
+									return false;
+								}
+							}
+						}
+					}
+				}
+				
+				if (!ReconnectionContext.RECONNECT_SOURCE.equals(reconnectType)) {
+					businessObject = BusinessObjectUtil.getBusinessObjectForPictogramElement(targetContainer);
+					if (businessObject instanceof Activity || businessObject instanceof Event) {
+						for (Anchor a : targetContainer.getAnchors()) {
+							for (Connection c : a.getIncomingConnections()) {
+								EObject o = BusinessObjectUtil.getBusinessObjectForPictogramElement(c);
+								if (o instanceof SequenceFlow) {
+									return false;
+								}
+							}
+						}
 					}
 				}
 			}

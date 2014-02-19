@@ -25,6 +25,7 @@ import org.eclipse.bpmn2.ChoreographyActivity;
 import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.Event;
 import org.eclipse.bpmn2.EventDefinition;
+import org.eclipse.bpmn2.FlowElementsContainer;
 import org.eclipse.bpmn2.Gateway;
 import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.di.BPMNPlane;
@@ -32,6 +33,7 @@ import org.eclipse.bpmn2.di.BPMNShape;
 import org.eclipse.bpmn2.modeler.core.di.DIUtils;
 import org.eclipse.bpmn2.modeler.core.features.participant.AddParticipantFeature;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil.AnchorLocation;
+import org.eclipse.core.runtime.dynamichelpers.IFilter;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
@@ -1625,7 +1627,7 @@ public class GraphicsUtil {
 	 * @return true if the line segment is vertical
 	 */
 	public final static boolean isVertical(Point p1, Point p2) {
-		return Math.abs(p1.getX() - p2.getX()) <= 2;
+		return Math.abs(p1.getX() - p2.getX()) == 0;
 	}
 	
 	/**
@@ -1636,7 +1638,7 @@ public class GraphicsUtil {
 	 * @return true if the line segment is horizontal
 	 */
 	public final static boolean isHorizontal(Point p1, Point p2) {
-		return Math.abs(p1.getY() - p2.getY()) <= 2;
+		return Math.abs(p1.getY() - p2.getY()) == 0;
 	}
 
 	/**
@@ -1820,5 +1822,34 @@ public class GraphicsUtil {
 			plane.getPlaneElement().remove(bpmnShape);
 			plane.getPlaneElement().add(0,bpmnShape);
 		}
+	}
+	
+	public interface IShapeFilter {
+		boolean matches(Shape shape);
+	}
+	
+	/**
+	 * Shape Filter that matches only Container Shapes and not Labels
+	 */
+	public class ContainerShapeFilter implements IShapeFilter {
+		public boolean matches(Shape shape) {
+			return shape instanceof ContainerShape && !FeatureSupport.isLabelShape(shape);
+		}
+	}
+	
+	public static Shape findShapeAt(ContainerShape containerShape, Point p, IShapeFilter filter) {
+		for (Shape c : containerShape.getChildren()) {
+			if (c instanceof ContainerShape) {
+				Shape cc = findShapeAt((ContainerShape) c, p, filter);
+				if (cc!=null)
+					return cc;
+			}
+			if (GraphicsUtil.contains(c, p)) {
+				if (filter.matches(c)) {
+					return c;
+				}
+			}
+		}
+		return null;
 	}
 }

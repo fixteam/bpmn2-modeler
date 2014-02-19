@@ -25,6 +25,7 @@ import org.eclipse.bpmn2.BoundaryEvent;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.CallActivity;
 import org.eclipse.bpmn2.CallableElement;
+import org.eclipse.bpmn2.CategoryValue;
 import org.eclipse.bpmn2.ChoreographyActivity;
 import org.eclipse.bpmn2.ChoreographyTask;
 import org.eclipse.bpmn2.CorrelationPropertyRetrievalExpression;
@@ -74,6 +75,8 @@ import org.eclipse.graphiti.features.context.IPictogramElementContext;
 import org.eclipse.graphiti.features.context.ITargetContext;
 import org.eclipse.graphiti.features.context.impl.LayoutContext;
 import org.eclipse.graphiti.features.context.impl.UpdateContext;
+import org.eclipse.graphiti.mm.MmFactory;
+import org.eclipse.graphiti.mm.Property;
 import org.eclipse.graphiti.mm.algorithms.AbstractText;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.Polyline;
@@ -93,6 +96,7 @@ import org.eclipse.graphiti.services.IPeService;
 
 public class FeatureSupport {
 	public static final String IS_HORIZONTAL_PROPERTY = "isHorizontal"; //$NON-NLS-1$
+	public static final String TOOLTIP_PROPERTY = "tooltip"; //$NON-NLS-1$
 
 	public static boolean isValidFlowElementTarget(ITargetContext context) {
 		boolean intoDiagram = context.getTargetContainer() instanceof Diagram;
@@ -830,7 +834,9 @@ public class FeatureSupport {
 		// these will be moved along with the Group
 		List<ContainerShape> list = new ArrayList<ContainerShape>();
 		if (diagram!=null && isGroupShape(groupShape)) {
-			for (PictogramElement child : diagram.getChildren()) {
+			TreeIterator<EObject> iter = diagram.eAllContents();
+			while (iter.hasNext()) {
+				EObject child = iter.next();
 				if (child instanceof ContainerShape
 						&& child!=groupShape
 						&& !list.contains(child)) {
@@ -843,6 +849,9 @@ public class FeatureSupport {
 						}
 					}
 					else if (GraphicsUtil.contains(groupShape, shape)) {
+						if (!list.contains(shape)) {
+							list.add(shape);
+						}
 						// find this shape's parent ContainerShape if it has one
 						while (!(shape.getContainer() instanceof Diagram)) {
 							shape = shape.getContainer();
@@ -1062,6 +1071,28 @@ public class FeatureSupport {
 		updateConnections(fp, ac, alreadyUpdated);
 	}
 
+	public static void updateCategoryValues(IFeatureProvider fp, List<ContainerShape> shapes) {
+		// Update CategoryValues for SequenceFlows also
+		List<Connection> connections = new ArrayList<Connection>();
+		for (ContainerShape cs : shapes) {
+			updateCategoryValues(fp, cs);
+
+			for (Anchor a : cs.getAnchors()) {
+				for (Connection c : a.getIncomingConnections()) {
+					if (!connections.contains(c))
+						connections.add(c);
+				}
+				for (Connection c : a.getOutgoingConnections()) {
+					if (!connections.contains(c))
+						connections.add(c);
+				}
+			}
+		}
+		for (Connection c : connections) {
+			updateCategoryValues(fp, c);
+		}
+	}
+	
 	public static void updateCategoryValues(IFeatureProvider fp, PictogramElement pe) {
 		
 		Resource resource = ModelUtil.getResource(pe);
@@ -1078,12 +1109,16 @@ public class FeatureSupport {
 			// find all Groups in this Resource and check if it contains the given FlowElement
 			if (pe instanceof ContainerShape) {
 				for (Group group : ModelUtil.getAllObjectsOfType(resource, Group.class)) {
+					CategoryValue cv = group.getCategoryValueRef();
+					if (cv==null)
+						continue;
+					
 					for (PictogramElement groupShape : Graphiti.getLinkService().getPictogramElements(diagram, group)) {
 						if (groupShape instanceof ContainerShape) {
 							for (ContainerShape flowElementShape : FeatureSupport.findGroupedShapes((ContainerShape) groupShape)) {
 								FlowElement fe = BusinessObjectUtil.getFirstElementOfType(flowElementShape, FlowElement.class);
 								if (fe==flowElement) {
-									fe.getCategoryValueRef().add(group.getCategoryValueRef());
+									fe.getCategoryValueRef().add(cv);
 									break;
 								}
 							}
@@ -1102,5 +1137,23 @@ public class FeatureSupport {
 			}
 		}
 	}
+
+	public static void setToolTip(GraphicsAlgorithm ga, String text) {
+		if (ga!=null) {
+			Property prop = MmFactory.eINSTANCE.createProperty();
+			prop.setKey(TOOLTIP_PROPERTY);
+			prop.setValue(text);
+			ga.getProperties().add(prop);
+		}
+	}
 	
+	public static String getToolTip(GraphicsAlgorithm ga) {
+		if (ga!=null) {
+			for (Property prop : ga.getProperties()) {
+				if (TOOLTIP_PROPERTY.equals(prop.getKey()))
+					return prop.getValue();
+			}
+		}
+		return null;
+	}
 }

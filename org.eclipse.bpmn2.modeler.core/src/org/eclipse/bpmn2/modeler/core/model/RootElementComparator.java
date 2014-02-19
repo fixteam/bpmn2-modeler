@@ -12,18 +12,40 @@ package org.eclipse.bpmn2.modeler.core.model;
 
 import java.util.Comparator;
 
+import org.eclipse.bpmn2.Category;
+import org.eclipse.bpmn2.CorrelationProperty;
 import org.eclipse.bpmn2.DataStore;
+import org.eclipse.bpmn2.EndPoint;
 import org.eclipse.bpmn2.Error;
 import org.eclipse.bpmn2.Escalation;
 import org.eclipse.bpmn2.EventDefinition;
 import org.eclipse.bpmn2.Interface;
 import org.eclipse.bpmn2.ItemDefinition;
 import org.eclipse.bpmn2.Message;
+import org.eclipse.bpmn2.PartnerEntity;
+import org.eclipse.bpmn2.PartnerRole;
 import org.eclipse.bpmn2.Resource;
 import org.eclipse.bpmn2.RootElement;
 import org.eclipse.bpmn2.Signal;
 
 public final class RootElementComparator implements Comparator<RootElement> {
+	private static Class[] elements = new Class[] {
+		ItemDefinition.class,
+		Error.class,
+		Signal.class,
+		Escalation.class,
+		Resource.class,
+		Message.class,
+		EventDefinition.class,
+		DataStore.class,
+		EndPoint.class,
+		Interface.class,
+		Category.class,
+		CorrelationProperty.class,
+		PartnerRole.class,
+		PartnerEntity.class,
+	};
+	
 	@Override
 	public int compare(RootElement a, RootElement b) {
 		int aOrder = getOrder(a);
@@ -32,24 +54,10 @@ public final class RootElementComparator implements Comparator<RootElement> {
 	}
 	
 	private int getOrder(RootElement element) {
-		if (element instanceof ItemDefinition)
-			return 0;
-		if (element instanceof Error)
-			return 1;
-		if (element instanceof Signal)
-			return 2;
-		if (element instanceof Escalation)
-			return 3;
-		if (element instanceof Resource)
-			return 4;
-		if (element instanceof Message)
-			return 5;
-		if (element instanceof EventDefinition)
-			return 6;
-		if (element instanceof DataStore)
-			return 7;
-		if (element instanceof Interface)
-			return 8;
+		for (int i=0; i<elements.length; ++i) {
+			if (element.eClass().getInstanceClass() == elements[i])
+				return i;
+		}
 		
 		return Integer.MAX_VALUE;
 	}

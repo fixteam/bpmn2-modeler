@@ -63,7 +63,7 @@ public class ServiceImplementationObjectEditor extends ComboObjectEditor {
 	}
 
 	@Override
-	protected boolean setValue(Object result) {
+	public boolean setValue(Object result) {
 		if (ModelUtil.isStringWrapper(result)) {
 			result = ModelUtil.getStringWrapperValue(result);
 		}

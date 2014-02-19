@@ -30,7 +30,7 @@ import org.xml.sax.InputSource;
 
 public class DefaultBpmn2RuntimeExtension implements IBpmn2RuntimeExtension {
 
-	private static final String targetNamespace = "http://sample.bpmn2.org/bpmn2/sample"; //$NON-NLS-1$
+	private static final String targetNamespace = "http://org.eclipse.bpmn2/default"; //$NON-NLS-1$
 	private static final String[] typeLanguages = new String[] {
 		"http://www.w3.org/2001/XMLSchema", "XML Schema", //$NON-NLS-1$ //$NON-NLS-2$
 	};
@@ -58,6 +58,9 @@ public class DefaultBpmn2RuntimeExtension implements IBpmn2RuntimeExtension {
 			break;
 		case CHOREOGRAPHY:
 			type = "/choreography"; //$NON-NLS-1$
+			break;
+		default:
+			type = "/ext"; //$NON-NLS-1$
 			break;
 		}
 		return targetNamespace + type;
