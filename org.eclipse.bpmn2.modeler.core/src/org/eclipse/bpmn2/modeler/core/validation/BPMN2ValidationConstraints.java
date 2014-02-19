@@ -77,10 +77,10 @@ import org.eclipse.emf.validation.AbstractModelConstraint;
 import org.eclipse.emf.validation.EMFEventType;
 import org.eclipse.emf.validation.IValidationContext;
 import org.eclipse.osgi.util.NLS;
+import org.fixflow.designer.base.util.StringUtil;
 
-import com.founder.fix.bpmn2extensions.fixflow.FixFlowFactory;
-import com.founder.fix.bpmn2extensions.fixflow.FixFlowPackage;
-import com.founder.fix.designer.base.util.StringUtil;
+import org.fixflow.model.bpmnextensions.FixFlowFactory;
+import org.fixflow.model.bpmnextensions.FixFlowPackage;
 
 public class BPMN2ValidationConstraints extends AbstractModelConstraint {
 

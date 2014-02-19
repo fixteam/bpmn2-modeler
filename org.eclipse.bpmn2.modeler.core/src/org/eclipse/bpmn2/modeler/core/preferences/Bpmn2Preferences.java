@@ -86,11 +86,11 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.eclipse.ui.views.navigator.ResourceNavigator;
+import org.fixflow.designer.base.util.StyleConfigUtil;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 
-import com.founder.fix.bpmn2extensions.style.Style;
-import com.founder.fix.designer.base.util.StyleConfigUtil;
+import org.fixflow.model.style.Style;
 
 
 public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChangeListener {

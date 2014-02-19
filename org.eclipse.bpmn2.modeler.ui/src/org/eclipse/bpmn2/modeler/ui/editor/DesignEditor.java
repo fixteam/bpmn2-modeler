@@ -89,9 +89,8 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.contentoutline.ContentOutline;
-
-import com.founder.fix.designer.base.util.ProjectUtil;
-import com.founder.fix.designer.base.util.TemplateUtil;
+import org.fixflow.designer.base.util.ProjectUtil;
+import org.fixflow.designer.base.util.TemplateUtil;
 
 public class DesignEditor extends BPMN2Editor {
 	protected ResourceSetListener resourceSetListener = null;

@@ -17,9 +17,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-
-import com.founder.fix.designer.base.util.FixFlowConfigUtil;
-import com.founder.fix.designer.base.util.TemplateUtil;
+import org.fixflow.designer.base.util.FixFlowConfigUtil;
+import org.fixflow.designer.base.util.TemplateUtil;
 
 public class FixFlowCreateModelDialog extends TitleAreaDialog {
 	private Text text;
