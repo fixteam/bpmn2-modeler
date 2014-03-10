@@ -41,6 +41,8 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
+import com.founder.fix.designer.base.util.FixFlowConfigUtil;
+
 public class FixFlowSaveImageFeature extends DefaultSaveImageFeature {
         private IFigure _allFigure;
         private Image _imageAll;
@@ -61,7 +63,7 @@ public class FixFlowSaveImageFeature extends DefaultSaveImageFeature {
                 GraphicalViewer viewer = getGraphicalViewer(context);
 
                 // Select filename with file-dialog
-                String filePath = ResourcesPlugin.getWorkspace().getRoot().getProject("fixflow-expand").getLocation().toString() + "/fixflowdiagram/" + languageType + "/" + processKey + "/";
+                String filePath = FixFlowConfigUtil.getFixflowDiagramPath() + languageType + "/" + processKey + "/";
                 File file = new File(filePath);
                         if(!file.exists()) {
                                 file.mkdirs();
