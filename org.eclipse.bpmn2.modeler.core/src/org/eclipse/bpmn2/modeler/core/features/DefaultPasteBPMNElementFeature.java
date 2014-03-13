@@ -21,7 +21,6 @@ import org.eclipse.bpmn2.Activity;
 import org.eclipse.bpmn2.Association;
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.BoundaryEvent;
-import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.Collaboration;
 import org.eclipse.bpmn2.ConversationLink;
 import org.eclipse.bpmn2.Definitions;
@@ -53,8 +52,9 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.util.EObjectEList;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.ecore.util.EcoreUtil.Copier;
+import org.eclipse.emf.ecore.xml.type.internal.DataValue.URI;
 import org.eclipse.graphiti.datatypes.IDimension;
 import org.eclipse.graphiti.datatypes.ILocation;
 import org.eclipse.graphiti.features.IAddFeature;
@@ -323,21 +323,21 @@ public class DefaultPasteBPMNElementFeature extends AbstractPasteFeature {
 				// TODO: do we need this?
 				// this mess also duplicates "incoming" and "outgoing" (for SequenceFlows)
 				// which are already being handled in copyConnection()...
-//				if (oldValue instanceof EObjectEList) {
-//					EObjectEList oldList = (EObjectEList)oldObject.eGet(ref);
-//					EObjectEList newList = (EObjectEList)newObject.eGet(ref);
-//					for (Object oldRefObject : oldList) {
-//						if (oldRefObject instanceof EObject) {
-//							String oldId = getId((EObject)oldRefObject);
-//							if (oldId!=null) {
-//								String newId = idMap.get(oldId);
-//								EObject newRefObject = findObjectById(newId);
-//								newList.add(newRefObject);
-//							}
-//						}
-//					}
-//				}
-//				else
+				if (oldValue instanceof EObjectEList) {
+					EObjectEList oldList = (EObjectEList)oldObject.eGet(ref);
+					EObjectEList newList = (EObjectEList)newObject.eGet(ref);
+					for (Object oldRefObject : oldList) {
+						if (oldRefObject instanceof EObject) {
+							String oldId = getId((EObject)oldRefObject);
+							if (oldId!=null) {
+								String newId = idMap.get(oldId);
+								EObject newRefObject = findObjectById(newId);
+								newList.add(newRefObject);
+							}
+						}
+					}
+				}
+				else
 				if (oldValue instanceof EObject){
 					EObject oldRefObject = (EObject)oldValue;
 					String oldId = getId(oldRefObject);
@@ -379,6 +379,9 @@ public class DefaultPasteBPMNElementFeature extends AbstractPasteFeature {
 				newObject.eSet(feature, newId);
 			}
 			else {
+				boolean isFixflow = newObject.getClass().toString().indexOf("fixflow")!=-1;
+				if(isFixflow)
+					return oldId;
 				newObject.eUnset(feature);
 				newId = ModelUtil.setID(newObject);
 				idMap.put(oldId, newId);
