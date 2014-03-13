@@ -32,7 +32,7 @@ import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.ILayoutFeature;
 import org.eclipse.graphiti.features.context.ICreateContext;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
-import org.eclipse.graphiti.mm.algorithms.Text;
+import org.eclipse.graphiti.mm.algorithms.AbstractText;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 
 public class SubChoreographyFeatureContainer extends AbstractChoreographyFeatureContainer {
@@ -56,7 +56,7 @@ public class SubChoreographyFeatureContainer extends AbstractChoreographyFeature
 	public ILayoutFeature getLayoutFeature(IFeatureProvider fp) {
 		return new LayoutChoreographyFeature(fp) {
 			@Override
-			protected void setTextLocation(ContainerShape choreographyContainer, Text text, int w, int h) {
+			protected void setTextLocation(ContainerShape choreographyContainer, AbstractText text, int w, int h) {
 				List<ContainerShape> bandContainers = ChoreographyUtil
 						.getParticipantBandContainerShapes(choreographyContainer);
 				Tuple<List<ContainerShape>, List<ContainerShape>> topAndBottomBands = ChoreographyUtil
@@ -70,7 +70,7 @@ public class SubChoreographyFeatureContainer extends AbstractChoreographyFeature
 					y = ga.getY() + ga.getHeight() + 3;
 				}
 
-				gaService.setLocationAndSize(text, 0, y, w, TEXT_H);
+				gaService.setLocationAndSize(text, 0, y, w, h);
 			}
 		};
 	}

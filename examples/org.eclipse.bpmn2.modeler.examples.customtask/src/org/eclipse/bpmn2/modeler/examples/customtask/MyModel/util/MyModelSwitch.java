@@ -4,6 +4,7 @@ package org.eclipse.bpmn2.modeler.examples.customtask.MyModel.util;
 
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.EventDefinition;
+import org.eclipse.bpmn2.FlowElement;
 import org.eclipse.bpmn2.RootElement;
 import org.eclipse.bpmn2.modeler.examples.customtask.MyModel.*;
 
@@ -96,6 +97,14 @@ public class MyModelSwitch<T> extends Switch<T> {
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
+			case MyModelPackage.TEMPORAL_DEPENDENCY: {
+				TemporalDependency temporalDependency = (TemporalDependency)theEObject;
+				T result = caseTemporalDependency(temporalDependency);
+				if (result == null) result = caseFlowElement(temporalDependency);
+				if (result == null) result = caseBaseElement(temporalDependency);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
 			default: return defaultCase(theEObject);
 		}
 	}
@@ -161,6 +170,21 @@ public class MyModelSwitch<T> extends Switch<T> {
 	}
 
 	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Temporal Dependency</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Temporal Dependency</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseTemporalDependency(TemporalDependency object) {
+		return null;
+	}
+
+	/**
 	 * Returns the result of interpreting the object as an instance of '<em>Base Element</em>'.
 	 * <!-- begin-user-doc -->
 	 * This implementation returns null;
@@ -202,6 +226,21 @@ public class MyModelSwitch<T> extends Switch<T> {
 	 * @generated
 	 */
 	public T caseEventDefinition(EventDefinition object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Flow Element</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Flow Element</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseFlowElement(FlowElement object) {
 		return null;
 	}
 

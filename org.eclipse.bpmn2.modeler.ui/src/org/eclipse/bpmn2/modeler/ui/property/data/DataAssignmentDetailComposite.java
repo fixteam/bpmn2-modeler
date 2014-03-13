@@ -57,7 +57,7 @@ public class DataAssignmentDetailComposite extends DefaultDetailComposite {
 			
 			final Assignment assignment = (Assignment) be;
 			
-			// an Assignment is not really valid without both a From and To
+			// an MultipleAssignments is not really valid without both a From and To
 			Expression toExp = assignment.getTo();
 			if (toExp==null) {
 				editingDomain.getCommandStack().execute(new RecordingCommand(editingDomain) {

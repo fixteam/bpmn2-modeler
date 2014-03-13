@@ -13,9 +13,14 @@
 
 package org.eclipse.bpmn2.modeler.core.features;
 
+import org.eclipse.bpmn2.Activity;
 import org.eclipse.bpmn2.BaseElement;
+import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.EndEvent;
+import org.eclipse.bpmn2.Event;
 import org.eclipse.bpmn2.Group;
+import org.eclipse.bpmn2.ItemAwareElement;
+import org.eclipse.bpmn2.SequenceFlow;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.di.DIImport;
 import org.eclipse.bpmn2.modeler.core.features.activity.task.ICustomElementFeatureContainer;
@@ -37,7 +42,11 @@ import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.ICreateConnectionContext;
 import org.eclipse.graphiti.features.context.IReconnectionContext;
 import org.eclipse.graphiti.features.context.impl.AddConnectionContext;
+import org.eclipse.graphiti.features.context.impl.ReconnectionContext;
 import org.eclipse.graphiti.features.impl.AbstractCreateConnectionFeature;
+import org.eclipse.graphiti.mm.pictograms.Anchor;
+import org.eclipse.graphiti.mm.pictograms.AnchorContainer;
+import org.eclipse.graphiti.mm.pictograms.Connection;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.osgi.util.NLS;
@@ -115,6 +124,69 @@ public abstract class AbstractBpmn2CreateConnectionFeature<
 		return getSourceBo(context) != null;
 	}
 
+	public static boolean canCreateConnection(AnchorContainer sourceContainer, AnchorContainer targetContainer, EClass connectionClass, String reconnectType) {
+		if (sourceContainer!=null && targetContainer!=null) {
+			// Make sure only one connection of each type is created for the same
+			// source and target objects, i.e. you can't have two SequenceFlows
+			// with the same source and target objects.
+			for (Anchor sourceAnchor : sourceContainer.getAnchors()) {
+				for (Connection sourceConnection : sourceAnchor.getOutgoingConnections()) {
+					EObject sourceObject = BusinessObjectUtil.getBusinessObjectForPictogramElement(sourceConnection);
+					if (connectionClass==Bpmn2Package.eINSTANCE.getDataAssociation()) {
+						// Ugh! Special case for DataAssociations: we may have
+						// an Activity with both a DataOutputAssociation and a
+						// DataInputAssociation to the same ItemAwareElement
+						EObject o = BusinessObjectUtil.getBusinessObjectForPictogramElement(sourceContainer);
+						if (o instanceof ItemAwareElement)
+							connectionClass = Bpmn2Package.eINSTANCE.getDataInputAssociation();
+						else
+							connectionClass = Bpmn2Package.eINSTANCE.getDataOutputAssociation();
+					}
+					if (sourceObject!=null && sourceObject.eClass() == connectionClass) {
+						if (sourceConnection.getEnd().getParent() == targetContainer)
+							return false;
+					}
+				}
+			}
+			
+			Bpmn2Preferences prefs = Bpmn2Preferences.getInstance(sourceContainer);
+			if (!prefs.getAllowMultipleConnections() && connectionClass==Bpmn2Package.eINSTANCE.getSequenceFlow()) {
+				// if User Preferences don't allow multiple incoming/outgoing
+				// connections on Activities, enforce it here.
+				EObject businessObject;
+				if (!ReconnectionContext.RECONNECT_TARGET.equals(reconnectType)) {
+					businessObject = BusinessObjectUtil.getBusinessObjectForPictogramElement(sourceContainer);
+					if (businessObject instanceof Activity || businessObject instanceof Event) {
+						for (Anchor a : sourceContainer.getAnchors()) {
+							for (Connection c : a.getOutgoingConnections()) {
+								EObject o = BusinessObjectUtil.getBusinessObjectForPictogramElement(c);
+								if (o instanceof SequenceFlow) {
+									return false;
+								}
+							}
+						}
+					}
+				}
+				
+				if (!ReconnectionContext.RECONNECT_SOURCE.equals(reconnectType)) {
+					businessObject = BusinessObjectUtil.getBusinessObjectForPictogramElement(targetContainer);
+					if (businessObject instanceof Activity || businessObject instanceof Event) {
+						for (Anchor a : targetContainer.getAnchors()) {
+							for (Connection c : a.getIncomingConnections()) {
+								EObject o = BusinessObjectUtil.getBusinessObjectForPictogramElement(c);
+								if (o instanceof SequenceFlow) {
+									return false;
+								}
+							}
+						}
+					}
+				}
+			}
+			return true;
+		}
+		return false;
+
+	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.graphiti.features.impl.AbstractCreateFeature#getCreateDescription()
@@ -138,6 +210,10 @@ public abstract class AbstractBpmn2CreateConnectionFeature<
 		EClass eclass = getBusinessObjectClass();
 		ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(eclass);
 		CONNECTION businessObject = (CONNECTION)adapter.getObjectDescriptor().createObject(resource,eclass);
+		EStructuralFeature nameFeature = businessObject.eClass().getEStructuralFeature("name"); //$NON-NLS-1$
+		if (nameFeature!=null) {
+			businessObject.eUnset(nameFeature);
+		}
 		SOURCE source = getSourceBo(context);
 		TARGET target = getTargetBo(context);
 		EStructuralFeature sourceRefFeature = businessObject.eClass().getEStructuralFeature("sourceRef"); //$NON-NLS-1$

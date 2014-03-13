@@ -21,14 +21,21 @@ import java.util.Map;
 
 import org.eclipse.bpmn2.Activity;
 import org.eclipse.bpmn2.BaseElement;
+import org.eclipse.bpmn2.ChoreographyActivity;
+import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.Event;
 import org.eclipse.bpmn2.EventDefinition;
+import org.eclipse.bpmn2.FlowElementsContainer;
 import org.eclipse.bpmn2.Gateway;
+import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.di.BPMNPlane;
 import org.eclipse.bpmn2.di.BPMNShape;
 import org.eclipse.bpmn2.modeler.core.di.DIUtils;
+import org.eclipse.bpmn2.modeler.core.features.participant.AddParticipantFeature;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil.AnchorLocation;
+import org.eclipse.core.runtime.dynamichelpers.IFilter;
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.graphiti.datatypes.IDimension;
 import org.eclipse.graphiti.datatypes.ILocation;
@@ -65,12 +72,12 @@ public class GraphicsUtil {
 	private static Map<Diagram, SizeTemplate> diagramSizeMap;
 
 	// TODO move all size properties to separate interface
-	public static int DATA_WIDTH = 36;
-	public static int DATA_HEIGHT = 50;
+	public static final int DATA_WIDTH = 36;
+	public static final int DATA_HEIGHT = 50;
 
-	public static int CHOREOGRAPHY_WIDTH = 150;
-	public static int CHOREOGRAPHY_HEIGHT = 150;
-	public static int PARTICIPANT_BAND_HEIGHT = 20;
+	public static final int CHOREOGRAPHY_WIDTH = 150;
+	public static final int CHOREOGRAPHY_HEIGHT = 150;
+	public static final int PARTICIPANT_BAND_HEIGHT = 20;
 
 	public static final int SHAPE_PADDING = 6;
 	public static final int TEXT_PADDING = 5;
@@ -84,6 +91,9 @@ public class GraphicsUtil {
 		private Size eventSize = new Size(GraphicsUtil.EVENT_SIZE, GraphicsUtil.EVENT_SIZE);
 		private Size gatewaySize = new Size(GraphicsUtil.GATEWAY_RADIUS*2, GraphicsUtil.GATEWAY_RADIUS*2);
 		private Size activitySize = new Size(GraphicsUtil.TASK_DEFAULT_WIDTH, GraphicsUtil.TASK_DEFAULT_HEIGHT);
+		private Size choreographySize = new Size(GraphicsUtil.CHOREOGRAPHY_WIDTH, GraphicsUtil.CHOREOGRAPHY_HEIGHT);
+		private Size poolSize = new Size(AddParticipantFeature.DEFAULT_POOL_WIDTH, AddParticipantFeature.DEFAULT_POOL_HEIGHT);
+		private Size participantBandSize = new Size(GraphicsUtil.CHOREOGRAPHY_WIDTH, GraphicsUtil.PARTICIPANT_BAND_HEIGHT);
 		
 		public Size getEventSize() {
 			return eventSize;
@@ -102,6 +112,26 @@ public class GraphicsUtil {
 		}
 		public void setActivitySize(Size activitySize) {
 			this.activitySize = activitySize;
+		}
+		public Size getChoreographySize() {
+			return choreographySize;
+		}
+		public void setChoreographySize(Size choreographySize) {
+			this.choreographySize = choreographySize;
+			this.participantBandSize.width = choreographySize.width;
+		}
+		public Size getPoolSize() {
+			return poolSize;
+		}
+		public void setPoolSize(Size participantSize) {
+			this.poolSize = participantSize;
+		}
+		public Size getParticipantBandSize() {
+			return new Size(choreographySize.width, participantBandSize.height);
+		}
+		public void setParticipantBandSize(Size participantSize) {
+			this.participantBandSize = participantSize;
+			this.participantBandSize.width = choreographySize.width;
 		}
 	}
 	
@@ -255,8 +285,13 @@ public class GraphicsUtil {
 	// TODO: Think about line break in the ui...
 	public static int getLabelHeight(AbstractText text) {
 		if (text.getValue() != null && !text.getValue().isEmpty()) {
+			int height = 14;
 			String[] strings = text.getValue().split(LINE_BREAK);
-			return strings.length * 14;
+			if (strings.length>0) {
+				IDimension dim = GraphitiUi.getUiLayoutService().calculateTextSize(strings[0], text.getFont());
+				height = dim.getHeight();
+			}
+			return strings.length * height;
 		}
 		return 0;
 	}
@@ -1242,6 +1277,36 @@ public class GraphicsUtil {
 		return new Size(TASK_DEFAULT_WIDTH, TASK_DEFAULT_HEIGHT);
 	}
 	
+	public static Size getChoreographySize(Diagram diagram) {
+		if (diagramSizeMap != null) {
+			SizeTemplate temp = diagramSizeMap.get(diagram);
+			if (temp != null) {
+				return temp.getChoreographySize();
+			}
+		}
+		return new Size(CHOREOGRAPHY_WIDTH, CHOREOGRAPHY_HEIGHT);
+	}
+	
+	public static Size getPoolSize(Diagram diagram) {
+		if (diagramSizeMap != null) {
+			SizeTemplate temp = diagramSizeMap.get(diagram);
+			if (temp != null) {
+				return temp.getPoolSize();
+			}
+		}
+		return new Size(AddParticipantFeature.DEFAULT_POOL_WIDTH, AddParticipantFeature.DEFAULT_POOL_HEIGHT);
+	}
+	
+	public static Size getParticipantBandSize(Diagram diagram) {
+		if (diagramSizeMap != null) {
+			SizeTemplate temp = diagramSizeMap.get(diagram);
+			if (temp != null) {
+				return temp.getParticipantBandSize();
+			}
+		}
+		return new Size(GraphicsUtil.CHOREOGRAPHY_WIDTH, GraphicsUtil.PARTICIPANT_BAND_HEIGHT);
+	}
+
 	public static Size getShapeSize(BaseElement be, Diagram diagram) {
 		if (be instanceof Event)
 			return getEventSize(diagram);
@@ -1249,9 +1314,20 @@ public class GraphicsUtil {
 			return getGatewaySize(diagram);
 		if (be instanceof Activity)
 			return getActivitySize(diagram);
+		if (be instanceof ChoreographyActivity)
+			return getChoreographySize(diagram);
+		if (be instanceof Participant) {
+			// determine if the Participant is a Pool or a Participant Band
+			// by finding all ChoreographyActivities in this diagram; if
+			// the Participant is referenced by a ChoreographyActivity, it is
+			// assumed to be a Participant Band.
+			if (ModelUtil.isParticipantBand((Participant)be))
+				return getParticipantBandSize(diagram);
+			return getPoolSize(diagram);
+		}
 		return new Size(TASK_DEFAULT_WIDTH,TASK_DEFAULT_HEIGHT);
 	}
-	
+
 	public static boolean contains(Shape parent, Shape child) {
 		IDimension size = calculateSize(child);
 		ILocation loc = Graphiti.getLayoutService().getLocationRelativeToDiagram(child);
@@ -1551,7 +1627,7 @@ public class GraphicsUtil {
 	 * @return true if the line segment is vertical
 	 */
 	public final static boolean isVertical(Point p1, Point p2) {
-		return Math.abs(p1.getX() - p2.getX()) <= 2;
+		return Math.abs(p1.getX() - p2.getX()) == 0;
 	}
 	
 	/**
@@ -1562,7 +1638,7 @@ public class GraphicsUtil {
 	 * @return true if the line segment is horizontal
 	 */
 	public final static boolean isHorizontal(Point p1, Point p2) {
-		return Math.abs(p1.getY() - p2.getY()) <= 2;
+		return Math.abs(p1.getY() - p2.getY()) == 0;
 	}
 
 	/**
@@ -1746,5 +1822,34 @@ public class GraphicsUtil {
 			plane.getPlaneElement().remove(bpmnShape);
 			plane.getPlaneElement().add(0,bpmnShape);
 		}
+	}
+	
+	public interface IShapeFilter {
+		boolean matches(Shape shape);
+	}
+	
+	/**
+	 * Shape Filter that matches only Container Shapes and not Labels
+	 */
+	public class ContainerShapeFilter implements IShapeFilter {
+		public boolean matches(Shape shape) {
+			return shape instanceof ContainerShape && !FeatureSupport.isLabelShape(shape);
+		}
+	}
+	
+	public static Shape findShapeAt(ContainerShape containerShape, Point p, IShapeFilter filter) {
+		for (Shape c : containerShape.getChildren()) {
+			if (c instanceof ContainerShape) {
+				Shape cc = findShapeAt((ContainerShape) c, p, filter);
+				if (cc!=null)
+					return cc;
+			}
+			if (GraphicsUtil.contains(c, p)) {
+				if (filter.matches(c)) {
+					return c;
+				}
+			}
+		}
+		return null;
 	}
 }

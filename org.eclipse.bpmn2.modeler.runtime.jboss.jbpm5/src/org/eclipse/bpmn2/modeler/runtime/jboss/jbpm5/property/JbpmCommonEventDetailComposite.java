@@ -59,7 +59,8 @@ public class JbpmCommonEventDetailComposite extends CommonEventDetailComposite {
 			if ("eventDefinitions".equals(feature.getName())) { //$NON-NLS-1$
 				eventsTable = new EventDefinitionsListComposite(this, (Event)object) {
 
-					public AbstractDetailComposite createDetailComposite(Composite parent, Class eClass) {
+					@Override
+					public AbstractDetailComposite createDetailComposite(Class eClass, Composite parent, int style) {
 						EventDefinitionsDetailComposite details = new EventDefinitionsDetailComposite(parent, (Event)getBusinessObject()) {
 							@Override
 							public void createBindings(EObject be) {
@@ -67,7 +68,7 @@ public class JbpmCommonEventDetailComposite extends CommonEventDetailComposite {
 								if (object instanceof CatchEvent)
 									getDataAssociationComposite().setAllowedMapTypes(MapType.Property.getValue());
 								else
-									getDataAssociationComposite().setAllowedMapTypes(MapType.Property.getValue() | MapType.Expression.getValue());
+									getDataAssociationComposite().setAllowedMapTypes(MapType.Property.getValue() | MapType.SingleAssignment.getValue());
 							}
 						};
 						return details;

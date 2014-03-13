@@ -35,11 +35,13 @@ import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2AddElementFeature;
 import org.eclipse.bpmn2.modeler.core.features.choreography.ChoreographyProperties;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
+import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IAddContext;
 import org.eclipse.graphiti.mm.algorithms.RoundedRectangle;
-import org.eclipse.graphiti.mm.algorithms.Text;
+import org.eclipse.graphiti.mm.algorithms.AbstractText;
+import org.eclipse.graphiti.mm.algorithms.MultiText;
 import org.eclipse.graphiti.mm.algorithms.styles.Orientation;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
@@ -82,11 +84,11 @@ public class AddChoreographyActivityFeature<T extends ChoreographyActivity>
 
 		Shape nameShape = peService.createShape(containerShape, false);
 
-		Text text = gaService.createDefaultText(getDiagram(), nameShape);
+		MultiText text = gaService.createDefaultMultiText(getDiagram(), nameShape);
 		text.setValue(businessObject.getName());
 		StyleUtil.applyStyle(text, businessObject);
 		text.setHorizontalAlignment(Orientation.ALIGNMENT_CENTER);
-		text.setVerticalAlignment(Orientation.ALIGNMENT_TOP);
+		text.setVerticalAlignment(Orientation.ALIGNMENT_CENTER);
 		setTextLocation(containerShape, text, width, height);
 		peService.setPropertyValue(nameShape, ChoreographyProperties.CHOREOGRAPHY_NAME, Boolean.toString(true));
 		GraphicsUtil.hideActivityMarker(containerShape, GraphicsUtil.ACTIVITY_MARKER_EXPAND);
@@ -107,40 +109,32 @@ public class AddChoreographyActivityFeature<T extends ChoreographyActivity>
 		return containerShape;
 	}
 
-	protected void addedFromImport(T choreography, ContainerShape choreographyContainer,
+	protected void addedFromImport(T choreographyActivity, ContainerShape containerShape,
 			IAddContext context) {
-		ModelHandler mh = null;
 
-		try {
-			mh = ModelHandler.getInstance(getDiagram());
-		} catch (IOException e) {
-			Activator.logError(e);
-			return;
-		}
-
-		List<Participant> participants = choreography.getParticipantRefs();
-		List<BPMNShape> shapes = mh.getAll(BPMNShape.class);
-		List<BPMNShape> filteredShapes = new ArrayList<BPMNShape>();
+		List<Participant> participants = choreographyActivity.getParticipantRefs();
+		List<BPMNShape> allShapes = ModelUtil.getAllObjectsOfType(choreographyActivity.eResource(), BPMNShape.class);
+		List<BPMNShape> participantBandShapes = new ArrayList<BPMNShape>();
 		BPMNShape choreoBpmnShape = null;
 
-		for (BPMNShape shape : shapes) {
-			if (choreography.equals(shape.getBpmnElement())) {
-				choreoBpmnShape = shape;
+		for (BPMNShape bpmnShape : allShapes) {
+			if (choreographyActivity.equals(bpmnShape.getBpmnElement())) {
+				choreoBpmnShape = bpmnShape;
 				break;
 			}
 		}
 
-		for (BPMNShape shape : shapes) {
-			if (participants.contains(shape.getBpmnElement())
-					&& choreoBpmnShape.equals(shape.getChoreographyActivityShape())) {
-				filteredShapes.add(shape);
+		for (BPMNShape bpmnShape : allShapes) {
+			if (participants.contains(bpmnShape.getBpmnElement())
+					&& choreoBpmnShape.equals(bpmnShape.getChoreographyActivityShape())) {
+				participantBandShapes.add(bpmnShape);
 			}
 		}
 
-		for (BPMNShape bpmnShape : filteredShapes) {
+		for (BPMNShape bpmnShape : participantBandShapes) {
 			ParticipantBandKind bandKind = bpmnShape.getParticipantBandKind();
 			ContainerShape createdShape = ChoreographyUtil.createParticipantBandContainerShape(bandKind,
-					choreographyContainer, bpmnShape, isShowNames());
+					containerShape, bpmnShape, isShowNames());
 			createDIShape(createdShape, bpmnShape.getBpmnElement(), bpmnShape, false);
 			Participant p = (Participant) bpmnShape.getBpmnElement();
 			if (p.getParticipantMultiplicity() != null && p.getParticipantMultiplicity().getMaximum() > 1) {
@@ -148,16 +142,15 @@ public class AddChoreographyActivityFeature<T extends ChoreographyActivity>
 			}
 		}
 
-		peService.setPropertyValue(choreographyContainer, PARTICIPANT_REF_IDS,
-				ChoreographyUtil.getParticipantRefIds(choreography));
-		Participant initiatingParticipant = choreography.getInitiatingParticipantRef();
+		peService.setPropertyValue(containerShape, PARTICIPANT_REF_IDS,
+				ChoreographyUtil.getParticipantRefIds(choreographyActivity));
+		Participant initiatingParticipant = choreographyActivity.getInitiatingParticipantRef();
 		String id = initiatingParticipant == null ? "null" : initiatingParticipant.getId(); //$NON-NLS-1$
-		peService.setPropertyValue(choreographyContainer, INITIATING_PARTICIPANT_REF, id);
+		peService.setPropertyValue(containerShape, INITIATING_PARTICIPANT_REF, id);
 	}
 
-	protected void setTextLocation(ContainerShape choreographyContainer, Text text, int w, int h) {
-		int y = (h / 2) - (TEXT_H / 2);
-		gaService.setLocationAndSize(text, 0, y, w, TEXT_H);
+	protected void setTextLocation(ContainerShape choreographyContainer, AbstractText text, int w, int h) {
+		gaService.setLocationAndSize(text, 5, 5, w - 5, h);
 	}
 
 	protected boolean isShowNames() {

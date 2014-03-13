@@ -29,6 +29,7 @@ import org.eclipse.bpmn2.modeler.core.di.DIUtils;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
+import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
 import org.eclipse.bpmn2.modeler.ui.ImageProvider;
 import org.eclipse.bpmn2.modeler.ui.features.choreography.ChoreographyUtil;
 import org.eclipse.dd.di.DiagramElement;
@@ -44,6 +45,7 @@ import org.eclipse.graphiti.mm.algorithms.styles.Font;
 import org.eclipse.graphiti.mm.algorithms.styles.Point;
 import org.eclipse.graphiti.mm.algorithms.styles.Style;
 import org.eclipse.graphiti.mm.pictograms.Connection;
+import org.eclipse.graphiti.mm.pictograms.ConnectionDecorator;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.FreeFormConnection;
@@ -149,6 +151,7 @@ public class PushdownFeature extends AbstractCustomFeature {
 
 		Diagram newDiagram = DIUtils.getOrCreateDiagram(getDiagramBehavior(), newBpmnDiagram);
 		ILocation loc = Graphiti.getLayoutService().getLocationRelativeToDiagram(shape);
+		List <EObject> moved = new ArrayList<EObject>();
 		
 		for (FlowElement fe : container.getFlowElements()) {
 			DiagramElement de = DIUtils.findDiagramElement(fe);
@@ -158,10 +161,13 @@ public class PushdownFeature extends AbstractCustomFeature {
 			newPlane.getPlaneElement().add(de);
 			
 			List <PictogramElement> pes = Graphiti.getLinkService().getPictogramElements(oldDiagram, fe);
-			List <EObject> moved = new ArrayList<EObject>();
 			for (PictogramElement pe : pes) {
 				PictogramElement pictogramElement = null;
-				if (pe instanceof Shape) {
+				if (pe instanceof ConnectionDecorator) {
+					// this will be moved as part of the connection
+					continue;
+				}
+				else if (pe instanceof Shape) {
 					if (BusinessObjectUtil.getFirstElementOfType(pe, BPMNShape.class)!=null) {
 						newDiagram.getChildren().add((Shape)pe);
 						pictogramElement = pe;
@@ -193,26 +199,26 @@ public class PushdownFeature extends AbstractCustomFeature {
 							newDiagram.getPictogramLinks().add((PictogramLink)o);
 							moved.add(o);
 						}
-						else if (o instanceof Color) {
-							newDiagram.getColors().add((Color)o);
-							moved.add(o);
-						}
-						else if (o instanceof Font) {
-							newDiagram.getFonts().add((Font)o);
-							moved.add(o);
-						}
-						else if (o instanceof Style) {
-							newDiagram.getStyles().add((Style)o);
-							moved.add(o);
-						}
+//						else if (o instanceof Color) {
+//							newDiagram.getColors().add((Color)o);
+//							moved.add(o);
+//						}
+//						else if (o instanceof Font) {
+//							newDiagram.getFonts().add((Font)o);
+//							moved.add(o);
+//						}
+//						else if (o instanceof Style) {
+//							newDiagram.getStyles().add((Style)o);
+//							moved.add(o);
+//						}
 					}
 				}
 			}
-			oldDiagram.getPictogramLinks().removeAll(moved);
-			oldDiagram.getColors().removeAll(moved);
-			oldDiagram.getFonts().removeAll(moved);
-			oldDiagram.getStyles().removeAll(moved);
 		}
+		oldDiagram.getPictogramLinks().removeAll(moved);
+//		oldDiagram.getColors().removeAll(moved);
+//		oldDiagram.getFonts().removeAll(moved);
+//		oldDiagram.getStyles().removeAll(moved);
 
 		// collapse the sub process
 		if (AbstractExpandableActivityFeatureContainer.isExpandableElement(container)) {

@@ -14,6 +14,7 @@ package org.eclipse.bpmn2.modeler.ui.wizards;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.eclipse.bpmn2.modeler.help.IHelpContexts;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -25,9 +26,11 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
+import org.eclipse.ui.PlatformUI;
 
 public class BPMN2DiagramWizard extends Wizard implements INewWizard {
 	private BPMN2DiagramWizardPage1 page1;
@@ -52,6 +55,12 @@ public class BPMN2DiagramWizard extends Wizard implements INewWizard {
 		addPage(page1);
 		page2 = new BPMN2DiagramWizardPage2(selection);
 		addPage(page2);
+	}
+
+	@Override
+	public void createPageControls(Composite pageContainer) {
+		super.createPageControls(pageContainer);
+		PlatformUI.getWorkbench().getHelpSystem().setHelp(getShell(), IHelpContexts.New_File_Wizard);
 	}
 
 	/**

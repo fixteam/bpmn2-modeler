@@ -17,17 +17,17 @@ import org.eclipse.bpmn2.DataInput;
 import org.eclipse.bpmn2.DataOutput;
 import org.eclipse.bpmn2.InputOutputSpecification;
 import org.eclipse.bpmn2.ItemAwareElement;
+import org.eclipse.bpmn2.ReceiveTask;
+import org.eclipse.bpmn2.SendTask;
 import org.eclipse.bpmn2.modeler.core.adapters.InsertionAdapter;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
 import org.eclipse.bpmn2.modeler.core.runtime.CustomTaskDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor.ModelExtensionAdapter;
 import org.eclipse.bpmn2.modeler.core.runtime.ModelExtensionDescriptor.Property;
-import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.ui.property.tasks.IoParametersDetailComposite;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.swt.widgets.Composite;
 
 public class JbpmIoParametersDetailComposite extends IoParametersDetailComposite {
@@ -39,7 +39,7 @@ public class JbpmIoParametersDetailComposite extends IoParametersDetailComposite
 	public JbpmIoParametersDetailComposite(AbstractBpmn2PropertySection section) {
 		super(section);
 	}
-	
+
 	@Override
 	public void createBindings(final EObject be) {
 		final EStructuralFeature ioSpecificationFeature = be.eClass().getEStructuralFeature("ioSpecification"); //$NON-NLS-1$
@@ -51,18 +51,22 @@ public class JbpmIoParametersDetailComposite extends IoParametersDetailComposite
 				InsertionAdapter.add(be, ioSpecificationFeature, ioSpecification);
 			}
 			
-			EStructuralFeature dataInputsFeature = getFeature(ioSpecification, "dataInputs"); //$NON-NLS-1$
-			if (isModelObjectEnabled(ioSpecification.eClass(),dataInputsFeature)) {
-				dataInputsTable = new JbpmIoParametersListComposite(this, be, ioSpecification, dataInputsFeature);
-				dataInputsTable.bindList(ioSpecification, dataInputsFeature);
-				dataInputsTable.setTitle(Messages.JbpmIoParametersDetailComposite_Input_Mapping_Title);
+			if (!(be instanceof ReceiveTask)) {
+				EStructuralFeature dataInputsFeature = getFeature(ioSpecification, "dataInputs"); //$NON-NLS-1$
+				if (isModelObjectEnabled(ioSpecification.eClass(),dataInputsFeature)) {
+					dataInputsTable = new JbpmIoParametersListComposite(this, be, ioSpecification, dataInputsFeature);
+					dataInputsTable.bindList(ioSpecification, dataInputsFeature);
+					dataInputsTable.setTitle(Messages.JbpmIoParametersDetailComposite_Input_Mapping_Title);
+				}
 			}
 			
-			EStructuralFeature dataOutputsFeature = getFeature(ioSpecification, "dataOutputs"); //$NON-NLS-1$
-			if (isModelObjectEnabled(ioSpecification.eClass(),dataOutputsFeature)) {
-				dataOutputsTable = new JbpmIoParametersListComposite(this, be, ioSpecification, dataOutputsFeature);
-				dataOutputsTable.bindList(ioSpecification, dataOutputsFeature);
-				dataOutputsTable.setTitle(Messages.JbpmIoParametersDetailComposite_Output_Mapping_Title);
+			if (!(be instanceof SendTask)) {
+				EStructuralFeature dataOutputsFeature = getFeature(ioSpecification, "dataOutputs"); //$NON-NLS-1$
+				if (isModelObjectEnabled(ioSpecification.eClass(),dataOutputsFeature)) {
+					dataOutputsTable = new JbpmIoParametersListComposite(this, be, ioSpecification, dataOutputsFeature);
+					dataOutputsTable.bindList(ioSpecification, dataOutputsFeature);
+					dataOutputsTable.setTitle(Messages.JbpmIoParametersDetailComposite_Output_Mapping_Title);
+				}
 			}
 		}
 	}

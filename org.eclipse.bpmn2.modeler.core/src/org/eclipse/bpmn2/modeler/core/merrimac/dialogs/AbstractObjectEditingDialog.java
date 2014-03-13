@@ -15,7 +15,6 @@ package org.eclipse.bpmn2.modeler.core.merrimac.dialogs;
 
 import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.IPropertiesCompositeFactory;
-import org.eclipse.bpmn2.modeler.core.merrimac.clad.PropertiesCompositeFactory;
 import org.eclipse.bpmn2.modeler.core.validation.LiveValidationListener;
 import org.eclipse.bpmn2.modeler.core.validation.ValidationErrorHandler;
 import org.eclipse.core.runtime.IStatus;
@@ -29,7 +28,6 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.StringConverter;
-import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
@@ -57,9 +55,14 @@ public abstract class AbstractObjectEditingDialog extends FormDialog implements 
 	protected boolean cancel = false;
 	protected boolean abortOnCancel = true;
 	protected Transaction transaction;
+	protected ScrolledForm form;
 	protected Composite dialogContent;
     private Text errorMessageText;
     private IPropertiesCompositeFactory compositeFactory = null;
+	// If this property is set on a Control, then don't try to
+	// adapt the Control's colors/fonts/etc. to dialog defaults
+    // This is used by the Description Styled Text widget.
+	public final static String DO_NOT_ADAPT = "do_not_adapt";
     
 	public AbstractObjectEditingDialog(DiagramEditor editor, EObject object) {
 		super(editor.getEditorSite().getShell());
@@ -78,7 +81,7 @@ public abstract class AbstractObjectEditingDialog extends FormDialog implements 
 	@Override
 	protected void createFormContent(IManagedForm mform) {
 		super.createFormContent(mform); 
-		final ScrolledForm form = mform.getForm();
+		form = mform.getForm();
 		form.setExpandHorizontal(true);
 		form.setExpandVertical(true);
 		form.setText(null);
@@ -96,7 +99,7 @@ public abstract class AbstractObjectEditingDialog extends FormDialog implements 
 		
 		dialogContent = createDialogContent(body);
 		if (compositeFactory!=null)
-			dialogContent.setData("factory", compositeFactory);
+			dialogContent.setData("factory", compositeFactory); //$NON-NLS-1$
 		
 		data = new FormData();
 		data.top = new FormAttachment(0, 0);
@@ -105,15 +108,6 @@ public abstract class AbstractObjectEditingDialog extends FormDialog implements 
 		data.right = new FormAttachment(100, 0);
 		dialogContent.setLayoutData(data);
 		
-		// The AbstractDetailComposite controls don't actually get constructed until
-		// setBusinessObject() is called - the business object determines which controls
-		// are required.
-		// We can now safely set the background color of all controls to match the dialog.
-		dialogContent.setBackground(form.getBackground());
-		for (Control k : dialogContent.getChildren()) {
-			k.setBackground(form.getBackground());
-		}
-
 		form.setContent(body);
 		getShell().pack();
 	}
@@ -210,8 +204,29 @@ public abstract class AbstractObjectEditingDialog extends FormDialog implements 
 		});
 		
 		aboutToOpen();
+
+		adapt(dialogContent);
 		
 		return super.open();
+	}
+	
+	protected void adapt(Composite content) {
+		
+		// The AbstractDetailComposite controls don't actually get constructed until
+		// setBusinessObject() is called - the business object determines which controls
+		// are required. So, this needs to happen very late in the dialog lifecycle.
+		// We can now safely set the background color of all controls to match the dialog.
+		content.setBackground(form.getBackground());
+		for (Control k : content.getChildren()) {
+			Object data = k.getData(AbstractObjectEditingDialog.DO_NOT_ADAPT);
+			if (data instanceof Boolean && (Boolean)data == true)
+				continue;
+			
+			k.setBackground(form.getBackground());
+			if (k instanceof Composite) {
+				adapt((Composite)k);
+			}
+		}
 	}
 	
 	@Override

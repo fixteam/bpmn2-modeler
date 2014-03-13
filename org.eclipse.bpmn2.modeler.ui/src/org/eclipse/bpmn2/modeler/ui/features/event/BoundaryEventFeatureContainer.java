@@ -53,11 +53,6 @@ public class BoundaryEventFeatureContainer extends BaseElementFeatureContainer {
 	}
 
 	@Override
-	public IDirectEditingFeature getDirectEditingFeature(IFeatureProvider fp) {
-		return null;
-	}
-
-	@Override
 	public ILayoutFeature getLayoutFeature(IFeatureProvider fp) {
 		return new LayoutBoundaryEventFeature(fp);
 	}

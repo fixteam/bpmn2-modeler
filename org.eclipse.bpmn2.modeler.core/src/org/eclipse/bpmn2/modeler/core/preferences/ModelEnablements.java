@@ -27,8 +27,8 @@ public class ModelEnablements {
 	// Map of enabled EClasses and their enabled Features
 	private Hashtable<String, HashSet<String>> classes = new Hashtable<String, HashSet<String>>();
 	private TargetRuntime targetRuntime = null;
-	private Bpmn2DiagramType diagramType;
-	private String profile;
+	private Bpmn2DiagramType diagramType = Bpmn2DiagramType.NONE;
+	private String profile = "";
 	private int enableIdAttribute = -1;
 	
 	// require a TargetRuntime!
@@ -86,6 +86,17 @@ public class ModelEnablements {
 		}
 	}
 	
+	public void copy(ModelEnablements me) {
+		classes.clear();
+		
+		for (Entry<String, HashSet<String>> entry : me.classes.entrySet()) {
+			String className = entry.getKey();
+			HashSet<String> features = new HashSet<String>();
+			features.addAll(entry.getValue());
+			classes.put(className, features);
+		}
+	}
+	
 	private void setEnabled(List<EClass> eClasses, boolean enabled) {
 		for (EClass c : eClasses) {
 			setEnabled(c,enabled);
@@ -95,7 +106,7 @@ public class ModelEnablements {
 	public void setEnabled(String[] list) {
 		setEnabledAll(false);
 		for (String s : list) {
-			int i = s.indexOf(".");
+			int i = s.indexOf("."); //$NON-NLS-1$
 			setEnabled(s.substring(0,i), s.substring(i+1), true);
 		}
 	}
@@ -179,7 +190,7 @@ public class ModelEnablements {
 	 * if false, remove the element.
 	 */
 	public void setEnabled(String name, boolean enabled) {
-		int i = name.indexOf(".");
+		int i = name.indexOf("."); //$NON-NLS-1$
 		if (i>0) {
 			setEnabled(name.substring(0,i), name.substring(i+1), enabled);
 			return;
@@ -376,7 +387,7 @@ public class ModelEnablements {
 	}
 
 	public boolean isEnabled(String className) {
-		int i = className.indexOf(".");
+		int i = className.indexOf("."); //$NON-NLS-1$
 		if (i>0) {
 			return isEnabled(className.substring(0,i), className.substring(i+1));
 		}
@@ -441,4 +452,11 @@ public class ModelEnablements {
 		return classList;
 	}
 
+	public Bpmn2DiagramType getDiagramType() {
+		return diagramType;
+	}
+
+	public String getProfile() {
+		return profile;
+	}
 }

@@ -167,6 +167,10 @@ public class ConnectionRoute implements Comparable<ConnectionRoute>, Comparator<
 			crossings.add( new Crossing(connection, start, end) );
 		}
 		
+		public void setValid() {
+			valid = true;
+		}
+		
 		public boolean isValid() {
 			if (valid)
 				return getLength() < Integer.MAX_VALUE;
@@ -200,17 +204,20 @@ public class ConnectionRoute implements Comparable<ConnectionRoute>, Comparator<
 
 		@Override
 		public int compare(ConnectionRoute o1, ConnectionRoute o2) {
+			int i = 0;
 			if (o1.isValid()) {
 				if (o2.isValid()) {
-					int i = o1.getRank() - o2.getRank();
+					i = o1.getRank() - o2.getRank();
 					if (i==0) {
 						i = o1.collisions.size() - o2.collisions.size();
 						if (i==0) {
+							// TODO: figure out why connection crossing detection isn't working!
 //							i = o1.crossings.size() - o2.crossings.size();
 							if (i==0) {
-								i = o1.getLength() - o2.getLength();
-								if (Math.abs(i)<=10) {
-									i = o1.getPoints().size() - o2.getPoints().size();
+								i = o1.getPoints().size() - o2.getPoints().size();
+								if (i==0)
+								{
+									i = o1.getLength() - o2.getLength();
 //									if (i==0) {
 //										BoundaryAnchor ba1 = AnchorUtil.findNearestBoundaryAnchor(source, o1.get(0));
 //										BoundaryAnchor ba2 = AnchorUtil.findNearestBoundaryAnchor(source, o2.get(0));
@@ -265,41 +272,59 @@ public class ConnectionRoute implements Comparable<ConnectionRoute>, Comparator<
 			boolean changed = false;
 
 			// remove unnecessary "U" shapes
-			Point p1 = getPoints().get(0);
-			for (int i=1; i<getPoints().size()-1; ++i) {
+			Point p1 = getPoints().get(1);
+			for (int i=2; i<getPoints().size()-2; ++i) {
 				Point p2 = getPoints().get(i);
 				if (i+2 < getPoints().size()) {
 					Point p3 = getPoints().get(i+1);
 					Point p4 = getPoints().get(i+2);
 					if (GraphicsUtil.isHorizontal(p1,p2) && GraphicsUtil.isVertical(p2,p3) && GraphicsUtil.isHorizontal(p3,p4)) {
-						int x1 = p1.getX();
-						int x2 = p2.getX();
-						int x4 = p4.getX();
-						if ((x1 < x4 && x4 < x2) || (x1 > x4 && x4 > x2)) {
-							// this forms a vertical "U" - remove if the new configuration does not cause a collision
-							Point p = GraphicsUtil.createPoint(x4, p2.getY());
-							if (router.getCollision(p,p4)==null) {
-								getPoints().set(i, p);
-								getPoints().remove(p3);
-								--i;
-								changed = true;
-							}
+						Point p = GraphicsUtil.createPoint(p1.getX(), p3.getY());
+						if (router.getCollision(p1,p)==null) {
+							getPoints().set(i+1, p);
+							getPoints().remove(p2);
+							getPoints().remove(p3);
+							--i;
+							changed = true;
 						}
+
+//						int x1 = p1.getX();
+//						int x2 = p2.getX();
+//						int x4 = p4.getX();
+//						if ((x1 < x4 && x4 < x2) || (x1 > x4 && x4 > x2)) {
+//							// this forms a horizontal "U" - remove if the new configuration does not cause a collision
+//							Point p = GraphicsUtil.createPoint(x4, p2.getY());
+//							if (router.getCollision(p,p4)==null) {
+//								getPoints().set(i, p);
+//								getPoints().remove(p3);
+//								--i;
+//								changed = true;
+//							}
+//						}
 					}
 					else if (GraphicsUtil.isVertical(p1,p2) && GraphicsUtil.isHorizontal(p2,p3) && GraphicsUtil.isVertical(p3,p4)) {
-						int y1 = p1.getY();
-						int y2 = p2.getY();
-						int y4 = p4.getY();
-						if ((y1 < y4 && y4 < y2) || (y1 > y4 && y4 > y2)) {
-							// this forms a horizontal "U"
-							Point p = GraphicsUtil.createPoint(p2.getX(), y4);
-							if (router.getCollision(p,p4)==null) {
-								getPoints().set(i, p);
-								getPoints().remove(p3);
-								--i;
-								changed = true;
-							}
+						Point p = GraphicsUtil.createPoint(p3.getX(), p1.getY());
+						if (router.getCollision(p1,p)==null) {
+							getPoints().set(i+1, p);
+							getPoints().remove(p2);
+							getPoints().remove(p3);
+							--i;
+							changed = true;
 						}
+
+//						int y1 = p1.getY();
+//						int y2 = p2.getY();
+//						int y4 = p4.getY();
+//						if ((y1 < y4 && y4 < y2) || (y1 > y4 && y4 > y2)) {
+//							// this forms a vertical "U"
+//							p = GraphicsUtil.createPoint(p2.getX(), y4);
+//							if (router.getCollision(p,p4)==null) {
+//								getPoints().set(i, p);
+//								getPoints().remove(p3);
+//								--i;
+//								changed = true;
+//							}
+//						}
 					}
 				}
 				p1 = p2;

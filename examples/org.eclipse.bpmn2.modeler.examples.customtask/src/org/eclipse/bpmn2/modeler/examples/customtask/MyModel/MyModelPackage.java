@@ -77,13 +77,22 @@ public interface MyModelPackage extends EPackage {
 	int DOCUMENT_ROOT__TASK_CONFIG = 0;
 
 	/**
+	 * The feature id for the '<em><b>Temporal Dependency</b></em>' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int DOCUMENT_ROOT__TEMPORAL_DEPENDENCY = 1;
+
+	/**
 	 * The number of structural features of the '<em>Document Root</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int DOCUMENT_ROOT_FEATURE_COUNT = 1;
+	int DOCUMENT_ROOT_FEATURE_COUNT = 2;
 
 	/**
 	 * The meta object id for the '{@link org.eclipse.bpmn2.modeler.examples.customtask.MyModel.impl.ParameterImpl <em>Parameter</em>}' class.
@@ -226,6 +235,134 @@ public interface MyModelPackage extends EPackage {
 
 
 	/**
+	 * The meta object id for the '{@link org.eclipse.bpmn2.modeler.examples.customtask.MyModel.impl.TemporalDependencyImpl <em>Temporal Dependency</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see org.eclipse.bpmn2.modeler.examples.customtask.MyModel.impl.TemporalDependencyImpl
+	 * @see org.eclipse.bpmn2.modeler.examples.customtask.MyModel.impl.MyModelPackageImpl#getTemporalDependency()
+	 * @generated
+	 */
+	int TEMPORAL_DEPENDENCY = 4;
+
+	/**
+	 * The feature id for the '<em><b>Extension Values</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TEMPORAL_DEPENDENCY__EXTENSION_VALUES = Bpmn2Package.FLOW_ELEMENT__EXTENSION_VALUES;
+
+	/**
+	 * The feature id for the '<em><b>Documentation</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TEMPORAL_DEPENDENCY__DOCUMENTATION = Bpmn2Package.FLOW_ELEMENT__DOCUMENTATION;
+
+	/**
+	 * The feature id for the '<em><b>Extension Definitions</b></em>' reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TEMPORAL_DEPENDENCY__EXTENSION_DEFINITIONS = Bpmn2Package.FLOW_ELEMENT__EXTENSION_DEFINITIONS;
+
+	/**
+	 * The feature id for the '<em><b>Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TEMPORAL_DEPENDENCY__ID = Bpmn2Package.FLOW_ELEMENT__ID;
+
+	/**
+	 * The feature id for the '<em><b>Any Attribute</b></em>' attribute list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TEMPORAL_DEPENDENCY__ANY_ATTRIBUTE = Bpmn2Package.FLOW_ELEMENT__ANY_ATTRIBUTE;
+
+	/**
+	 * The feature id for the '<em><b>Auditing</b></em>' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TEMPORAL_DEPENDENCY__AUDITING = Bpmn2Package.FLOW_ELEMENT__AUDITING;
+
+	/**
+	 * The feature id for the '<em><b>Monitoring</b></em>' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TEMPORAL_DEPENDENCY__MONITORING = Bpmn2Package.FLOW_ELEMENT__MONITORING;
+
+	/**
+	 * The feature id for the '<em><b>Category Value Ref</b></em>' reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TEMPORAL_DEPENDENCY__CATEGORY_VALUE_REF = Bpmn2Package.FLOW_ELEMENT__CATEGORY_VALUE_REF;
+
+	/**
+	 * The feature id for the '<em><b>Name</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TEMPORAL_DEPENDENCY__NAME = Bpmn2Package.FLOW_ELEMENT__NAME;
+
+	/**
+	 * The feature id for the '<em><b>Source Ref</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TEMPORAL_DEPENDENCY__SOURCE_REF = Bpmn2Package.FLOW_ELEMENT_FEATURE_COUNT + 0;
+
+	/**
+	 * The feature id for the '<em><b>Target Ref</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TEMPORAL_DEPENDENCY__TARGET_REF = Bpmn2Package.FLOW_ELEMENT_FEATURE_COUNT + 1;
+
+	/**
+	 * The feature id for the '<em><b>Lag Time</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TEMPORAL_DEPENDENCY__LAG_TIME = Bpmn2Package.FLOW_ELEMENT_FEATURE_COUNT + 2;
+
+	/**
+	 * The number of structural features of the '<em>Temporal Dependency</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TEMPORAL_DEPENDENCY_FEATURE_COUNT = Bpmn2Package.FLOW_ELEMENT_FEATURE_COUNT + 3;
+
+
+	/**
 	 * Returns the meta object for class '{@link org.eclipse.bpmn2.modeler.examples.customtask.MyModel.DocumentRoot <em>Document Root</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -245,6 +382,17 @@ public interface MyModelPackage extends EPackage {
 	 * @generated
 	 */
 	EReference getDocumentRoot_TaskConfig();
+
+	/**
+	 * Returns the meta object for the containment reference '{@link org.eclipse.bpmn2.modeler.examples.customtask.MyModel.DocumentRoot#getTemporalDependency <em>Temporal Dependency</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the containment reference '<em>Temporal Dependency</em>'.
+	 * @see org.eclipse.bpmn2.modeler.examples.customtask.MyModel.DocumentRoot#getTemporalDependency()
+	 * @see #getDocumentRoot()
+	 * @generated
+	 */
+	EReference getDocumentRoot_TemporalDependency();
 
 	/**
 	 * Returns the meta object for class '{@link org.eclipse.bpmn2.modeler.examples.customtask.MyModel.Parameter <em>Parameter</em>}'.
@@ -321,6 +469,49 @@ public interface MyModelPackage extends EPackage {
 	EAttribute getMyEventDefinition_Value();
 
 	/**
+	 * Returns the meta object for class '{@link org.eclipse.bpmn2.modeler.examples.customtask.MyModel.TemporalDependency <em>Temporal Dependency</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Temporal Dependency</em>'.
+	 * @see org.eclipse.bpmn2.modeler.examples.customtask.MyModel.TemporalDependency
+	 * @generated
+	 */
+	EClass getTemporalDependency();
+
+	/**
+	 * Returns the meta object for the reference '{@link org.eclipse.bpmn2.modeler.examples.customtask.MyModel.TemporalDependency#getSourceRef <em>Source Ref</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference '<em>Source Ref</em>'.
+	 * @see org.eclipse.bpmn2.modeler.examples.customtask.MyModel.TemporalDependency#getSourceRef()
+	 * @see #getTemporalDependency()
+	 * @generated
+	 */
+	EReference getTemporalDependency_SourceRef();
+
+	/**
+	 * Returns the meta object for the reference '{@link org.eclipse.bpmn2.modeler.examples.customtask.MyModel.TemporalDependency#getTargetRef <em>Target Ref</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference '<em>Target Ref</em>'.
+	 * @see org.eclipse.bpmn2.modeler.examples.customtask.MyModel.TemporalDependency#getTargetRef()
+	 * @see #getTemporalDependency()
+	 * @generated
+	 */
+	EReference getTemporalDependency_TargetRef();
+
+	/**
+	 * Returns the meta object for the attribute '{@link org.eclipse.bpmn2.modeler.examples.customtask.MyModel.TemporalDependency#getLagTime <em>Lag Time</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Lag Time</em>'.
+	 * @see org.eclipse.bpmn2.modeler.examples.customtask.MyModel.TemporalDependency#getLagTime()
+	 * @see #getTemporalDependency()
+	 * @generated
+	 */
+	EAttribute getTemporalDependency_LagTime();
+
+	/**
 	 * Returns the factory that creates the instances of the model.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -359,6 +550,14 @@ public interface MyModelPackage extends EPackage {
 		 * @generated
 		 */
 		EReference DOCUMENT_ROOT__TASK_CONFIG = eINSTANCE.getDocumentRoot_TaskConfig();
+
+		/**
+		 * The meta object literal for the '<em><b>Temporal Dependency</b></em>' containment reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference DOCUMENT_ROOT__TEMPORAL_DEPENDENCY = eINSTANCE.getDocumentRoot_TemporalDependency();
 
 		/**
 		 * The meta object literal for the '{@link org.eclipse.bpmn2.modeler.examples.customtask.MyModel.impl.ParameterImpl <em>Parameter</em>}' class.
@@ -421,6 +620,40 @@ public interface MyModelPackage extends EPackage {
 		 * @generated
 		 */
 		EAttribute MY_EVENT_DEFINITION__VALUE = eINSTANCE.getMyEventDefinition_Value();
+
+		/**
+		 * The meta object literal for the '{@link org.eclipse.bpmn2.modeler.examples.customtask.MyModel.impl.TemporalDependencyImpl <em>Temporal Dependency</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see org.eclipse.bpmn2.modeler.examples.customtask.MyModel.impl.TemporalDependencyImpl
+		 * @see org.eclipse.bpmn2.modeler.examples.customtask.MyModel.impl.MyModelPackageImpl#getTemporalDependency()
+		 * @generated
+		 */
+		EClass TEMPORAL_DEPENDENCY = eINSTANCE.getTemporalDependency();
+
+		/**
+		 * The meta object literal for the '<em><b>Source Ref</b></em>' reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference TEMPORAL_DEPENDENCY__SOURCE_REF = eINSTANCE.getTemporalDependency_SourceRef();
+
+		/**
+		 * The meta object literal for the '<em><b>Target Ref</b></em>' reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference TEMPORAL_DEPENDENCY__TARGET_REF = eINSTANCE.getTemporalDependency_TargetRef();
+
+		/**
+		 * The meta object literal for the '<em><b>Lag Time</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute TEMPORAL_DEPENDENCY__LAG_TIME = eINSTANCE.getTemporalDependency_LagTime();
 
 	}
 

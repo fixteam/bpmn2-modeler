@@ -13,6 +13,7 @@ package org.eclipse.bpmn2.modeler.core.validation;
 import java.util.List;
 
 import org.eclipse.bpmn2.Activity;
+import org.eclipse.bpmn2.AdHocSubProcess;
 import org.eclipse.bpmn2.Assignment;
 import org.eclipse.bpmn2.Association;
 import org.eclipse.bpmn2.BaseElement;
@@ -57,6 +58,7 @@ import org.eclipse.bpmn2.MessageFlow;
 import org.eclipse.bpmn2.Operation;
 import org.eclipse.bpmn2.ParallelGateway;
 import org.eclipse.bpmn2.Process;
+import org.eclipse.bpmn2.ProcessType;
 import org.eclipse.bpmn2.Resource;
 import org.eclipse.bpmn2.ScriptTask;
 import org.eclipse.bpmn2.SendTask;
@@ -108,9 +110,15 @@ public class BPMN2ValidationConstraints extends AbstractModelConstraint {
 			if (eObj instanceof BaseElement) {
 				return validateBaseElement(ctx, (BaseElement) eObj);
 			}
+			else {
+				validateEObject(ctx,eObj);
+			}
 		} else { // In the case of live mode.
 			if (eObj instanceof BaseElement) {
 				return validateBaseElementLive(ctx, (BaseElement) eObj);
+			}
+			else {
+				validateEObject(ctx,eObj);
 			}
 		}
 
@@ -125,6 +133,11 @@ public class BPMN2ValidationConstraints extends AbstractModelConstraint {
 				ctx.addResult(def);
 				return ctx.createFailureStatus(Messages.BPMN2ValidationConstraints_2);
 			}			
+		}
+		for (Import imp : def.getImports()) {
+			IStatus status = validateEObject(ctx, imp);
+			if (!status.isOK())
+				return status;
 		}
 		
 		return ctx.createSuccessStatus();
@@ -178,23 +191,11 @@ public class BPMN2ValidationConstraints extends AbstractModelConstraint {
 				}
 			}
 			else {
+				// see Bug 425903 - need to figure this out...
+//				if (ProcessType.NONE.equals(process.getProcessType())) {
+//					return createFailureStatus(ctx, be, Messages.BPMN2ValidationConstraints_0);
+//				}
 				// report errors only
-			}
-		}
-		else if (be instanceof Import) {
-			Import elem = (Import)be;
-			if (warnings) {
-			}
-			else {
-				if (isEmpty(elem.getLocation())) {
-					return createMissingFeatureStatus(ctx,be,"location"); //$NON-NLS-1$
-				}
-				if (isEmpty(elem.getNamespace())) {
-					return createMissingFeatureStatus(ctx,be,"namespace"); //$NON-NLS-1$
-				}
-				if (isEmpty(elem.getImportType())) {
-					return createMissingFeatureStatus(ctx,be,"importType"); //$NON-NLS-1$
-				}
 			}
 		}
 		else if (be instanceof Error) {
@@ -621,6 +622,11 @@ public class BPMN2ValidationConstraints extends AbstractModelConstraint {
 			if (fn instanceof CatchEvent)
 				needIncoming = false;
 			
+			if (fn.eContainer() instanceof AdHocSubProcess) {
+				needIncoming = false;
+				needOutgoing = false;
+			}
+			
 			if (needOutgoing) {
 				if ((fn.getOutgoing() == null || fn.getOutgoing().size() < 1)) {
 					return createMissingFeatureStatus(ctx,fn,"outgoing"); //$NON-NLS-1$
@@ -643,6 +649,27 @@ public class BPMN2ValidationConstraints extends AbstractModelConstraint {
 		return ctx.createSuccessStatus();
 	}
 
+	private IStatus validateEObject(IValidationContext ctx, EObject be) {
+		if (be instanceof Import) {
+			Import elem = (Import)be;
+			if (warnings) {
+			}
+			else {
+				if (isEmpty(elem.getLocation())) {
+					return createMissingFeatureStatus(ctx,be,"location"); //$NON-NLS-1$
+				}
+				if (isEmpty(elem.getNamespace())) {
+					return createMissingFeatureStatus(ctx,be,"namespace"); //$NON-NLS-1$
+				}
+				if (isEmpty(elem.getImportType())) {
+					return createMissingFeatureStatus(ctx,be,"importType"); //$NON-NLS-1$
+				}
+			}
+		}
+		
+		return ctx.createSuccessStatus();
+	}
+	
 	@SuppressWarnings("rawtypes")
 	private static boolean isEmpty(Object object) {
 		if (object instanceof String) {

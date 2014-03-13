@@ -13,26 +13,20 @@
 package org.eclipse.bpmn2.modeler.ui.features.gateway;
 
 import org.eclipse.bpmn2.modeler.core.features.BaseElementFeatureContainer;
-import org.eclipse.bpmn2.modeler.core.features.ContextConstants;
 import org.eclipse.bpmn2.modeler.core.features.MoveFlowNodeFeature;
 import org.eclipse.bpmn2.modeler.core.features.label.UpdateLabelFeature;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.ui.features.AbstractDefaultDeleteFeature;
 import org.eclipse.bpmn2.modeler.ui.features.LayoutBaseElementTextFeature;
 import org.eclipse.bpmn2.modeler.ui.features.activity.AppendActivityFeature;
-import org.eclipse.bpmn2.modeler.ui.features.activity.MorphActivityFeature;
-import org.eclipse.bpmn2.modeler.ui.features.choreography.AddChoreographyMessageFeature;
 import org.eclipse.bpmn2.modeler.ui.features.event.AppendEventFeature;
-import org.eclipse.bpmn2.modeler.ui.features.participant.RotatePoolFeature;
 import org.eclipse.graphiti.features.IDeleteFeature;
-import org.eclipse.graphiti.features.IDirectEditingFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.ILayoutFeature;
 import org.eclipse.graphiti.features.IMoveShapeFeature;
 import org.eclipse.graphiti.features.IReason;
 import org.eclipse.graphiti.features.IResizeShapeFeature;
 import org.eclipse.graphiti.features.IUpdateFeature;
-import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.IResizeShapeContext;
 import org.eclipse.graphiti.features.context.IUpdateContext;
 import org.eclipse.graphiti.features.context.impl.UpdateContext;
@@ -48,11 +42,6 @@ public abstract class AbstractGatewayFeatureContainer extends BaseElementFeature
 	@Override
 	public IUpdateFeature getUpdateFeature(IFeatureProvider fp) {
 		return new UpdateAbstractGatewayFeature(fp);
-	}
-
-	@Override
-	public IDirectEditingFeature getDirectEditingFeature(IFeatureProvider fp) {
-		return null; // TODO
 	}
 
 	@Override

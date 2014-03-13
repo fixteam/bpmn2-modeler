@@ -91,6 +91,17 @@ public class BPMN2MultiPageEditor extends MultiPageEditorPart implements IGotoMa
 		return super.getPartName();
 	}
 
+	@Override
+    public void setInput(IEditorInput input) {
+    	super.setInput(input);
+    	Display.getDefault().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+		    	setTitleToolTip( getTitleToolTip() );
+			}
+    	});
+    }
+
     /**
      * Method declared on IEditorPart.
      * 

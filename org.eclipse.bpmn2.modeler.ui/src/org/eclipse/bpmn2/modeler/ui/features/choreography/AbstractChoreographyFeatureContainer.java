@@ -37,11 +37,6 @@ public abstract class AbstractChoreographyFeatureContainer extends BaseElementFe
 	}
 
 	@Override
-	public IDirectEditingFeature getDirectEditingFeature(IFeatureProvider fp) {
-		return null;
-	}
-
-	@Override
 	public ILayoutFeature getLayoutFeature(IFeatureProvider fp) {
 		return new LayoutChoreographyFeature(fp);
 	}

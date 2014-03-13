@@ -58,7 +58,7 @@ public class JbpmDescriptionPropertySection extends DescriptionPropertySection {
 		// TODO Auto-generated constructor stub
 	}
 
-	public class JbpmDescriptionPropertyComposite extends DescriptionPropertyComposite {
+	public class JbpmDescriptionPropertyComposite extends DescriptionDetailComposite {
 		
 		public JbpmDescriptionPropertyComposite(
 				AbstractBpmn2PropertySection section) {

@@ -189,27 +189,27 @@ public class CommonEventDetailComposite extends DefaultDetailComposite {
 					eventsTable.setTitle(Messages.CommonEventDetailComposite_Event_Definition_Title);
 					return eventsTable;
 				}
-				if ("dataInputs".equals(feature.getName())) { //$NON-NLS-1$
-					if (object instanceof ThrowEvent) {
-						ThrowEvent throwEvent = (ThrowEvent)object;
-						inputTable = new DataInputsListComposite(this, throwEvent);
-						inputTable.bindList(object, feature);
-						inputTable.setTitle(Messages.CommonEventDetailComposite_Input_Parameters_Title);
-						return inputTable;
-					}
-				}
-				if ("dataOutputs".equals(feature.getName())) { //$NON-NLS-1$
-					if (object instanceof CatchEvent) {
-						CatchEvent catchEvent = (CatchEvent)object;
-						outputTable = new DataOutputsListComposite(this, catchEvent);
-						outputTable.bindList(catchEvent, feature);
-						outputTable.setTitle(Messages.CommonEventDetailComposite_Output_Parameters_Title);
-						return outputTable;
-					}
-				}
-				if ("properties".equals(feature.getName())) { //$NON-NLS-1$
-					return super.bindList(object, feature, listItemClass);
-				}
+//				if ("dataInputs".equals(feature.getName())) { //$NON-NLS-1$
+//					if (object instanceof ThrowEvent) {
+//						ThrowEvent throwEvent = (ThrowEvent)object;
+//						inputTable = new DataInputsListComposite(this, throwEvent);
+//						inputTable.bindList(object, feature);
+//						inputTable.setTitle(Messages.CommonEventDetailComposite_Input_Parameters_Title);
+//						return inputTable;
+//					}
+//				}
+//				if ("dataOutputs".equals(feature.getName())) { //$NON-NLS-1$
+//					if (object instanceof CatchEvent) {
+//						CatchEvent catchEvent = (CatchEvent)object;
+//						outputTable = new DataOutputsListComposite(this, catchEvent);
+//						outputTable.bindList(catchEvent, feature);
+//						outputTable.setTitle(Messages.CommonEventDetailComposite_Output_Parameters_Title);
+//						return outputTable;
+//					}
+//				}
+//				if ("properties".equals(feature.getName())) { //$NON-NLS-1$
+//					return super.bindList(object, feature, listItemClass);
+//				}
 			}
 			return null;
 		}

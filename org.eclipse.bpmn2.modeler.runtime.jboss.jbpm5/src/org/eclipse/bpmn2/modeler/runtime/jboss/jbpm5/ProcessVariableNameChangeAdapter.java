@@ -43,7 +43,7 @@ public class ProcessVariableNameChangeAdapter implements Adapter {
                     if ("name".equals(feature.getName()) || "identifier".equals(feature.getName())) { //$NON-NLS-1$ //$NON-NLS-2$
 						Object newValue = notification.getNewValue();
 						Object oldValue = notification.getOldValue();
-						if (newValue!=oldValue && newValue!=null && !newValue.equals(oldValue))
+						if (newValue!=oldValue && newValue!=null && oldValue!=null && !newValue.equals(oldValue))
 						{
 							if (idFeature!=null) {
 								newValue = SyntaxCheckerUtils.toNCName((String)newValue);
@@ -70,7 +70,7 @@ public class ProcessVariableNameChangeAdapter implements Adapter {
                     else if ("id".equals(feature.getName())) { //$NON-NLS-1$
 						Object newValue = notification.getNewValue();
 						Object oldValue = notification.getOldValue();
-						if (newValue!=oldValue && newValue!=null && !newValue.equals(oldValue)) 
+						if (newValue!=oldValue && newValue!=null && oldValue!=null && !newValue.equals(oldValue)) 
 						{
 							if (nameFeature!=null) {
 								boolean deliver = object.eDeliver();

@@ -15,6 +15,7 @@ package org.eclipse.bpmn2.modeler.core.merrimac.dialogs;
 
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.PropertiesCompositeFactory;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
+import org.eclipse.bpmn2.modeler.help.IHelpContexts;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
@@ -22,6 +23,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.PlatformUI;
 
 public class ObjectEditingDialog extends AbstractObjectEditingDialog {
 
@@ -47,6 +49,8 @@ public class ObjectEditingDialog extends AbstractObjectEditingDialog {
 	protected Composite createDialogContent(Composite parent) {
 		Composite content = PropertiesCompositeFactory.INSTANCE.createDialogComposite(
 				featureEType, parent, SWT.NONE);
+		
+		PlatformUI.getWorkbench().getHelpSystem().setHelp(getShell(), IHelpContexts.Property_Dialog);
 		return content;
 	}
 

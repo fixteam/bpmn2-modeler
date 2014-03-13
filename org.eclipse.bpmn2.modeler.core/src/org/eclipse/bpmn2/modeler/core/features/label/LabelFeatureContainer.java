@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.bpmn2.modeler.core.features.label;
 
-import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.DataInput;
 import org.eclipse.bpmn2.DataObject;
 import org.eclipse.bpmn2.DataObjectReference;
@@ -21,9 +20,11 @@ import org.eclipse.bpmn2.Event;
 import org.eclipse.bpmn2.Gateway;
 import org.eclipse.bpmn2.Message;
 import org.eclipse.bpmn2.modeler.core.features.ContextConstants;
+import org.eclipse.bpmn2.modeler.core.features.DirectEditBaseElementFeature;
 import org.eclipse.bpmn2.modeler.core.features.IConnectionFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.features.IShapeFeatureContainer;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
+import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.graphiti.features.IAddFeature;
 import org.eclipse.graphiti.features.ICreateConnectionFeature;
 import org.eclipse.graphiti.features.ICreateFeature;
@@ -41,34 +42,29 @@ import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.IPictogramElementContext;
 import org.eclipse.graphiti.features.custom.ICustomFeature;
 import org.eclipse.graphiti.features.impl.DefaultMoveShapeFeature;
-import org.eclipse.graphiti.mm.algorithms.AbstractText;
-import org.eclipse.graphiti.mm.pictograms.ContainerShape;
+import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 
 public class LabelFeatureContainer implements IShapeFeatureContainer, IConnectionFeatureContainer {
 
 	@Override
 	public Object getApplyObject(IContext context) {
-		if (context.getProperty(ContextConstants.LABEL_CONTEXT) != null
-				&& (Boolean) context.getProperty(ContextConstants.LABEL_CONTEXT) == true) {
-			if (context instanceof IAddContext) {
+		if (context instanceof IAddContext) {
+			if (context.getProperty(ContextConstants.LABEL_CONTEXT) != null
+					&& (Boolean) context.getProperty(ContextConstants.LABEL_CONTEXT) == true) {
 				IAddContext addContext = (IAddContext) context;
 				return addContext.getNewObject();
 			}
-		} else if (context instanceof IPictogramElementContext) {
+		}
+		else if (context instanceof IPictogramElementContext) {
 			IPictogramElementContext peContext = (IPictogramElementContext) context;
-			BaseElement o = BusinessObjectUtil.getFirstElementOfType(peContext.getPictogramElement(), BaseElement.class);
-			if (o != null && (o instanceof Gateway || o instanceof Event)) {
-				// TODO: what's going on here? is this dead code?
-				if (peContext.getPictogramElement() instanceof ContainerShape) {
-					ContainerShape container = (ContainerShape) peContext.getPictogramElement();
-					if (container.getChildren().size() == 1) {
-						Shape shape = container.getChildren().get(0);
-						if (shape.getGraphicsAlgorithm() instanceof AbstractText) {
-							return o;
-						}
-					}
-				}
+			PictogramElement pe = peContext.getPictogramElement();
+			if (pe instanceof Shape) {
+				if (FeatureSupport.isLabelShape((Shape)pe))
+					return BusinessObjectUtil.getBusinessObjectForPictogramElement(pe);
+				pe = ((Shape) pe).getContainer();
+				if (FeatureSupport.isLabelShape((Shape)pe))
+					return BusinessObjectUtil.getBusinessObjectForPictogramElement(pe);
 			}
 		}
 		return null;
@@ -115,7 +111,7 @@ public class LabelFeatureContainer implements IShapeFeatureContainer, IConnectio
 
 	@Override
 	public IDirectEditingFeature getDirectEditingFeature(IFeatureProvider fp) {
-		return null;
+		return new DirectEditBaseElementFeature(fp);
 	}
 
 	@Override
@@ -130,7 +126,7 @@ public class LabelFeatureContainer implements IShapeFeatureContainer, IConnectio
 
 	@Override
 	public IMoveShapeFeature getMoveFeature(IFeatureProvider fp) {
-		return new DefaultMoveShapeFeature(fp);
+		return new MoveLabelFeature(fp);
 	}
 
 	@Override

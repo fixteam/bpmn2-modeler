@@ -350,7 +350,7 @@ public class AdvancedDetailComposite extends AbstractDetailComposite {
 					Object value = baseElement.eGet(feature);
 
 					String name = PropertyUtil.deCamelCase(commandValue.eClass().getName());
-					if (name.equalsIgnoreCase("Expression") || name.equalsIgnoreCase("Formal Expression")) { //$NON-NLS-1$ //$NON-NLS-2$
+					if (name.equalsIgnoreCase("SingleAssignment") || name.equalsIgnoreCase("Formal SingleAssignment")) { //$NON-NLS-1$ //$NON-NLS-2$
 						if (feature.getName() != null && !feature.getName().isEmpty()) {
 							String featureName = PropertyUtil.deCamelCase(' ' + feature.getName());
 							featureName = featureName.substring(0, 1).toUpperCase() + featureName.substring(1);
@@ -368,7 +368,7 @@ public class AdvancedDetailComposite extends AbstractDetailComposite {
 					Object value = baseElement.eGet(feature);
 
 					String name = PropertyUtil.deCamelCase(commandValue.eClass().getName());
-					if (name.equalsIgnoreCase("Expression") || name.equalsIgnoreCase("Formal Expression")) { //$NON-NLS-1$ //$NON-NLS-2$
+					if (name.equalsIgnoreCase("SingleAssignment") || name.equalsIgnoreCase("Formal SingleAssignment")) { //$NON-NLS-1$ //$NON-NLS-2$
 						if (feature.getName() != null && !feature.getName().isEmpty()) {
 							String featureName = PropertyUtil.deCamelCase(' ' + feature.getName());
 							featureName = featureName.substring(0, 1).toUpperCase() + featureName.substring(1);

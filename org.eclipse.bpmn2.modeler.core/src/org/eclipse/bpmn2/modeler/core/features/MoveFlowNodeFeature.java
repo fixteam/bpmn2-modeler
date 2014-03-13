@@ -16,22 +16,33 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.FlowElementsContainer;
 import org.eclipse.bpmn2.FlowNode;
 import org.eclipse.bpmn2.Lane;
+import org.eclipse.bpmn2.MessageFlow;
 import org.eclipse.bpmn2.Participant;
+import org.eclipse.bpmn2.SequenceFlow;
 import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.ModelHandler;
+import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.graphiti.features.IDeleteFeature;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IMoveShapeContext;
+import org.eclipse.graphiti.features.context.impl.DeleteContext;
+import org.eclipse.graphiti.mm.pictograms.Anchor;
+import org.eclipse.graphiti.mm.pictograms.Connection;
+import org.eclipse.graphiti.mm.pictograms.Shape;
 
 public class MoveFlowNodeFeature extends DefaultMoveBPMNShapeFeature {
 
 	private final List<Algorithm> algorithms;
-
 	private AlgorithmContainer algorithmContainer;
-
+	protected IMoveShapeContext context;
+	
 	public MoveFlowNodeFeature(IFeatureProvider fp) {
 		super(fp);
 		algorithms = new ArrayList<MoveFlowNodeFeature.Algorithm>();
@@ -71,11 +82,17 @@ public class MoveFlowNodeFeature extends DefaultMoveBPMNShapeFeature {
 	}
 
 	@Override
+	public void moveShape(IMoveShapeContext context) {
+		this.context = context;
+		super.moveShape(context);
+	}
+
+	@Override
 	protected void postMoveShape(IMoveShapeContext context) {
 		try {
 			ModelHandler handler = ModelHandler.getInstance(getDiagram());
-			Object[] node = getAllBusinessObjectsForPictogramElement(context.getShape());
-			for (Object object : node) {
+			Object[] nodes = getAllBusinessObjectsForPictogramElement(context.getShape());
+			for (Object object : nodes) {
 				if (object instanceof FlowNode && algorithmContainer!=null && !algorithmContainer.isEmpty()) {
 					algorithmContainer.move(((FlowNode) object), getSourceBo(context, handler),
 							getTargetBo(context, handler));
@@ -125,10 +142,66 @@ public class MoveFlowNodeFeature extends DefaultMoveBPMNShapeFeature {
 		void move(FlowNode node, Object source, Object target) {
 			fromAlgorithm.move(node, source, target);
 			toAlgorithm.move(node, source, target);
+			// If flow node was moved from one Pool to another, delete all
+			// incoming and outgoing Sequence Flows; if flow node was connect
+			// to another flow node by a Message Flow, and it is moved into the
+			// same Pool as the other flow node, delete the Message Flows.
+			List<Connection> connections = new ArrayList<Connection>();
+			IFeatureProvider fp = MoveFlowNodeFeature.this.getFeatureProvider();
+			Shape shape = context.getShape();
+			for (Anchor a : shape.getAnchors()) {
+				for (Connection c : a.getIncomingConnections()) {
+					BaseElement cbo = BusinessObjectUtil.getFirstBaseElement(c);
+					if (cbo instanceof SequenceFlow || cbo instanceof MessageFlow) {
+						if (!isConnectionValid(cbo))
+							connections.add(c);
+					}
+				}
+				for (Connection c : a.getOutgoingConnections()) {
+					BaseElement cbo = BusinessObjectUtil.getFirstBaseElement(c);
+					if (cbo instanceof SequenceFlow || cbo instanceof MessageFlow) {
+						if (!isConnectionValid(cbo))
+							connections.add(c);
+					}
+				}
+			}
+			for (Connection c : connections) {
+				DeleteContext dc = new DeleteContext(c);
+				IDeleteFeature df = fp.getDeleteFeature(dc);
+				df.delete(dc);
+			}
 		}
 
 		boolean isEmpty() {
 			return fromAlgorithm == null || toAlgorithm == null;
+		}
+		
+		boolean isConnectionValid(BaseElement flow) {
+			EStructuralFeature sourceRef = flow.eClass().getEStructuralFeature("sourceRef");
+			EStructuralFeature targetRef = flow.eClass().getEStructuralFeature("targetRef");
+			BaseElement source = (BaseElement) flow.eGet(sourceRef);
+			BaseElement target = (BaseElement) flow.eGet(targetRef);
+			EObject sourceContainer = source.eContainer();
+			while (sourceContainer!=null) {
+				if (sourceContainer instanceof FlowElementsContainer)
+					break;
+				sourceContainer = sourceContainer.eContainer();
+			}
+			if (sourceContainer==null)
+				return true;
+			EObject targetContainer = target.eContainer();
+			while (targetContainer!=null) {
+				if (targetContainer instanceof FlowElementsContainer)
+					break;
+				targetContainer = targetContainer.eContainer();
+			}
+			if (targetContainer==null)
+				return true;
+			if (flow instanceof SequenceFlow)
+				return sourceContainer==targetContainer;
+			if (flow instanceof MessageFlow)
+				return sourceContainer!=targetContainer;
+			return false;
 		}
 	}
 

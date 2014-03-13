@@ -66,6 +66,7 @@ public class AddLabelFeature extends AbstractAddShapeFeature {
 		StyleUtil.applyStyle(text, baseElement);
 		text.setHorizontalAlignment(Orientation.ALIGNMENT_CENTER);
 		text.setVerticalAlignment(Orientation.ALIGNMENT_TOP);
+		link(textShape, baseElement);
 		
 		// Boundary events get a different add context, so use the context coodinates relative
 		if ( (baseElement instanceof BoundaryEvent) && !isImport(context) ){

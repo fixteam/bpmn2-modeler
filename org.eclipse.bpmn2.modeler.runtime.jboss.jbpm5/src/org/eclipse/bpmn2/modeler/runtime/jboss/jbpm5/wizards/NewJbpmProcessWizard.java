@@ -18,6 +18,7 @@ import java.lang.reflect.InvocationTargetException;
 import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
+import org.eclipse.bpmn2.modeler.help.IHelpContexts;
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.JBPM5RuntimeExtension;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -35,6 +36,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -78,6 +80,12 @@ public class NewJbpmProcessWizard extends Wizard implements INewWizard {
 	public void addPages() {
 		page = new NewJbpmProcessWizardPage1(selection);
 		addPage(page);
+	}
+
+	@Override
+	public void createPageControls(Composite pageContainer) {
+		super.createPageControls(pageContainer);
+		PlatformUI.getWorkbench().getHelpSystem().setHelp(getShell(), IHelpContexts.JBPM_New_File_Wizard);
 	}
 
 	/**

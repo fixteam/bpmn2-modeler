@@ -80,9 +80,4 @@ public class InterfaceDetailComposite extends DefaultDetailComposite {
 		else
 			super.bindReference(parent, object, reference);
 	}
-
-	@Override
-	public boolean needRefresh(EObject be) {
-		return super.needRefresh(be);
-	}
 }

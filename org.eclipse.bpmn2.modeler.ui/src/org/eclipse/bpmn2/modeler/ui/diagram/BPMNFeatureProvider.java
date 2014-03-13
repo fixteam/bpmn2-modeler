@@ -72,7 +72,6 @@ import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2CreateConnectionFeature;
 import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2CreateFeature;
 import org.eclipse.bpmn2.modeler.core.features.BPMNDiagramFeatureContainer;
-import org.eclipse.bpmn2.modeler.core.features.ContextConstants;
 import org.eclipse.bpmn2.modeler.core.features.DefaultCopyBPMNElementFeature;
 import org.eclipse.bpmn2.modeler.core.features.DefaultDeleteBPMNShapeFeature;
 import org.eclipse.bpmn2.modeler.core.features.DefaultPasteBPMNElementFeature;
@@ -384,9 +383,12 @@ public class BPMNFeatureProvider extends DefaultFeatureProvider {
 		
 		// The special LabelFeatureContainer is used to add labels to figures that were
 		// added within the given IContext
-		Object property = context.getProperty(ContextConstants.LABEL_CONTEXT);
-		if ( property!=null && (Boolean)property )
-			return containers.get(LabelFeatureContainer.class);
+		LabelFeatureContainer lfc = (LabelFeatureContainer) containers.get(LabelFeatureContainer.class);
+		if (lfc.getApplyObject(context)!=null)
+			return lfc;
+//		Object property = context.getProperty(ContextConstants.LABEL_CONTEXT);
+//		if ( property!=null && (Boolean)property )
+//			return containers.get(LabelFeatureContainer.class);
 		
 		EObject object = getApplyObject(context);
 		if (object!=null) {

@@ -13,6 +13,7 @@
 package org.eclipse.bpmn2.modeler.core.model;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,9 +24,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.bpmn2.Assignment;
+import org.eclipse.bpmn2.Bpmn2Factory;
 import org.eclipse.bpmn2.Bpmn2Package;
 import org.eclipse.bpmn2.DataAssociation;
 import org.eclipse.bpmn2.Definitions;
+import org.eclipse.bpmn2.Documentation;
 import org.eclipse.bpmn2.Expression;
 import org.eclipse.bpmn2.FormalExpression;
 import org.eclipse.bpmn2.Import;
@@ -50,7 +53,6 @@ import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.core.utils.ImportUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.NamespaceUtil;
-import org.eclipse.bpmn2.modeler.core.utils.Tuple;
 import org.eclipse.bpmn2.util.Bpmn2ResourceImpl;
 import org.eclipse.bpmn2.util.ImportHelper;
 import org.eclipse.bpmn2.util.OnlyContainmentTypeInfo;
@@ -69,6 +71,7 @@ import org.eclipse.emf.common.util.ECollections;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.common.util.WrappedException;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
@@ -78,12 +81,12 @@ import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.InternalEObject;
+import org.eclipse.emf.ecore.impl.BasicEObjectImpl;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EObjectWithInverseEList;
 import org.eclipse.emf.ecore.util.ExtendedMetaData;
-import org.eclipse.emf.ecore.xmi.IllegalValueException;
-import org.eclipse.emf.ecore.xmi.XMIException;
+import org.eclipse.emf.ecore.util.FeatureMap;
 import org.eclipse.emf.ecore.xmi.XMLHelper;
 import org.eclipse.emf.ecore.xmi.XMLLoad;
 import org.eclipse.emf.ecore.xmi.XMLResource;
@@ -239,6 +242,8 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 	}
 
 	public void save(Map<?, ?> options) throws IOException {
+		uriHandler.setBaseURI(getURI());
+		xmlHelper.setResource(this);
 		super.save(options);
 	}
 
@@ -255,11 +260,64 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 	@Override
 	protected XMLLoad createXMLLoad() {
 		return new XMLLoadImpl(createXMLHelper()) {
+			Bpmn2ModelerXmlHandler handler;
+			
 			@Override
 			protected DefaultHandler makeDefaultHandler() {
-				return new Bpmn2ModelerXmlHandler(resource, helper, options);
+				handler = new Bpmn2ModelerXmlHandler(resource, helper, options);
+				return handler;
+			}
+			
+			@Override
+			public void load(XMLResource resource, InputStream inputStream, Map<?, ?> options) throws IOException {
+				try {
+					super.load(resource, inputStream, options);
+				}
+				catch (Exception e) {
+					DiagnosticWrappedException error = new DiagnosticWrappedException(e);
+					error.setLine(handler.getLineNumber());
+					error.setColumn(handler.getColumnNumber());
+					error.setLocation(handler.getLocation());
+					resource.getErrors().add(error);
+					throw new IOException(e);
+				}
 			}
 		};
+	}
+
+	class DiagnosticWrappedException extends WrappedException implements Resource.Diagnostic {
+		private static final long serialVersionUID = 1L;
+		private String location;
+		private int column;
+		private int line;
+		
+		public DiagnosticWrappedException(Exception exception) {
+			super(exception);
+		}
+
+		public void setLocation(String location) {
+			this.location = location;
+		}
+
+		public String getLocation() {
+			return location;
+		}
+
+		public void setColumn(int column) {
+			this.column = column;;
+		}
+
+		public int getColumn() {
+			return column;
+		}
+
+		public void setLine(int line) {
+			this.line = line;
+		}
+
+		public int getLine() {
+			return line;
+		}
 	}
 
 	@Override
@@ -300,9 +358,18 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 		if (obj.eClass() != null) {
 			EStructuralFeature idAttr = obj.eClass().getEIDAttribute();
 			if (idAttr != null && !obj.eIsSet(idAttr)) {
+				obj.eSetDeliver(false);
 				ModelUtil.setID(obj);
+				obj.eSetDeliver(true);
 			}
 		}
+	}
+
+	@Override
+	public void setURI(URI uri) {
+		super.setURI(uri);
+		xmlHelper.setResource(this);
+		uriHandler.setBaseURI(uri);
 	}
 
 	/**
@@ -484,6 +551,63 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 			}
 			super.setValueFromId(object, eReference, ids);
 		}
+
+		public int getLineNumber() {
+			return super.getLineNumber();
+		}
+
+		public int getColumnNumber() {
+			return super.getColumnNumber();
+		}
+
+		public String getLocation() {
+			return super.getLocation();
+		}
+
+        @Override
+        public void startElement(String uri, String localName, String name) {
+			super.startElement(uri, localName, name);
+		    EObject peekObject = objects.peekEObject();
+            if (peekObject!=null && peekObject.eClass() == Bpmn2Package.eINSTANCE.getExpression()) {
+            	// If the element is an Expression (not a FormalExpression) then use the CDATA
+            	// as the body of a Formal Expression (because Expression does not have a body)
+                text = new StringBuffer();
+            }
+		}
+		
+		@Override
+        public void endElement(String uri, String localName, String name) {
+            EObject peekObject = objects.peek();
+            if (peekObject!=null && peekObject.eClass() == Bpmn2Package.eINSTANCE.getExpression()) {
+            	// if the element is an Expression, replace it with a FormalExpression and set
+            	// its body using the CDATA of the Expression element.
+   				FormalExpression fe = Bpmn2Factory.eINSTANCE.createFormalExpression();
+   				EObject owner = peekObject.eContainer();
+   				if (owner!=null) {
+	   				for (EStructuralFeature f : owner.eClass().getEAllStructuralFeatures()) {
+	   					if (owner.eGet(f) == peekObject) {
+	   		   				owner.eSet(f, fe);
+	   		   				break;
+	   					}
+	   				}
+	   				objects.pop();
+	   				objects.push(fe);
+	                types.pop();
+	                types.push(Bpmn2Package.eINSTANCE.getFormalExpression_Body());
+	                
+	                EStructuralFeature mixedFeature = extendedMetaData.getMixedFeature(fe.eClass());
+	                if (mixedFeature != null)
+	                {
+	                  mixedTargets.push((FeatureMap)fe.eGet(mixedFeature));
+	                }
+	                else
+	                {
+	                  mixedTargets.push(null);
+	                }
+   				}
+            }
+            super.endElement(uri, localName, name);
+        }
 	}
 	
 	public class Bpmn2ModelerXMLSave extends XMLSaveImpl {
@@ -614,6 +738,25 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 	            	}
             	}
             }
+            
+            if (o!=null && o instanceof Documentation) {
+            	Documentation doc = (Documentation)o;
+            	if (doc.getText()==null || doc.getText().isEmpty())
+            		return false;
+            }
+            
+            if (f!=null && f.getEType() == Bpmn2Package.eINSTANCE.getDocumentation()) {
+            	EList<Documentation> docList = (EList<Documentation>)o.eGet(f);
+            	if (docList.isEmpty())
+            		return false;
+            	int empty = 0;
+            	for (Documentation doc : docList) {
+            		if (doc.getText()==null || doc.getText().isEmpty())
+            			++empty;
+            	}
+            	if (empty==docList.size())
+            		return false;
+            }            	
             
             // don't serialize the "body" attribute of FormalExpressions because the expression text
             // is already in the CDATA section of the <bpmn2:expression> element. This would cause
@@ -1019,14 +1162,14 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 				isTargetNamespacePrefix = xmlHelper.isTargetNamespace(prefix);
 			} catch (Exception e) {
 			}
+
 			if (!isTargetNamespacePrefix) {
-				EObject o;
 				String uriString = xmlHelper.getPathForPrefix(prefix).appendFragment(fragment).toString();
 				URI uri = URI.createURI(uriString);
 				ResourceSet rs = ModelUtil.slightlyHackedResourceSet(xmlHelper.getResource().getResourceSet());
 				Resource r = ((Bpmn2ModelerResourceSetImpl)rs).getResource(uri, true, "wsdl"); // the only problem here... //$NON-NLS-1$
 				if (r instanceof WSDLResourceImpl) {
-					o = r.getContents().get(0);
+					EObject o = r.getContents().get(0);
 					Definition def = (Definition)o;
 					// if eReference -- operation.implementationref
 					// search all of these:
@@ -1039,8 +1182,9 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 				}
 				return xmlHelper.getPathForPrefix(prefix).appendFragment(fragment).toString();
 			}
-			else
-				return baseURI.appendFragment(fragment).toString();
+			else {
+				return URI.createURI("").appendFragment(fragment).toString();
+			}
 		}
 	}
 	
@@ -1078,7 +1222,7 @@ public class Bpmn2ModelerResourceImpl extends Bpmn2ResourceImpl {
 				if (ModelUtil.isStringWrapper(obj)) {
 					s = ModelUtil.getStringWrapperValue(obj);
 				}
-				else if (s.contains("#")) { //$NON-NLS-1$
+				else if (s!=null && s.contains("#")) { //$NON-NLS-1$
 					// object is a reference possibly to another document
 					Import imp = importHandler.findImportForObject(resource, obj);
 					if (imp!=null) {

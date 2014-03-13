@@ -90,12 +90,12 @@ public class IoSpecificationPropertiesAdapter extends ExtendedPropertiesAdapter<
 			public InputOutputSpecification createObject(Resource resource, Object context) {
 				InputOutputSpecification ioSpec = Bpmn2ModelerFactory.eINSTANCE.createInputOutputSpecification();
 				ModelUtil.setID(ioSpec, resource);
-//				InputSet is = Bpmn2ModelerFactory.eINSTANCE.createInputSet();
-//				ModelUtil.setID(is, resource);
-//				ioSpec.getInputSets().add(is);
-//				OutputSet os = Bpmn2ModelerFactory.eINSTANCE.createOutputSet();
-//				ModelUtil.setID(os, resource);
-//				ioSpec.getOutputSets().add(os);
+				InputSet is = Bpmn2ModelerFactory.eINSTANCE.createInputSet();
+				ModelUtil.setID(is, resource);
+				ioSpec.getInputSets().add(is);
+				OutputSet os = Bpmn2ModelerFactory.eINSTANCE.createOutputSet();
+				ModelUtil.setID(os, resource);
+				ioSpec.getOutputSets().add(os);
 				return ioSpec;
 			}
 		});    	

@@ -30,17 +30,13 @@ import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultListComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.ListCompositeColumnProvider;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.TableColumn;
 import org.eclipse.bpmn2.modeler.core.model.Bpmn2ModelerFactory;
-import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
-import org.eclipse.dd.di.Diagram;
 import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.graphiti.mm.pictograms.Connection;
-import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.services.Graphiti;
 
 public class IoParametersListComposite extends DefaultListComposite {
@@ -50,14 +46,13 @@ public class IoParametersListComposite extends DefaultListComposite {
 	 */
 	protected Activity activity;
 	protected CallableElement element;
-	protected InputOutputSpecification ioSpecification;
 	protected EStructuralFeature ioFeature;
 	protected boolean isInput;
 	
-	public IoParametersListComposite(IoParametersDetailComposite detailComposite, EObject container, InputOutputSpecification ioSpecification, EStructuralFeature ioFeature) {
+	public IoParametersListComposite(IoParametersDetailComposite detailComposite, EObject container, InputOutputSpecification ioSpec, EStructuralFeature ioFeature) {
 		super(detailComposite, DEFAULT_STYLE);
 		this.ioFeature = ioFeature;
-		this.ioSpecification = ioSpecification;
+//		businessObject = ioSpec;
 		isInput = ("dataInputs".equals(ioFeature.getName())); //$NON-NLS-1$
 		if (container instanceof Activity) {
 			this.activity = (Activity)container;
@@ -90,23 +85,27 @@ public class IoParametersListComposite extends DefaultListComposite {
 		}
 	}
 
+	InputOutputSpecification getIoSpec() {
+		return (InputOutputSpecification) getBusinessObject();
+	}
+	
 	@Override
 	protected EObject addListItem(EObject object, EStructuralFeature feature) {
 		EObject param = null;
 		
-		// Make sure that the ioSpecification is contained in our Activity.
-		InsertionAdapter.executeIfNeeded(ioSpecification);
+		// Make sure that the getIoSpec() is contained in our Activity.
+		InsertionAdapter.executeIfNeeded(getIoSpec());
 		
 		param = super.addListItem(object, feature);
 		
-		// make sure the ioSpecification has both a default InputSet and OutputSet
-		if (ioSpecification.getInputSets().size()==0) {
-			InputSet is = Bpmn2ModelerFactory.create(ioSpecification.eResource(), InputSet.class);
-			ioSpecification.getInputSets().add(is);
+		// make sure the getIoSpec() has both a default InputSet and OutputSet
+		if (getIoSpec().getInputSets().size()==0) {
+			InputSet is = Bpmn2ModelerFactory.create(getIoSpec().eResource(), InputSet.class);
+			getIoSpec().getInputSets().add(is);
 		}
-		if (ioSpecification.getOutputSets().size()==0) {
-			OutputSet os = Bpmn2ModelerFactory.create(ioSpecification.eResource(), OutputSet.class);
-			ioSpecification.getOutputSets().add(os);
+		if (getIoSpec().getOutputSets().size()==0) {
+			OutputSet os = Bpmn2ModelerFactory.create(getIoSpec().eResource(), OutputSet.class);
+			getIoSpec().getOutputSets().add(os);
 		}
 		
 		if (activity!=null) {
@@ -142,7 +141,7 @@ public class IoParametersListComposite extends DefaultListComposite {
 
 		if (item instanceof DataInput) {
 			// remove parameter from inputSets
-			List<InputSet> inputSets = ioSpecification.getInputSets();
+			List<InputSet> inputSets = getIoSpec().getInputSets();
 			for (InputSet is : inputSets) {
 				if (is.getDataInputRefs().contains(item))
 					is.getDataInputRefs().remove(item);
@@ -150,7 +149,7 @@ public class IoParametersListComposite extends DefaultListComposite {
 		}
 		else if (item instanceof DataOutput) {
 			// remove parameter from outputSets
-			List<OutputSet> OutputSets = ioSpecification.getOutputSets();
+			List<OutputSet> OutputSets = getIoSpec().getOutputSets();
 			for (OutputSet is : OutputSets) {
 				if (is.getDataOutputRefs().contains(item))
 					is.getDataOutputRefs().remove(item);
@@ -199,7 +198,7 @@ public class IoParametersListComposite extends DefaultListComposite {
 						Graphiti.getPeService().deletePictogramElement((Connection)pe);
 					}
 				}
-				EcoreUtil.delete(edge);
+				EcoreUtil.delete(edge,true);
 			}
 		}
 		else if (element!=null) {

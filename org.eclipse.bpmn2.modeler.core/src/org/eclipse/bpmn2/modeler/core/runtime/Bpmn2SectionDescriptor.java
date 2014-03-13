@@ -18,6 +18,7 @@ import java.util.List;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultPropertySection;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.graphiti.mm.pictograms.ConnectionDecorator;
@@ -67,9 +68,26 @@ public class Bpmn2SectionDescriptor extends AbstractSectionDescriptor {
 				if (type!=null && !type.isEmpty()) {
 					String types[] = type.split(" "); //$NON-NLS-1$
 					for (String t : types) {
-						addAppliesToClass(Class.forName(t));
+						Class clazz = null;
+						try {
+							clazz = Class.forName(t);
+						}
+						catch (Exception cnf) {
+							clazz = null;
+						}
+						if (clazz==null) {
+							for (TargetRuntime rt : TargetRuntime.getAllRuntimes()) {
+								try {
+									clazz = rt.getRuntimeExtension().getClass().getClassLoader().loadClass(t);
+									break;
+								}
+								catch (Exception cnf) {
+								}
+							}
+						}
+						addAppliesToClass(clazz);
 						if (sectionClass instanceof DefaultPropertySection) {
-							((DefaultPropertySection)sectionClass).addAppliesToClass(Class.forName(t));
+							((DefaultPropertySection)sectionClass).addAppliesToClass(clazz);
 						}
 					}
 				}
@@ -78,6 +96,16 @@ public class Bpmn2SectionDescriptor extends AbstractSectionDescriptor {
 			}
 			
 			td.getSectionDescriptors().add(this);
+		}
+		
+		public Bpmn2SectionDescriptor(Bpmn2TabDescriptor td, Bpmn2SectionDescriptor that) {
+			tab = td.getId();
+			id = tab + ".section" + hashCode(); //$NON-NLS-1$
+			this.sectionClass = that.sectionClass;
+			this.appliesToClasses.addAll(that.appliesToClasses);
+			this.enablesFor = that.enablesFor;
+			this.filterClassName = that.filterClassName;
+			this.filter = that.filter;
 		}
 		
 		@Override
@@ -96,6 +124,7 @@ public class Bpmn2SectionDescriptor extends AbstractSectionDescriptor {
 		}
 
 		protected void addAppliesToClass(Class clazz) {
+			Assert.isNotNull(clazz);
 			appliesToClasses.add(clazz);
 		}
 		

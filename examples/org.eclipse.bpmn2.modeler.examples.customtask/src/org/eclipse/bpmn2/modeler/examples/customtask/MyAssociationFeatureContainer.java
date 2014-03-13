@@ -27,7 +27,7 @@ public class MyAssociationFeatureContainer extends CustomShapeFeatureContainer {
 	public String getId(EObject object) {
 		// This is where we inspect the object to determine what its custom task ID should be.
 		// In this case, the "type" attribute will have a value of "MyTask".
-		// If found, return the CUSTOM_TASK_ID string.
+		// If found, return the TEMPORAL_DEPENDENCY_ID string.
 		//
 		// Note that the object inspection can be arbitrarily complex and may include several
 		// object features. This simple case just demonstrates what needs to happen here.

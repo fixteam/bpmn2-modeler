@@ -13,7 +13,6 @@
 
 package org.eclipse.bpmn2.modeler.core.merrimac.dialogs;
 
-import org.eclipse.bpmn2.modeler.core.adapters.AdapterUtil;
 import org.eclipse.bpmn2.modeler.core.adapters.ExtendedPropertiesAdapter;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
 import org.eclipse.bpmn2.modeler.core.utils.ErrorUtils;
@@ -189,6 +188,17 @@ public class TextObjectEditor extends ObjectEditor {
 	 * @return string representation of the EObject feature's value.
 	 */
 	protected String getText() {
+		boolean useActualValue = false;
+		ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object, feature);
+		if (adapter!=null) {
+			Object result = adapter.getProperty(feature, ExtendedPropertiesAdapter.UI_CAN_SET_NULL);
+			if (result instanceof Boolean)
+				useActualValue = ((Boolean)result);
+		}
+		if (useActualValue) {
+			Object value = ModelUtil.getValue(object, feature);
+			return value==null ? "" : value.toString();
+		}
 		return ModelUtil.getDisplayName(object, feature);
 	}
 

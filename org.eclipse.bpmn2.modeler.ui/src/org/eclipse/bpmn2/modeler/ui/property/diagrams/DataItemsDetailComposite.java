@@ -13,16 +13,16 @@
 
 package org.eclipse.bpmn2.modeler.ui.property.diagrams;
 
-import org.eclipse.bpmn2.Definitions;
+import org.eclipse.bpmn2.BaseElement;
+import org.eclipse.bpmn2.Collaboration;
 import org.eclipse.bpmn2.Process;
-import org.eclipse.bpmn2.RootElement;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractListComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractPropertiesProvider;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultDetailComposite;
+import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.ui.editor.BPMN2Editor;
-import org.eclipse.bpmn2.modeler.ui.util.PropertyUtil;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -52,8 +52,8 @@ public class DataItemsDetailComposite extends DefaultDetailComposite {
 				String[] properties = new String[] {
 						"rootElements#Process.properties", //$NON-NLS-1$
 						"rootElements#Process.resources", //$NON-NLS-1$
-						"rootElements#Process.correlationSubscriptions", //$NON-NLS-1$
-						"rootElements#Process.collaborations", //$NON-NLS-1$
+// TODO: fix this						"rootElements#Process.correlationSubscriptions", //$NON-NLS-1$
+// TODO: fix this						"rootElements#Process.collaborations", //$NON-NLS-1$
 				};
 				
 				@Override
@@ -75,13 +75,16 @@ public class DataItemsDetailComposite extends DefaultDetailComposite {
 			return null;
 		}
 		BPMNDiagram bpmnDiagram = ((BPMN2Editor)getDiagramEditor()).getBpmnDiagram();
-		if (bpmnDiagram.getPlane().getBpmnElement() != object)
-			return null;
+		BaseElement bpmnElement = bpmnDiagram.getPlane().getBpmnElement();
+		if (bpmnElement != object) {
+			// This Process is embedded in a Participant, and is not the top-level diagram
+			// only display variables table for the selected Process, not all Processes
+			if (propertySection!=null) {
+				EObject bo = BusinessObjectUtil.getBusinessObjectForSelection(propertySection.getSelection());
+				if (bo!=object)
+					return null;
+			}
+		}
 		return super.bindList(object, feature, listItemClass);
-	}
-
-	@Override
-	public boolean needRefresh(EObject be) {
-		return super.needRefresh(be);
 	}
 }

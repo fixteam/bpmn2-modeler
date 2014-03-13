@@ -13,9 +13,11 @@
 package org.eclipse.bpmn2.modeler.core.features.participant;
 
 import org.eclipse.bpmn2.Participant;
+import org.eclipse.bpmn2.ParticipantMultiplicity;
 import org.eclipse.bpmn2.di.BPMNShape;
 import org.eclipse.bpmn2.modeler.core.di.DIImport;
 import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2AddElementFeature;
+import org.eclipse.bpmn2.modeler.core.features.DefaultPasteBPMNElementFeature;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.bpmn2.modeler.core.utils.StyleUtil;
@@ -71,6 +73,10 @@ public class AddParticipantFeature extends AbstractBpmn2AddElementFeature<Partic
 		boolean isImport = context.getProperty(DIImport.IMPORT_PROPERTY) != null;
 		BPMNShape bpmnShape = createDIShape(containerShape, businessObject, !isImport);
 		boolean horz = bpmnShape.isIsHorizontal();
+		Object copiedBpmnShape = context.getProperty(DefaultPasteBPMNElementFeature.COPIED_BPMN_SHAPE);
+		if (copiedBpmnShape instanceof BPMNShape) {
+			horz = ((BPMNShape) copiedBpmnShape).isIsHorizontal();
+		}
 		FeatureSupport.setHorizontal(containerShape, horz);
 
 		Shape lineShape = peCreateService.createShape(containerShape, false);
@@ -88,7 +94,9 @@ public class AddParticipantFeature extends AbstractBpmn2AddElementFeature<Partic
 		text.setHorizontalAlignment(Orientation.ALIGNMENT_CENTER);
 		link(textShape, businessObject);
 
-		peService.setPropertyValue(containerShape, MULTIPLICITY, Boolean.toString(businessObject.getParticipantMultiplicity()!=null));
+		// the decorator for Participant Multiplicity will be added by the update feature
+		// if necessary. Set this property to "false" here, to force an update.
+		peService.setPropertyValue(containerShape, MULTIPLICITY, Boolean.toString(false));
 		
 		decorateShape(context, containerShape, businessObject);
 		

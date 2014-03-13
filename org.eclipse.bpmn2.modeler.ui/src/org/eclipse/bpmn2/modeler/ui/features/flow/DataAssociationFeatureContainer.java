@@ -136,6 +136,7 @@ public class DataAssociationFeatureContainer extends BaseElementConnectionFeatur
 			if (!(source instanceof DataOutput))
 				return true;
 		}
+		
 		return false;
 	}
 
@@ -344,7 +345,10 @@ public class DataAssociationFeatureContainer extends BaseElementConnectionFeatur
 			if (dataOutputAssoc==null) {
 				// none found, create a new one
 				dataOutputAssoc = (DataOutputAssociation) Bpmn2ModelerFactory.createFeature(source, sourceFeature);
-				dataOutputAssoc.getSourceRef().add(dataOutput);
+				if (dataOutput==null)
+					dataOutputAssoc.getSourceRef().clear();
+				else
+					dataOutputAssoc.getSourceRef().add(dataOutput);
 			}
 		}
 		return dataOutputAssoc;
@@ -458,7 +462,7 @@ public class DataAssociationFeatureContainer extends BaseElementConnectionFeatur
 			if (super.canCreate(context)) {
 				BaseElement source = getSourceBo(context);
 				BaseElement target = getTargetBo(context);
-				return canConnect(source, target);
+				return DataAssociationFeatureContainer.canConnect(source, target);
 			}
 			return false;
 		}
@@ -768,7 +772,7 @@ public class DataAssociationFeatureContainer extends BaseElementConnectionFeatur
 				target = BusinessObjectUtil.getFirstElementOfType(context.getTargetPictogramElement(), BaseElement.class);
 				source = BusinessObjectUtil.getFirstElementOfType(connection.getStart().getParent(), BaseElement.class);
 			}
-			return canConnect(source, target);
+			return DataAssociationFeatureContainer.canConnect(source, target);
 		}
 
 		@Override

@@ -16,6 +16,7 @@ package org.eclipse.bpmn2.modeler.core.adapters;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.bpmn2.ExtensionAttributeValue;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
@@ -24,6 +25,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EContentAdapter;
+import org.eclipse.emf.ecore.util.FeatureMap;
 import org.eclipse.emf.transaction.RecordingCommand;
 import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.emf.transaction.impl.TransactionalEditingDomainImpl;
@@ -42,12 +44,14 @@ public class InsertionAdapter extends EContentAdapter {
 	protected EObject object;
 	protected EStructuralFeature feature;
 	protected EObject value;
+	protected Object extensionValue;
+	protected EStructuralFeature extensionFeature;
 	
 	private InsertionAdapter(EObject object, EStructuralFeature feature, EObject value) {
-		this(null,object,feature,value);
+		this(null,object,feature,value, null, null);
 	}
 
-	private InsertionAdapter(Resource resource, EObject object, EStructuralFeature feature, EObject value) {
+	private InsertionAdapter(Resource resource, EObject object, EStructuralFeature feature, EObject value, EStructuralFeature extensionFeature, Object extensionValue) {
 		// in order for this to work, the object must be contained in a Resource,
 		// the value must NOT YET be contained in a Resource,
 		// and the value must be an instance of the feature EType.
@@ -61,16 +65,18 @@ public class InsertionAdapter extends EContentAdapter {
 		this.object = object;
 		this.feature = feature;
 		this.value = value;
+		this.extensionFeature = extensionFeature;
+		this.extensionValue = extensionValue;
 	}
 	
 	private InsertionAdapter(EObject object, String featureName, EObject value) {
 		this(object, object.eClass().getEStructuralFeature(featureName), value);
 	}
 	
-	public static EObject add(Resource resource, EObject object, EStructuralFeature feature, EObject value) {
+	public static EObject add(Resource resource, EObject object, EStructuralFeature feature, EObject value, EStructuralFeature extensionFeature, Object extensionValue) {
 		if (object!=null) {
 			value.eAdapters().add(
-					new InsertionAdapter(resource, object, feature, value));
+					new InsertionAdapter(resource, object, feature, value, extensionFeature, extensionValue));
 		}
 		return value;
 	}
@@ -79,6 +85,14 @@ public class InsertionAdapter extends EContentAdapter {
 		if (object!=null) {
 			value.eAdapters().add(
 					new InsertionAdapter(object, feature, value));
+		}
+		return value;
+	}
+
+	public static EObject add(EObject object, EStructuralFeature feature, EObject value, EStructuralFeature extensionFeature, Object extensionValue) {
+		if (object!=null) {
+			value.eAdapters().add(
+					new InsertionAdapter(null, object, feature, value, extensionFeature, extensionValue));
 		}
 		return value;
 	}
@@ -162,7 +176,7 @@ public class InsertionAdapter extends EContentAdapter {
 		if (list==null)
 			valueChanged = object.eGet(feature)!=value;
 		else
-			valueChanged = !list.contains(value);
+			valueChanged = !list.contains(value) || value instanceof ExtensionAttributeValue;
 		
 		if (valueChanged) {
 			TransactionalEditingDomain domain = getEditingDomain();
@@ -192,18 +206,28 @@ public class InsertionAdapter extends EContentAdapter {
 				domain.getCommandStack().execute(new RecordingCommand(domain) {
 					@Override
 					protected void doExecute() {
-						ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object);
-						if (adapter!=null) {
-							adapter.getFeatureDescriptor(feature).setValue(value);
+						if (value instanceof ExtensionAttributeValue) {
+							if (list.size()==0)
+								list.add(value);
+							else
+								value = list.get(0);
+							FeatureMap map = ((ExtensionAttributeValue)value).getValue();
+							map.add(extensionFeature, extensionValue);
 						}
 						else {
-							if (list==null)
-								object.eSet(feature, value);
-							else
-								list.add(value);
+							ExtendedPropertiesAdapter adapter = ExtendedPropertiesAdapter.adapt(object);
+							if (adapter!=null) {
+								adapter.getFeatureDescriptor(feature).setValue(value);
+							}
+							else {
+								if (list==null)
+									object.eSet(feature, value);
+								else
+									list.add(value);
+							}
+							// assign the value's ID if it has one
+							ModelUtil.setID(value);
 						}
-						// assign the value's ID if it has one
-						ModelUtil.setID(value);
 					}
 				});
 			}

@@ -109,14 +109,6 @@ public abstract class TextAndButtonObjectEditor extends TextObjectEditor {
 		return text;
 	}
 	
-	protected boolean canAdd() {
-		return false;
-	}
-	
-	protected boolean canRemove() {
-		return false;
-	}
-	
 	public void dispose() {
 		super.dispose();
 		if (defaultButton!=null && !defaultButton.isDisposed()) {

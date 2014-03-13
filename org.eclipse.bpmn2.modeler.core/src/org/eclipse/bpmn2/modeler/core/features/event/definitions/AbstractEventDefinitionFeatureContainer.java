@@ -178,11 +178,6 @@ public abstract class AbstractEventDefinitionFeatureContainer extends BaseElemen
 	}
 
 	@Override
-	public IDirectEditingFeature getDirectEditingFeature(IFeatureProvider fp) {
-		return null;
-	}
-
-	@Override
 	public ILayoutFeature getLayoutFeature(IFeatureProvider fp) {
 		return null;
 	}

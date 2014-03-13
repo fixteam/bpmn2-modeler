@@ -20,7 +20,10 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 
-public class DiagramElementTree extends DiagramElementTreeNode implements ILabelProvider, ITreeContentProvider {
+public class DiagramElementTree
+	extends DiagramElementTreeNode
+	implements ILabelProvider, ITreeContentProvider, Iterable<DiagramElementTreeNode>
+{
 
 	public DiagramElementTree(DiagramElementTreeNode parent, BaseElement element) {
 		super(parent, element);
@@ -93,5 +96,4 @@ public class DiagramElementTree extends DiagramElementTreeNode implements ILabel
 		}
 		return text;
 	}
-	
 }

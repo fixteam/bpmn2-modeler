@@ -136,7 +136,7 @@ public class IoParameterMappingColumn extends TableColumn {
 	public boolean canModify(Object element, String property) {
 		if (super.canModify(element, property)) {
 			// only allow the combobox cell editor to work if the DataAssociation is
-			// with a Property (no Assignments or Transformations please!)
+			// with a Property (no MultipleAssignments or Transformations please!)
 			// Other types of associations must be done in the Detail section
 			DataAssociation da = getDataAssociation((ItemAwareElement)element);
 			if (da!= null) {

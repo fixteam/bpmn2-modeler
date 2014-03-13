@@ -18,6 +18,7 @@ import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.BoundaryEvent;
 import org.eclipse.bpmn2.FlowNode;
 import org.eclipse.bpmn2.Lane;
+import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.SequenceFlow;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.di.DIUtils;
@@ -54,6 +55,7 @@ public class ShapeLayoutManager {
 
 	public void layout(BaseElement container) {
 		layout( getContainerShape(container) );
+		editor.selectPictogramElements(new PictogramElement[]{});
 	}
 	
 	public void layout(ContainerShape container) {
@@ -104,6 +106,10 @@ public class ShapeLayoutManager {
 		List<ContainerShape> middleShapes = new ArrayList<ContainerShape>();
 		List<ContainerShape> endShapes = new ArrayList<ContainerShape>();
 		for (ContainerShape child : childShapes) {
+			BaseElement be = BusinessObjectUtil.getFirstBaseElement(child);
+			if (be instanceof Participant && ModelUtil.isParticipantBand((Participant)be))
+				continue;
+
 			List<SequenceFlow> incomingFlows = getIncomingSequenceFlows(child);
 			List<SequenceFlow> outgoingFlows = getOutgoingSequenceFlows(child);
 			int incomingCount = 0;
@@ -154,23 +160,38 @@ public class ShapeLayoutManager {
 		for (List<ContainerShape[]> thread : threads) {
 			// stack the threads on top of each other
 			x = HORZ_PADDING;
-			int maxHeight = 0;
-			for (ContainerShape[] shapes : thread) {
-				for (ContainerShape shape : shapes) {
+			int threadHeight = 0;
+			for (ContainerShape[] group : thread) {
+				int groupHeight = (group.length-1) * VERT_PADDING;
+				for (ContainerShape shape : group) {
 					IDimension size = GraphicsUtil.calculateSize(shape);
-					if (size.getHeight() > maxHeight)
-						maxHeight = size.getHeight();
+					groupHeight += size.getHeight();
+					if (groupHeight > threadHeight) {
+						threadHeight = groupHeight;
+					}
 				}
+				threadHeight += (group.length-1) * VERT_PADDING;
 			}
-			for (ContainerShape[] shapes : thread) {
-				for (ContainerShape shape : shapes) {
+			
+			for (ContainerShape[] group : thread) {
+				int groupWidth = 0;
+				int groupHeight = (group.length-1) * VERT_PADDING;
+				for (ContainerShape shape : group) {
 					IDimension size = GraphicsUtil.calculateSize(shape);
-					int dy = (maxHeight - size.getHeight()) / 2;
-					moveShape(container, shape, x, y + dy);
-					x += size.getWidth() + HORZ_PADDING;
+					groupHeight += size.getHeight();
 				}
+				int sy = y + (threadHeight/2 - groupHeight/2);
+				for (ContainerShape shape : group) {
+					IDimension size = GraphicsUtil.calculateSize(shape);
+					if (size.getWidth()>groupWidth) {
+						groupWidth = size.getWidth();
+					}
+					moveShape(container, shape, x, sy);
+					sy += size.getHeight() + VERT_PADDING;
+				}
+				x += groupWidth + HORZ_PADDING;
 			}
-			y += maxHeight + VERT_PADDING;
+			y += threadHeight + VERT_PADDING;
 		}
 
 		stackShapes(container, unconnectedShapes);
@@ -183,9 +204,9 @@ public class ShapeLayoutManager {
 		}
 
 		// TODO: remove this temporary hack to fix Manhattan Router issue
-		for (ContainerShape child : childShapes) {
-			FeatureSupport.updateConnections(editor.getDiagramTypeProvider().getFeatureProvider(), child);
-		}
+//		for (ContainerShape child : childShapes) {
+//			FeatureSupport.updateConnections(editor.getDiagramTypeProvider().getFeatureProvider(), child);
+//		}
 	}
 
 	private void stackShapes(ContainerShape container, List<ContainerShape> unconnectedShapes) {

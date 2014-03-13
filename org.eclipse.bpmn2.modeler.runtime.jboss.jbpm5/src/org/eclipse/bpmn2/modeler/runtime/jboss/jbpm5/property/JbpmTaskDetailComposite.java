@@ -168,7 +168,7 @@ public class JbpmTaskDetailComposite extends JbpmActivityDetailComposite {
 							association);
 				}
 				
-				// create an Assignment and FormalExpression if needed
+				// create an MultipleAssignments and FormalExpression if needed
 				// the "To" expression is the input parameter,
 				// the "From" expression body is the target of the Object Editor
 				FormalExpression fromExpression = null;

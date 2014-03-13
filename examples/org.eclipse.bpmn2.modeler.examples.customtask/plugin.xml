@@ -112,6 +112,22 @@
          </property>
       </customTask>
       
+      <customTask
+            category="Time-BPMN"
+            description="TemporalDependency"
+            featureContainer="org.eclipse.bpmn2.modeler.examples.customtask.CustomTemporalDependencyFeatureContainer"
+            icon="TemporalDepedency.png"
+            id="org.eclipse.bpmn2.modeler.examples.timebpmn.temporalDependency"
+            name="TemporalDependency"
+            runtimeId="org.eclipse.bpmn2.modeler.examples.timebpmn.runtime"
+            type="FlowElement">
+         <property
+            name="lagTime"
+            type="EString"
+            value="3hr">
+         </property>
+      </customTask>
+
       <propertyTab
             id="org.eclipse.bpmn2.modeler.examples.customtask.mytask.tab"
             class="org.eclipse.bpmn2.modeler.examples.customtask.MyTaskPropertySection"
@@ -133,6 +149,15 @@
             class="default"
             features="value"
             label="My Event Definition"
+            runtimeId="org.eclipse.bpmn2.modeler.examples.customtask.runtime">
+      </propertyTab>
+
+      <propertyTab
+            id="org.eclipse.bpmn2.modeler.examples.customtask.temporalDependency.tab"
+            class="default"
+            features="name lagTime"
+            label="Temporal Dependency"
+			type="org.eclipse.bpmn2.modeler.examples.customtask.MyModel.TemporalDependency"
             runtimeId="org.eclipse.bpmn2.modeler.examples.customtask.runtime">
       </propertyTab>
 		
@@ -157,6 +182,8 @@
 			
 			<enable object="BoundaryEvent" feature="isEnabled"/>
 			<enable object="MyEventDefinition" feature="value"/>
+			<enable object="TemporalDependency" feature="name"/>
+			<enable object="TemporalDependency" feature="lagTime"/>
 			
       </modelEnablement>
 
@@ -174,6 +201,7 @@
 			
 			<enable object="BoundaryEvent" feature="isEnabled"/>
 			<enable object="MyEventDefinition" feature="value"/>
+			<enable object="TemporalDependency"/>
 			
       </modelEnablement>
    </extension>

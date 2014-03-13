@@ -13,6 +13,8 @@
 package org.eclipse.bpmn2.modeler.core.features;
 
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
+import org.eclipse.emf.transaction.RecordingCommand;
+import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.IReason;
 import org.eclipse.graphiti.features.context.IUpdateContext;
@@ -30,7 +32,7 @@ public abstract class AbstractUpdateBaseElementFeature extends AbstractUpdateFea
 	}
 
 	@Override
-	public IReason updateNeeded(IUpdateContext context) {
+	public IReason updateNeeded(final IUpdateContext context) {
 		PictogramElement pe = context.getPictogramElement();
 		if (pe instanceof ContainerShape) {
 			String shapeValue = FeatureSupport.getShapeValue(context);
@@ -43,7 +45,17 @@ public abstract class AbstractUpdateBaseElementFeature extends AbstractUpdateFea
 			boolean updateNeeded = !shapeValue.equals(businessValue);
 			
 			if (updateNeeded) {
-				return Reason.createTrueReason(Messages.AbstractUpdateBaseElementFeature_Name);
+				// try to update immediately
+				final boolean result[] = new boolean[1];
+				TransactionalEditingDomain domain = getFeatureProvider().getDiagramTypeProvider().getDiagramBehavior().getEditingDomain();
+				domain.getCommandStack().execute(new RecordingCommand(domain) {
+					@Override
+					protected void doExecute() {
+						result[0] = update(context);
+					}
+				});
+				if (result[0]==false)
+					return Reason.createTrueReason(Messages.AbstractUpdateBaseElementFeature_Name);
 			}
 		}
 		

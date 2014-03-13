@@ -111,7 +111,7 @@ public class Bpmn2EditorDiItemProviderAdapterFactory extends BpmnDiItemProviderA
         		if (plane!=null)
         			object = plane;
         	}
-        	EStructuralFeature bpmnElementFeature = object.eClass().getEStructuralFeature("bpmnElement");
+        	EStructuralFeature bpmnElementFeature = object.eClass().getEStructuralFeature("bpmnElement"); //$NON-NLS-1$
         	if (bpmnElementFeature!=null) {
         		EObject bpmnElement = (EObject)object.eGet(bpmnElementFeature);
         		if (bpmnElement instanceof BaseElement) {
@@ -130,7 +130,7 @@ public class Bpmn2EditorDiItemProviderAdapterFactory extends BpmnDiItemProviderA
         		if (plane!=null)
         			object = plane;
         	}
-        	EStructuralFeature bpmnElementFeature = object.eClass().getEStructuralFeature("bpmnElement");
+        	EStructuralFeature bpmnElementFeature = object.eClass().getEStructuralFeature("bpmnElement"); //$NON-NLS-1$
         	if (bpmnElementFeature!=null) {
         		Object bpmnElement = object.eGet(bpmnElementFeature);
         		if (bpmnElement instanceof BaseElement) {

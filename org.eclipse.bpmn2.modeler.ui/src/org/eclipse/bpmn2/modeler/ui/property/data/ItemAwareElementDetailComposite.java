@@ -40,8 +40,9 @@ public class ItemAwareElementDetailComposite extends DefaultDetailComposite {
 				String[] properties = new String[] {
 						"id", //$NON-NLS-1$
 						"name", //$NON-NLS-1$
+						"isCollection", //$NON-NLS-1$
+						"itemSubjectRef", //$NON-NLS-1$
 						"dataState", //$NON-NLS-1$
-						"itemSubjectRef" //$NON-NLS-1$
 				};
 				
 				@Override

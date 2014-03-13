@@ -142,10 +142,12 @@ public class ListAndDetailCompositeBase extends Composite implements ResourceSet
 
 	public void redrawPage() {
 		if (getPropertySection()!=null) {
-			getParent().layout();
 			getPropertySection().layout();
+			getParent().layout();
+			layout();
 		}
-		else {
+		else
+		{
 			ModelUtil.recursivelayout(getParent());
 		}
 	}
@@ -323,7 +325,9 @@ public class ListAndDetailCompositeBase extends Composite implements ResourceSet
 	@Override
 	public void resourceSetChanged(ResourceSetChangeEvent event) {
 		final List<Notification> notifications = new ArrayList<Notification>();
-		for (Notification n : event.getNotifications()) {
+		List<Notification> eventNotifications = event.getNotifications();
+		for (int i=eventNotifications.size()-1; i>=0; --i) {
+			Notification n = eventNotifications.get(i);
 			if (getFilter().matches(n)) {
 				boolean add = true;
 				if (n.getFeature() instanceof EStructuralFeature) {
@@ -333,7 +337,13 @@ public class ListAndDetailCompositeBase extends Composite implements ResourceSet
 					// notifications for the XMLTypePackage are inconsequential
 					if (ec.getEPackage()==XMLTypePackage.eINSTANCE)
 						add = false;
-				}				
+				}
+				for (Notification n2 : notifications) {
+					if (n2.getNotifier()==n.getNotifier() && n2.getFeature()==n.getFeature()) {
+						add = false;
+						break;
+					}
+				}
 				if (add)
 				{
 					notifications.add(n);

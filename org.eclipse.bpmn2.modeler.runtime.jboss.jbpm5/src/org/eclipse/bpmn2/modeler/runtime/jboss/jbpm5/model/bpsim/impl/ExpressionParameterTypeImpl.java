@@ -10,7 +10,7 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Expression Parameter Type</b></em>'.
+ * An implementation of the model object '<em><b>SingleAssignment Parameter Type</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:

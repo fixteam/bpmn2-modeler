@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.eclipse.bpmn2.modeler.ui.views.outline;
 
+import org.eclipse.bpmn2.SubProcess;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.ui.editor.BPMN2Editor;
@@ -18,9 +19,14 @@ import org.eclipse.emf.transaction.util.Adaptable;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalViewer;
 import org.eclipse.gef.ui.parts.TreeViewer;
+import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
+import org.eclipse.graphiti.services.Graphiti;
 import org.eclipse.graphiti.ui.editor.DiagramEditor;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.StructuredSelection;
+
+import static org.eclipse.bpmn2.modeler.ui.features.activity.subprocess.SubProcessFeatureContainer.IS_EXPANDED;
 
 public class BPMN2EditorOutlineTreeViewer extends TreeViewer implements Adaptable {
 
@@ -53,6 +59,28 @@ public class BPMN2EditorOutlineTreeViewer extends TreeViewer implements Adaptabl
 	}
 	
 	public void setSelection(ISelection newSelection) {
+		// prevent selection of elements contained in collapsed Expandable Activities
+		if (newSelection instanceof StructuredSelection) {
+			StructuredSelection ss = (StructuredSelection) newSelection;
+			if (ss.getFirstElement() instanceof AbstractGraphicsTreeEditPart) {
+				AbstractGraphicsTreeEditPart editPart = (AbstractGraphicsTreeEditPart) ss.getFirstElement();
+				Diagram diagram = diagramEditor.getDiagramTypeProvider().getDiagram();
+				EditPart editPartParent = editPart.getParent();
+				while (editPartParent!=null) {
+					Object model = editPartParent.getModel();
+					if (model instanceof EObject) {
+						for (PictogramElement pe : Graphiti.getLinkService().getPictogramElements(diagram, (EObject)model)) {
+							String value = Graphiti.getPeService().getPropertyValue(pe, IS_EXPANDED);
+							if (value!=null && Boolean.parseBoolean(value)==false) {
+								super.setSelection(new StructuredSelection(editPartParent));
+								return;
+							}
+						}
+					}
+					editPartParent = editPartParent.getParent();
+				}
+			}
+		}
 		super.setSelection(newSelection);
 	}
 

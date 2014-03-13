@@ -20,7 +20,7 @@ import org.eclipse.bpmn2.SubChoreography;
 import org.eclipse.bpmn2.modeler.core.utils.Tuple;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
-import org.eclipse.graphiti.mm.algorithms.Text;
+import org.eclipse.graphiti.mm.algorithms.AbstractText;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 
 public class AddSubChoreographyFeature extends AddChoreographyActivityFeature<SubChoreography> {
@@ -30,7 +30,7 @@ public class AddSubChoreographyFeature extends AddChoreographyActivityFeature<Su
 	}
 
 	@Override
-	protected void setTextLocation(ContainerShape choreographyContainer, Text text, int w, int h) {
+	protected void setTextLocation(ContainerShape choreographyContainer, AbstractText text, int w, int h) {
 		List<ContainerShape> bandContainers = ChoreographyUtil.getParticipantBandContainerShapes(choreographyContainer);
 		Tuple<List<ContainerShape>, List<ContainerShape>> topAndBottomBands = ChoreographyUtil
 				.getTopAndBottomBands(bandContainers);
@@ -43,7 +43,7 @@ public class AddSubChoreographyFeature extends AddChoreographyActivityFeature<Su
 			y = ga.getY() + ga.getHeight() + 3;
 		}
 
-		gaService.setLocationAndSize(text, 0, y, w, TEXT_H);
+		gaService.setLocationAndSize(text, 0, y, w, h);
 	}
 
 }

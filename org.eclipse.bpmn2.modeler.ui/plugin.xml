@@ -31,14 +31,21 @@
 	</extension>
 
 	<extension point="org.eclipse.core.contenttype.contentTypes">
-		<content-type base-type="org.eclipse.core.runtime.xml"
+		<content-type
+			base-type="org.eclipse.core.runtime.xml"
 			id="org.eclipse.bpmn2.content-type.xml"
 			name="%content-type.name"
 			file-extensions="bpmn,bpmn2,bpmn20,xml"
-			priority="normal">
-			<describer class="org.eclipse.bpmn2.modeler.ui.BPMN2ContentDescriber">
+			priority="high">
+			<describer
+				class="org.eclipse.bpmn2.modeler.ui.BPMN2ContentDescriber"
+				plugin="org.eclipse.bpmn2.modeler.ui">
 			</describer>
 		</content-type>
+		<file-association
+			content-type="org.eclipse.bpmn2.content-type.xml"
+			file-extensions="bpmn,bpmn2">
+		</file-association>
 	</extension>
 
 	<extension
@@ -148,13 +155,25 @@
 		</model>
 
 		<!-- ======================================== -->
+		<!-- ========= Default EndPoint Ext ========= -->
+		<!-- ======================================== -->
+		
+		<modelExtension
+			id="org.eclipse.bpmn2.modeler.runtime.none.modelExtension.endpoint"
+			runtimeId="org.eclipse.bpmn2.modeler.runtime.none"
+			name="Default EndPoint Extension"
+			type="EndPoint">
+			<property name="serviceAddress" type="EString"/>
+		</modelExtension>
+		
+		<!-- ======================================== -->
 		<!-- ============  Property Tabs ============ -->
 		<!-- ======================================== -->
 
 		<propertyTab
 			id="org.eclipse.bpmn2.modeler.description.tab"
 			class="org.eclipse.bpmn2.modeler.ui.property.DescriptionPropertySection"
-			popup="false"
+			popup="true"
 			label="%propertyTab.label">
 		</propertyTab>
 
@@ -167,17 +186,13 @@
 			label="%propertyTab.label.0">
 		</propertyTab>
 
-		<!-- TODO: write a property details class to handle Participant features -->
-		<!--
 		<propertyTab
 			id="org.eclipse.bpmn2.modeler.participant.tab"
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
-			class="default"
-			features="interfaceRefs endPointRefs participantMultiplicity"
+			class="org.eclipse.bpmn2.modeler.ui.property.diagrams.ParticipantPropertySection"
 			type="org.eclipse.bpmn2.Participant"
-			label="Participant">
+			label="%propertyTab.label.60">
 		</propertyTab>
-		-->
 		
 		<propertyTab
 			id="org.eclipse.bpmn2.modeler.definitions.tab"
@@ -268,8 +283,7 @@
 			id="org.eclipse.bpmn2.modeler.businessRuleTask.tab"
 			replaceTab="org.eclipse.bpmn2.modeler.task.tab"
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
-			class="default"
-			features="anyAttribute implementation isForCompensation"
+			class="org.eclipse.bpmn2.modeler.ui.property.tasks.TaskPropertySection"
 			type="org.eclipse.bpmn2.BusinessRuleTask"
 			label="%propertyTab.label.11">
 		</propertyTab>
@@ -506,12 +520,12 @@
 		</propertyTab>
 		
 		<!-- ============  Artifacts ============ -->
-
+		
 		<propertyTab
 			id="org.eclipse.bpmn2.modeler.group.tab"
 			afterTab="org.eclipse.bpmn2.modeler.description.tab"
 			class="default"
-			features="anyAttribute categoryValueRef"
+			features="categoryValueRef"
 			type="org.eclipse.bpmn2.Group"
 			label="%propertyTab.label.37">
 		</propertyTab>
@@ -547,7 +561,7 @@
 			id="org.eclipse.bpmn2.modeler.interface.tab"
 			afterTab="org.eclipse.bpmn2.modeler.process.diagram.tab"
 			class="org.eclipse.bpmn2.modeler.ui.property.data.InterfacePropertySection"
-			type="org.eclipse.bpmn2.di.BPMNDiagram org.eclipse.bpmn2.Process"
+			type="org.eclipse.bpmn2.di.BPMNDiagram org.eclipse.bpmn2.Process org.eclipse.bpmn2.Participant"
 			label="%propertyTab.label.41">
 		</propertyTab>
 
@@ -620,6 +634,15 @@
 			features="structureRef"
 			type="org.eclipse.bpmn2.Signal"
 			label="%propertyTab.label.49">
+		</propertyTab>
+
+		<propertyTab
+			id="org.eclipse.bpmn2.modeler.category.tab"
+			afterTab="org.eclipse.bpmn2.modeler.description.tab"
+			class="default"
+			features="categoryValue"
+			type="org.eclipse.bpmn2.Category"
+			label="%propertyTab.label.59">
 		</propertyTab>
 
 		<!-- ============  Item Aware Elements ============ -->
@@ -943,7 +966,9 @@
 			<enable object="Lane"/>
 			<enable object="LaneSet"/>
 			<enable object="Resource"/>
+			<enable object="ResourceAssignmentExpression"/>
 			<enable object="ResourceParameter"/>
+			<enable object="ResourceParameterBinding"/>
 			<enable object="ResourceRole"/>
 			
 			<!-- this is intended to be a baseclass for global tasks and Process and -->
@@ -965,125 +990,41 @@
 			<enable object="Assignment"/>
 			<enable object="FormalExpression"/>
 			<disable object="FormalExpression" feature="evaluatesToTypeRef"/>
+<!--			<enable object="EndPoint" feature="serviceAddress"/> -->
 		</modelEnablement>
 
 		<modelEnablement
 				runtimeId="org.eclipse.bpmn2.modeler.runtime.none"
 				type="Process"
-				profile="Simple Process">
-			<enable object="Definitions"/>
+				profile="Simple Process"
+				ref="org.eclipse.bpmn2.modeler.runtime.none:Process:Default Process">
+			<disable object="DataAssociation"/>
+			<disable object="UserTask"/>
+			<disable object="ScriptTask"/>
+			<disable object="BusinessRuleTask"/>
+			<disable object="ComplexGateway"/>
+			<disable object="EventBasedGateway"/>
+			<disable object="Transaction"/>
+			<disable object="AdHocSubProcess"/>
+			<disable object="CallActivity"/>
 
-			<!-- process -->
-			<enable object="Process"/>
-			<enable object="SubProcess"/>
-
-			<!-- gateways -->
-			<enable object="ExclusiveGateway"/>
-			<enable object="InclusiveGateway"/>
-
-			<!-- tasks -->
-			<enable object="CallActivity"/>
-			<enable object="ManualTask"/>
-			<enable object="ReceiveTask"/>
-			<enable object="ScriptTask"/>
-			<enable object="SendTask"/>
-			<enable object="ServiceTask"/>
-			<enable object="Task"/>
-			<enable object="UserTask"/>
-
-			<!-- connections -->
-			<enable object="SequenceFlow"/>
-			<enable object="Association"/>
-			<enable object="DataAssociation"/>
-
-			<!-- events -->
-			<enable object="StartEvent"/>
-			<enable object="EndEvent"/>
-			<enable object="IntermediateCatchEvent"/>
-			<enable object="IntermediateThrowEvent"/>
-			<enable object="Escalation"/>
-			<enable object="CatchEvent"/>
-			<enable object="ThrowEvent"/>
-			<enable object="BoundaryEvent"/>
-			<enable object="Signal"/>
-			<enable object="Error"/>
-
-			<!-- event definitions -->
-			<enable object="ConditionalEventDefinition"/>
-			<enable object="TimerEventDefinition"/>
-			<enable object="SignalEventDefinition"/>
-			<enable object="MessageEventDefinition"/>
-			<enable object="EscalationEventDefinition"/>
-			<enable object="CompensateEventDefinition"/>
-			<enable object="LinkEventDefinition" feature="name"/>
-			<enable object="ErrorEventDefinition"/>
-			<enable object="CancelEventDefinition"/>
-			<enable object="TerminateEventDefinition"/>
-			<enable object="ComplexBehaviorDefinition"/>
-			<enable object="ImplicitThrowEvent"/>
-			
-
-			<!-- data definitions -->
-			<enable object="Import"/>
-			<enable object="InputOutputSpecification"/>
-			<enable object="InputSet"/>
-			<enable object="OutputSet"/>
-			<enable object="Operation"/>
-			<enable object="Interface"/>
-			<enable object="ItemDefinition"/>
-			<enable object="Message"/>
-			<enable object="DataInput"/>
-			<enable object="DataInputAssociation"/>
-			<enable object="DataOutput"/>
-			<enable object="DataOutputAssociation"/>
-			<enable object="Property"/>
-			<enable object="ItemAwareElement"/>
-			<enable object="DataState"/>
-			<enable object="DataStore"/>
-			<enable object="DataStoreReference"/>
-			<enable object="DataObjectReference"/>
-			<enable object="DataObject"/>
-			<enable object="Group"/>
-			<enable object="TextAnnotation"/>
-			<enable object="ExtensionAttributeValue"/>
-			<enable object="ExtensionAttributeDefinition"/>
-			<enable object="StandardLoopCharacteristics"/>
-			<enable object="MultiInstanceLoopCharacteristics"/>
-			<enable object="Lane"/>
-			<enable object="LaneSet"/>
-			<enable object="Resource"/>
-			<enable object="ResourceParameter"/>
-			<enable object="ResourceRole"/>
-			
-			<disable object="CallableElement"/>
-			
-			<disable object="MessageFlow"/>
-			<disable object="ConversationLink"/>
-			<disable object="ConversationAssociation"/>
-			<disable object="Collaboration"/>
-			<disable object="Choreography"/>
-			<disable object="ConversationNode"/>
-			<disable object="MessageFlowAssociation"/>
-			<disable object="Participant"/>
-			<disable object="ParticipantAssociation"/>
-			<disable object="ParticipantMultiplicity"/>
-			
-			<enable object="Assignment"/>
-			<enable object="FormalExpression"/>
-			<disable object="FormalExpression" feature="evaluatesToTypeRef"/>
+			<disable object="ConditionalEventDefinition"/>
+			<disable object="LinkEventDefinition"/>
+			<disable object="CancelEventDefinition"/>
+			<disable object="CompensateEventDefinition"/>
+				
 		</modelEnablement>
 
 		<modelEnablement
 				runtimeId="org.eclipse.bpmn2.modeler.runtime.none"
 				type="Collaboration"
 				profile="Default Collaboration"
-				ref="org.eclipse.bpmn2.modeler.runtime.none:Choreography:Default Process">
+				ref="org.eclipse.bpmn2.modeler.runtime.none:Process:Default Process">
 				
 			<!-- copy the enablements from "Process" diagram type -->
 			<!-- and then add these objects -->
 			<enable object="Collaboration"/>
 			<enable object="Participant"/>
-			<enable object="Lane"/>
 			<enable object="MessageFlow"/>
 			<enable object="Conversation"/>
 			<enable object="SubConversation"/>
@@ -1095,7 +1036,7 @@
 				runtimeId="org.eclipse.bpmn2.modeler.runtime.none"
 				type="Choreography"
 				profile="Default Choreography"
-				ref="org.eclipse.bpmn2.modeler.runtime.none:Choreography:Default Process">
+				ref="org.eclipse.bpmn2.modeler.runtime.none:Process:Default Process">
 				
 			<!-- copy the enablements from "Process" diagram type -->
 			<!-- and then add these objects -->
@@ -1140,6 +1081,8 @@
 			<enable object="TerminateEventDefinition"/>
 
 			<enable object="MessageFlow"/>
+			<enable object="Participant"/>
+			
 			<disable object="ConversationLink"/>
 			<disable object="ConversationAssociation"/>
 			<disable object="Collaboration"/>
@@ -1253,7 +1196,7 @@
            </with>
         </visibleWhen>
 	    </menu>
-	 </menuContribution>
+	</menuContribution>
 	<menuContribution
 	    locationURI= "menu:org.eclipse.bpmn2.modeler.diagram.menu?after=additions">
 	    <command
@@ -1272,6 +1215,114 @@
 	       label= "%command.label.1">
 	    </command>
 	</menuContribution>
-</extension>
--->
+	</extension>
+	-->
+	
+	<extension point="org.eclipse.ui.bindings">
+		<key
+			commandId="org.eclipse.graphiti.ui.featureExecutionCommand"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M1+ARROW_UP">
+			<parameter
+				id="org.eclipse.graphiti.ui.featureHint"
+				value="moveup">
+			</parameter>
+		</key>
+	</extension>
+	
+	<extension point="org.eclipse.ui.bindings">
+		<key
+			commandId="org.eclipse.graphiti.ui.featureExecutionCommand"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M1+ARROW_DOWN">
+			<parameter
+				id="org.eclipse.graphiti.ui.featureHint"
+				value="movedown">
+			</parameter>
+		</key>
+	</extension>
+	
+	<extension point="org.eclipse.ui.bindings">
+		<key
+			commandId="org.eclipse.graphiti.ui.featureExecutionCommand"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M1+ARROW_LEFT">
+			<parameter
+				id="org.eclipse.graphiti.ui.featureHint"
+				value="moveleft">
+			</parameter>
+		</key>
+	</extension>
+	
+	<extension point="org.eclipse.ui.bindings">
+		<key
+			commandId="org.eclipse.graphiti.ui.featureExecutionCommand"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M1+ARROW_RIGHT">
+			<parameter
+				id="org.eclipse.graphiti.ui.featureHint"
+				value="moveright">
+			</parameter>
+		</key>
+	</extension>
+	
+	<extension point="org.eclipse.ui.bindings">
+		<key
+			commandId="org.eclipse.graphiti.ui.featureExecutionCommand"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M1+M2+ARROW_UP">
+			<parameter
+				id="org.eclipse.graphiti.ui.featureHint"
+				value="moveup10">
+			</parameter>
+		</key>
+	</extension>
+	
+	<extension point="org.eclipse.ui.bindings">
+		<key
+			commandId="org.eclipse.graphiti.ui.featureExecutionCommand"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M1+M2+ARROW_DOWN">
+			<parameter
+				id="org.eclipse.graphiti.ui.featureHint"
+				value="movedown10">
+			</parameter>
+		</key>
+	</extension>
+	
+	<extension point="org.eclipse.ui.bindings">
+		<key
+			commandId="org.eclipse.graphiti.ui.featureExecutionCommand"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M1+M2+ARROW_LEFT">
+			<parameter
+				id="org.eclipse.graphiti.ui.featureHint"
+				value="moveleft10">
+			</parameter>
+		</key>
+	</extension>
+	
+	<extension point="org.eclipse.ui.bindings">
+		<key
+			commandId="org.eclipse.graphiti.ui.featureExecutionCommand"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M1+M2+ARROW_RIGHT">
+			<parameter
+				id="org.eclipse.graphiti.ui.featureHint"
+				value="moveright10">
+			</parameter>
+		</key>
+	</extension>
+	
+	<extension point="org.eclipse.ui.bindings">
+		<key
+			commandId="org.eclipse.graphiti.ui.featureExecutionCommand"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+			sequence="M1+D">
+			<parameter
+				id="org.eclipse.graphiti.ui.featureHint"
+				value="duplicate">
+			</parameter>
+		</key>
+	</extension>
 </plugin>

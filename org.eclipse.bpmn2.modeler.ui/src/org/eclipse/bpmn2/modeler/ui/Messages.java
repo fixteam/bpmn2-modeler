@@ -109,6 +109,10 @@ public class Messages extends NLS {
 	public static String XSDTypeDefinitionAdapter_XSD_Type_1;
 	public static String XSDSimpleTypeDefinitionAdapter_0;
 
+	public static String Bpmn2EditorAppearancePreferencePage_Colors_Group;
+
+	public static String Bpmn2EditorAppearancePreferencePage_GraphicalElements_Group;
+
 	public static String Bpmn2EditorPreferencePage_Activities;
 
 	public static String Bpmn2EditorPreferencePage_Change_Button;

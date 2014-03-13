@@ -520,7 +520,7 @@ public class BpsimAdapterFactory extends AdapterFactoryImpl {
 	}
 
 	/**
-	 * Creates a new adapter for an object of class '{@link org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.ExpressionParameterType <em>Expression Parameter Type</em>}'.
+	 * Creates a new adapter for an object of class '{@link org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.ExpressionParameterType <em>SingleAssignment Parameter Type</em>}'.
 	 * <!-- begin-user-doc -->
 	 * This default implementation returns null so that we can easily ignore cases;
 	 * it's useful to ignore a case when inheritance will catch all the cases anyway.

@@ -7,12 +7,14 @@ public class Messages extends NLS {
 	public static String ActivityDetailComposite_Loop_Characteristics_Label;
 	public static String ActivityDetailComposite_Map_Incoming_Message;
 	public static String ActivityDetailComposite_Map_Outgoing_Message;
+	public static String ActivityDetailComposite_Map_Request_Message;
+	public static String ActivityDetailComposite_Map_Response_Message;
 	public static String ActivityDetailComposite_MultiInstance;
 	public static String ActivityDetailComposite_MultiInstance_Loop_Characteristics_Label;
 	public static String ActivityDetailComposite_None;
 	public static String ActivityDetailComposite_Standard;
 	public static String ActivityDetailComposite_Standard_Loop_Characteristics_Label;
-	public static String DataAssociationDetailComposite_Advanced_Button;
+	public static String DataAssociationDetailComposite_Assignments_Button;
 	public static String DataAssociationDetailComposite_Assignments_Title;
 	public static String DataAssociationDetailComposite_Data_Input_Mapping_Title;
 	public static String DataAssociationDetailComposite_Data_Output_Mapping_Title;

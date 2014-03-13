@@ -13,9 +13,11 @@
 
 package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.property;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.bpmn2.Activity;
+import org.eclipse.bpmn2.ExtensionAttributeValue;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractDetailComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractListComposite;
@@ -26,9 +28,12 @@ import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.OnEntryScriptT
 import org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.drools.OnExitScriptType;
 import org.eclipse.bpmn2.modeler.ui.property.ExtensionValueListComposite;
 import org.eclipse.bpmn2.modeler.ui.property.tasks.ActivityDetailComposite;
+import org.eclipse.emf.common.notify.Notification;
+import org.eclipse.emf.ecore.util.FeatureMap.Entry;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.util.FeatureMap;
 import org.eclipse.emf.transaction.RecordingCommand;
 import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.swt.SWT;
@@ -91,34 +96,27 @@ public class JbpmActivityDetailComposite extends ActivityDetailComposite {
 	
 	@SuppressWarnings("unchecked")
 	private <T extends EObject> T getOrCreateEntryExitScript(final Activity be, final Class<T> clazz) {
-		final Object[] result = new Object[] {null};
-		List<T> onEntryScriptList = ModelUtil.getAllExtensionAttributeValues(be, clazz);
-		if (onEntryScriptList.size()>0)
-			result[0] = onEntryScriptList.get(0);
+		T result = null;
+		List<T> scriptList = ModelUtil.getAllExtensionAttributeValues(be, clazz);
+		if (scriptList.size()>0)
+			result = scriptList.get(0);
 		else {
-			TransactionalEditingDomain domain = getDiagramEditor().getEditingDomain();
-			domain.getCommandStack().execute(new RecordingCommand(domain) {
-				@Override
-				protected void doExecute() {
-					EClass eclass = (EClass)DroolsPackage.eINSTANCE.getEClassifier(clazz.getSimpleName());
-					T script = (T) DroolsFactory.eINSTANCE.create(eclass);
-					EStructuralFeature f = script.eClass().getEStructuralFeature("script"); //$NON-NLS-1$
-					if (f!=null)
-						script.eSet(f, ""); //$NON-NLS-1$
-					f = script.eClass().getEStructuralFeature("scriptFormat"); //$NON-NLS-1$
-					if (f!=null)
-						script.eSet(f,"http://www.java.com/java"); //$NON-NLS-1$
-					if (clazz == OnEntryScriptType.class)
-						f = DroolsPackage.eINSTANCE.getDocumentRoot_OnEntryScript();
-					else
-						f = DroolsPackage.eINSTANCE.getDocumentRoot_OnExitScript();
-					ModelUtil.addExtensionAttributeValue(be, f, script);
-					result[0] = script;
-				}
-				
-			});
+			EClass eclass = (EClass)DroolsPackage.eINSTANCE.getEClassifier(clazz.getSimpleName());
+			T script = (T) DroolsFactory.eINSTANCE.create(eclass);
+			EStructuralFeature f = script.eClass().getEStructuralFeature("script"); //$NON-NLS-1$
+			if (f!=null)
+				script.eSet(f, ""); //$NON-NLS-1$
+			f = script.eClass().getEStructuralFeature("scriptFormat"); //$NON-NLS-1$
+			if (f!=null)
+				script.eSet(f,"http://www.java.com/java"); //$NON-NLS-1$
+			if (clazz == OnEntryScriptType.class)
+				f = DroolsPackage.eINSTANCE.getDocumentRoot_OnEntryScript();
+			else
+				f = DroolsPackage.eINSTANCE.getDocumentRoot_OnExitScript();
+			ModelUtil.addExtensionAttributeValue(be, f, script, true);
+			result = script;
 		}
-		return (T)result[0];
+		return result;
 	}
 	
 	public class ScriptTableComposite extends ExtensionValueListComposite {
@@ -157,5 +155,35 @@ public class JbpmActivityDetailComposite extends ActivityDetailComposite {
 				}
 			};
 		}
+	}
+
+	@Override
+	public void notifyChanged(Notification notification) {
+		super.notifyChanged(notification);
+		if (notification.getNotifier()==businessObject && notification.getNewValue()==null) {
+			// It's possible that the user did an UNDO which removed the On Entry/Exit Scripts,
+			// do we need to reset the business object for the On Entry/Exit Script editors?
+			if (onEntryScriptEditor!=null && onExitScriptEditor!=null) {
+				Object oldValue = notification.getOldValue();
+				if (oldValue instanceof ExtensionAttributeValue) {
+					FeatureMap map = ((ExtensionAttributeValue)oldValue).getValue();
+					Iterator<Entry> iter = map.iterator();
+					while (iter.hasNext()) {
+						Object value = iter.next().getValue();
+						if (value==onEntryScriptEditor.getBusinessObject()) {
+							OnEntryScriptType onEntryScript = getOrCreateEntryExitScript((Activity)businessObject, OnEntryScriptType.class);
+							onEntryScriptEditor.setBusinessObject(onEntryScript);
+						}
+						else if (value==onExitScriptEditor.getBusinessObject()) {
+							OnExitScriptType onExitScript = getOrCreateEntryExitScript((Activity)businessObject, OnExitScriptType.class);
+							onExitScriptEditor.setBusinessObject(onExitScript);
+						}
+					}
+				}
+			}
+		}
+//		System.out.println(notification.getNotifier());
+//		System.out.println("old: " + notification.getOldValue());
+//		System.out.println("new: " + notification.getNewValue());
 	}
 }

@@ -422,7 +422,7 @@ public class DroolsResourceImpl extends Bpmn2ModelerResourceImpl {
 					
 					// Some objects, like Property, DataObject and Message use the "id" attribute instead
 					// of "name". We need to copy this "id" to "name" so that the UI can deal with them.
-					// The "name" feature will not be saved when the file is saved, but the jBPM5 Runtime Extension
+					// The "name" feature will not be saved when the file is saved, but the jBPM Runtime Extension
 					// will keep the "id" in sync with the name during editing.
 					// Editorial: I don't agree with the decision to allow users to change model object IDs,
 					// since these are (theoretically) supposed to be unique; but it is what it is...

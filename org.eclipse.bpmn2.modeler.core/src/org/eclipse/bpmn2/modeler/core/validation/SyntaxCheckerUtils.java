@@ -72,6 +72,65 @@ public class SyntaxCheckerUtils {
 		return _isAsciiBaseChar(c) || _isNonAsciiBaseChar(c) || isIdeographic(c);
 	}
 
+	public static final String toXMLString(String string) {
+		if (string==null || string.isEmpty())
+			return "";
+		
+		StringBuffer xmlString = new StringBuffer();
+		int stringLength = string.length();
+
+		for (int i = 0; i < stringLength; i++) {
+			char c = string.charAt(i);
+			if (c == '"')
+				xmlString.append("&quot;");
+			else if (c == '&')
+				xmlString.append("&amp;");
+			else if (c == '\'')
+				xmlString.append("&apos;");
+			else if (c == '<')
+				xmlString.append("&lt;");
+			else if (c == '>')
+				xmlString.append("&gt;");
+			else
+				xmlString.append(c);
+		}
+		return xmlString.toString();
+	}
+
+	public static final String fromXMLString(String xmlString) {
+		if (xmlString==null || xmlString.isEmpty())
+			return "";
+		
+		StringBuffer string = new StringBuffer();
+		int stringLength = xmlString.length();
+
+		for (int i = 0; i < stringLength; i++) {
+			char c = xmlString.charAt(i);
+			if (c == '&') {
+				int si = xmlString.indexOf(';', i);
+				if (si>0) {
+					String ss = xmlString.substring(i, si);
+					if ("&quot".equals(ss))
+						c = '"';
+					else if ("&amp".equals(ss))
+						c = '&';
+					else if ("&apos".equals(ss))
+						c = '\'';
+					else if ("&lt".equals(ss))
+						c = '<';
+					else if ("&gt".equals(ss))
+						c = '>';
+					else
+						si = -1;
+					if (si>0)
+						i = si;
+				}
+			}
+			string.append(c);
+		}
+		return string.toString();
+	}
+	
 	private static final boolean _isAsciiBaseChar(char c) {
 		return _charInRange(c, 0x0041, 0x005A) || _charInRange(c, 0x0061, 0x007A);
 	}

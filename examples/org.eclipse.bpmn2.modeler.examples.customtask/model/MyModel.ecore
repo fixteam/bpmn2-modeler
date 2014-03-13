@@ -15,6 +15,14 @@
         <details key="namespace" value="##targetNamespace"/>
       </eAnnotations>
     </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="temporalDependency" upperBound="-2"
+        eType="#//TemporalDependency" containment="true">
+      <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+        <details key="name" value="temporalDependency"/>
+        <details key="kind" value="element"/>
+        <details key="namespace" value="##targetNamespace"/>
+      </eAnnotations>
+    </eStructuralFeatures>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Parameter">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -32,5 +40,10 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="MyEventDefinition" eSuperTypes="../../org.eclipse.bpmn2/model/BPMN20.ecore#//EventDefinition">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TemporalDependency" eSuperTypes="../../org.eclipse.bpmn2/model/BPMN20.ecore#//FlowElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sourceRef" eType="ecore:EClass ../../org.eclipse.bpmn2/model/BPMN20.ecore#//BoundaryEvent"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="targetRef" eType="ecore:EClass ../../org.eclipse.bpmn2/model/BPMN20.ecore#//BoundaryEvent"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="lagTime" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
 </ecore:EPackage>

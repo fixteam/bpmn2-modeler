@@ -21,7 +21,6 @@ import org.eclipse.bpmn2.ConversationLink;
 import org.eclipse.bpmn2.ConversationNode;
 import org.eclipse.bpmn2.Definitions;
 import org.eclipse.bpmn2.FlowElementsContainer;
-import org.eclipse.bpmn2.InteractionNode;
 import org.eclipse.bpmn2.MessageFlow;
 import org.eclipse.bpmn2.Participant;
 import org.eclipse.bpmn2.Process;
@@ -38,6 +37,7 @@ import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.ICreateConnectionContext;
 import org.eclipse.graphiti.features.context.impl.AddConnectionContext;
 import org.eclipse.graphiti.mm.algorithms.styles.Point;
+import org.eclipse.graphiti.mm.pictograms.AnchorContainer;
 import org.eclipse.graphiti.mm.pictograms.Connection;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
@@ -58,7 +58,17 @@ public abstract class AbstractCreateFlowFeature<
 	public boolean canCreate(ICreateConnectionContext context) {
 		SOURCE source = getSourceBo(context);
 		TARGET target = getTargetBo(context);
-		return source != null && target != null;
+		if (source!=null && target!=null) {
+			// Make sure only one connection of each type is created for the same
+			// source and target objects, i.e. you can't have two SequenceFlows
+			// with the same source and target objects.
+			AnchorContainer sourceContainer = context.getSourceAnchor().getParent();
+			AnchorContainer targetContainer = context.getTargetAnchor().getParent();
+			if (!canCreateConnection(sourceContainer, targetContainer, getBusinessObjectClass(), null))
+				return false;
+			return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -149,18 +159,27 @@ public abstract class AbstractCreateFlowFeature<
 	 * as a special case in
 	 * @link org.eclipse.bpmn2.modeler.ui.features.flow.DataAssociationFeatureContainer#createBusinessObject()
 	 * 
+	 * Note that this method recursively walks up the source object's containment hierarchy
+	 * as it tries to find the correct container for the connection.
+	 * 
 	 * @param connection - the connection to be added to a container element
-	 * @param source
-	 * @param target
-	 * @return
+	 * @param source - the source object of the connection
+	 * @param target - the target object of the connection
+	 * @return true if the connection was added to a container
 	 */
 	private boolean addConnectionToContainer(CONNECTION connection, SOURCE source, TARGET target) {
+		EObject sourceContainer = source.eContainer();
+		EObject targetContainer = target.eContainer();
 		if (connection instanceof SequenceFlow) {
 			if (source instanceof Participant) {
 				if (((Participant)source).getProcessRef()!=null) {
 					((Participant)source).getProcessRef().getFlowElements().add((SequenceFlow)connection);
 					return true;
 				}
+			}
+			else if (sourceContainer instanceof FlowElementsContainer && sourceContainer == targetContainer) {
+				((FlowElementsContainer)sourceContainer).getFlowElements().add((SequenceFlow)connection);
+				return true;
 			}
 			else if (source instanceof FlowElementsContainer) {
 				((FlowElementsContainer)source).getFlowElements().add((SequenceFlow)connection);
@@ -173,10 +192,32 @@ public abstract class AbstractCreateFlowFeature<
 				return true;
 			}
 			else if (source instanceof SubProcess) {
+				while (sourceContainer!=null) {
+					if (sourceContainer instanceof Process) {
+						((Process)sourceContainer).getArtifacts().add((Association)connection);
+						return true;
+					}
+					if (sourceContainer instanceof Collaboration) {
+						((Collaboration)sourceContainer).getArtifacts().add((Association)connection);
+						return true;
+					}
+					sourceContainer = sourceContainer.eContainer();
+				}
 				((SubProcess)source).getArtifacts().add((Association)connection);
 				return true;
 			}
 			else if (source instanceof SubChoreography) {
+				while (sourceContainer!=null) {
+					if (sourceContainer instanceof Process) {
+						((Process)sourceContainer).getArtifacts().add((Association)connection);
+						return true;
+					}
+					if (sourceContainer instanceof Collaboration) {
+						((Collaboration)sourceContainer).getArtifacts().add((Association)connection);
+						return true;
+					}
+					sourceContainer = sourceContainer.eContainer();
+				}
 				((SubChoreography)source).getArtifacts().add((Association)connection);
 				return true;
 			}

@@ -11,6 +11,7 @@
 package org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.preferences;
 
 import org.eclipse.bpmn2.modeler.core.Activator;
+import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.ui.IWorkbench;
@@ -34,11 +35,17 @@ public class JbpmPreferencePage extends FieldEditorPreferencePage implements IWo
 	@Override
 	protected void createFieldEditors() {
 
-		BooleanFieldEditor showAdvancedPropsTab = new BooleanFieldEditor(
+		BooleanFieldEditor enableSimulationParams = new BooleanFieldEditor(
 				PREF_ENABLE_SIMULATION_PARAMS,
 				PREF_ENABLE_SIMULATION_PARAMS_LABEL,
 				getFieldEditorParent());
-		addField(showAdvancedPropsTab);
+		addField(enableSimulationParams);
+
+		BooleanFieldEditor doCoreValidation = new BooleanFieldEditor(
+				Bpmn2Preferences.PREF_DO_CORE_VALIDATION,
+				Bpmn2Preferences.PREF_DO_CORE_VALIDATION_LABEL,
+				getFieldEditorParent());
+		addField(doCoreValidation);
 	}
 
 	public static boolean isEnableSimulation() {

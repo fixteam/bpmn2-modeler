@@ -166,10 +166,10 @@ public interface BpsimFactory extends EFactory {
 	ErlangDistributionType createErlangDistributionType();
 
 	/**
-	 * Returns a new object of class '<em>Expression Parameter Type</em>'.
+	 * Returns a new object of class '<em>SingleAssignment Parameter Type</em>'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @return a new object of class '<em>Expression Parameter Type</em>'.
+	 * @return a new object of class '<em>SingleAssignment Parameter Type</em>'.
 	 * @generated
 	 */
 	ExpressionParameterType createExpressionParameterType();

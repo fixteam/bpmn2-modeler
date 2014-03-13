@@ -4,6 +4,7 @@ package org.eclipse.bpmn2.modeler.examples.customtask.MyModel.util;
 
 import org.eclipse.bpmn2.BaseElement;
 import org.eclipse.bpmn2.EventDefinition;
+import org.eclipse.bpmn2.FlowElement;
 import org.eclipse.bpmn2.RootElement;
 import org.eclipse.bpmn2.modeler.examples.customtask.MyModel.*;
 
@@ -87,6 +88,10 @@ public class MyModelAdapterFactory extends AdapterFactoryImpl {
 				return createMyEventDefinitionAdapter();
 			}
 			@Override
+			public Adapter caseTemporalDependency(TemporalDependency object) {
+				return createTemporalDependencyAdapter();
+			}
+			@Override
 			public Adapter caseBaseElement(BaseElement object) {
 				return createBaseElementAdapter();
 			}
@@ -97,6 +102,10 @@ public class MyModelAdapterFactory extends AdapterFactoryImpl {
 			@Override
 			public Adapter caseEventDefinition(EventDefinition object) {
 				return createEventDefinitionAdapter();
+			}
+			@Override
+			public Adapter caseFlowElement(FlowElement object) {
+				return createFlowElementAdapter();
 			}
 			@Override
 			public Adapter defaultCase(EObject object) {
@@ -175,6 +184,20 @@ public class MyModelAdapterFactory extends AdapterFactoryImpl {
 	}
 
 	/**
+	 * Creates a new adapter for an object of class '{@link org.eclipse.bpmn2.modeler.examples.customtask.MyModel.TemporalDependency <em>Temporal Dependency</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see org.eclipse.bpmn2.modeler.examples.customtask.MyModel.TemporalDependency
+	 * @generated
+	 */
+	public Adapter createTemporalDependencyAdapter() {
+		return null;
+	}
+
+	/**
 	 * Creates a new adapter for an object of class '{@link org.eclipse.bpmn2.BaseElement <em>Base Element</em>}'.
 	 * <!-- begin-user-doc -->
 	 * This default implementation returns null so that we can easily ignore cases;
@@ -213,6 +236,20 @@ public class MyModelAdapterFactory extends AdapterFactoryImpl {
 	 * @generated
 	 */
 	public Adapter createEventDefinitionAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link org.eclipse.bpmn2.FlowElement <em>Flow Element</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see org.eclipse.bpmn2.FlowElement
+	 * @generated
+	 */
+	public Adapter createFlowElementAdapter() {
 		return null;
 	}
 

@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.bpmn2.ExtensionAttributeValue;
+import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractBpmn2PropertySection;
+import org.eclipse.bpmn2.modeler.core.merrimac.clad.AbstractListComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.DefaultListComposite;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.ListCompositeContentProvider;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
@@ -40,6 +42,14 @@ public abstract class ExtensionValueListComposite extends DefaultListComposite {
 		super(parent, style);
 	}
 	
+	public ExtensionValueListComposite(AbstractBpmn2PropertySection section, int style) {
+		super(section, style);
+	}
+
+	public ExtensionValueListComposite(AbstractBpmn2PropertySection section) {
+		this(section, AbstractListComposite.DEFAULT_STYLE);
+	}
+
 	public void bindList(EObject object, EStructuralFeature feature) {
 		extensionValueFeature = feature;
 		if (feature.getEType() instanceof EClass)

@@ -68,7 +68,7 @@ public abstract class MultivalueObjectEditor extends ObjectEditor {
 			for (Entry<String, Object> entry : choices.entrySet()) {
 				Object value = entry.getValue();
 				if (value instanceof EObject) {
-					if ( featureEType == ((EObject)value).eClass()) {
+					if ( featureEType.getClass().isAssignableFrom(((EObject)value).eClass().getClass())) {
 						filteredChoices.put(entry.getKey(),value);
 					}
 				}

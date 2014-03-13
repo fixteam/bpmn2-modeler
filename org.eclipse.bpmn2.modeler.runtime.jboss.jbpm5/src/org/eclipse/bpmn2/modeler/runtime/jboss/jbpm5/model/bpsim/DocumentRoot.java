@@ -26,7 +26,7 @@ import org.eclipse.emf.ecore.util.FeatureMap;
  *   <li>{@link org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.DocumentRoot#getDurationParameter <em>Duration Parameter</em>}</li>
  *   <li>{@link org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.DocumentRoot#getEnumParameter <em>Enum Parameter</em>}</li>
  *   <li>{@link org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.DocumentRoot#getErlangDistribution <em>Erlang Distribution</em>}</li>
- *   <li>{@link org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.DocumentRoot#getExpressionParameter <em>Expression Parameter</em>}</li>
+ *   <li>{@link org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.DocumentRoot#getExpressionParameter <em>SingleAssignment Parameter</em>}</li>
  *   <li>{@link org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.DocumentRoot#getFloatingParameter <em>Floating Parameter</em>}</li>
  *   <li>{@link org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.DocumentRoot#getGammaDistribution <em>Gamma Distribution</em>}</li>
  *   <li>{@link org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.DocumentRoot#getLogNormalDistribution <em>Log Normal Distribution</em>}</li>
@@ -346,14 +346,14 @@ public interface DocumentRoot extends EObject {
 	void setErlangDistribution(ErlangDistributionType value);
 
 	/**
-	 * Returns the value of the '<em><b>Expression Parameter</b></em>' containment reference.
+	 * Returns the value of the '<em><b>SingleAssignment Parameter</b></em>' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <p>
-	 * If the meaning of the '<em>Expression Parameter</em>' containment reference isn't clear,
+	 * If the meaning of the '<em>SingleAssignment Parameter</em>' containment reference isn't clear,
 	 * there really should be more of a description here...
 	 * </p>
 	 * <!-- end-user-doc -->
-	 * @return the value of the '<em>Expression Parameter</em>' containment reference.
+	 * @return the value of the '<em>SingleAssignment Parameter</em>' containment reference.
 	 * @see #setExpressionParameter(ExpressionParameterType)
 	 * @see org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.BpsimPackage#getDocumentRoot_ExpressionParameter()
 	 * @model containment="true" upper="-2" transient="true" volatile="true" derived="true"
@@ -363,10 +363,10 @@ public interface DocumentRoot extends EObject {
 	ExpressionParameterType getExpressionParameter();
 
 	/**
-	 * Sets the value of the '{@link org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.DocumentRoot#getExpressionParameter <em>Expression Parameter</em>}' containment reference.
+	 * Sets the value of the '{@link org.eclipse.bpmn2.modeler.runtime.jboss.jbpm5.model.bpsim.DocumentRoot#getExpressionParameter <em>SingleAssignment Parameter</em>}' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @param value the new value of the '<em>Expression Parameter</em>' containment reference.
+	 * @param value the new value of the '<em>SingleAssignment Parameter</em>' containment reference.
 	 * @see #getExpressionParameter()
 	 * @generated
 	 */

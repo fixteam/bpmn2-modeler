@@ -152,8 +152,7 @@ public class DefaultListComposite extends AbstractListComposite {
 		EObject selected = null;
 		if (index<map.length-1)
 			selected = list.get(map[index+1]);
-		// this ensures that all references to this Interface are removed
-		EcoreUtil.delete(removed);
+		EcoreUtil.delete(removed, true);
 		return selected;
 	}
 	

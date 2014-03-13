@@ -761,7 +761,7 @@ public class ModelHandler {
 				FixDuplicateIdsDialog dlg = new FixDuplicateIdsDialog(dups);
 				dlg.open();
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			if (!resource.getErrors().isEmpty()) {
 				ImportDiagnostics diagnostics = new ImportDiagnostics(resource);
 				for (Resource.Diagnostic error : resource.getErrors()) {

@@ -24,18 +24,18 @@ import org.eclipse.bpmn2.modeler.core.features.IBpmn2AddFeature;
 import org.eclipse.bpmn2.modeler.core.features.IBpmn2CreateFeature;
 import org.eclipse.bpmn2.modeler.core.features.ShowPropertiesFeature;
 import org.eclipse.bpmn2.modeler.core.features.activity.ActivitySelectionBehavior;
+import org.eclipse.bpmn2.modeler.core.features.command.CustomKeyCommandFeature;
+import org.eclipse.bpmn2.modeler.core.features.command.ICustomCommandFeature;
 import org.eclipse.bpmn2.modeler.core.features.event.EventSelectionBehavior;
-import org.eclipse.bpmn2.modeler.core.preferences.Bpmn2Preferences;
 import org.eclipse.bpmn2.modeler.core.preferences.ModelEnablements;
 import org.eclipse.bpmn2.modeler.core.runtime.CustomTaskDescriptor;
-import org.eclipse.bpmn2.modeler.core.runtime.ModelDescriptor;
-import org.eclipse.bpmn2.modeler.core.runtime.ModelEnablementDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
 import org.eclipse.bpmn2.modeler.core.runtime.ToolPaletteDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.ToolPaletteDescriptor.CategoryDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.ToolPaletteDescriptor.ToolDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.ToolPaletteDescriptor.ToolPart;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
+import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil.Bpmn2DiagramType;
@@ -71,6 +71,7 @@ import org.eclipse.graphiti.features.IFeatureCheckerHolder;
 import org.eclipse.graphiti.features.IFeatureProvider;
 import org.eclipse.graphiti.features.context.IContext;
 import org.eclipse.graphiti.features.context.IDoubleClickContext;
+import org.eclipse.graphiti.features.context.IMoveShapeContext;
 import org.eclipse.graphiti.features.context.IPictogramElementContext;
 import org.eclipse.graphiti.features.context.impl.AddBendpointContext;
 import org.eclipse.graphiti.features.context.impl.AddContext;
@@ -81,15 +82,15 @@ import org.eclipse.graphiti.features.context.impl.MoveBendpointContext;
 import org.eclipse.graphiti.features.context.impl.MoveShapeContext;
 import org.eclipse.graphiti.features.context.impl.UpdateContext;
 import org.eclipse.graphiti.features.custom.ICustomFeature;
+import org.eclipse.graphiti.mm.Property;
+import org.eclipse.graphiti.mm.algorithms.AbstractText;
 import org.eclipse.graphiti.mm.algorithms.GraphicsAlgorithm;
 import org.eclipse.graphiti.mm.algorithms.Polyline;
-import org.eclipse.graphiti.mm.algorithms.Text;
 import org.eclipse.graphiti.mm.algorithms.styles.Point;
 import org.eclipse.graphiti.mm.pictograms.Anchor;
 import org.eclipse.graphiti.mm.pictograms.AnchorContainer;
 import org.eclipse.graphiti.mm.pictograms.Connection;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
-import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.FreeFormConnection;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
 import org.eclipse.graphiti.mm.pictograms.Shape;
@@ -107,17 +108,20 @@ import org.eclipse.graphiti.tb.IDecorator;
 import org.eclipse.graphiti.tb.IImageDecorator;
 import org.eclipse.graphiti.tb.ImageDecorator;
 import org.eclipse.graphiti.ui.editor.DiagramBehavior;
+import org.eclipse.graphiti.util.ILocationInfo;
+import org.eclipse.graphiti.util.LocationInfo;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.widgets.Display;
 
 public class BPMNToolBehaviorProvider extends DefaultToolBehaviorProvider implements IFeatureCheckerHolder {
 
-	BPMN2Editor editor;
-	TargetRuntime targetRuntime;
-	BPMNFeatureProvider featureProvider;
-	ModelEnablements modelEnablements;
-	Hashtable<String, PaletteCompartmentEntry> categories = new Hashtable<String, PaletteCompartmentEntry>();
-	List<IPaletteCompartmentEntry> palette;
+	protected BPMN2Editor editor;
+	protected TargetRuntime targetRuntime;
+	protected BPMNFeatureProvider featureProvider;
+	protected ModelEnablements modelEnablements;
+	protected Hashtable<String, PaletteCompartmentEntry> categories = new Hashtable<String, PaletteCompartmentEntry>();
+	protected List<IPaletteCompartmentEntry> palette;
+	protected CustomKeyCommandFeature commandFeature = null;
 	
 	protected class ProfileSelectionToolEntry extends ToolEntry {
 		BPMN2Editor editor;
@@ -196,9 +200,11 @@ public class BPMNToolBehaviorProvider extends DefaultToolBehaviorProvider implem
 		categories.clear();
 		ToolPaletteDescriptor toolPaletteDescriptor = targetRuntime.getToolPalette(diagramType, profile);
 		if (toolPaletteDescriptor!=null) {
+			boolean needCustomTaskDrawer = true;
 			for (CategoryDescriptor category : toolPaletteDescriptor.getCategories()) {
 				if (ToolPaletteDescriptor.DEFAULT_PALETTE_ID.equals(category.getId())) {
 					createDefaultpalette();
+					needCustomTaskDrawer = false;
 					continue;
 				}
 				
@@ -232,7 +238,8 @@ public class BPMNToolBehaviorProvider extends DefaultToolBehaviorProvider implem
 				else if (compartmentEntry.getToolEntries().size()>0)
 					palette.add(compartmentEntry);
 			}
-			createCustomTasks(palette);
+			if (needCustomTaskDrawer)
+				createCustomTasks(palette);
 		}
 		else
 		{
@@ -295,7 +302,7 @@ public class BPMNToolBehaviorProvider extends DefaultToolBehaviorProvider implem
 		createEventDefinitionsCompartments(palette);
 		createDataCompartments(palette);
 		createOtherCompartments(palette);
-//		createCustomTasks(palette);
+		createCustomTasks(palette);
 	}
 	
 	public List<IToolEntry> getTools() {
@@ -452,8 +459,12 @@ public class BPMNToolBehaviorProvider extends DefaultToolBehaviorProvider implem
 		}
 	}
 	
+	private boolean isEnabled(String className) {
+		return modelEnablements.isEnabled(className);
+	}
+	
 	private void createEntry(Class c, PaletteCompartmentEntry compartmentEntry) {
-		if (modelEnablements.isEnabled(c.getSimpleName())) {
+		if (isEnabled(c.getSimpleName())) {
 			IFeature feature = featureProvider.getCreateFeatureForBusinessObject(c);
 			if (feature instanceof ICreateFeature) {
 				ICreateFeature cf = (ICreateFeature)feature;
@@ -602,7 +613,7 @@ public class BPMNToolBehaviorProvider extends DefaultToolBehaviorProvider implem
 		else if (pe instanceof ContainerShape) {
 			if (((ContainerShape)pe).getChildren().size()>0) {
 				GraphicsAlgorithm ga = ((ContainerShape)pe).getChildren().get(0).getGraphicsAlgorithm();
-				if (!(ga instanceof Text) && !(ga instanceof Polyline))
+				if (!(ga instanceof AbstractText) && !(ga instanceof Polyline))
 					return ga;
 				ga = ((ContainerShape)pe).getGraphicsAlgorithm();
 				if (ga.getGraphicsAlgorithmChildren().size()>0)
@@ -625,13 +636,12 @@ public class BPMNToolBehaviorProvider extends DefaultToolBehaviorProvider implem
 	}
 	
 	@Override
-	public IContextButtonPadData getContextButtonPad(IPictogramElementContext context) {
+	public IContextButtonPadData getContextButtonPad(final IPictogramElementContext context) {
 		IContextButtonPadData data = super.getContextButtonPad(context);
 		PictogramElement pe = context.getPictogramElement();
-		IFeatureProvider fp = getFeatureProvider();
+		final IFeatureProvider fp = getFeatureProvider();
 
-		String labelProperty = Graphiti.getPeService().getPropertyValue(pe, GraphicsUtil.LABEL_PROPERTY);
-		if (Boolean.parseBoolean(labelProperty)) {
+		if (pe instanceof Shape && FeatureSupport.isLabelShape((Shape)pe)) {
 			// labels don't have a buttonpad
 			setGenericContextButtons(data, pe, 0);
 			return data;
@@ -771,8 +781,8 @@ public class BPMNToolBehaviorProvider extends DefaultToolBehaviorProvider implem
 		// temp debugging stuff to dump connection routing info
 		for (PictogramElement pe : context.getPictogramElements()) {
 			String id = Graphiti.getPeService().getPropertyValue(pe, "ROUTING_NET_CONNECTION"); //$NON-NLS-1$
-			System.out.println("id="+id); //$NON-NLS-1$
 			if (pe instanceof FreeFormConnection) {
+				System.out.println("id="+id); //$NON-NLS-1$
 				FreeFormConnection c = (FreeFormConnection)pe;
 				int i=0;
 				ILocation loc = Graphiti.getPeService().getLocationRelativeToDiagram(c.getStart());
@@ -837,4 +847,31 @@ public class BPMNToolBehaviorProvider extends DefaultToolBehaviorProvider implem
 		
         return decorators.toArray(new IDecorator[decorators.size()]);
     }
+
+	@Override
+	public ICustomFeature getCommandFeature(CustomContext context, String hint) {
+		if (commandFeature==null)
+			commandFeature = new CustomKeyCommandFeature(getFeatureProvider());
+		
+		if (commandFeature.isAvailable(hint)) {
+			context.putProperty(ICustomCommandFeature.COMMAND_HINT, hint);
+			return commandFeature;
+		}
+		return super.getCommandFeature(context, hint);
+	}
+
+	public ILocationInfo getLocationInfo(PictogramElement pe, ILocationInfo locationInfo) {
+		if (locationInfo==null) {
+			if (pe instanceof ContainerShape) {
+				ContainerShape shape = (ContainerShape) pe;
+				locationInfo = new LocationInfo(shape, shape.getGraphicsAlgorithm());
+			}
+		}
+		return locationInfo;
+	}
+
+	@Override
+	public Object getToolTip(GraphicsAlgorithm ga) {
+		return FeatureSupport.getToolTip(ga);
+	}
 }

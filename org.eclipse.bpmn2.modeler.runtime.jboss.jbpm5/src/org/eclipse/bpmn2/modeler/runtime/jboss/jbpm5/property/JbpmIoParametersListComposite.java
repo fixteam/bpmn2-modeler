@@ -15,6 +15,9 @@ import java.util.List;
 
 import org.eclipse.bpmn2.InputOutputSpecification;
 import org.eclipse.bpmn2.ItemAwareElement;
+import org.eclipse.bpmn2.ReceiveTask;
+import org.eclipse.bpmn2.SendTask;
+import org.eclipse.bpmn2.ServiceTask;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.ListCompositeContentProvider;
 import org.eclipse.bpmn2.modeler.core.merrimac.clad.TableColumn;
 import org.eclipse.bpmn2.modeler.core.runtime.CustomTaskDescriptor;
@@ -60,19 +63,32 @@ public class JbpmIoParametersListComposite extends IoParametersListComposite {
 			}
 		});
 	}
-	
+
 	@Override
-	protected int createColumnProvider(EObject object, EStructuralFeature feature) {
-		super.createColumnProvider(object, feature);
+	public void setBusinessObject(EObject object) {
+		super.setBusinessObject(object);
 		// if the owning Activity is a Custom Task, then make this table read-only
-		if (CustomTaskDescriptor.getDescriptor(activity) != null) {
-			for (TableColumn tc : (List<TableColumn>) columnProvider.getColumns()) {
-				if (tc instanceof IoParameterNameColumn) {
-					tc.setEditable(false);
-				}
+		// same thing for ServiceTask, SendTask and ReceiveTask if they define an
+		// Operation and/or Message
+		boolean enabled = true;
+		if (activity instanceof ServiceTask) {
+			enabled = ((ServiceTask)activity).getOperationRef()==null;
+		}
+		else if (activity instanceof SendTask) {
+			enabled = ((SendTask)activity).getOperationRef()==null && ((SendTask)activity).getMessageRef()==null;
+		}
+		else if (activity instanceof ReceiveTask) {
+			enabled = ((ReceiveTask)activity).getOperationRef()==null && ((ReceiveTask)activity).getMessageRef()==null;
+		}
+		else if (CustomTaskDescriptor.getDescriptor(activity) != null) {
+			enabled = false;
+		}
+
+		for (TableColumn tc : (List<TableColumn>) columnProvider.getColumns()) {
+			if (tc instanceof IoParameterNameColumn) {
+				tc.setEditable(enabled);
 			}
 		}
-		return columnProvider.getColumns().size();
 	}
 
 	@Override

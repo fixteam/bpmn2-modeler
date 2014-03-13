@@ -60,6 +60,7 @@ public class MyModelFactoryImpl extends EFactoryImpl implements MyModelFactory {
 			case MyModelPackage.PARAMETER: return createParameter();
 			case MyModelPackage.TASK_CONFIG: return createTaskConfig();
 			case MyModelPackage.MY_EVENT_DEFINITION: return createMyEventDefinition();
+			case MyModelPackage.TEMPORAL_DEPENDENCY: return createTemporalDependency();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
 		}
@@ -103,6 +104,16 @@ public class MyModelFactoryImpl extends EFactoryImpl implements MyModelFactory {
 	public MyEventDefinition createMyEventDefinition() {
 		MyEventDefinitionImpl myEventDefinition = new MyEventDefinitionImpl();
 		return myEventDefinition;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public TemporalDependency createTemporalDependency() {
+		TemporalDependencyImpl temporalDependency = new TemporalDependencyImpl();
+		return temporalDependency;
 	}
 
 	/**

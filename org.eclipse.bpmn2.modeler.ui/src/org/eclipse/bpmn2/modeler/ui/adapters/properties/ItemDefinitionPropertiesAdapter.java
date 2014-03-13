@@ -31,6 +31,7 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.xml.type.internal.DataValue.URI;
 import org.eclipse.wst.wsdl.Message;
 import org.eclipse.xsd.XSDElementDeclaration;
 
@@ -62,6 +63,7 @@ public class ItemDefinitionPropertiesAdapter extends ExtendedPropertiesAdapter<I
 				public String getDisplayName(Object context) {
 					ItemDefinition itemDefinition = adopt(context);
 					String value = ItemDefinitionPropertiesAdapter.getStructureName(itemDefinition);
+					value = SyntaxCheckerUtils.fromXMLString((String)value);
 					return value;
 				}
 				
@@ -91,7 +93,7 @@ public class ItemDefinitionPropertiesAdapter extends ExtendedPropertiesAdapter<I
 							String oldValue = ItemDefinitionPropertiesAdapter.getStructureName(itemDefinition);
 							value = ((String) value).replace(oldValue, ""); //$NON-NLS-1$
 						}
-						value = SyntaxCheckerUtils.toNCName((String)value);
+						value = SyntaxCheckerUtils.toXMLString((String)value);
 						value = ModelUtil.createStringWrapper((String)value);
 					}
 					super.setValue(context, value);

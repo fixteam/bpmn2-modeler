@@ -13,17 +13,7 @@
 
 package org.eclipse.bpmn2.modeler.core.utils;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-
-import org.eclipse.bpmn2.modeler.core.Activator;
 import org.eclipse.core.internal.registry.osgi.OSGIUtils;
-import org.eclipse.osgi.framework.adaptor.BundleClassLoader;
-import org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader;
 import org.osgi.framework.Bundle;
 
 /**

@@ -18,6 +18,7 @@ import java.util.List;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.graphiti.features.IFeatureProvider;
+import org.eclipse.graphiti.mm.algorithms.styles.Point;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.Shape;
 import org.eclipse.graphiti.services.Graphiti;
@@ -58,28 +59,41 @@ public class RouteSolver {
 	public boolean solve(Shape source, Shape target) {
 		this.source = source;
 		this.target = target;
-		List< List<RoutingLane> > verticalSolutions;
-		List< List<RoutingLane> > horizontalSolutions;
+		List< List<RoutingLane> > verticalSolutions = null;
+		List< List<RoutingLane> > horizontalSolutions = null;
 		
 		verticalNet.eraseLanes();
 		horizontalNet.eraseLanes();
 		
-		verticalSolutions = verticalNet.findSolutions(source, target);
-		verticalNet.drawLanes();
-		verticalNet.drawConnections();
-//		if (verticalSolutions.size()>0) {
+		Point ps = GraphicsUtil.getShapeCenter(source);
+		Point pt = GraphicsUtil.getShapeCenter(target);
+		
+		int dx = ps.getX() - pt.getX();
+		int dy = ps.getY() - pt.getY();
+		if (Math.abs(dy) > Math.abs(dx)) {
+			verticalSolutions = verticalNet.findSolutions(source, target);
+			verticalNet.drawLanes();
+//			verticalNet.drawConnections();
+		}
+		else {
+			horizontalSolutions = horizontalNet.findSolutions(source, target);
+			horizontalNet.drawLanes();
+//			horizontalNet.drawConnections();
+		}
+		
+//		if (verticalSolutions!=null && verticalSolutions.size()>0) {
 //			for (int i=0; i<verticalSolutions.size(); ++i) {
 //				verticalNet.drawSolution(verticalSolutions.get(i), i);
 //				if (i>16)
 //					break;
 //			}
 //		}
-		
-//		horizontalSolutions = horizontalNet.findSolutions(source, target);
-//		horizontalNet.drawLanes();
-//		horizontalNet.drawConnections();
-//		if (horizontalSolutions.size()>0) {
-//			horizontalNet.drawSolution(horizontalSolutions.get(0));
+//		if (horizontalSolutions!=null && horizontalSolutions.size()>0) {
+//			for (int i=0; i<horizontalSolutions.size(); ++i) {
+//				horizontalNet.drawSolution(horizontalSolutions.get(i), i);
+//				if (i>16)
+//					break;
+//			}
 //		}
 		return true;
 	}

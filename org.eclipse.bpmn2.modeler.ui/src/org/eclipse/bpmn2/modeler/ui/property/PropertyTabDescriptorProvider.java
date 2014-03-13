@@ -13,12 +13,17 @@
 package org.eclipse.bpmn2.modeler.ui.property;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 
 import org.eclipse.bpmn2.modeler.core.runtime.Bpmn2SectionDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.Bpmn2TabDescriptor;
 import org.eclipse.bpmn2.modeler.core.runtime.TargetRuntime;
+import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.ui.editor.BPMN2Editor;
+import org.eclipse.emf.common.util.TreeIterator;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
@@ -26,16 +31,33 @@ import org.eclipse.ui.views.properties.tabbed.ITabDescriptorProvider;
 
 public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
 
+	// This map caches the Tab Descriptor List. A Tab Descriptor List is built for each EObject and then
+	// cached in this map. It is the BPMN2 Editor's responsibility to remove these items from the map
+	// when it is disposed().
+	// @see PropertyTabDescriptorProvider#disposeTabDescriptors(Resource)
+	Hashtable <EObject, TabDescriptorList> tabDescriptorListMap = new Hashtable <EObject, TabDescriptorList>();
+	
 	public PropertyTabDescriptorProvider() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public ITabDescriptor[] getTabDescriptors(IWorkbenchPart part,
-			ISelection selection) {
+	public ITabDescriptor[] getTabDescriptors(IWorkbenchPart part, ISelection selection) {
 		
+		// is the Tab Descriptor List already in our cache?
+		TabDescriptorList tabDescriptorList = null;
+		EObject businessObject = BusinessObjectUtil.getBusinessObjectForSelection(selection);
+		if (businessObject!=null) {
+			tabDescriptorList = tabDescriptorListMap.get(businessObject);
+			if (tabDescriptorList!=null) {
+				// Yes! return it.
+				return tabDescriptorList.toArray();
+			}
+		}
+		
+		// No, we need build the list: get the Target Runtime <propertyTab> contributions
+		// and merge with the Default Runtime Tab Descriptors
 		TargetRuntime rt = TargetRuntime.getDefaultRuntime();
 		Object bpmn2Editor = part.getAdapter(BPMN2Editor.class);
 		if (bpmn2Editor instanceof BPMN2Editor) {
@@ -115,11 +137,44 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
 			desc.removeAll(emptyTabs);
 		
 		if (advancedPropertyTab!=null) {
-			desc.remove(advancedPropertyTab);
-			desc.add(advancedPropertyTab);
+			if (desc.remove(advancedPropertyTab))
+				desc.add(advancedPropertyTab);
 		}
 		
-		return desc.toArray(new ITabDescriptor[desc.size()]);
+		// make copies of all tab descriptors to prevent cross-talk between editors
+		replaced.clear(); // we'll just reuse an ArrayList from before...
+		for (Bpmn2TabDescriptor td : desc) {
+			// Note that the copy() makes the Tab Descriptor IDs and Section IDs unique.
+			// This is important because the TabbedPropertySheetPage uses these IDs to
+			// look up the Sections.
+			replaced.add(td.copy()); 
+		}
+		
+		// save this in the cache.
+		if (businessObject!=null) {
+			tabDescriptorList = new TabDescriptorList();
+			tabDescriptorList.addAll(replaced);
+			tabDescriptorListMap.put(businessObject, tabDescriptorList);
+			return tabDescriptorList.toArray();
+		}
+		
+		return replaced.toArray(new ITabDescriptor[replaced.size()]);
 	}
 
+	/**
+	 * This should be called by the editor during dispose() to remove all the items
+	 * from the cache.
+	 *  
+	 * @param resource - the EMF Resource containing the EObjects for which
+	 *        Property Tab Descriptors were built.
+	 */
+	public void disposeTabDescriptors(Resource resource) {
+		if (resource!=null) {
+			TreeIterator<EObject> iter = resource.getAllContents();
+			while (iter.hasNext()) {
+				EObject object = iter.next();
+				tabDescriptorListMap.remove(object);
+			}
+		}
+	}
 }

@@ -87,10 +87,6 @@ public class UpdateLabelFeature extends AbstractUpdateFeature {
 			if (name == null) {
 				name = ""; //$NON-NLS-1$
 			}
-			if (name.equals(text.getValue())) {
-				// nothing to do here
-				return true;
-			}
 			text.setValue(name);
 			
 			// TODO: figure out why this causes the undo stack to be flushed if Text old value == new value

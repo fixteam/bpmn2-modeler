@@ -80,7 +80,7 @@ public class DataOutputsListComposite extends DefaultListComposite {
 		DataOutputAssociation outputAssociation = createModelObject(DataOutputAssociation.class);
 		catchEvent.getDataOutputAssociation().add(outputAssociation);
 		outputAssociation.getSourceRef().clear();
-		outputAssociation.getSourceRef().add( param);
+		outputAssociation.getSourceRef().add(param);
 
 		return param;
 	}

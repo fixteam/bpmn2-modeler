@@ -46,6 +46,7 @@ import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil.BoundaryAnchor;
 import org.eclipse.bpmn2.modeler.core.utils.BusinessObjectUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
+import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil.IShapeFilter;
 import org.eclipse.bpmn2.modeler.core.utils.ModelUtil;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
@@ -77,6 +78,10 @@ import org.eclipse.graphiti.ui.features.AbstractPasteFeature;
 
 public class DefaultPasteBPMNElementFeature extends AbstractPasteFeature {
 
+	public static final String COPIED_BPMN_SHAPE = "copied.bpmn.shape";
+	public static final String COPIED_BPMN_OBJECT = "copied.bpmn.object";
+	public static final String COPY_FROM_CONTEXT = "copy.from.context";
+	
 	protected Resource resource;
 	protected Definitions definitions;
 	protected Hashtable<String, String> idMap;
@@ -93,17 +98,29 @@ public class DefaultPasteBPMNElementFeature extends AbstractPasteFeature {
 	@Override
 	public boolean canPaste(IPasteContext context) {
 		// target must be a FlowElementsContainer (Process, etc.)
-		if (getTargetContainerShape(context)==null) {
+		ContainerShape targetContainerShape = getTargetContainerShape(context);
+		if (targetContainerShape==null)
 			return false;
+		BaseElement targetContainerObject = getContainerObject(targetContainerShape);
+		if (targetContainerObject==null)
+			return false;
+
+		Object[] pasteObjects;
+		if (context.getProperty(COPY_FROM_CONTEXT) != null) {
+			// Get objects to paste from the context. This can be used to test if
+			// objects can be pasted before they have been copied to the clipboard.
+			pasteObjects = context.getPictogramElements();
+		}
+		else {
+			// can paste, if all objects on the clipboard are PictogramElements
+			pasteObjects = getFromClipboard();
 		}
 
-		// can paste, if all objects on the clipboard are PictogramElements
-		Object[] fromClipboard = getFromClipboard();
-		if (fromClipboard == null || fromClipboard.length == 0) {
+		if (pasteObjects == null || pasteObjects.length == 0) {
 			return false;
 		}
 		int count = 0;
-		for (Object object : fromClipboard) {
+		for (Object object : pasteObjects) {
 			if (!(object instanceof PictogramElement)) {
 				continue;
 			}
@@ -427,6 +444,13 @@ public class DefaultPasteBPMNElementFeature extends AbstractPasteFeature {
 		ac.setSize(size.getWidth(), size.getHeight());
 		ac.setTargetContainer(targetContainerShape);
 
+		BPMNShape oldBpmnShape = null;
+		if (oldObject instanceof BaseElement) {
+			oldBpmnShape = DIUtils.findBPMNShape((BaseElement)oldObject);
+			ac.putProperty(COPIED_BPMN_SHAPE, oldBpmnShape);
+		}
+		ac.putProperty(COPIED_BPMN_OBJECT, oldObject);
+		
 		IAddFeature af = getFeatureProvider().getAddFeature(ac);
 		ContainerShape newShape = (ContainerShape) af.add(ac);
 
@@ -493,20 +517,19 @@ public class DefaultPasteBPMNElementFeature extends AbstractPasteFeature {
 		}
 		
 		// also copy the BPMNShape properties
-		if (oldObject instanceof BaseElement) {
-			BPMNShape oldBpmnShape = DIUtils.findBPMNShape((BaseElement)oldObject);
-			if (oldBpmnShape!=null) {
-				BPMNShape newBpmnShape = DIUtils.findBPMNShape((BaseElement)newObject);
-				newBpmnShape.setIsExpanded(oldBpmnShape.isIsExpanded());
-				newBpmnShape.setIsHorizontal(oldBpmnShape.isIsHorizontal());
-				newBpmnShape.setIsMarkerVisible(oldBpmnShape.isIsMarkerVisible());
-				newBpmnShape.setIsMessageVisible(oldBpmnShape.isIsMessageVisible());
-				newBpmnShape.setParticipantBandKind(oldBpmnShape.getParticipantBandKind());
-			}
+		if (oldBpmnShape!=null) {
+			BPMNShape newBpmnShape = DIUtils.findBPMNShape((BaseElement)newObject);
+			newBpmnShape.setIsExpanded(oldBpmnShape.isIsExpanded());
+			newBpmnShape.setIsHorizontal(oldBpmnShape.isIsHorizontal());
+			newBpmnShape.setIsMarkerVisible(oldBpmnShape.isIsMarkerVisible());
+			newBpmnShape.setIsMessageVisible(oldBpmnShape.isIsMessageVisible());
+			newBpmnShape.setParticipantBandKind(oldBpmnShape.getParticipantBandKind());
 		}
 
 		UpdateContext uc = new UpdateContext(newShape);
 		IUpdateFeature uf = getFeatureProvider().getUpdateFeature(uc);
+		// force an update to cause the newly created ContainerShape to be rendered properly
+		uc.putProperty(MultiUpdateFeature.FORCE_UPDATE_ALL, Boolean.TRUE);
 		uf.update(uc);
 		
 		if (newObject instanceof Activity) {
@@ -619,15 +642,18 @@ public class DefaultPasteBPMNElementFeature extends AbstractPasteFeature {
 		Diagram diagram = getFeatureProvider().getDiagramTypeProvider().getDiagram();
 		
 		Point p = GraphicsUtil.createPoint(context.getX(), context.getY());
-		for (Shape c : diagram.getChildren()) {
-			if (GraphicsUtil.contains(c, p) && c instanceof ContainerShape) {
-				BaseElement be = getContainerObject((ContainerShape) c);
-				if (be instanceof FlowElementsContainer) {
-					return (ContainerShape) c;
+		Shape s = GraphicsUtil.findShapeAt(diagram, p, new IShapeFilter() {
+			@Override
+			public boolean matches(Shape shape) {
+				if (shape instanceof ContainerShape) {
+					BaseElement be = getContainerObject((ContainerShape) shape);
+					return be instanceof FlowElementsContainer;
 				}
-				return null;
+				return false;
 			}
-		}
+		});
+		if (s!=null)
+			return (ContainerShape) s;
 		return diagram;
 	}
 	
@@ -639,7 +665,7 @@ public class DefaultPasteBPMNElementFeature extends AbstractPasteFeature {
 		if (bo instanceof Participant) {
 			bo = ((Participant) bo).getProcessRef();
 		}
-		if (bo instanceof BaseElement)
+		if (bo instanceof FlowElementsContainer || bo instanceof Lane)
 			return (BaseElement) bo;
 		return null;
 	}

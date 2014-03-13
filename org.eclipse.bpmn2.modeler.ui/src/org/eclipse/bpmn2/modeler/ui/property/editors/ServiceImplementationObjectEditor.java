@@ -63,7 +63,7 @@ public class ServiceImplementationObjectEditor extends ComboObjectEditor {
 	}
 
 	@Override
-	protected boolean setValue(Object result) {
+	public boolean setValue(Object result) {
 		if (ModelUtil.isStringWrapper(result)) {
 			result = ModelUtil.getStringWrapperValue(result);
 		}
@@ -175,7 +175,7 @@ public class ServiceImplementationObjectEditor extends ComboObjectEditor {
 							if (choices.containsKey(newText) || choices.containsValue(newText))
 								return NLS.bind(Messages.ServiceImplementationObjectEditor_Invalid_Duplicate,newText);
 							URI uri = URI.createURI(newText);
-							if (!(uri.hasAuthority() &&uri.hasAbsolutePath())) {
+							if (!(uri.hasAuthority() && uri.scheme()!=null)) {
 								return Messages.ServiceImplementationObjectEditor_Invalid_URI;
 							}
 							return null;

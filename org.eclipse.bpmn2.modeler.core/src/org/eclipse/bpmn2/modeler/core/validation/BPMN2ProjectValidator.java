@@ -139,11 +139,16 @@ public class BPMN2ProjectValidator extends AbstractValidator {
     public static boolean isBPMN2File(IResource resource) {
     	if (resource instanceof IFile) {
 	    	try {
-	    		IContentDescription cd = ((IFile)resource).getContentDescription();
+	    		IFile file = (IFile) resource;
+	    		IContentDescription cd = file.getContentDescription();
 	    		if (cd!=null) {
 					return Bpmn2ModelerResourceImpl.BPMN2_CONTENT_TYPE_ID.equals(
 							cd.getContentType().getId());
 	    		}
+	    		String ext = file.getFileExtension();
+	    		if ("bpmn".equals(ext) || "bpmn2".equals(ext))
+	    			return true;
+	    		
 			} catch (Exception e) {
 			}
     	}
@@ -153,60 +158,63 @@ public class BPMN2ProjectValidator extends AbstractValidator {
 	public static boolean validateOnSave(Resource resource, IProgressMonitor monitor) {
 
 		boolean needValidation = false;
-		String pathString = resource.getURI().toPlatformString(true);
-		IPath path = Path.fromOSString(pathString);
-		IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
-		IProject project = file.getProject();
-
-		if (project!=null) {
-			try {
-				IProjectNature nature = project.getNature(BPMN2Nature.NATURE_ID);
-				if (nature==null) {
-					Bpmn2Preferences preferences = Bpmn2Preferences.getInstance(project);
-					if (preferences.getCheckProjectNature()) {
-						Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-						String title = Messages.BPMN2ProjectValidator_Title;
-						String message = NLS.bind(
-							Messages.BPMN2ProjectValidator_No_Project_Nature,
-							project.getName()
-						);
-						MessageDialogWithToggle result = MessageDialogWithToggle.open(
-								MessageDialog.QUESTION,
-								shell,
-								title,
-								message,
-								Messages.BPMN2ProjectValidator_Dont_Ask_Again, // toggle message
-								false, // toggle state
-								null, // pref store
-								null, // pref key
-								SWT.NONE);
-						if (result.getReturnCode() == IDialogConstants.YES_ID) {
-							IProjectDescription description = project.getDescription();
-							String[] natures = description.getNatureIds();
-							String[] newNatures = new String[natures.length + 1];
-							System.arraycopy(natures, 0, newNatures, 0, natures.length);
-							newNatures[natures.length] = BPMN2Nature.NATURE_ID;
-							description.setNatureIds(newNatures);
-							project.setDescription(description, null);
-							needValidation = true;
-						}
-						if (result.getToggleState()) {
-							// don't ask again
-							preferences.setCheckProjectNature(false);
+		URI uri = resource.getURI();
+		if (uri.isPlatformResource()) {
+			String pathString = uri.toPlatformString(true);
+			IPath path = Path.fromOSString(pathString);
+			IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
+			IProject project = file.getProject();
+	
+			if (project!=null) {
+				try {
+					IProjectNature nature = project.getNature(BPMN2Nature.NATURE_ID);
+					if (nature==null) {
+						Bpmn2Preferences preferences = Bpmn2Preferences.getInstance(project);
+						if (preferences.getCheckProjectNature()) {
+							Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+							String title = Messages.BPMN2ProjectValidator_Title;
+							String message = NLS.bind(
+								Messages.BPMN2ProjectValidator_No_Project_Nature,
+								project.getName()
+							);
+							MessageDialogWithToggle result = MessageDialogWithToggle.open(
+									MessageDialog.QUESTION,
+									shell,
+									title,
+									message,
+									Messages.BPMN2ProjectValidator_Dont_Ask_Again, // toggle message
+									false, // toggle state
+									null, // pref store
+									null, // pref key
+									SWT.NONE);
+							if (result.getReturnCode() == IDialogConstants.YES_ID) {
+								IProjectDescription description = project.getDescription();
+								String[] natures = description.getNatureIds();
+								String[] newNatures = new String[natures.length + 1];
+								System.arraycopy(natures, 0, newNatures, 0, natures.length);
+								newNatures[natures.length] = BPMN2Nature.NATURE_ID;
+								description.setNatureIds(newNatures);
+								project.setDescription(description, null);
+								needValidation = true;
+							}
+							if (result.getToggleState()) {
+								// don't ask again
+								preferences.setCheckProjectNature(false);
+							}
 						}
 					}
+					else
+						needValidation = true;
+	
+				} catch (CoreException e) {
+					e.printStackTrace();
 				}
-				else
-					needValidation = true;
-
-			} catch (CoreException e) {
-				e.printStackTrace();
 			}
-		}
-		
-		if (needValidation) {
-			// validation will be done by the Project Validation builder
-			return true;
+			
+			if (needValidation) {
+				// validation will be done by the Project Validation builder
+				return true;
+			}
 		}
 		
     	return false;

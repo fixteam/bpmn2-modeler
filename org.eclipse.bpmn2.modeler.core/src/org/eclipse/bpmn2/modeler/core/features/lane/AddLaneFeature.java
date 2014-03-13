@@ -25,6 +25,7 @@ import org.eclipse.bpmn2.SubProcess;
 import org.eclipse.bpmn2.di.BPMNShape;
 import org.eclipse.bpmn2.modeler.core.di.DIImport;
 import org.eclipse.bpmn2.modeler.core.features.AbstractBpmn2AddElementFeature;
+import org.eclipse.bpmn2.modeler.core.features.DefaultPasteBPMNElementFeature;
 import org.eclipse.bpmn2.modeler.core.utils.AnchorUtil;
 import org.eclipse.bpmn2.modeler.core.utils.FeatureSupport;
 import org.eclipse.bpmn2.modeler.core.utils.GraphicsUtil;
@@ -161,8 +162,7 @@ public class AddLaneFeature extends AbstractBpmn2AddElementFeature<Lane> {
 
 		peCreateService.createChopboxAnchor(containerShape);
 		AnchorUtil.addFixedPointAnchors(containerShape, rect);
-		layoutPictogramElement(containerShape);
-		
+
 		return containerShape;
 	}
 
@@ -232,15 +232,21 @@ public class AddLaneFeature extends AbstractBpmn2AddElementFeature<Lane> {
 			if (context.getTargetContainer() instanceof Diagram) {
 				return super.getHeight(context);
 			}
-			/*int height = context.getTargetContainer().getGraphicsAlgorithm().getHeight();
+			Object copiedBpmnShape = context.getProperty(DefaultPasteBPMNElementFeature.COPIED_BPMN_SHAPE);
+			if (copiedBpmnShape instanceof BPMNShape) {
+				Bounds b = ((BPMNShape)copiedBpmnShape).getBounds();
+				if (b!=null)
+					return (int) b.getHeight();
+			}
+			int height = context.getTargetContainer().getGraphicsAlgorithm().getHeight();
 			
 			Bounds bounds = getPreviousBounds(context);
 			if (bounds != null) {
 				height = (int) bounds.getHeight();
 			}
-			return height;*/
+			return height;
 		}
-		return context.getHeight() > 0 ? context.getHeight() : (isHorizontal(context) ? getHeight() : getWidth()); 
+		return super.getHeight(context);
 	}
 	
 	@Override
@@ -249,15 +255,21 @@ public class AddLaneFeature extends AbstractBpmn2AddElementFeature<Lane> {
 			if (context.getTargetContainer() instanceof Diagram) {
 				return super.getWidth(context);
 			}
-			/*int width = context.getTargetContainer().getGraphicsAlgorithm().getWidth();
+			Object copiedBpmnShape = context.getProperty(DefaultPasteBPMNElementFeature.COPIED_BPMN_SHAPE);
+			if (copiedBpmnShape instanceof BPMNShape) {
+				Bounds b = ((BPMNShape)copiedBpmnShape).getBounds();
+				if (b!=null)
+					return (int) b.getWidth();
+			}
+			int width = context.getTargetContainer().getGraphicsAlgorithm().getWidth();
 			
 			Bounds bounds = getPreviousBounds(context);
 			if (bounds != null) {
 				width = (int) bounds.getWidth();
 			}
-			return width;*/
+			return width;
 		}
-		return context.getWidth() > 0 ? context.getWidth() : (isHorizontal(context) ? getWidth() : getHeight());
+		return super.getWidth(context);
 	}
 
 	@Override
