@@ -645,7 +645,7 @@ public class DesignEditor extends BPMN2Editor {
 							*/
 							process.getFlowElements().add(newFlowElement);
 							
-							BPMNShape bpmnShape =DIUtils.findBPMNShape(flowElement);
+							BPMNShape bpmnShape =DIUtils.findBPMNShapeInTemp(flowElement);
 							
 							BPMNShape newBpmnShape=EcoreUtil.copy(bpmnShape);
 							newBpmnShape.setId(null);

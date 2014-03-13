@@ -432,6 +432,22 @@ public class DIUtils {
 		return null;
 	}
 	
+	public static BPMNShape findBPMNShapeInTemp(BaseElement baseElement) {
+		Definitions definitions = ModelUtil.getDefinitions(baseElement);
+		for (BPMNDiagram d : definitions.getDiagrams()) {
+			BPMNDiagram bpmnDiagram = (BPMNDiagram)d;
+			BaseElement bpmnElement = null;
+			for (DiagramElement de : bpmnDiagram.getPlane().getPlaneElement()) {
+				if (de instanceof BPMNShape) {
+					bpmnElement = ((BPMNShape)de).getBpmnElement();
+					if (bpmnElement.getId().equals(baseElement.getId()))
+						return (BPMNShape)de;
+				}
+			}
+		}
+		return null;
+	}
+	
 	public static BPMNEdge findBPMNEdge(EObject baseElement) {
 		Definitions definitions = ModelUtil.getDefinitions(baseElement);
 		if (definitions!=null) {
