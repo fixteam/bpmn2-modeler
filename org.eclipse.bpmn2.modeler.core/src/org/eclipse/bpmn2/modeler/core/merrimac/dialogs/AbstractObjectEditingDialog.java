@@ -116,13 +116,13 @@ public abstract class AbstractObjectEditingDialog extends FormDialog implements 
 	protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
         
-        errorMessageText = new Text(parent, SWT.READ_ONLY | SWT.WRAP | SWT.BORDER);
+      /*  errorMessageText = new Text(parent, SWT.READ_ONLY | SWT.WRAP | SWT.BORDER);
         errorMessageText.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL
                 | GridData.HORIZONTAL_ALIGN_FILL));
         errorMessageText.setForeground(errorMessageText.getDisplay()
                 .getSystemColor(SWT.COLOR_RED));
         errorMessageText.setBackground(errorMessageText.getDisplay()
-                .getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+                .getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));*/
         return composite;
 	}
 
@@ -176,6 +176,8 @@ public abstract class AbstractObjectEditingDialog extends FormDialog implements 
 	
 	protected void aboutToOpen() {
 		dialogContent.setData(object);
+		//强制刷新一下dialog，不然会白屏。。
+		dialogContent.layout();
 	}
 
 	@Override
