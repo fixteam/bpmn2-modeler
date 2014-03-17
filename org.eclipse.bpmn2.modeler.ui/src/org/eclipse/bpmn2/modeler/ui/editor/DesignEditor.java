@@ -70,7 +70,10 @@ import org.eclipse.graphiti.mm.pictograms.Connection;
 import org.eclipse.graphiti.mm.pictograms.ContainerShape;
 import org.eclipse.graphiti.mm.pictograms.Diagram;
 import org.eclipse.graphiti.mm.pictograms.PictogramElement;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.osgi.util.NLS;
@@ -87,7 +90,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.contentoutline.ContentOutline;
 
 import com.founder.fix.designer.base.util.ProjectUtil;
@@ -570,6 +575,14 @@ public class DesignEditor extends BPMN2Editor {
 				}
 
 				ProjectUtil.refreshProject("fixflow-repository");
+				
+				IViewPart viewer = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView("com.founder.fix.fixflow.designer.viewtemplate");
+				for (IContributionItem contr : viewer.getViewSite().getActionBars().getToolBarManager().getItems()) {
+					if(contr.getId().equals("refreshModel")) {
+						ActionContributionItem action = (ActionContributionItem) contr;
+						action.getAction().run();
+					}
+				}
 			}
 		};
 
