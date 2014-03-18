@@ -95,6 +95,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.contentoutline.ContentOutline;
 
+import com.founder.fix.designer.base.util.FixFlowConfigUtil;
 import com.founder.fix.designer.base.util.ProjectUtil;
 import com.founder.fix.designer.base.util.TemplateUtil;
 
@@ -574,7 +575,7 @@ public class DesignEditor extends BPMN2Editor {
 					e.printStackTrace();
 				}
 
-				ProjectUtil.refreshProject("fixflow-repository");
+				ProjectUtil.refreshProject(FixFlowConfigUtil.getNodeTemplateProjectName());
 				
 				IViewPart viewer = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView("com.founder.fix.fixflow.designer.viewtemplate");
 				for (IContributionItem contr : viewer.getViewSite().getActionBars().getToolBarManager().getItems()) {
