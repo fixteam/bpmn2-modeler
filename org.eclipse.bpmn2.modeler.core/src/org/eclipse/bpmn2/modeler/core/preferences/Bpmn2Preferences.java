@@ -451,7 +451,7 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 
 			doCoreValidation = getBoolean(PREF_DO_CORE_VALIDATION, false);
 			propagateGroupCategories = getBoolean(PREF_PROPAGATE_GROUP_CATEGORIES, true);
-			allowMultipleConnections = getBoolean(PREF_ALLOW_MULTIPLE_CONNECTIONS, false);
+			allowMultipleConnections = getBoolean(PREF_ALLOW_MULTIPLE_CONNECTIONS, true);
 
 			cached = true;
 		}
