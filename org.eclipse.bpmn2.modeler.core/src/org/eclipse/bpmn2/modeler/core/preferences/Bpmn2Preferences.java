@@ -293,6 +293,9 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 			pref = projectInstances.get(project);
 			if (pref==null) {
 				pref = new Bpmn2Preferences(project);
+				if(pref.getAllowMultipleConnections()==false) {
+					pref.setAllowMultipleConnections(true);
+				}
 				projectInstances.put(project, pref);
 			}
 		}
@@ -338,7 +341,7 @@ public class Bpmn2Preferences implements IResourceChangeListener, IPropertyChang
 			defaultPreferences.putBoolean(PREF_POPUP_CONFIG_DIALOG_FOR_CONTAINERS, false);
 			defaultPreferences.putBoolean(PREF_DO_CORE_VALIDATION, false);
 			defaultPreferences.putBoolean(PREF_PROPAGATE_GROUP_CATEGORIES, true);
-			defaultPreferences.putBoolean(PREF_ALLOW_MULTIPLE_CONNECTIONS, false);
+			defaultPreferences.putBoolean(PREF_ALLOW_MULTIPLE_CONNECTIONS, true);
 
 			defaultPreferences.put(PREF_CONNECTION_TIMEOUT, "1000"); //$NON-NLS-1$
 			
