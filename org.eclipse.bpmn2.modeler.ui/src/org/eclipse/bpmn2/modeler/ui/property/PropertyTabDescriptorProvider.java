@@ -124,6 +124,10 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
 				if (s.appliesTo(part, selection)) {
 					empty = false;
 				}
+				//如果是时间定义，则不去掉 --wy
+				if(s.getSectionClass().getClass().getSimpleName().equals("StartEventTimerEventDefinitionPropertySection") || s.getSectionClass().getClass().getSimpleName().equals("BoundaryEventTimerEventDefinitionPropertySection")) {
+					empty = false;
+				}
 				if (s.getSectionClass() instanceof AdvancedPropertySection) {
 					advancedPropertyTab = d;
 				}
